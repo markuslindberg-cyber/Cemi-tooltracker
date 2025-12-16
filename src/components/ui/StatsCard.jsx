@@ -33,15 +33,15 @@ export default function StatsCard({ title, value, icon: Icon, trend, trendLabel,
           )}
         </div>
         {Icon && (
-          <div className={cn(
-            "p-3 rounded-xl",
-            iconClassName || "bg-red-50"
-          )}>
-            <Icon className={cn(
-              "w-6 h-6",
-              iconClassName ? "" : "text-red-600"
-            )} />
-          </div>
+        <div className={cn(
+          "p-3 rounded-xl",
+          iconClassName || "bg-[#8B1E1E]/10"
+        )}>
+          <Icon className={cn(
+            "w-6 h-6",
+            iconClassName ? "" : "text-[#8B1E1E]"
+          )} />
+        </div>
         )}
       </div>
     </div>

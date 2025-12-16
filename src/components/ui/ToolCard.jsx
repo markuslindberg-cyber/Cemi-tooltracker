@@ -125,7 +125,7 @@ export default function ToolCard({ tool, onTransfer, onEdit, onStatusChange, onV
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full mt-4 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+          className="w-full mt-4 border-[#8B1E1E]/30 text-[#8B1E1E] hover:bg-[#8B1E1E]/10 hover:text-[#6B1515]"
           onClick={() => onTransfer?.(tool)}
         >
           <ArrowRightLeft className="w-4 h-4 mr-2" />

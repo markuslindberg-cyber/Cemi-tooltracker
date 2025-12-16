@@ -112,7 +112,7 @@ export default function Dashboard() {
             title="Total Tools"
             value={totalTools}
             icon={Wrench}
-            iconClassName="bg-red-50"
+            iconClassName="bg-[#8B1E1E]/10"
             trend={12}
             trendLabel="vs last month"
           />

@@ -34,7 +34,7 @@ export default function SearchFilterBar({
             placeholder="Search tools by name, model, or barcode..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 h-11 border-gray-200 focus:border-red-300 focus:ring-red-200"
+            className="pl-10 h-11 border-gray-200 focus:border-[#8B1E1E]/30 focus:ring-[#8B1E1E]/20"
           />
         </div>
 
@@ -87,7 +87,7 @@ export default function SearchFilterBar({
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="icon"
                 onClick={() => onViewModeChange('grid')}
-                className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
               >
                 <Grid className="w-5 h-5" />
               </Button>
@@ -95,7 +95,7 @@ export default function SearchFilterBar({
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="icon"
                 onClick={() => onViewModeChange('list')}
-                className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
               >
                 <List className="w-5 h-5" />
               </Button>
