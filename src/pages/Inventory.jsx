@@ -63,6 +63,7 @@ export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [transferTool, setTransferTool] = useState(null);
   const [editTool, setEditTool] = useState(null);
@@ -88,14 +89,25 @@ export default function Inventory() {
       const matchesSearch = !searchQuery || 
         tool.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.model_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.barcode?.toLowerCase().includes(searchQuery.toLowerCase());
+        tool.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tool.subcategory?.toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesStatus = statusFilter === 'all' || tool.status === statusFilter;
       const matchesCategory = categoryFilter === 'all' || tool.category === categoryFilter;
+      const matchesSubcategory = subcategoryFilter === 'all' || tool.subcategory === subcategoryFilter;
       
-      return matchesSearch && matchesStatus && matchesCategory;
+      return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory;
     });
-  }, [tools, searchQuery, statusFilter, categoryFilter]);
+  }, [tools, searchQuery, statusFilter, categoryFilter, subcategoryFilter]);
+
+  const availableSubcategories = useMemo(() => {
+    if (categoryFilter === 'all') {
+      return [...new Set(tools.map(t => t.subcategory).filter(Boolean))].sort();
+    }
+    return [...new Set(
+      tools.filter(t => t.category === categoryFilter).map(t => t.subcategory).filter(Boolean)
+    )].sort();
+  }, [tools, categoryFilter]);
 
   const handleTransfer = async (transferData) => {
     await base44.entities.Transfer.create(transferData);
@@ -138,6 +150,7 @@ export default function Inventory() {
     setSearchQuery('');
     setStatusFilter('all');
     setCategoryFilter('all');
+    setSubcategoryFilter('all');
   };
 
   if (isLoading) {
@@ -157,7 +170,7 @@ export default function Inventory() {
             <h1 className="text-3xl font-bold text-gray-900">Inventory</h1>
             <p className="text-gray-500 mt-1">
               {filteredTools.length} tool{filteredTools.length !== 1 ? 's' : ''} 
-              {(statusFilter !== 'all' || categoryFilter !== 'all' || searchQuery) && ' matching filters'}
+              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || searchQuery) && ' matching filters'}
             </p>
           </div>
           <Button
@@ -177,9 +190,12 @@ export default function Inventory() {
           onStatusChange={setStatusFilter}
           categoryFilter={categoryFilter}
           onCategoryChange={setCategoryFilter}
+          subcategoryFilter={subcategoryFilter}
+          onSubcategoryChange={setSubcategoryFilter}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onClearFilters={clearFilters}
+          availableSubcategories={availableSubcategories}
         />
 
         {/* Content */}
@@ -256,6 +272,9 @@ export default function Inventory() {
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">{tool.name}</p>
+                            {tool.subcategory && (
+                              <p className="text-xs text-gray-500">{tool.subcategory}</p>
+                            )}
                             {tool.model_number && (
                               <p className="text-sm text-gray-500">{tool.model_number}</p>
                             )}

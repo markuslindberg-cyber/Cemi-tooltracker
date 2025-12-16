@@ -20,10 +20,21 @@ import {
 import { Loader2, Upload, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
+const subcategoryOptions = {
+  power_tools: ['Drills', 'Saws', 'Grinders', 'Sanders', 'Impact Drivers', 'Rotary Hammers', 'Other'],
+  hand_tools: ['Wrenches', 'Screwdrivers', 'Hammers', 'Pliers', 'Socket Sets', 'Utility Knives', 'Other'],
+  measuring: ['Tape Measures', 'Levels', 'Laser Tools', 'Squares', 'Calipers', 'Other'],
+  safety: ['Hard Hats', 'Safety Glasses', 'Gloves', 'Harnesses', 'Ear Protection', 'Respirators', 'Other'],
+  accessories: ['Batteries', 'Chargers', 'Blades', 'Bits', 'Fasteners', 'Other'],
+  heavy_equipment: ['Excavators', 'Loaders', 'Generators', 'Compressors', 'Scaffolding', 'Other'],
+  other: ['Other'],
+};
+
 const defaultTool = {
   name: '',
   model_number: '',
   category: 'power_tools',
+  subcategory: '',
   status: 'available',
   condition: 'good',
   purchase_date: '',
@@ -68,6 +79,10 @@ export default function ToolFormModal({
     if (field === 'assigned_to_email') {
       const member = teamMembers?.find(m => m.email === value);
       setFormData(prev => ({ ...prev, [field]: value, assigned_to_name: member?.name || '' }));
+    }
+    // Reset subcategory when category changes
+    if (field === 'category') {
+      setFormData(prev => ({ ...prev, [field]: value, subcategory: '' }));
     }
   };
 
@@ -187,6 +202,24 @@ export default function ToolFormModal({
               </Select>
             </div>
             <div className="space-y-2">
+              <Label>Subcategory</Label>
+              <Select value={formData.subcategory} onValueChange={(v) => handleChange('subcategory', v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select subcategory" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subcategoryOptions[formData.category]?.map((sub) => (
+                    <SelectItem key={sub} value={sub}>
+                      {sub}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label>Status</Label>
               <Select value={formData.status} onValueChange={(v) => handleChange('status', v)}>
                 <SelectTrigger>
@@ -201,9 +234,7 @@ export default function ToolFormModal({
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Condition</Label>
               <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>

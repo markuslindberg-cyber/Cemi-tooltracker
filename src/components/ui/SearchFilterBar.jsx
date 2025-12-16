@@ -17,12 +17,15 @@ export default function SearchFilterBar({
   onStatusChange,
   categoryFilter,
   onCategoryChange,
+  subcategoryFilter,
+  onSubcategoryChange,
   viewMode,
   onViewModeChange,
   onClearFilters,
   showViewToggle = true,
+  availableSubcategories = [],
 }) {
-  const hasFilters = searchQuery || statusFilter !== 'all' || categoryFilter !== 'all';
+  const hasFilters = searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all';
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -69,6 +72,22 @@ export default function SearchFilterBar({
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
+
+          {availableSubcategories.length > 0 && (
+            <Select value={subcategoryFilter} onValueChange={onSubcategoryChange}>
+              <SelectTrigger className="w-[160px] h-11 border-gray-200">
+                <SelectValue placeholder="Subcategory" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Subcategories</SelectItem>
+                {availableSubcategories.map((sub) => (
+                  <SelectItem key={sub} value={sub}>
+                    {sub}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {hasFilters && (
             <Button

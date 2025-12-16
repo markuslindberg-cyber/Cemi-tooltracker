@@ -62,6 +62,9 @@ export default function ToolCard({ tool, onTransfer, onEdit, onStatusChange, onV
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 truncate">{tool.name}</h3>
+            {tool.subcategory && (
+              <p className="text-xs text-gray-500 mt-0.5">{tool.subcategory}</p>
+            )}
             {tool.model_number && (
               <p className="text-sm text-gray-500 mt-0.5">{tool.model_number}</p>
             )}
