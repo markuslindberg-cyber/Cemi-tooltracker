@@ -91,7 +91,7 @@ export default function Locations() {
   if (loadingLocations) {
     return (
       <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#8B1E1E] animate-spin" />
       </div>
     );
   }
@@ -109,7 +109,7 @@ export default function Locations() {
           </div>
           <Button
             onClick={() => setShowAddLocation(true)}
-            className="bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/25"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
           >
             <Plus className="w-5 h-5 mr-2" />
             Add Location
@@ -146,7 +146,7 @@ export default function Locations() {
             {locations.length === 0 && (
               <Button
                 onClick={() => setShowAddLocation(true)}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add First Location

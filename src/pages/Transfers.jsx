@@ -66,7 +66,7 @@ export default function Transfers() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#8B1E1E] animate-spin" />
       </div>
     );
   }

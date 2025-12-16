@@ -99,7 +99,7 @@ export default function Team() {
   if (loadingMembers) {
     return (
       <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#8B1E1E] animate-spin" />
       </div>
     );
   }
@@ -117,7 +117,7 @@ export default function Team() {
           </div>
           <Button
             onClick={() => setShowAddMember(true)}
-            className="bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/25"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
           >
             <Plus className="w-5 h-5 mr-2" />
             Add Member
@@ -154,7 +154,7 @@ export default function Team() {
             {teamMembers.length === 0 && (
               <Button
                 onClick={() => setShowAddMember(true)}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add First Member
@@ -176,7 +176,7 @@ export default function Team() {
                     <div className="flex items-start justify-between mb-4">
                       <Avatar className="w-14 h-14 border-2 border-gray-100">
                         <AvatarImage src={member.avatar_url} alt={member.name} />
-                        <AvatarFallback className="bg-red-100 text-red-600 font-semibold text-lg">
+                        <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold text-lg">
                           {getInitials(member.name)}
                         </AvatarFallback>
                       </Avatar>
