@@ -99,7 +99,7 @@ export default function Dashboard() {
           </div>
           <Button
             onClick={() => setShowAddTool(true)}
-            className="bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/25"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
           >
             <Plus className="w-5 h-5 mr-2" />
             Add Tool
@@ -133,8 +133,8 @@ export default function Dashboard() {
               title="Missing"
               value={missingTools}
               icon={AlertTriangle}
-              iconClassName="bg-red-50"
-              className="border-red-200 bg-red-50/50"
+              iconClassName="bg-[#8B1E1E]/10"
+              className="border-[#8B1E1E]/20 bg-[#8B1E1E]/5"
             />
           ) : (
             <StatsCard
@@ -148,7 +148,7 @@ export default function Dashboard() {
 
         {/* Missing Tools Alert */}
         {missingTools > 0 && (
-          <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-2xl p-6 text-white shadow-lg shadow-red-600/25">
+          <div className="bg-gradient-to-r from-[#8B1E1E] to-[#6B1515] rounded-2xl p-6 text-white shadow-lg shadow-[#8B1E1E]/25">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 rounded-xl">
@@ -156,11 +156,11 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">{missingTools} Tool{missingTools > 1 ? 's' : ''} Reported Missing</h3>
-                  <p className="text-red-100 text-sm">Review and take action on missing equipment</p>
+                  <p className="text-white/80 text-sm">Review and take action on missing equipment</p>
                 </div>
               </div>
               <Link to={createPageUrl('Inventory') + '?status=missing'}>
-                <Button variant="secondary" className="bg-white text-red-600 hover:bg-red-50">
+                <Button variant="secondary" className="bg-white text-[#8B1E1E] hover:bg-gray-50">
                   View All
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -176,7 +176,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">Recent Tools</h2>
               <Link to={createPageUrl('Inventory')}>
-                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <Button variant="ghost" size="sm" className="text-[#8B1E1E] hover:text-[#6B1515] hover:bg-[#8B1E1E]/10">
                   View All
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -202,7 +202,7 @@ export default function Dashboard() {
                 <p className="text-gray-500 mb-4">Add your first tool to start tracking your inventory</p>
                 <Button
                   onClick={() => setShowAddTool(true)}
-                  className="bg-red-600 hover:bg-red-700"
+                  className="bg-[#8B1E1E] hover:bg-[#6B1515]"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add First Tool
