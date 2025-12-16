@@ -322,7 +322,7 @@ export default function Inventory() {
                                   e.stopPropagation();
                                   handleStatusChange(tool, 'missing');
                                 }}
-                                className="text-red-600"
+                                className="text-[#8B1E1E]"
                               >
                                 <AlertTriangle className="w-4 h-4 mr-2" />
                                 Report Missing

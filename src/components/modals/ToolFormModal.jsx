@@ -121,7 +121,7 @@ export default function ToolFormModal({
                     <img src={formData.image_url} alt="Tool" className="w-full h-full object-cover" />
                     <button
                       onClick={() => handleChange('image_url', '')}
-                      className="absolute top-1 right-1 p-1 bg-red-600 rounded-full text-white hover:bg-red-700"
+                      className="absolute top-1 right-1 p-1 bg-[#8B1E1E] rounded-full text-white hover:bg-[#6B1515]"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -304,7 +304,7 @@ export default function ToolFormModal({
           <Button
             onClick={handleSubmit}
             disabled={!formData.name || !formData.category || isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
           >
             {isLoading ? (
               <>

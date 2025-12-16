@@ -84,7 +84,7 @@ export default function TransferModal({
 
             {/* Current Location */}
             <div className="flex items-center gap-4 text-sm">
-              <div className="flex-1 p-3 bg-red-50 rounded-xl border border-red-100">
+              <div className="flex-1 p-3 bg-[#8B1E1E]/5 rounded-xl border border-[#8B1E1E]/20">
                 <p className="text-xs text-gray-500 mb-1">Current Location</p>
                 <p className="font-medium text-gray-900">{tool.location_name || 'Not assigned'}</p>
                 {tool.assigned_to_name && (
@@ -164,7 +164,7 @@ export default function TransferModal({
           <Button 
             onClick={handleSubmit}
             disabled={!toLocationId || isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
           >
             {isLoading ? (
               <>

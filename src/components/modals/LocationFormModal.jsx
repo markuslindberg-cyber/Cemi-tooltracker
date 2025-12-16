@@ -155,7 +155,7 @@ export default function LocationFormModal({
           <Button
             onClick={handleSubmit}
             disabled={!formData.name || !formData.type || isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
           >
             {isLoading ? (
               <>
