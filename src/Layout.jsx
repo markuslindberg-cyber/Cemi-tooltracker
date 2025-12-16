@@ -65,7 +65,7 @@ export default function Layout({ children, currentPageName }) {
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-600/25">
+              <div className="w-10 h-10 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
                 <Wrench className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">ToolTrack</span>
@@ -90,13 +90,13 @@ export default function Layout({ children, currentPageName }) {
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                     isActive 
-                      ? "bg-red-50 text-red-600" 
+                      ? "bg-[#8B1E1E]/10 text-[#8B1E1E]" 
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >
                   <item.icon className={cn(
                     "w-5 h-5",
-                    isActive ? "text-red-600" : "text-gray-400"
+                    isActive ? "text-[#8B1E1E]" : "text-gray-400"
                   )} />
                   {item.name}
                 </Link>
@@ -111,7 +111,7 @@ export default function Layout({ children, currentPageName }) {
                 <DropdownMenuTrigger asChild>
                   <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition-colors">
                     <Avatar className="w-10 h-10 border-2 border-gray-100">
-                      <AvatarFallback className="bg-red-100 text-red-600 font-semibold">
+                      <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold">
                         {getInitials(user.full_name)}
                       </AvatarFallback>
                     </Avatar>
@@ -127,7 +127,7 @@ export default function Layout({ children, currentPageName }) {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem 
                     onClick={() => base44.auth.logout()}
-                    className="text-red-600"
+                    className="text-[#8B1E1E]"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
@@ -150,7 +150,7 @@ export default function Layout({ children, currentPageName }) {
             <Menu className="w-6 h-6" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
               <Wrench className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-gray-900">ToolTrack</span>
