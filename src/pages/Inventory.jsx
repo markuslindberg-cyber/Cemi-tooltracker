@@ -84,6 +84,21 @@ export default function Inventory() {
     queryFn: () => base44.entities.TeamMember.list(),
   });
 
+  const { data: serviceRecords = [] } = useQuery({
+    queryKey: ['serviceRecords'],
+    queryFn: () => base44.entities.ServiceRecord.list('-service_date', 1000),
+  });
+
+  // Calculate service costs per tool
+  const serviceCostsByTool = useMemo(() => {
+    const costs = {};
+    serviceRecords.forEach(record => {
+      if (!costs[record.tool_id]) costs[record.tool_id] = 0;
+      costs[record.tool_id] += record.cost || 0;
+    });
+    return costs;
+  }, [serviceRecords]);
+
   const filteredTools = useMemo(() => {
     return tools.filter(tool => {
       const matchesSearch = !searchQuery || 
@@ -228,15 +243,19 @@ export default function Inventory() {
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredTools.map((tool) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                onTransfer={setTransferTool}
-                onEdit={setEditTool}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
+            {filteredTools.map((tool) => {
+              const serviceCost = serviceCostsByTool[tool.id] || 0;
+              return (
+                <ToolCard
+                  key={tool.id}
+                  tool={tool}
+                  serviceCost={serviceCost}
+                  onTransfer={setTransferTool}
+                  onEdit={setEditTool}
+                  onStatusChange={handleStatusChange}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -248,13 +267,15 @@ export default function Inventory() {
                   <TableHead className="font-semibold">Status</TableHead>
                   <TableHead className="font-semibold">Location</TableHead>
                   <TableHead className="font-semibold">Assigned To</TableHead>
-                  <TableHead className="font-semibold">Value</TableHead>
+                  <TableHead className="font-semibold">Purchase Price</TableHead>
+                  <TableHead className="font-semibold">Service Costs</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredTools.map((tool) => {
                   const status = statusConfig[tool.status] || statusConfig.available;
+                  const serviceCost = serviceCostsByTool[tool.id] || 0;
                   return (
                     <TableRow 
                       key={tool.id} 
@@ -311,6 +332,13 @@ export default function Inventory() {
                       </TableCell>
                       <TableCell className="font-medium text-gray-900">
                         {tool.purchase_price ? `$${tool.purchase_price.toLocaleString()}` : '—'}
+                      </TableCell>
+                      <TableCell className="font-medium text-gray-900">
+                        {serviceCost > 0 ? (
+                          <span className="text-[#8B1E1E]">${serviceCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        ) : (
+                          '—'
+                        )}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

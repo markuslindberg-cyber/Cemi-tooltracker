@@ -29,7 +29,7 @@ const categoryIcons = {
   other: "📦",
 };
 
-export default function ToolCard({ tool, onTransfer, onEdit, onStatusChange, onViewHistory }) {
+export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, onStatusChange, onViewHistory }) {
   const status = statusConfig[tool.status] || statusConfig.available;
 
   return (
@@ -122,9 +122,27 @@ export default function ToolCard({ tool, onTransfer, onEdit, onStatusChange, onV
               <span className="truncate">{tool.assigned_to_name}</span>
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Quick Action */}
+          {/* Cost Summary */}
+          {(tool.purchase_price || serviceCost > 0) && (
+          <div className="mt-3 pt-3 border-t border-gray-100 space-y-1 text-sm">
+            {tool.purchase_price && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Purchase:</span>
+                <span className="font-medium text-gray-900">${tool.purchase_price.toLocaleString()}</span>
+              </div>
+            )}
+            {serviceCost > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Service Costs:</span>
+                <span className="font-medium text-[#8B1E1E]">${serviceCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            )}
+          </div>
+          )}
+
+          {/* Quick Action */}
         <Button 
           variant="outline" 
           size="sm" 
