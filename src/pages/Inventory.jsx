@@ -25,6 +25,8 @@ import {
   AlertTriangle,
   Loader2,
   Package,
+  Download,
+  Upload,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -68,6 +70,7 @@ export default function Inventory() {
   const [transferTool, setTransferTool] = useState(null);
   const [editTool, setEditTool] = useState(null);
   const [showAddTool, setShowAddTool] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
@@ -168,6 +171,116 @@ export default function Inventory() {
     setSubcategoryFilter('all');
   };
 
+  const handleExportToExcel = () => {
+    // Create CSV content
+    const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Service Costs', 'Location', 'Assigned To', 'Notes'];
+    const rows = tools.map(tool => {
+      const serviceCost = serviceCostsByTool[tool.id] || 0;
+      return [
+        tool.name || '',
+        tool.model_number || '',
+        tool.category || '',
+        tool.subcategory || '',
+        tool.status || '',
+        tool.condition || '',
+        tool.barcode || '',
+        tool.purchase_date || '',
+        tool.purchase_price || '',
+        serviceCost,
+        tool.location_name || '',
+        tool.assigned_to_name || '',
+        tool.notes || '',
+      ];
+    });
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `inventory_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportFromExcel = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      // Upload file
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+
+      // Extract data from file
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: {
+          type: "object",
+          properties: {
+            tools: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  model_number: { type: "string" },
+                  category: { type: "string" },
+                  subcategory: { type: "string" },
+                  status: { type: "string" },
+                  condition: { type: "string" },
+                  barcode: { type: "string" },
+                  purchase_date: { type: "string" },
+                  purchase_price: { type: "number" },
+                  location_name: { type: "string" },
+                  assigned_to_name: { type: "string" },
+                  notes: { type: "string" },
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (result.status === 'success' && result.output?.tools) {
+        // Create tools in bulk
+        const toolsToCreate = result.output.tools.map(tool => ({
+          name: tool.name,
+          model_number: tool.model_number || '',
+          category: tool.category || 'other',
+          subcategory: tool.subcategory || '',
+          status: tool.status || 'available',
+          condition: tool.condition || 'good',
+          barcode: tool.barcode || '',
+          purchase_date: tool.purchase_date || '',
+          purchase_price: tool.purchase_price || null,
+          location_name: tool.location_name || '',
+          assigned_to_name: tool.assigned_to_name || '',
+          notes: tool.notes || '',
+        }));
+
+        await base44.entities.Tool.bulkCreate(toolsToCreate);
+        queryClient.invalidateQueries(['tools']);
+        alert(`Successfully imported ${toolsToCreate.length} tools!`);
+      } else {
+        alert('Failed to extract data from file. Please check the file format.');
+      }
+    } catch (error) {
+      console.error('Import failed:', error);
+      alert('Import failed. Please ensure the file is in the correct format.');
+    } finally {
+      setImporting(false);
+      e.target.value = '';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
@@ -188,13 +301,51 @@ export default function Inventory() {
               {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || searchQuery) && ' matching filters'}
             </p>
           </div>
-          <Button
-            onClick={() => setShowAddTool(true)}
-            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Add Tool
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={handleExportToExcel}
+              variant="outline"
+              disabled={tools.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <label>
+              <Button
+                variant="outline"
+                disabled={importing}
+                asChild
+              >
+                <span>
+                  {importing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Import
+                    </>
+                  )}
+                </span>
+              </Button>
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={handleImportFromExcel}
+                className="hidden"
+                disabled={importing}
+              />
+            </label>
+            <Button
+              onClick={() => setShowAddTool(true)}
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Tool
+            </Button>
+          </div>
         </div>
 
         {/* Search & Filters */}
