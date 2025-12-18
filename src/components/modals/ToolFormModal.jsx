@@ -17,8 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Upload, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Upload, X, Wrench } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import ServiceHistoryPanel from '@/components/ServiceHistoryPanel';
+import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
 
 const subcategoryOptions = {
   power_tools: ['Drills', 'Saws', 'Grinders', 'Sanders', 'Impact Drivers', 'Rotary Hammers', 'Other'],
@@ -57,8 +61,24 @@ export default function ToolFormModal({
   onSubmit,
   isLoading,
 }) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState(defaultTool);
   const [uploading, setUploading] = useState(false);
+  const [showServiceModal, setShowServiceModal] = useState(false);
+
+  const { data: serviceRecords = [] } = useQuery({
+    queryKey: ['serviceRecords', tool?.id],
+    queryFn: () => tool?.id ? base44.entities.ServiceRecord.filter({ tool_id: tool.id }, '-service_date') : Promise.resolve([]),
+    enabled: !!tool?.id && isOpen,
+  });
+
+  const createServiceRecordMutation = useMutation({
+    mutationFn: (data) => base44.entities.ServiceRecord.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['serviceRecords']);
+      setShowServiceModal(false);
+    },
+  });
 
   useEffect(() => {
     if (tool) {
@@ -117,15 +137,22 @@ export default function ToolFormModal({
   const isEditing = !!tool?.id;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {isEditing ? 'Edit Tool' : 'Add New Tool'}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {isEditing ? 'Edit Tool' : 'Add New Tool'}
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-6 py-4">
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Tool Details</TabsTrigger>
+              {isEditing && <TabsTrigger value="service">Service History</TabsTrigger>}
+            </TabsList>
+
+            <TabsContent value="details" className="space-y-6 py-4">
           {/* Image Upload */}
           <div className="space-y-2">
             <Label>Tool Image</Label>
@@ -325,29 +352,55 @@ export default function ToolFormModal({
               placeholder="Add any additional notes..."
               rows={3}
             />
-          </div>
-        </div>
+              </div>
+            </TabsContent>
 
-        <DialogFooter className="gap-3">
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!formData.name || !formData.category || isLoading}
-            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              isEditing ? 'Save Changes' : 'Add Tool'
+            {isEditing && (
+              <TabsContent value="service" className="space-y-4 py-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Service & Repair History</h3>
+                  <Button
+                    onClick={() => setShowServiceModal(true)}
+                    size="sm"
+                    className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+                  >
+                    <Wrench className="w-4 h-4 mr-2" />
+                    Add Service Record
+                  </Button>
+                </div>
+                <ServiceHistoryPanel serviceRecords={serviceRecords} />
+              </TabsContent>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </Tabs>
+
+          <DialogFooter className="gap-3">
+            <Button variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!formData.name || !formData.category || isLoading}
+              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                isEditing ? 'Save Changes' : 'Add Tool'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ServiceRecordModal
+        isOpen={showServiceModal}
+        onClose={() => setShowServiceModal(false)}
+        tool={tool}
+        onSubmit={(data) => createServiceRecordMutation.mutate(data)}
+      />
+    </>
   );
 }

@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
   { name: 'Inventory', page: 'Inventory', icon: Package },
+  { name: 'Inventory Check', page: 'InventoryCheck', icon: Wrench },
   { name: 'Locations', page: 'Locations', icon: MapPin },
   { name: 'Team', page: 'Team', icon: Users },
   { name: 'Transfers', page: 'Transfers', icon: ArrowRightLeft },
