@@ -26,12 +26,15 @@ import {
   MapPin,
   User,
   ArrowRightLeft,
+  Calendar,
+  AlertCircle,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 
 export default function Transfers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   const { data: transfers = [], isLoading } = useQuery({
     queryKey: ['transfers'],
@@ -60,7 +63,9 @@ export default function Transfers() {
       }
     }
 
-    return matchesSearch && matchesDate;
+    const matchesStatus = statusFilter === 'all' || transfer.status === statusFilter;
+
+    return matchesSearch && matchesDate && matchesStatus;
   });
 
   if (isLoading) {
@@ -105,6 +110,17 @@ export default function Transfers() {
                 <SelectItem value="month">This Month</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[160px] h-11">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="returned">Returned</SelectItem>
+                <SelectItem value="overdue">Overdue</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -133,11 +149,21 @@ export default function Transfers() {
                   <TableHead className="font-semibold">From</TableHead>
                   <TableHead className="font-semibold">To</TableHead>
                   <TableHead className="font-semibold">Assigned To</TableHead>
+                  <TableHead className="font-semibold">Return Date</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
                   <TableHead className="font-semibold">Notes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransfers.map((transfer) => (
+                {filteredTransfers.map((transfer) => {
+                  const isOverdue = transfer.expected_return_date && 
+                    transfer.status === 'active' && 
+                    new Date(transfer.expected_return_date) < new Date();
+                  const daysUntilReturn = transfer.expected_return_date && transfer.status === 'active' 
+                    ? differenceInDays(new Date(transfer.expected_return_date), new Date()) 
+                    : null;
+                  
+                  return (
                   <TableRow key={transfer.id} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -180,12 +206,43 @@ export default function Transfers() {
                       )}
                     </TableCell>
                     <TableCell>
+                      {transfer.expected_return_date ? (
+                        <div>
+                          <p className={`font-medium ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+                            {format(new Date(transfer.expected_return_date), 'MMM d, yyyy')}
+                          </p>
+                          {transfer.status === 'active' && daysUntilReturn !== null && (
+                            <p className={`text-xs ${isOverdue ? 'text-red-600' : daysUntilReturn <= 3 ? 'text-amber-600' : 'text-gray-500'}`}>
+                              {isOverdue ? `${Math.abs(daysUntilReturn)} days overdue` : `${daysUntilReturn} days left`}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {transfer.status === 'returned' ? (
+                        <Badge className="bg-gray-100 text-gray-700 border-0">Returned</Badge>
+                      ) : isOverdue ? (
+                        <Badge className="bg-red-100 text-red-700 border-0 flex items-center gap-1 w-fit">
+                          <AlertCircle className="w-3 h-3" />
+                          Overdue
+                        </Badge>
+                      ) : transfer.status === 'active' ? (
+                        <Badge className="bg-blue-100 text-blue-700 border-0">Active</Badge>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <p className="text-sm text-gray-500 max-w-xs truncate">
                         {transfer.notes || '—'}
                       </p>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

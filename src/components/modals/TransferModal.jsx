@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowRight, MapPin, User, Loader2 } from "lucide-react";
+import { ArrowRight, MapPin, User, Loader2, Calendar } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function TransferModal({
   isOpen,
@@ -30,6 +31,7 @@ export default function TransferModal({
   const [toLocationId, setToLocationId] = useState('');
   const [toPersonEmail, setToPersonEmail] = useState('');
   const [notes, setNotes] = useState('');
+  const [expectedReturnDate, setExpectedReturnDate] = useState('');
 
   const selectedLocation = locations?.find(l => l.id === toLocationId);
   const selectedPerson = teamMembers?.find(m => m.email === toPersonEmail);
@@ -47,6 +49,8 @@ export default function TransferModal({
       to_person_email: toPersonEmail,
       to_person_name: selectedPerson?.name || '',
       transfer_date: new Date().toISOString(),
+      expected_return_date: expectedReturnDate || null,
+      status: 'active',
       notes,
     });
   };
@@ -55,6 +59,7 @@ export default function TransferModal({
     setToLocationId('');
     setToPersonEmail('');
     setNotes('');
+    setExpectedReturnDate('');
     onClose();
   };
 
@@ -142,6 +147,20 @@ export default function TransferModal({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  Expected Return Date (Optional)
+                </Label>
+                <Input
+                  type="date"
+                  value={expectedReturnDate}
+                  onChange={(e) => setExpectedReturnDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                <p className="text-xs text-gray-500">Set when the tool should be returned</p>
               </div>
 
               <div className="space-y-2">
