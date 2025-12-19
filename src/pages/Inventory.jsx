@@ -27,6 +27,7 @@ import {
   Package,
   Download,
   Upload,
+  FileSpreadsheet,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -171,6 +172,47 @@ export default function Inventory() {
     setSubcategoryFilter('all');
   };
 
+  const handleDownloadTemplate = () => {
+    const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Location', 'Assigned To', 'Notes'];
+    const exampleRow = [
+      'Dewalt Impact Driver',
+      'DCF887B',
+      'power_tools',
+      'Impact Drivers',
+      'available',
+      'good',
+      'TOOL-001',
+      '2024-01-15',
+      '299.99',
+      'Main Warehouse',
+      'John Doe',
+      'Purchased for new project'
+    ];
+    
+    const instructions = [
+      '# Instructions: Fill in the data below. Categories: power_tools, hand_tools, measuring, safety, accessories, heavy_equipment, other',
+      '# Status options: available, in_use, maintenance, missing, retired',
+      '# Condition options: new, good, fair, poor',
+      '# Date format: YYYY-MM-DD',
+    ];
+
+    const csvContent = [
+      ...instructions,
+      headers.join(','),
+      exampleRow.map(cell => `"${cell}"`).join(',')
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'tool_import_template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleExportToExcel = () => {
     // Create CSV content
     const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Service Costs', 'Location', 'Assigned To', 'Notes'];
@@ -303,12 +345,19 @@ export default function Inventory() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
+              onClick={handleDownloadTemplate}
+              variant="outline"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Download Template
+            </Button>
+            <Button
               onClick={handleExportToExcel}
               variant="outline"
               disabled={tools.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
-              Export
+              Export Data
             </Button>
             <label>
               <Button
