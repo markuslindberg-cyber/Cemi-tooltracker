@@ -68,6 +68,7 @@ export default function Inventory() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
+  const [sortBy, setSortBy] = useState('updated');
   const [transferTool, setTransferTool] = useState(null);
   const [editTool, setEditTool] = useState(null);
   const [showAddTool, setShowAddTool] = useState(false);
@@ -104,7 +105,7 @@ export default function Inventory() {
   }, [serviceRecords]);
 
   const filteredTools = useMemo(() => {
-    return tools.filter(tool => {
+    const filtered = tools.filter(tool => {
       const matchesSearch = !searchQuery || 
         tool.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tool.model_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -117,7 +118,24 @@ export default function Inventory() {
       
       return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory;
     });
-  }, [tools, searchQuery, statusFilter, categoryFilter, subcategoryFilter]);
+
+    // Sort the filtered tools
+    return filtered.sort((a, b) => {
+      if (sortBy === 'last_checked') {
+        const aDate = a.last_seen_date ? new Date(a.last_seen_date).getTime() : 0;
+        const bDate = b.last_seen_date ? new Date(b.last_seen_date).getTime() : 0;
+        return bDate - aDate; // Most recent first
+      } else if (sortBy === 'name') {
+        return (a.name || '').localeCompare(b.name || '');
+      } else if (sortBy === 'category') {
+        return (a.category || '').localeCompare(b.category || '');
+      } else { // 'updated'
+        const aDate = new Date(a.updated_date).getTime();
+        const bDate = new Date(b.updated_date).getTime();
+        return bDate - aDate;
+      }
+    });
+  }, [tools, searchQuery, statusFilter, categoryFilter, subcategoryFilter, sortBy]);
 
   const availableSubcategories = useMemo(() => {
     if (categoryFilter === 'all') {
@@ -438,20 +456,36 @@ export default function Inventory() {
         </div>
 
         {/* Search & Filters */}
-        <SearchFilterBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          categoryFilter={categoryFilter}
-          onCategoryChange={setCategoryFilter}
-          subcategoryFilter={subcategoryFilter}
-          onSubcategoryChange={setSubcategoryFilter}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          onClearFilters={clearFilters}
-          availableSubcategories={availableSubcategories}
-        />
+        <div className="space-y-4">
+          <SearchFilterBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            categoryFilter={categoryFilter}
+            onCategoryChange={setCategoryFilter}
+            subcategoryFilter={subcategoryFilter}
+            onSubcategoryChange={setSubcategoryFilter}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            onClearFilters={clearFilters}
+            availableSubcategories={availableSubcategories}
+          />
+
+          <div className="flex justify-end">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="updated">Recently Updated</SelectItem>
+                <SelectItem value="last_checked">Last Checked</SelectItem>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+                <SelectItem value="category">Category</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         {/* Content */}
         {filteredTools.length === 0 ? (
