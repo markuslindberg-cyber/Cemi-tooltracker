@@ -65,6 +65,13 @@ export default function ToolFormModal({
   const [formData, setFormData] = useState(defaultTool);
   const [uploading, setUploading] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
+  const [templateToolId, setTemplateToolId] = useState('');
+
+  const { data: allTools = [] } = useQuery({
+    queryKey: ['tools'],
+    queryFn: () => base44.entities.Tool.list('-updated_date', 100),
+    enabled: isOpen && !tool,
+  });
 
   const { data: serviceRecords = [] } = useQuery({
     queryKey: ['serviceRecords', tool?.id],
@@ -85,8 +92,28 @@ export default function ToolFormModal({
       setFormData({ ...defaultTool, ...tool });
     } else {
       setFormData(defaultTool);
+      setTemplateToolId('');
     }
   }, [tool, isOpen]);
+
+  const handleTemplateSelect = (toolId) => {
+    setTemplateToolId(toolId);
+    if (toolId) {
+      const templateTool = allTools.find(t => t.id === toolId);
+      if (templateTool) {
+        setFormData({
+          ...defaultTool,
+          category: templateTool.category,
+          subcategory: templateTool.subcategory,
+          condition: templateTool.condition,
+          location_id: templateTool.location_id,
+          location_name: templateTool.location_name,
+        });
+      }
+    } else {
+      setFormData(defaultTool);
+    }
+  };
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -131,6 +158,7 @@ export default function ToolFormModal({
 
   const handleClose = () => {
     setFormData(defaultTool);
+    setTemplateToolId('');
     onClose();
   };
 
@@ -153,6 +181,29 @@ export default function ToolFormModal({
             </TabsList>
 
             <TabsContent value="details" className="space-y-6 py-4">
+          {/* Template Selection - only show when adding new tool */}
+          {!isEditing && (
+            <div className="space-y-2 pb-4 border-b border-gray-200">
+              <Label>Start from Template (Optional)</Label>
+              <Select value={templateToolId} onValueChange={handleTemplateSelect}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Start from scratch or select existing tool as template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>Start from scratch</SelectItem>
+                  {allTools?.slice(0, 20).map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name} {t.model_number ? `- ${t.model_number}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {templateToolId && (
+                <p className="text-xs text-gray-500">Category, subcategory, condition, and location copied from template</p>
+              )}
+            </div>
+          )}
+
           {/* Image Upload */}
           <div className="space-y-2">
             <Label>Tool Image</Label>
