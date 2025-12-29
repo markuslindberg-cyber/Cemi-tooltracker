@@ -18,8 +18,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Upload, X, Wrench } from "lucide-react";
+import { Loader2, Upload, X, Wrench, Check, ChevronsUpDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ServiceHistoryPanel from '@/components/ServiceHistoryPanel';
 import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
@@ -66,6 +69,7 @@ export default function ToolFormModal({
   const [uploading, setUploading] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [templateToolId, setTemplateToolId] = useState('');
+  const [templateOpen, setTemplateOpen] = useState(false);
 
   const { data: allTools = [] } = useQuery({
     queryKey: ['tools'],
@@ -98,6 +102,7 @@ export default function ToolFormModal({
 
   const handleTemplateSelect = (toolId) => {
     setTemplateToolId(toolId);
+    setTemplateOpen(false);
     if (toolId) {
       const templateTool = allTools.find(t => t.id === toolId);
       if (templateTool) {
