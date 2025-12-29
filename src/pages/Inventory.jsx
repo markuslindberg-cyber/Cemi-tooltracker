@@ -200,71 +200,39 @@ export default function Inventory() {
   const handleDownloadTemplate = () => {
     const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Location', 'Assigned To', 'Notes'];
     
-    const exampleRows = [
-      [
-        'Dewalt Impact Driver',
-        'DCF887B',
-        'power_tools',
-        'Impact Drivers',
-        'available',
-        'good',
-        'TOOL-001',
-        '2024-01-15',
-        '299.99',
-        'Main Warehouse',
-        'John Doe',
-        'Purchased for new project'
-      ],
-      [
-        'Milwaukee Hammer Drill',
-        '2804-20',
-        'power_tools',
-        'Drills',
-        'in_use',
-        'good',
-        'TOOL-002',
-        '2023-11-20',
-        '179.00',
-        'Job Site A',
-        'Jane Smith',
-        'Assigned to job site'
-      ],
-      [
-        'Stanley Tape Measure',
-        '33-725',
-        'measuring',
-        'Tape Measures',
-        'available',
-        'new',
-        'TOOL-003',
-        '2024-03-01',
-        '24.99',
-        'Main Warehouse',
-        '',
-        ''
-      ]
+    const exampleRow = [
+      'Dewalt Impact Driver',
+      'DCF887B',
+      'power_tools',
+      'Impact Drivers',
+      'available',
+      'good',
+      'TOOL-001',
+      '2024-01-15',
+      '299.99',
+      'Main Warehouse',
+      'John Doe',
+      'Purchased for new project'
     ];
     
+    // Add 5 empty rows for easy filling
+    const emptyRows = Array(5).fill(Array(12).fill(''));
+    
     const instructions = [
-      '# TOOL IMPORT TEMPLATE - Fill in each column with your tool information',
-      '# ',
-      '# INSTRUCTIONS:',
-      '# - Each row represents one tool',
-      '# - Fill in all required columns (Name and Category are required)',
-      '# - Delete the example rows below and add your own tools',
-      '# ',
-      '# COLUMN GUIDE:',
-      '# Category options: power_tools | hand_tools | measuring | safety | accessories | heavy_equipment | other',
-      '# Status options: available | in_use | maintenance | missing | retired',
-      '# Condition options: new | good | fair | poor',
-      '# Purchase Date format: YYYY-MM-DD (e.g. 2024-01-15)',
-      '# ',
+      '# REQUIRED: Name, Category',
+      '# Category: power_tools, hand_tools, measuring, safety, accessories, heavy_equipment, other',
+      '# Status: available, in_use, maintenance, missing, retired',
+      '# Condition: new, good, fair, poor',
+      '# Date format: YYYY-MM-DD',
+      '# Delete example row and fill in your tools below',
+      '',
     ];
 
     const csvContent = [
       ...instructions,
       headers.join(','),
-      ...exampleRows.map(row => row.map(cell => `"${cell}"`).join(','))
+      exampleRow.map(cell => `"${cell}"`).join(','),
+      ...emptyRows.map(row => row.join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
