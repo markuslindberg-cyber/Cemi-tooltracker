@@ -190,19 +190,59 @@ export default function ToolFormModal({
           {!isEditing && (
             <div className="space-y-2 pb-4 border-b border-gray-200">
               <Label>Start from Template (Optional)</Label>
-              <Select value={templateToolId} onValueChange={handleTemplateSelect}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Start from scratch or select existing tool as template" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>Start from scratch</SelectItem>
-                  {allTools?.slice(0, 20).map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name} {t.model_number ? `- ${t.model_number}` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={templateOpen} onOpenChange={setTemplateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={templateOpen}
+                    className="w-full justify-between"
+                  >
+                    {templateToolId
+                      ? allTools?.find((t) => t.id === templateToolId)?.name + 
+                        (allTools?.find((t) => t.id === templateToolId)?.model_number 
+                          ? ` - ${allTools?.find((t) => t.id === templateToolId)?.model_number}` 
+                          : '')
+                      : "Start from scratch or search existing tool..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search tools..." />
+                    <CommandEmpty>No tool found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-auto">
+                      <CommandItem
+                        value="scratch"
+                        onSelect={() => handleTemplateSelect('')}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            templateToolId === '' ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        Start from scratch
+                      </CommandItem>
+                      {allTools?.map((t) => (
+                        <CommandItem
+                          key={t.id}
+                          value={`${t.name} ${t.model_number || ''}`}
+                          onSelect={() => handleTemplateSelect(t.id)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              templateToolId === t.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {t.name} {t.model_number ? `- ${t.model_number}` : ''}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               {templateToolId && (
                 <p className="text-xs text-gray-500">Category, subcategory, condition, and location copied from template</p>
               )}
