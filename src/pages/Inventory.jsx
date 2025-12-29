@@ -200,6 +200,21 @@ export default function Inventory() {
   const handleDownloadTemplate = () => {
     const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Location', 'Assigned To', 'Notes'];
     
+    const helperRow = [
+      'REQUIRED',
+      'optional',
+      'REQUIRED - see below',
+      'optional',
+      'optional - see below',
+      'optional - see below',
+      'optional',
+      'YYYY-MM-DD',
+      'numbers only',
+      'optional',
+      'optional',
+      'optional'
+    ];
+    
     const exampleRow = [
       'Dewalt Impact Driver',
       'DCF887B',
@@ -215,22 +230,20 @@ export default function Inventory() {
       'Purchased for new project'
     ];
     
-    // Add 5 empty rows for easy filling
-    const emptyRows = Array(5).fill(Array(12).fill(''));
+    // Add 10 empty rows for easy filling
+    const emptyRows = Array(10).fill(Array(12).fill(''));
     
     const instructions = [
-      '# REQUIRED: Name, Category',
-      '# Category: power_tools, hand_tools, measuring, safety, accessories, heavy_equipment, other',
-      '# Status: available, in_use, maintenance, missing, retired',
-      '# Condition: new, good, fair, poor',
-      '# Date format: YYYY-MM-DD',
-      '# Delete example row and fill in your tools below',
+      '# CATEGORY OPTIONS: power_tools, hand_tools, measuring, safety, accessories, heavy_equipment, other',
+      '# STATUS OPTIONS: available, in_use, maintenance, missing, retired',
+      '# CONDITION OPTIONS: new, good, fair, poor',
       '',
     ];
 
     const csvContent = [
       ...instructions,
       headers.join(','),
+      helperRow.map(cell => `"${cell}"`).join(','),
       exampleRow.map(cell => `"${cell}"`).join(','),
       ...emptyRows.map(row => row.join(','))
     ].join('\n');
