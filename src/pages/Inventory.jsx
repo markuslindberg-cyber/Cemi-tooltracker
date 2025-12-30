@@ -199,61 +199,12 @@ export default function Inventory() {
 
   const handleDownloadTemplate = () => {
     const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Location', 'Assigned To', 'Notes'];
-    
-    const helperRow = [
-      'REQUIRED',
-      'optional',
-      'REQUIRED',
-      'optional',
-      'optional',
-      'optional',
-      'optional',
-      'YYYY-MM-DD',
-      'numbers only',
-      'optional',
-      'optional',
-      'optional'
-    ];
-    
-    const optionsRow = [
-      '',
-      '',
-      'power_tools, hand_tools, measuring, safety, accessories, heavy_equipment, other',
-      'Depends on category',
-      'available, in_use, maintenance, missing, retired',
-      'new, good, fair, poor',
-      '',
-      'Format: 2024-01-15',
-      'Example: 299.99',
-      'Location name',
-      'Person name',
-      'Any notes'
-    ];
-    
-    const exampleRow = [
-      'Dewalt Impact Driver',
-      'DCF887B',
-      'power_tools',
-      'Impact Drivers',
-      'available',
-      'good',
-      'TOOL-001',
-      '2024-01-15',
-      '299.99',
-      'Main Warehouse',
-      'John Doe',
-      'Purchased for new project'
-    ];
-    
-    // Add 10 empty rows for easy filling
-    const emptyRows = Array(10).fill(Array(12).fill(''));
+
+    // Add 20 empty rows for data entry
+    const emptyRows = Array(20).fill(Array(12).fill(''));
 
     const csvContent = [
       headers.map(cell => `"${cell}"`).join(','),
-      helperRow.map(cell => `"${cell}"`).join(','),
-      optionsRow.map(cell => `"${cell}"`).join(','),
-      exampleRow.map(cell => `"${cell}"`).join(','),
-      '',
       ...emptyRows.map(row => row.join(','))
     ].join('\n');
 
