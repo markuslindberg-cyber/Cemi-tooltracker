@@ -203,16 +203,31 @@ export default function Inventory() {
     const helperRow = [
       'REQUIRED',
       'optional',
-      'REQUIRED - see below',
+      'REQUIRED',
       'optional',
-      'optional - see below',
-      'optional - see below',
+      'optional',
+      'optional',
       'optional',
       'YYYY-MM-DD',
       'numbers only',
       'optional',
       'optional',
       'optional'
+    ];
+    
+    const optionsRow = [
+      '',
+      '',
+      'power_tools, hand_tools, measuring, safety, accessories, heavy_equipment, other',
+      'Depends on category',
+      'available, in_use, maintenance, missing, retired',
+      'new, good, fair, poor',
+      '',
+      'Format: 2024-01-15',
+      'Example: 299.99',
+      'Location name',
+      'Person name',
+      'Any notes'
     ];
     
     const exampleRow = [
@@ -232,19 +247,13 @@ export default function Inventory() {
     
     // Add 10 empty rows for easy filling
     const emptyRows = Array(10).fill(Array(12).fill(''));
-    
-    const categoryOptionsRow = ['# CATEGORY OPTIONS:', 'power_tools', 'hand_tools', 'measuring', 'safety', 'accessories', 'heavy_equipment', 'other', '', '', '', ''];
-    const statusOptionsRow = ['# STATUS OPTIONS:', 'available', 'in_use', 'maintenance', 'missing', 'retired', '', '', '', '', '', ''];
-    const conditionOptionsRow = ['# CONDITION OPTIONS:', 'new', 'good', 'fair', 'poor', '', '', '', '', '', '', ''];
 
     const csvContent = [
-      categoryOptionsRow.join(','),
-      statusOptionsRow.join(','),
-      conditionOptionsRow.join(','),
-      '',
       headers.join(','),
       helperRow.map(cell => `"${cell}"`).join(','),
+      optionsRow.map(cell => `"${cell}"`).join(','),
       exampleRow.map(cell => `"${cell}"`).join(','),
+      '',
       ...emptyRows.map(row => row.join(','))
     ].join('\n');
 
