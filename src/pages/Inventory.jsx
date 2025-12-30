@@ -233,15 +233,15 @@ export default function Inventory() {
     // Add 10 empty rows for easy filling
     const emptyRows = Array(10).fill(Array(12).fill(''));
     
-    const instructions = [
-      '# CATEGORY OPTIONS: power_tools, hand_tools, measuring, safety, accessories, heavy_equipment, other',
-      '# STATUS OPTIONS: available, in_use, maintenance, missing, retired',
-      '# CONDITION OPTIONS: new, good, fair, poor',
-      '',
-    ];
+    const categoryOptionsRow = ['# CATEGORY OPTIONS:', 'power_tools', 'hand_tools', 'measuring', 'safety', 'accessories', 'heavy_equipment', 'other', '', '', '', ''];
+    const statusOptionsRow = ['# STATUS OPTIONS:', 'available', 'in_use', 'maintenance', 'missing', 'retired', '', '', '', '', '', ''];
+    const conditionOptionsRow = ['# CONDITION OPTIONS:', 'new', 'good', 'fair', 'poor', '', '', '', '', '', '', ''];
 
     const csvContent = [
-      ...instructions,
+      categoryOptionsRow.join(','),
+      statusOptionsRow.join(','),
+      conditionOptionsRow.join(','),
+      '',
       headers.join(','),
       helperRow.map(cell => `"${cell}"`).join(','),
       exampleRow.map(cell => `"${cell}"`).join(','),
