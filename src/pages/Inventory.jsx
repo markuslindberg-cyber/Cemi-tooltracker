@@ -198,10 +198,10 @@ export default function Inventory() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Location', 'Assigned To', 'Notes'];
+    const headers = ['Name', 'Manufacturer', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Location', 'Assigned To', 'Notes'];
 
     // Add 20 empty rows for data entry
-    const emptyRows = Array(20).fill(Array(12).fill(''));
+    const emptyRows = Array(20).fill(Array(13).fill(''));
 
     const csvContent = [
       headers.map(cell => `"${cell}"`).join(','),
@@ -221,11 +221,12 @@ export default function Inventory() {
 
   const handleExportToExcel = () => {
     // Create CSV content
-    const headers = ['Name', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Service Costs', 'Location', 'Assigned To', 'Notes'];
+    const headers = ['Name', 'Manufacturer', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Service Costs', 'Location', 'Assigned To', 'Notes'];
     const rows = tools.map(tool => {
       const serviceCost = serviceCostsByTool[tool.id] || 0;
       return [
         tool.name || '',
+        tool.manufacturer || '',
         tool.model_number || '',
         tool.category || '',
         tool.subcategory || '',
@@ -279,6 +280,7 @@ export default function Inventory() {
                 type: "object",
                 properties: {
                   name: { type: "string" },
+                  manufacturer: { type: "string" },
                   model_number: { type: "string" },
                   category: { type: "string" },
                   subcategory: { type: "string" },
@@ -301,6 +303,7 @@ export default function Inventory() {
         // Create tools in bulk
         const toolsToCreate = result.output.tools.map(tool => ({
           name: tool.name,
+          manufacturer: tool.manufacturer || '',
           model_number: tool.model_number || '',
           category: tool.category || 'other',
           subcategory: tool.subcategory || '',

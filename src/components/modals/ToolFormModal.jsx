@@ -39,6 +39,7 @@ const subcategoryOptions = {
 
 const defaultTool = {
   name: '',
+  manufacturer: '',
   model_number: '',
   category: 'power_tools',
   subcategory: '',
@@ -296,6 +297,17 @@ export default function ToolFormModal({
                 placeholder="e.g., Impact Driver"
               />
             </div>
+            <div className="space-y-2">
+              <Label>Manufacturer</Label>
+              <Input
+                value={formData.manufacturer}
+                onChange={(e) => handleChange('manufacturer', e.target.value)}
+                placeholder="e.g., DeWalt, Milwaukee, Makita"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Model / Serial Number</Label>
               <Input
