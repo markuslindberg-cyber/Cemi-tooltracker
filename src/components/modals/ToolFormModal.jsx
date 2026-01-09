@@ -47,6 +47,7 @@ const defaultTool = {
   condition: 'good',
   purchase_date: '',
   purchase_price: '',
+  purchase_location: '',
   location_id: '',
   location_name: '',
   assigned_to_email: '',
@@ -413,6 +414,15 @@ export default function ToolFormModal({
                 placeholder="0.00"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Purchased From</Label>
+            <Input
+              value={formData.purchase_location}
+              onChange={(e) => handleChange('purchase_location', e.target.value)}
+              placeholder="e.g., Home Depot, Amazon, Local Hardware Store"
+            />
           </div>
 
           {/* Assignment */}
