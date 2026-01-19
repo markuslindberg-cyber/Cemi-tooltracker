@@ -198,10 +198,10 @@ export default function Inventory() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = ['Name', 'Manufacturer', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Purchased From', 'Location', 'Assigned To', 'Notes'];
+    const headers = ['Name', 'Manufacturer', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Purchased From', 'Invoice Number', 'Location', 'Assigned To', 'Notes'];
 
     // Add 20 empty rows for data entry
-    const emptyRows = Array(20).fill(Array(14).fill(''));
+    const emptyRows = Array(20).fill(Array(15).fill(''));
 
     const csvContent = [
       headers.map(cell => `"${cell}"`).join(','),
@@ -221,7 +221,7 @@ export default function Inventory() {
 
   const handleExportToExcel = () => {
     // Create CSV content
-    const headers = ['Name', 'Manufacturer', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Purchased From', 'Service Costs', 'Location', 'Assigned To', 'Notes'];
+    const headers = ['Name', 'Manufacturer', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Purchased From', 'Invoice Number', 'Service Costs', 'Location', 'Assigned To', 'Notes'];
     const rows = tools.map(tool => {
       const serviceCost = serviceCostsByTool[tool.id] || 0;
       return [
@@ -236,6 +236,7 @@ export default function Inventory() {
         tool.purchase_date || '',
         tool.purchase_price || '',
         tool.purchase_location || '',
+        tool.invoice_number || '',
         serviceCost,
         tool.location_name || '',
         tool.assigned_to_name || '',
@@ -291,6 +292,7 @@ export default function Inventory() {
                   purchase_date: { type: "string" },
                   purchase_price: { type: "number" },
                   purchase_location: { type: "string" },
+                  invoice_number: { type: "string" },
                   location_name: { type: "string" },
                   assigned_to_name: { type: "string" },
                   notes: { type: "string" },
@@ -315,6 +317,7 @@ export default function Inventory() {
           purchase_date: tool.purchase_date || '',
           purchase_price: tool.purchase_price || null,
           purchase_location: tool.purchase_location || '',
+          invoice_number: tool.invoice_number || '',
           location_name: tool.location_name || '',
           assigned_to_name: tool.assigned_to_name || '',
           notes: tool.notes || '',

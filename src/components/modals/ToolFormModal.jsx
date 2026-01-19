@@ -48,6 +48,7 @@ const defaultTool = {
   purchase_date: '',
   purchase_price: '',
   purchase_location: '',
+  invoice_number: '',
   location_id: '',
   location_name: '',
   assigned_to_email: '',
@@ -416,13 +417,23 @@ export default function ToolFormModal({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Purchased From</Label>
-            <Input
-              value={formData.purchase_location}
-              onChange={(e) => handleChange('purchase_location', e.target.value)}
-              placeholder="e.g., Home Depot, Amazon, Local Hardware Store"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Purchased From</Label>
+              <Input
+                value={formData.purchase_location}
+                onChange={(e) => handleChange('purchase_location', e.target.value)}
+                placeholder="e.g., Home Depot, Amazon, Local Hardware Store"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Invoice Number</Label>
+              <Input
+                value={formData.invoice_number}
+                onChange={(e) => handleChange('invoice_number', e.target.value)}
+                placeholder="e.g., INV-12345"
+              />
+            </div>
           </div>
 
           {/* Assignment */}
