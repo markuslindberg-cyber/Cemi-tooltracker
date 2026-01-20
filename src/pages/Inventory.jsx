@@ -302,6 +302,11 @@ export default function Inventory() {
         // Filter out empty rows (rows without a name)
         const validTools = toolsData.filter(tool => tool.name && tool.name.trim() !== '');
         
+        if (validTools.length === 0) {
+          alert('No valid tool data found in the file. Please make sure you have filled in at least the Name column.');
+          return;
+        }
+        
         // Create tools in bulk
         const toolsToCreate = validTools.map(tool => ({
           name: tool.name,
@@ -325,7 +330,8 @@ export default function Inventory() {
         queryClient.invalidateQueries(['tools']);
         alert(`Successfully imported ${toolsToCreate.length} tools!`);
       } else {
-        alert('Failed to extract data from file. Please check the file format.');
+        const errorMsg = result.details || 'Unknown error';
+        alert(`Failed to extract data from file: ${errorMsg}\n\nPlease check the file format and ensure column headers match the template.`);
       }
     } catch (error) {
       console.error('Import failed:', error);
