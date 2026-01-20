@@ -299,8 +299,11 @@ export default function Inventory() {
         // Handle both single object and array responses
         const toolsData = Array.isArray(result.output) ? result.output : [result.output];
         
+        // Filter out empty rows (rows without a name)
+        const validTools = toolsData.filter(tool => tool.name && tool.name.trim() !== '');
+        
         // Create tools in bulk
-        const toolsToCreate = toolsData.map(tool => ({
+        const toolsToCreate = validTools.map(tool => ({
           name: tool.name,
           manufacturer: tool.manufacturer || '',
           model_number: tool.model_number || '',
