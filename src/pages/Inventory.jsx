@@ -198,7 +198,7 @@ export default function Inventory() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = ['Name', 'Manufacturer', 'Model Number', 'Category', 'Subcategory', 'Status', 'Condition', 'Barcode', 'Purchase Date', 'Purchase Price', 'Purchased From', 'Invoice Number', 'Location', 'Assigned To', 'Notes'];
+    const headers = ['name', 'manufacturer', 'model_number', 'category', 'subcategory', 'status', 'condition', 'barcode', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'location_name', 'assigned_to_name', 'notes'];
 
     // Add 20 empty rows for data entry
     const emptyRows = Array(20).fill(Array(15).fill(''));
