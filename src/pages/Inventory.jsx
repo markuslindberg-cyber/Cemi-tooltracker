@@ -276,36 +276,31 @@ export default function Inventory() {
         json_schema: {
           type: "object",
           properties: {
-            tools: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  manufacturer: { type: "string" },
-                  model_number: { type: "string" },
-                  category: { type: "string" },
-                  subcategory: { type: "string" },
-                  status: { type: "string" },
-                  condition: { type: "string" },
-                  barcode: { type: "string" },
-                  purchase_date: { type: "string" },
-                  purchase_price: { type: "number" },
-                  purchase_location: { type: "string" },
-                  invoice_number: { type: "string" },
-                  location_name: { type: "string" },
-                  assigned_to_name: { type: "string" },
-                  notes: { type: "string" },
-                }
-              }
-            }
+            name: { type: "string" },
+            manufacturer: { type: "string" },
+            model_number: { type: "string" },
+            category: { type: "string" },
+            subcategory: { type: "string" },
+            status: { type: "string" },
+            condition: { type: "string" },
+            barcode: { type: "string" },
+            purchase_date: { type: "string" },
+            purchase_price: { type: "number" },
+            purchase_location: { type: "string" },
+            invoice_number: { type: "string" },
+            location_name: { type: "string" },
+            assigned_to_name: { type: "string" },
+            notes: { type: "string" },
           }
         }
       });
 
-      if (result.status === 'success' && result.output?.tools) {
+      if (result.status === 'success' && result.output) {
+        // Handle both single object and array responses
+        const toolsData = Array.isArray(result.output) ? result.output : [result.output];
+        
         // Create tools in bulk
-        const toolsToCreate = result.output.tools.map(tool => ({
+        const toolsToCreate = toolsData.map(tool => ({
           name: tool.name,
           manufacturer: tool.manufacturer || '',
           model_number: tool.model_number || '',
