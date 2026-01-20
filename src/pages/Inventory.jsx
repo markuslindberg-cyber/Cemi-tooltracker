@@ -204,7 +204,7 @@ export default function Inventory() {
     const emptyRows = Array(20).fill(Array(15).fill(''));
 
     const csvContent = [
-      headers.map(cell => `"${cell}"`).join(','),
+      headers.join(','),
       ...emptyRows.map(row => row.join(','))
     ].join('\n');
 
