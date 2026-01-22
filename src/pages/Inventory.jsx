@@ -164,6 +164,18 @@ export default function Inventory() {
     )].sort();
   }, [tools, categoryFilter]);
 
+  const availableManufacturers = useMemo(() => {
+    return [...new Set(tools.map(t => t.manufacturer).filter(Boolean))].sort();
+  }, [tools]);
+
+  const availableLocations = useMemo(() => {
+    return [...new Set(tools.map(t => t.location_name).filter(Boolean))].sort();
+  }, [tools]);
+
+  const availableAssignedTo = useMemo(() => {
+    return [...new Set(tools.map(t => t.assigned_to_name).filter(Boolean))].sort();
+  }, [tools]);
+
   const handleTransfer = async (transferData) => {
     await base44.entities.Transfer.create(transferData);
     await base44.entities.Tool.update(transferData.tool_id, {
