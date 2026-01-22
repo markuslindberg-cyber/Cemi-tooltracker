@@ -19,13 +19,24 @@ export default function SearchFilterBar({
   onCategoryChange,
   subcategoryFilter,
   onSubcategoryChange,
+  manufacturerFilter,
+  onManufacturerChange,
+  conditionFilter,
+  onConditionChange,
+  locationFilter,
+  onLocationChange,
+  assignedToFilter,
+  onAssignedToChange,
   viewMode,
   onViewModeChange,
   onClearFilters,
   showViewToggle = true,
   availableSubcategories = [],
+  availableManufacturers = [],
+  availableLocations = [],
+  availableAssignedTo = [],
 }) {
-  const hasFilters = searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all';
+  const hasFilters = searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all';
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -84,6 +95,70 @@ export default function SearchFilterBar({
                 {availableSubcategories.map((sub) => (
                   <SelectItem key={sub} value={sub}>
                     {sub}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {availableManufacturers?.length > 0 && (
+            <Select value={manufacturerFilter} onValueChange={onManufacturerChange}>
+              <SelectTrigger className="w-[160px] h-11 border-gray-200">
+                <SelectValue placeholder="Manufacturer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Manufacturers</SelectItem>
+                {availableManufacturers.map((mfr) => (
+                  <SelectItem key={mfr} value={mfr}>
+                    {mfr}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {conditionFilter !== undefined && (
+            <Select value={conditionFilter} onValueChange={onConditionChange}>
+              <SelectTrigger className="w-[140px] h-11 border-gray-200">
+                <SelectValue placeholder="Condition" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Conditions</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="good">Good</SelectItem>
+                <SelectItem value="fair">Fair</SelectItem>
+                <SelectItem value="poor">Poor</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+
+          {availableLocations?.length > 0 && (
+            <Select value={locationFilter} onValueChange={onLocationChange}>
+              <SelectTrigger className="w-[160px] h-11 border-gray-200">
+                <SelectValue placeholder="Location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Locations</SelectItem>
+                {availableLocations.map((loc) => (
+                  <SelectItem key={loc} value={loc}>
+                    {loc}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {availableAssignedTo?.length > 0 && (
+            <Select value={assignedToFilter} onValueChange={onAssignedToChange}>
+              <SelectTrigger className="w-[160px] h-11 border-gray-200">
+                <SelectValue placeholder="Assigned To" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Assigned</SelectItem>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {availableAssignedTo.map((person) => (
+                  <SelectItem key={person} value={person}>
+                    {person}
                   </SelectItem>
                 ))}
               </SelectContent>
