@@ -26,6 +26,7 @@ const categoryIcons = {
   safety: "🦺",
   accessories: "🔩",
   heavy_equipment: "🚜",
+  vehicles: "🚗",
   other: "📦",
 };
 

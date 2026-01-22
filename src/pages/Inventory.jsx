@@ -60,6 +60,7 @@ const categoryLabels = {
   safety: "Safety",
   accessories: "Accessories",
   heavy_equipment: "Heavy Equipment",
+  vehicles: "Vehicles",
   other: "Other",
 };
 

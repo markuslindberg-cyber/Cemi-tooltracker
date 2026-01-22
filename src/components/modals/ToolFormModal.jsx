@@ -28,13 +28,14 @@ import ServiceHistoryPanel from '@/components/ServiceHistoryPanel';
 import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
 
 const subcategoryOptions = {
-  power_tools: ['Drills', 'Saws', 'Grinders', 'Sanders', 'Impact Drivers', 'Rotary Hammers', 'Other'],
+  power_tools: ['Husqvarna', 'Stihl', 'Drills', 'Saws', 'Grinders', 'Sanders', 'Impact Drivers', 'Rotary Hammers', 'Other'],
   hand_tools: ['Wrenches', 'Screwdrivers', 'Hammers', 'Pliers', 'Socket Sets', 'Utility Knives', 'Other'],
   measuring: ['Tape Measures', 'Levels', 'Laser Tools', 'Squares', 'Calipers', 'Other'],
   safety: ['Hard Hats', 'Safety Glasses', 'Gloves', 'Harnesses', 'Ear Protection', 'Respirators', 'Other'],
   accessories: ['Batteries', 'Chargers', 'Blades', 'Bits', 'Fasteners', 'Other'],
   heavy_equipment: ['Excavators', 'Loaders', 'Generators', 'Compressors', 'Scaffolding', 'Other'],
-  other: ['Other'],
+  vehicles: ['Tractors', 'Trucks', 'Vans', 'Trailers', 'Other'],
+  other: ['Maskin tillbehör', 'Other'],
 };
 
 const defaultTool = {
@@ -334,6 +335,7 @@ export default function ToolFormModal({
                   <SelectItem value="safety">Safety</SelectItem>
                   <SelectItem value="accessories">Accessories</SelectItem>
                   <SelectItem value="heavy_equipment">Heavy Equipment</SelectItem>
+                  <SelectItem value="vehicles">Vehicles</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>

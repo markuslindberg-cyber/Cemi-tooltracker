@@ -69,6 +69,7 @@ export default function SearchFilterBar({
               <SelectItem value="safety">Safety</SelectItem>
               <SelectItem value="accessories">Accessories</SelectItem>
               <SelectItem value="heavy_equipment">Heavy Equipment</SelectItem>
+              <SelectItem value="vehicles">Vehicles</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
