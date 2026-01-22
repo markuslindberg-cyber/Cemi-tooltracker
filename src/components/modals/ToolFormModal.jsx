@@ -26,17 +26,9 @@ import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ServiceHistoryPanel from '@/components/ServiceHistoryPanel';
 import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
+import { useMemo } from 'react';
 
-const subcategoryOptions = {
-  power_tools: ['Husqvarna', 'Stihl', 'Drills', 'Saws', 'Grinders', 'Sanders', 'Impact Drivers', 'Rotary Hammers', 'Other'],
-  hand_tools: ['Wrenches', 'Screwdrivers', 'Hammers', 'Pliers', 'Socket Sets', 'Utility Knives', 'Other'],
-  measuring: ['Tape Measures', 'Levels', 'Laser Tools', 'Squares', 'Calipers', 'Other'],
-  safety: ['Hard Hats', 'Safety Glasses', 'Gloves', 'Harnesses', 'Ear Protection', 'Respirators', 'Other'],
-  accessories: ['Batteries', 'Chargers', 'Blades', 'Bits', 'Fasteners', 'Other'],
-  heavy_equipment: ['Excavators', 'Loaders', 'Generators', 'Compressors', 'Scaffolding', 'Other'],
-  vehicles: ['Tractors', 'Trucks', 'Vans', 'Trailers', 'Other'],
-  other: ['Maskin tillbehör', 'Other'],
-};
+
 
 const defaultTool = {
   name: '',
@@ -77,9 +69,20 @@ export default function ToolFormModal({
 
   const { data: allTools = [] } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 100),
-    enabled: isOpen && !tool,
+    queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    enabled: isOpen,
   });
+
+  const availableCategories = useMemo(() => {
+    return [...new Set(allTools.map(t => t.category).filter(Boolean))].sort();
+  }, [allTools]);
+
+  const availableSubcategories = useMemo(() => {
+    if (!formData.category) return [];
+    return [...new Set(
+      allTools.filter(t => t.category === formData.category).map(t => t.subcategory).filter(Boolean)
+    )].sort();
+  }, [allTools, formData.category]);
 
   const { data: serviceRecords = [] } = useQuery({
     queryKey: ['serviceRecords', tool?.id],
@@ -324,36 +327,31 @@ export default function ToolFormModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Category *</Label>
-              <Select value={formData.category} onValueChange={(v) => handleChange('category', v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="power_tools">Power Tools</SelectItem>
-                  <SelectItem value="hand_tools">Hand Tools</SelectItem>
-                  <SelectItem value="measuring">Measuring</SelectItem>
-                  <SelectItem value="safety">Safety</SelectItem>
-                  <SelectItem value="accessories">Accessories</SelectItem>
-                  <SelectItem value="heavy_equipment">Heavy Equipment</SelectItem>
-                  <SelectItem value="vehicles">Vehicles</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                value={formData.category}
+                onChange={(e) => handleChange('category', e.target.value)}
+                placeholder="e.g., Power Tools, Hand Tools, etc."
+                list="category-suggestions"
+              />
+              <datalist id="category-suggestions">
+                {availableCategories.map((cat) => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
             </div>
             <div className="space-y-2">
               <Label>Subcategory</Label>
-              <Select value={formData.subcategory} onValueChange={(v) => handleChange('subcategory', v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select subcategory" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subcategoryOptions[formData.category]?.map((sub) => (
-                    <SelectItem key={sub} value={sub}>
-                      {sub}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                value={formData.subcategory}
+                onChange={(e) => handleChange('subcategory', e.target.value)}
+                placeholder="e.g., Husqvarna, Stihl, etc."
+                list="subcategory-suggestions"
+              />
+              <datalist id="subcategory-suggestions">
+                {availableSubcategories.map((sub) => (
+                  <option key={sub} value={sub} />
+                ))}
+              </datalist>
             </div>
           </div>
 

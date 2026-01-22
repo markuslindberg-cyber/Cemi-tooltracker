@@ -155,6 +155,10 @@ export default function Inventory() {
     });
   }, [tools, searchQuery, statusFilter, categoryFilter, subcategoryFilter, sortBy]);
 
+  const availableCategories = useMemo(() => {
+    return [...new Set(tools.map(t => t.category).filter(Boolean))].sort();
+  }, [tools]);
+
   const availableSubcategories = useMemo(() => {
     if (categoryFilter === 'all') {
       return [...new Set(tools.map(t => t.subcategory).filter(Boolean))].sort();
@@ -467,6 +471,7 @@ export default function Inventory() {
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             onClearFilters={clearFilters}
+            availableCategories={availableCategories}
             availableSubcategories={availableSubcategories}
             availableManufacturers={availableManufacturers}
             availableLocations={availableLocations}

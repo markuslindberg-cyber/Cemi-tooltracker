@@ -35,6 +35,7 @@ export default function SearchFilterBar({
   availableManufacturers = [],
   availableLocations = [],
   availableAssignedTo = [],
+  availableCategories = [],
 }) {
   const hasFilters = searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all';
 
@@ -68,22 +69,21 @@ export default function SearchFilterBar({
             </SelectContent>
           </Select>
 
-          <Select value={categoryFilter} onValueChange={onCategoryChange}>
-            <SelectTrigger className="w-[160px] h-11 border-gray-200">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="power_tools">Power Tools</SelectItem>
-              <SelectItem value="hand_tools">Hand Tools</SelectItem>
-              <SelectItem value="measuring">Measuring</SelectItem>
-              <SelectItem value="safety">Safety</SelectItem>
-              <SelectItem value="accessories">Accessories</SelectItem>
-              <SelectItem value="heavy_equipment">Heavy Equipment</SelectItem>
-              <SelectItem value="vehicles">Vehicles</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+          {availableCategories?.length > 0 && (
+            <Select value={categoryFilter} onValueChange={onCategoryChange}>
+              <SelectTrigger className="w-[160px] h-11 border-gray-200">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {availableCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {availableSubcategories.length > 0 && (
             <Select value={subcategoryFilter} onValueChange={onSubcategoryChange}>
