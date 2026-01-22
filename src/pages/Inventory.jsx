@@ -75,6 +75,10 @@ export default function Inventory() {
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
+  const [manufacturerFilter, setManufacturerFilter] = useState('all');
+  const [conditionFilter, setConditionFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [assignedToFilter, setAssignedToFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('updated');
   const [transferTool, setTransferTool] = useState(null);
@@ -123,8 +127,14 @@ export default function Inventory() {
       const matchesStatus = statusFilter === 'all' || tool.status === statusFilter;
       const matchesCategory = categoryFilter === 'all' || tool.category === categoryFilter;
       const matchesSubcategory = subcategoryFilter === 'all' || tool.subcategory === subcategoryFilter;
+      const matchesManufacturer = manufacturerFilter === 'all' || tool.manufacturer === manufacturerFilter;
+      const matchesCondition = conditionFilter === 'all' || tool.condition === conditionFilter;
+      const matchesLocation = locationFilter === 'all' || tool.location_name === locationFilter;
+      const matchesAssignedTo = assignedToFilter === 'all' || 
+        (assignedToFilter === 'unassigned' ? !tool.assigned_to_name : tool.assigned_to_name === assignedToFilter);
       
-      return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory;
+      return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory && 
+             matchesManufacturer && matchesCondition && matchesLocation && matchesAssignedTo;
     });
 
     // Sort the filtered tools
@@ -196,6 +206,10 @@ export default function Inventory() {
     setStatusFilter('all');
     setCategoryFilter('all');
     setSubcategoryFilter('all');
+    setManufacturerFilter('all');
+    setConditionFilter('all');
+    setLocationFilter('all');
+    setAssignedToFilter('all');
   };
 
   const handleDownloadTemplate = () => {
@@ -362,7 +376,7 @@ export default function Inventory() {
             <h1 className="text-3xl font-bold text-gray-900">Inventory</h1>
             <p className="text-gray-500 mt-1">
               {filteredTools.length} tool{filteredTools.length !== 1 ? 's' : ''} 
-              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || searchQuery) && ' matching filters'}
+              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all' || searchQuery) && ' matching filters'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -430,10 +444,21 @@ export default function Inventory() {
             onCategoryChange={setCategoryFilter}
             subcategoryFilter={subcategoryFilter}
             onSubcategoryChange={setSubcategoryFilter}
+            manufacturerFilter={manufacturerFilter}
+            onManufacturerChange={setManufacturerFilter}
+            conditionFilter={conditionFilter}
+            onConditionChange={setConditionFilter}
+            locationFilter={locationFilter}
+            onLocationChange={setLocationFilter}
+            assignedToFilter={assignedToFilter}
+            onAssignedToChange={setAssignedToFilter}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             onClearFilters={clearFilters}
             availableSubcategories={availableSubcategories}
+            availableManufacturers={availableManufacturers}
+            availableLocations={availableLocations}
+            availableAssignedTo={availableAssignedTo}
           />
 
           <div className="flex justify-end">
