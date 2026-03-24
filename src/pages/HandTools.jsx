@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2, Check, X as XIcon } from 'lucide-react';
+import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2, Check, X as XIcon, ScanLine } from 'lucide-react';
 import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
+import HandToolScanModal from '@/components/modals/HandToolScanModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
 
@@ -41,6 +42,7 @@ export default function HandTools() {
   const [editingCategory, setEditingCategory] = useState(null); // { oldName, newName }
   const [savingCategory, setSavingCategory] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [showScanModal, setShowScanModal] = useState(false);
 
   const { data: handTools = [], isLoading } = useQuery({
     queryKey: ['handtools'],
@@ -191,6 +193,10 @@ export default function HandTools() {
             </Button>
             <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImport} className="hidden" disabled={importing} />
           </label>
+          <Button variant="outline" onClick={() => setShowScanModal(true)} className="gap-2">
+            <ScanLine className="w-4 h-4" />
+            Inventera (skanna)
+          </Button>
           <Button onClick={() => setShowBatchModal(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] gap-2">
           <Plus className="w-4 h-4" />
           Lägg till redskap
@@ -349,6 +355,12 @@ export default function HandTools() {
           </div>
         </div>
       )}
+
+      <HandToolScanModal
+        isOpen={showScanModal}
+        onClose={() => setShowScanModal(false)}
+        handTools={handTools}
+      />
 
       <HandToolBatchModal
         isOpen={showBatchModal}

@@ -115,6 +115,11 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
           </div>
 
           <div className="space-y-1">
+            <Label>Streckkod</Label>
+            <Input value={form.barcode || ''} onChange={e => handleChange('barcode', e.target.value)} placeholder="Ange eller skanna streckkod" />
+          </div>
+
+          <div className="space-y-1">
             <Label>Anteckningar</Label>
             <Textarea value={form.notes || ''} onChange={e => handleChange('notes', e.target.value)} rows={2} />
           </div>
