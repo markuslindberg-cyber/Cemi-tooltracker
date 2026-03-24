@@ -67,7 +67,12 @@ const subcategoriesByCategory = {
   ],
 };
 
-const sizes = ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'];
+const sizesByCategory = {
+  'Arbetskläder varsel': ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'],
+  'Arbetskläder': ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'],
+  'Skor': ['47', '46', '45', '44', '43', '42', '41', '40', '39', '38', '37', '36', '35'],
+  'Skyddsutrustning': ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'],
+};
 const statuses = ['i_lager', 'i_bruk', 'saknas', 'kasserad'];
 const conditions = ['ny', 'bra', 'okej', 'dålig'];
 
@@ -312,7 +317,7 @@ export default function ArbetskläderUtrustningFormModal({
                 <SelectValue placeholder="Välj storlek" />
               </SelectTrigger>
               <SelectContent>
-                {sizes.map((size) => (
+                {(sizesByCategory[formData.category] || sizesByCategory['Arbetskläder varsel']).map((size) => (
                   <SelectItem key={size} value={size}>
                     {size}
                   </SelectItem>
