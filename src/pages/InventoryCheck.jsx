@@ -22,30 +22,32 @@ function exportToExcel(sessionConfig, checkedItems, allItems) {
   const typeLabel = sessionConfig.toolType === 'tools' ? 'Maskiner'
     : sessionConfig.toolType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
 
-  const header = ['Namn', 'Kategori', 'Streckkod', 'Plats', 'Status', 'Skick', 'Kontrollerad', 'Inventeringsdatum'];
+  const header = ['Namn', 'Typ', 'Kategori', 'Streckkod', 'Plats', 'Status', 'Skick', 'Inventeringsdatum', 'Resultat'];
 
-  const rows = allItems.map(item => {
-    const checked = checkedItems.has(item.id);
-    const isHandTool = item._type === 'handtool';
-    return [
-      item.name,
-      item.category || '',
-      item.barcode || '',
-      item.location_name || '',
-      item.status || '',
-      item.condition || '',
-      checked ? 'Ja' : 'Nej',
-      date,
-    ];
-  });
+  const toRow = (item, result) => [
+    item.name,
+    item._type === 'handtool' ? 'Handredskap' : 'Maskin',
+    item.category || '',
+    item.barcode || '',
+    item.location_name || '',
+    item.status || '',
+    item.condition || '',
+    date,
+    result,
+  ];
+
+  const checkedRows = allItems.filter(i => checkedItems.has(i.id)).map(i => toRow(i, 'Kontrollerad'));
+  const uncheckedRows = allItems.filter(i => !checkedItems.has(i.id)).map(i => toRow(i, 'EJ KONTROLLERAD'));
+
+  const sep = () => Array(header.length).fill('');
 
   const csvContent = [
     [`Inventeringsrapport - ${locationLabel} - ${typeLabel} - ${date}`],
+    [`Kontrollerade: ${checkedItems.size} / ${allItems.length}  |  Ej kontrollerade: ${allItems.length - checkedItems.size}`],
     [],
     header,
-    ...rows,
-    [],
-    [`Totalt: ${allItems.length}`, `Kontrollerade: ${checkedItems.size}`, `Ej kontrollerade: ${allItems.length - checkedItems.size}`],
+    ...(checkedRows.length > 0 ? [['=== KONTROLLERADE ===', ...Array(header.length - 1).fill('')], ...checkedRows] : []),
+    ...(uncheckedRows.length > 0 ? [sep(), ['=== EJ KONTROLLERADE ===', ...Array(header.length - 1).fill('')], ...uncheckedRows] : []),
   ].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
 
   const BOM = '\uFEFF';
