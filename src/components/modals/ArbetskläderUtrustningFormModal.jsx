@@ -151,6 +151,7 @@ export default function ArbetskläderUtrustningFormModal({
       setShowCustomSubcategory(false);
       setSelectedTemplate('');
     } else {
+      const defaultLocation = locations.find(l => l.name === 'Danmarksgatan');
       setFormData({
         name: '',
         manufacturer: '',
@@ -160,8 +161,8 @@ export default function ArbetskläderUtrustningFormModal({
         quantity: 0,
         status: 'i_lager',
         condition: 'bra',
-        location_id: '',
-        location_name: '',
+        location_id: defaultLocation?.id || '',
+        location_name: defaultLocation?.name || '',
         purchase_date: '',
         purchase_price: '',
         barcode: '',
@@ -169,11 +170,12 @@ export default function ArbetskläderUtrustningFormModal({
       });
       setSelectedTemplate('');
     }
-  }, [item, isOpen]);
+  }, [item, isOpen, locations]);
 
   const loadTemplate = (templateId) => {
     const template = allItems.find(t => t.id === templateId);
     if (template) {
+      const defaultLocation = locations.find(l => l.name === 'Danmarksgatan');
       setFormData({
         name: template.name || '',
         manufacturer: template.manufacturer || '',
@@ -183,8 +185,8 @@ export default function ArbetskläderUtrustningFormModal({
         quantity: 0,
         status: 'i_lager',
         condition: 'ny',
-        location_id: '',
-        location_name: '',
+        location_id: defaultLocation?.id || '',
+        location_name: defaultLocation?.name || '',
         purchase_date: '',
         purchase_price: '',
         barcode: '',
