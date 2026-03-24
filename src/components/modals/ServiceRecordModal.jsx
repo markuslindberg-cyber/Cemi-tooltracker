@@ -59,13 +59,13 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wrench className="w-5 h-5 text-[#8B1E1E]" />
-            Add Service Record
+            Lägg till servicepost
           </DialogTitle>
         </DialogHeader>
 
         {tool && (
           <div className="bg-gray-50 rounded-xl p-4 mb-4">
-            <p className="text-sm text-gray-500">Tool</p>
+            <p className="text-sm text-gray-500">Verktyg</p>
             <p className="font-semibold text-gray-900">{tool.name}</p>
             {tool.model_number && (
               <p className="text-sm text-gray-600">{tool.model_number}</p>
@@ -76,23 +76,23 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Service Type *</Label>
+              <Label>Servicetyp *</Label>
               <Select value={formData.service_type} onValueChange={(v) => handleChange('service_type', v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="repair">Repair</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="inspection">Inspection</SelectItem>
-                  <SelectItem value="calibration">Calibration</SelectItem>
-                  <SelectItem value="replacement_parts">Replacement Parts</SelectItem>
+                  <SelectItem value="repair">Reparation</SelectItem>
+                  <SelectItem value="maintenance">Underhåll</SelectItem>
+                  <SelectItem value="inspection">Inspektion</SelectItem>
+                  <SelectItem value="calibration">Kalibrering</SelectItem>
+                  <SelectItem value="replacement_parts">Reservdelar</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Cost *</Label>
+              <Label>Kostnad *</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -105,7 +105,7 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Service Date *</Label>
+              <Label>Servicedatum *</Label>
               <Input
                 type="date"
                 value={formData.service_date}
@@ -114,9 +114,9 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
             </div>
 
             <div className="space-y-2">
-              <Label>Performed By</Label>
+              <Label>Utförd av</Label>
               <Input
-                placeholder="e.g., Internal Team, External Service"
+                placeholder="t.ex. Internt team, Extern service"
                 value={formData.performed_by}
                 onChange={(e) => handleChange('performed_by', e.target.value)}
               />
@@ -124,9 +124,9 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
           </div>
 
           <div className="space-y-2">
-            <Label>Description *</Label>
+            <Label>Beskrivning *</Label>
             <Textarea
-              placeholder="Describe the service performed..."
+              placeholder="Beskriv utförd service..."
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
               rows={3}
@@ -134,9 +134,9 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
           </div>
 
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>Anteckningar</Label>
             <Textarea
-              placeholder="Additional notes..."
+              placeholder="Ytterligare anteckningar..."
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
               rows={2}
@@ -146,7 +146,7 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
 
         <div className="flex justify-end gap-3 mt-6">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancel
+            Avbryt
           </Button>
           <Button
             onClick={handleSubmit}
@@ -156,10 +156,10 @@ export default function ServiceRecordModal({ isOpen, onClose, tool, onSubmit }) 
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
+                Sparar...
               </>
             ) : (
-              'Add Service Record'
+              'Lägg till servicepost'
             )}
           </Button>
         </div>

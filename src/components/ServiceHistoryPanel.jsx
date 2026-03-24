@@ -4,11 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Wrench, Calendar, DollarSign, User } from 'lucide-react';
 
 const serviceTypeConfig = {
-  repair: { label: "Repair", color: "bg-red-100 text-red-700" },
-  maintenance: { label: "Maintenance", color: "bg-blue-100 text-blue-700" },
-  inspection: { label: "Inspection", color: "bg-purple-100 text-purple-700" },
-  calibration: { label: "Calibration", color: "bg-amber-100 text-amber-700" },
-  replacement_parts: { label: "Replacement Parts", color: "bg-green-100 text-green-700" },
+  repair: { label: "Reparation", color: "bg-red-100 text-red-700" },
+  maintenance: { label: "Underhåll", color: "bg-blue-100 text-blue-700" },
+  inspection: { label: "Inspektion", color: "bg-purple-100 text-purple-700" },
+  calibration: { label: "Kalibrering", color: "bg-amber-100 text-amber-700" },
+  replacement_parts: { label: "Reservdelar", color: "bg-green-100 text-green-700" },
 };
 
 export default function ServiceHistoryPanel({ serviceRecords }) {
@@ -16,7 +16,7 @@ export default function ServiceHistoryPanel({ serviceRecords }) {
     return (
       <div className="bg-gray-50 rounded-xl p-8 text-center">
         <Wrench className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">No service records yet</p>
+        <p className="text-gray-500">Inga serviceposter ännu</p>
       </div>
     );
   }
@@ -26,7 +26,7 @@ export default function ServiceHistoryPanel({ serviceRecords }) {
   return (
     <div className="space-y-4">
       <div className="bg-[#8B1E1E]/5 rounded-xl p-4 border border-[#8B1E1E]/20">
-        <p className="text-sm text-gray-600 mb-1">Total Service Costs</p>
+        <p className="text-sm text-gray-600 mb-1">Totala servicekostnader</p>
         <p className="text-2xl font-bold text-gray-900">${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
       </div>
 

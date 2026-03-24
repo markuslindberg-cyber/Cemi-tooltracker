@@ -85,9 +85,9 @@ export default function Transfers() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Transfer History</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Förflyttningshistorik</h1>
           <p className="text-gray-500 mt-1">
-            {transfers.length} total transfer{transfers.length !== 1 ? 's' : ''}
+            {transfers.length} förflyttningar totalt
           </p>
         </div>
 
@@ -130,12 +130,12 @@ export default function Transfers() {
               <ArrowRightLeft className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">
-              {transfers.length === 0 ? 'No transfers yet' : 'No matching transfers'}
+              {transfers.length === 0 ? 'Inga förflyttningar ännu' : 'Inga matchande förflyttningar'}
             </h3>
             <p className="text-gray-500">
               {transfers.length === 0 
-                ? 'Transfer history will appear here when tools are moved'
-                : 'Try adjusting your search or date filter'}
+                ? 'Förflyttningshistorik visas här när verktyg förflyttas'
+                : 'Försök justera din sökning eller datumfilter'}
             </p>
           </div>
         ) : viewMode === 'list' ? (

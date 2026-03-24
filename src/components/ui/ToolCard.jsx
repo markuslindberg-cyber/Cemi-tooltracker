@@ -12,11 +12,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const statusConfig = {
-  available: { label: "Available", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-  in_use: { label: "In Use", color: "bg-blue-100 text-blue-700 border-blue-200" },
-  maintenance: { label: "Maintenance", color: "bg-amber-100 text-amber-700 border-amber-200" },
-  missing: { label: "Missing", color: "bg-red-100 text-red-700 border-red-200" },
-  retired: { label: "Retired", color: "bg-gray-100 text-gray-600 border-gray-200" },
+  available: { label: "Tillgänglig", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  in_use: { label: "I bruk", color: "bg-blue-100 text-blue-700 border-blue-200" },
+  maintenance: { label: "Underhåll", color: "bg-amber-100 text-amber-700 border-amber-200" },
+  missing: { label: "Saknas", color: "bg-red-100 text-red-700 border-red-200" },
+  retired: { label: "Kasserad", color: "bg-gray-100 text-gray-600 border-gray-200" },
 };
 
 const categoryIcons = {
@@ -79,14 +79,14 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => onEdit?.(tool)}>
                 <Wrench className="w-4 h-4 mr-2" />
-                Edit Tool
+                Redigera verktyg
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onTransfer?.(tool)}>
                 <ArrowRightLeft className="w-4 h-4 mr-2" />
-                Transfer
+                Förflytta
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onViewHistory?.(tool)}>
-                View History
+                Visa historik
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {tool.status !== 'missing' && (
@@ -95,7 +95,7 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
                   className="text-[#8B1E1E]"
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" />
-                  Report Missing
+                  Rapportera saknad
                 </DropdownMenuItem>
               )}
               {tool.status === 'missing' && (
@@ -103,7 +103,7 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
                   onClick={() => onStatusChange?.(tool, 'available')}
                   className="text-emerald-600"
                 >
-                  Mark as Found
+                  Markera som hittad
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -130,13 +130,13 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
           <div className="mt-3 pt-3 border-t border-gray-100 space-y-1 text-sm">
             {tool.purchase_price && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Purchase:</span>
+                <span className="text-gray-500">Inköp:</span>
                 <span className="font-medium text-gray-900">${tool.purchase_price.toLocaleString()}</span>
               </div>
             )}
             {serviceCost > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Service Costs:</span>
+                <span className="text-gray-500">Servicekostnader:</span>
                 <span className="font-medium text-[#8B1E1E]">${serviceCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             )}
@@ -151,7 +151,7 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
           onClick={() => onTransfer?.(tool)}
         >
           <ArrowRightLeft className="w-4 h-4 mr-2" />
-          Transfer
+          Förflytta
         </Button>
       </div>
     </div>

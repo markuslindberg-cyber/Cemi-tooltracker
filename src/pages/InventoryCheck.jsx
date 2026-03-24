@@ -83,7 +83,7 @@ export default function InventoryCheck() {
       setTempCondition(tool.condition);
       setCheckedTools(prev => new Set([...prev, tool.id]));
     } else {
-      alert(`No tool found with barcode: ${barcode}`);
+      alert(`Inget verktyg hittades med streckkod: ${barcode}`);
     }
   };
 
@@ -122,22 +122,22 @@ export default function InventoryCheck() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inventory Check</h1>
-            <p className="text-gray-500 mt-1">Scan tools to verify inventory</p>
+            <h1 className="text-3xl font-bold text-gray-900">Inventeringskontroll</h1>
+            <p className="text-gray-500 mt-1">Skanna verktyg för att verifiera inventariet</p>
           </div>
           <Button
             onClick={handleResetCheck}
             variant="outline"
             disabled={checkedCount === 0}
           >
-            Reset Check
+            Återställ kontroll
           </Button>
         </div>
 
         {/* Progress */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-gray-600">Progress</span>
+            <span className="text-sm font-medium text-gray-600">Framsteg</span>
             <span className="text-sm font-bold text-[#8B1E1E]">
               {checkedCount} / {totalCount}
             </span>
@@ -152,7 +152,7 @@ export default function InventoryCheck() {
             <div className="mt-4 p-3 bg-green-50 rounded-xl border border-green-200 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
               <span className="text-sm font-medium text-green-900">
-                All tools checked!
+                Alla verktyg kontrollerade!
               </span>
             </div>
           )}
@@ -160,7 +160,7 @@ export default function InventoryCheck() {
 
         {/* Scanner Section */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Scan Tool Barcode</h2>
+          <h2 className="text-lg font-semibold mb-4">Skanna streckkod</h2>
           
           {!scannerActive ? (
             <div className="space-y-4">
@@ -170,7 +170,7 @@ export default function InventoryCheck() {
                 size="lg"
               >
                 <Camera className="w-5 h-5 mr-2" />
-                Start Camera Scanner
+                Starta kameraskanner
               </Button>
 
               <div className="relative">
@@ -178,13 +178,13 @@ export default function InventoryCheck() {
                   <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="bg-white px-2 text-gray-500">OR</span>
+                  <span className="bg-white px-2 text-gray-500">ELLER</span>
                 </div>
               </div>
 
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter barcode manually"
+                  placeholder="Ange streckkod manuellt"
                   value={manualBarcode}
                   onChange={(e) => setManualBarcode(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleManualSearch()}
@@ -202,7 +202,7 @@ export default function InventoryCheck() {
                 variant="outline"
                 className="w-full"
               >
-                Cancel Scanning
+                Avbryt skanning
               </Button>
             </div>
           )}
@@ -242,26 +242,26 @@ export default function InventoryCheck() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="in_use">In Use</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                    <SelectItem value="missing">Missing</SelectItem>
-                    <SelectItem value="retired">Retired</SelectItem>
+                    <SelectItem value="available">Tillgänglig</SelectItem>
+                    <SelectItem value="in_use">I bruk</SelectItem>
+                    <SelectItem value="maintenance">Underhåll</SelectItem>
+                    <SelectItem value="missing">Saknas</SelectItem>
+                    <SelectItem value="retired">Kasserad</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Condition</Label>
+                <Label>Skick</Label>
                 <Select value={tempCondition} onValueChange={setTempCondition}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
+                    <SelectItem value="new">Ny</SelectItem>
+                    <SelectItem value="good">Bra</SelectItem>
+                    <SelectItem value="fair">Okej</SelectItem>
+                    <SelectItem value="poor">Dålig</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -273,7 +273,7 @@ export default function InventoryCheck() {
                 variant="outline"
                 className="flex-1"
               >
-                Cancel
+                Avbryt
               </Button>
               <Button
                 onClick={handleConfirmCheck}
@@ -283,12 +283,12 @@ export default function InventoryCheck() {
                 {updateToolMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
+                    Sparar...
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Confirm Check
+                    Bekräfta kontroll
                   </>
                 )}
               </Button>
@@ -301,7 +301,7 @@ export default function InventoryCheck() {
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
-              Not Yet Checked ({uncheckedTools.length})
+              Ej kontrollerade ({uncheckedTools.length})
             </h2>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {uncheckedTools.map((tool) => (
@@ -320,7 +320,7 @@ export default function InventoryCheck() {
                     <div>
                       <p className="font-medium text-gray-900">{tool.name}</p>
                       {tool.barcode && (
-                        <p className="text-xs text-gray-500">Barcode: {tool.barcode}</p>
+                        <p className="text-xs text-gray-500">Streckkod: {tool.barcode}</p>
                       )}
                     </div>
                   </div>

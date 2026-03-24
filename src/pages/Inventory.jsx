@@ -46,11 +46,11 @@ import {
 import { format } from 'date-fns';
 
 const statusConfig = {
-  available: { label: "Available", color: "bg-emerald-100 text-emerald-700" },
-  in_use: { label: "In Use", color: "bg-blue-100 text-blue-700" },
-  maintenance: { label: "Maintenance", color: "bg-amber-100 text-amber-700" },
-  missing: { label: "Missing", color: "bg-red-100 text-red-700" },
-  retired: { label: "Retired", color: "bg-gray-100 text-gray-600" },
+  available: { label: "Tillgänglig", color: "bg-emerald-100 text-emerald-700" },
+  in_use: { label: "I bruk", color: "bg-blue-100 text-blue-700" },
+  maintenance: { label: "Underhåll", color: "bg-amber-100 text-amber-700" },
+  missing: { label: "Saknas", color: "bg-red-100 text-red-700" },
+  retired: { label: "Kasserad", color: "bg-gray-100 text-gray-600" },
 };
 
 const categoryLabels = {
@@ -211,7 +211,7 @@ export default function Inventory() {
   };
 
   const handleDeleteTool = async (tool) => {
-    if (window.confirm(`Are you sure you want to delete "${tool.name}"?`)) {
+    if (window.confirm(`Är du säker på att du vill ta bort "${tool.name}"?`)) {
       await base44.entities.Tool.delete(tool.id);
       queryClient.invalidateQueries(['tools']);
     }
@@ -336,7 +336,7 @@ export default function Inventory() {
         const validTools = toolsData.filter(tool => tool.name && tool.name.trim() !== '');
         
         if (validTools.length === 0) {
-          alert('No valid tool data found in the file. Please make sure you have filled in at least the Name column.');
+          alert('Inga giltiga verktygsdata hittades i filen. Kontrollera att du har fyllt i minst Namn-kolumnen.');
           return;
         }
         
@@ -361,14 +361,14 @@ export default function Inventory() {
 
         await base44.entities.Tool.bulkCreate(toolsToCreate);
         queryClient.invalidateQueries(['tools']);
-        alert(`Successfully imported ${toolsToCreate.length} tools!`);
+        alert(`${toolsToCreate.length} verktyg importerades!`);
       } else {
-        const errorMsg = result.details || 'Unknown error';
-        alert(`Failed to extract data from file: ${errorMsg}\n\nPlease check the file format and ensure column headers match the template.`);
+        const errorMsg = result.details || 'Okänt fel';
+        alert(`Kunde inte extrahera data från filen: ${errorMsg}\n\nKontrollera filformatet och att kolumnrubriker matchar mallen.`);
       }
     } catch (error) {
       console.error('Import failed:', error);
-      alert(`Import failed: ${error.message || error}\n\nPlease ensure the file is in the correct format and contains valid data.`);
+      alert(`Importen misslyckades: ${error.message || error}\n\nKontrollera att filen har rätt format och innehåller giltig data.`);
     } finally {
       setImporting(false);
       e.target.value = '';
@@ -389,10 +389,10 @@ export default function Inventory() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inventory</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Inventarie</h1>
             <p className="text-gray-500 mt-1">
-              {filteredTools.length} tool{filteredTools.length !== 1 ? 's' : ''} 
-              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all' || searchQuery) && ' matching filters'}
+              {filteredTools.length} verktyg
+              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all' || searchQuery) && ' matchar filter'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -401,7 +401,7 @@ export default function Inventory() {
               variant="outline"
             >
               <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Download Template
+              Ladda ned mall
             </Button>
             <Button
               onClick={handleExportToExcel}
@@ -409,7 +409,7 @@ export default function Inventory() {
               disabled={tools.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
-              Export Data
+              Exportera data
             </Button>
             <label>
               <Button
@@ -421,12 +421,12 @@ export default function Inventory() {
                   {importing ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Importing...
+                      Importerar...
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4 mr-2" />
-                      Import
+                      Importera
                     </>
                   )}
                 </span>
@@ -444,7 +444,7 @@ export default function Inventory() {
               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Add Tool
+              Lägg till verktyg
             </Button>
           </div>
         </div>
@@ -488,12 +488,12 @@ export default function Inventory() {
               <Package className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">
-              {tools.length === 0 ? 'No tools in inventory' : 'No tools match your filters'}
+              {tools.length === 0 ? 'Inga verktyg i inventariet' : 'Inga verktyg matchar dina filter'}
             </h3>
             <p className="text-gray-500 mb-4">
               {tools.length === 0 
-                ? 'Add your first tool to get started'
-                : 'Try adjusting your search or filters'}
+                ? 'Lägg till ditt första verktyg för att komma igång'
+                : 'Försök justera din sökning eller dina filter'}
             </p>
             {tools.length === 0 ? (
               <Button
@@ -501,11 +501,11 @@ export default function Inventory() {
                 className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add First Tool
+                Lägg till första verktyget
               </Button>
             ) : (
               <Button variant="outline" onClick={clearFilters}>
-                Clear Filters
+                Rensa filter
               </Button>
             )}
           </div>
@@ -530,13 +530,13 @@ export default function Inventory() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="font-semibold">Tool</TableHead>
-                  <TableHead className="font-semibold">Category</TableHead>
+                  <TableHead className="font-semibold">Verktyg</TableHead>
+                  <TableHead className="font-semibold">Kategori</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="font-semibold">Location</TableHead>
-                  <TableHead className="font-semibold">Assigned To</TableHead>
-                  <TableHead className="font-semibold">Purchase Price</TableHead>
-                  <TableHead className="font-semibold">Service Costs</TableHead>
+                  <TableHead className="font-semibold">Plats</TableHead>
+                  <TableHead className="font-semibold">Tilldelad</TableHead>
+                  <TableHead className="font-semibold">Inköpspris</TableHead>
+                  <TableHead className="font-semibold">Servicekostnader</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -621,14 +621,14 @@ export default function Inventory() {
                               setEditTool(tool);
                             }}>
                               <Wrench className="w-4 h-4 mr-2" />
-                              Edit Tool
+                              Redigera verktyg
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={(e) => {
                               e.stopPropagation();
                               setTransferTool(tool);
                             }}>
                               <ArrowRightLeft className="w-4 h-4 mr-2" />
-                              Transfer
+                              Förflytta
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {tool.status !== 'missing' && (
@@ -640,7 +640,7 @@ export default function Inventory() {
                                 className="text-[#8B1E1E]"
                               >
                                 <AlertTriangle className="w-4 h-4 mr-2" />
-                                Report Missing
+                                Rapportera saknad
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>

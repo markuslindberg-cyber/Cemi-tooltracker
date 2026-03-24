@@ -95,21 +95,21 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500 mt-1">Track, manage, and customize your tools</p>
+            <p className="text-gray-500 mt-1">Spåra, hantera och anpassa dina verktyg</p>
           </div>
           <Button
             onClick={() => setShowAddTool(true)}
             className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Add Tool
+            Lägg till verktyg
           </Button>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <StatsCard
-            title="Total Tools"
+            title="Totalt antal verktyg"
             value={totalTools}
             icon={Wrench}
             iconClassName="bg-[#8B1E1E]/10"
@@ -117,20 +117,20 @@ export default function Dashboard() {
             trendLabel="vs last month"
           />
           <StatsCard
-            title="Available"
+            title="Tillgängliga"
             value={availableTools}
             icon={TrendingUp}
             iconClassName="bg-emerald-50"
           />
           <StatsCard
-            title="In Use"
+            title="I bruk"
             value={inUseTools}
             icon={Users}
             iconClassName="bg-blue-50"
           />
           {missingTools > 0 ? (
             <StatsCard
-              title="Missing"
+              title="Saknas"
               value={missingTools}
               icon={AlertTriangle}
               iconClassName="bg-[#8B1E1E]/10"
@@ -138,7 +138,7 @@ export default function Dashboard() {
             />
           ) : (
             <StatsCard
-              title="Locations"
+              title="Platser"
               value={locations.length}
               icon={MapPin}
               iconClassName="bg-purple-50"
@@ -155,13 +155,13 @@ export default function Dashboard() {
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{missingTools} Tool{missingTools > 1 ? 's' : ''} Reported Missing</h3>
-                  <p className="text-white/80 text-sm">Review and take action on missing equipment</p>
+                  <h3 className="font-semibold text-lg">{missingTools} verktyg rapporterade saknade</h3>
+                  <p className="text-white/80 text-sm">Granska och hantera saknad utrustning</p>
                 </div>
               </div>
               <Link to={createPageUrl('Inventory') + '?status=missing'}>
                 <Button variant="secondary" className="bg-white text-[#8B1E1E] hover:bg-gray-50">
-                  View All
+                  Visa alla
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -174,10 +174,10 @@ export default function Dashboard() {
           {/* Recent Tools */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Recent Tools</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Senaste verktyg</h2>
               <Link to={createPageUrl('Inventory')}>
                 <Button variant="ghost" size="sm" className="text-[#8B1E1E] hover:text-[#6B1515] hover:bg-[#8B1E1E]/10">
-                  View All
+                  Visa alla
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
@@ -198,14 +198,14 @@ export default function Dashboard() {
                 <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Wrench className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">No tools yet</h3>
-                <p className="text-gray-500 mb-4">Add your first tool to start tracking your inventory</p>
+                <h3 className="font-semibold text-gray-900 mb-2">Inga verktyg ännu</h3>
+                <p className="text-gray-500 mb-4">Lägg till ditt första verktyg för att börja spåra inventariet</p>
                 <Button
                   onClick={() => setShowAddTool(true)}
                   className="bg-[#8B1E1E] hover:bg-[#6B1515]"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add First Tool
+                  Lägg till första verktyget
                 </Button>
               </div>
             )}
@@ -213,7 +213,7 @@ export default function Dashboard() {
 
           {/* Recent Activity */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Senaste aktivitet</h2>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               {recentTransfers.length > 0 ? (
                 <div className="divide-y divide-gray-100">
@@ -226,11 +226,11 @@ export default function Dashboard() {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">{transfer.tool_name}</p>
                           <p className="text-sm text-gray-500 mt-0.5">
-                            {transfer.from_location_name || 'Unknown'} → {transfer.to_location_name || 'Unknown'}
+                            {transfer.from_location_name || 'Okänd'} → {transfer.to_location_name || 'Okänd'}
                           </p>
                           {transfer.to_person_name && (
                             <p className="text-xs text-gray-400 mt-1">
-                              Assigned to {transfer.to_person_name}
+                              Tilldelad {transfer.to_person_name}
                             </p>
                           )}
                         </div>
@@ -245,27 +245,27 @@ export default function Dashboard() {
               ) : (
                 <div className="p-8 text-center">
                   <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No recent transfers</p>
+                  <p className="text-gray-500 text-sm">Inga senaste förflyttningar</p>
                 </div>
               )}
             </div>
 
             {/* Quick Stats */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Inventory Value</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
               <p className="text-3xl font-bold text-gray-900">
                 ${totalValue.toLocaleString()}
               </p>
-              <p className="text-sm text-gray-500 mt-1">Total purchase value</p>
+              <p className="text-sm text-gray-500 mt-1">Totalt inköpsvärde</p>
 
               <div className="mt-6 pt-6 border-t border-gray-100">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">By Status</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Per status</h4>
                 <div className="space-y-2">
                   {[
-                    { label: 'Available', count: availableTools, color: 'bg-emerald-500' },
-                    { label: 'In Use', count: inUseTools, color: 'bg-blue-500' },
-                    { label: 'Maintenance', count: maintenanceTools, color: 'bg-amber-500' },
-                    { label: 'Missing', count: missingTools, color: 'bg-red-500' },
+                    { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
+                    { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
+                    { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
+                    { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
                   ].map(({ label, count, color }) => (
                     <div key={label} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">

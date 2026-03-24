@@ -67,7 +67,7 @@ export default function TransferModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Transfer Tool</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Förflytta verktyg</DialogTitle>
         </DialogHeader>
 
         {tool && (
@@ -83,27 +83,27 @@ export default function TransferModal({
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">{tool.name}</h4>
-                <p className="text-sm text-gray-500">{tool.model_number || 'No model number'}</p>
+                <p className="text-sm text-gray-500">{tool.model_number || 'Inget modellnummer'}</p>
               </div>
             </div>
 
             {/* Current Location */}
             <div className="flex items-center gap-4 text-sm">
               <div className="flex-1 p-3 bg-[#8B1E1E]/5 rounded-xl border border-[#8B1E1E]/20">
-                <p className="text-xs text-gray-500 mb-1">Current Location</p>
-                <p className="font-medium text-gray-900">{tool.location_name || 'Not assigned'}</p>
+                <p className="text-xs text-gray-500 mb-1">Nuvarande plats</p>
+                <p className="font-medium text-gray-900">{tool.location_name || 'Ej tilldelad'}</p>
                 {tool.assigned_to_name && (
-                  <p className="text-gray-600 mt-1">with {tool.assigned_to_name}</p>
+                  <p className="text-gray-600 mt-1">hos {tool.assigned_to_name}</p>
                 )}
               </div>
               <ArrowRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
               <div className="flex-1 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                <p className="text-xs text-gray-500 mb-1">New Location</p>
+                <p className="text-xs text-gray-500 mb-1">Ny plats</p>
                 <p className="font-medium text-gray-900">
-                  {selectedLocation?.name || 'Select destination'}
+                  {selectedLocation?.name || 'Välj destination'}
                 </p>
                 {selectedPerson && (
-                  <p className="text-gray-600 mt-1">to {selectedPerson.name}</p>
+                  <p className="text-gray-600 mt-1">till {selectedPerson.name}</p>
                 )}
               </div>
             </div>
@@ -113,11 +113,11 @@ export default function TransferModal({
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-gray-400" />
-                  New Location
+                  Ny plats
                 </Label>
                 <Select value={toLocationId} onValueChange={setToLocationId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select destination location" />
+                    <SelectValue placeholder="Välj destinationsplats" />
                   </SelectTrigger>
                   <SelectContent>
                     {locations?.filter(l => l.is_active !== false).map((location) => (
@@ -132,14 +132,14 @@ export default function TransferModal({
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <User className="w-4 h-4 text-gray-400" />
-                  Assign To (Optional)
+                  Tilldela till (valfritt)
                 </Label>
                 <Select value={toPersonEmail} onValueChange={setToPersonEmail}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select team member" />
+                    <SelectValue placeholder="Välj teammedlem" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={null}>No one (unassign)</SelectItem>
+                    <SelectItem value={null}>Ingen (ta bort tilldelning)</SelectItem>
                     {teamMembers?.filter(m => m.is_active !== false).map((member) => (
                       <SelectItem key={member.email || member.id} value={member.email}>
                         {member.name} ({member.role})
@@ -152,7 +152,7 @@ export default function TransferModal({
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gray-400" />
-                  Expected Return Date (Optional)
+                  Förväntat återlämningsdatum (valfritt)
                 </Label>
                 <Input
                   type="date"
@@ -160,13 +160,13 @@ export default function TransferModal({
                   onChange={(e) => setExpectedReturnDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                 />
-                <p className="text-xs text-gray-500">Set when the tool should be returned</p>
+                <p className="text-xs text-gray-500">Ange när verktyget ska återlämnas</p>
               </div>
 
               <div className="space-y-2">
-                <Label>Notes (Optional)</Label>
+                <Label>Anteckningar (valfritt)</Label>
                 <Textarea
-                  placeholder="Add any notes about this transfer..."
+                  placeholder="Lägg till anteckningar om denna förflyttning..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
@@ -178,7 +178,7 @@ export default function TransferModal({
 
         <DialogFooter className="gap-3">
           <Button variant="outline" onClick={handleClose}>
-            Cancel
+            Avbryt
           </Button>
           <Button 
             onClick={handleSubmit}
@@ -188,10 +188,10 @@ export default function TransferModal({
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Transferring...
+                Förflyttar...
               </>
             ) : (
-              'Confirm Transfer'
+              'Bekräfta förflyttning'
             )}
           </Button>
         </DialogFooter>

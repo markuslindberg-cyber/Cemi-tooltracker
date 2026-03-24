@@ -82,10 +82,10 @@ export default function Locations() {
   const handleDeleteLocation = async (location) => {
     const toolCount = getToolCount(location.id);
     if (toolCount > 0) {
-      alert(`Cannot delete "${location.name}" - it has ${toolCount} tool(s) assigned. Reassign tools first.`);
+      alert(`Kan inte ta bort "${location.name}" – den har ${toolCount} verktyg tilldelade. Tilldela om verktygen först.`);
       return;
     }
-    if (window.confirm(`Are you sure you want to delete "${location.name}"?`)) {
+    if (window.confirm(`Är du säker på att du vill ta bort "${location.name}"?`)) {
       await base44.entities.Location.delete(location.id);
       queryClient.invalidateQueries(['locations']);
     }
@@ -105,9 +105,9 @@ export default function Locations() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Locations</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Platser</h1>
             <p className="text-gray-500 mt-1">
-              {locations.length} location{locations.length !== 1 ? 's' : ''}
+              {locations.length} {locations.length !== 1 ? 'platser' : 'plats'}
             </p>
           </div>
           <Button
@@ -115,7 +115,7 @@ export default function Locations() {
             className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Add Location
+            Lägg till plats
           </Button>
         </div>
 
@@ -145,12 +145,12 @@ export default function Locations() {
               <MapPin className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">
-              {locations.length === 0 ? 'No locations yet' : 'No matching locations'}
+              {locations.length === 0 ? 'Inga platser ännu' : 'Inga matchande platser'}
             </h3>
             <p className="text-gray-500 mb-4">
               {locations.length === 0 
-                ? 'Add your first location to organize tools'
-                : 'Try a different search term'}
+                ? 'Lägg till din första plats för att organisera verktyg'
+                : 'Prova ett annat sökord'}
             </p>
             {locations.length === 0 && (
               <Button
@@ -158,7 +158,7 @@ export default function Locations() {
                 className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add First Location
+                Lägg till första platsen
               </Button>
             )}
           </div>

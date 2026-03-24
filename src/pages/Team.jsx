@@ -30,11 +30,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const roleConfig = {
-  technician: { label: 'Technician', color: 'bg-blue-100 text-blue-700' },
-  supervisor: { label: 'Supervisor', color: 'bg-purple-100 text-purple-700' },
-  manager: { label: 'Manager', color: 'bg-emerald-100 text-emerald-700' },
-  apprentice: { label: 'Apprentice', color: 'bg-amber-100 text-amber-700' },
-  contractor: { label: 'Contractor', color: 'bg-gray-100 text-gray-700' },
+  technician: { label: 'Tekniker', color: 'bg-blue-100 text-blue-700' },
+  supervisor: { label: 'Arbetsledare', color: 'bg-purple-100 text-purple-700' },
+  manager: { label: 'Chef', color: 'bg-emerald-100 text-emerald-700' },
+  apprentice: { label: 'Lärling', color: 'bg-amber-100 text-amber-700' },
+  contractor: { label: 'Underleverantör', color: 'bg-gray-100 text-gray-700' },
 };
 
 export default function Team() {
@@ -90,10 +90,10 @@ export default function Team() {
   const handleDeleteMember = async (member) => {
     const toolCount = getToolCount(member.email);
     if (toolCount > 0) {
-      alert(`Cannot delete "${member.name}" - they have ${toolCount} tool(s) assigned. Reassign tools first.`);
+      alert(`Kan inte ta bort "${member.name}" – de har ${toolCount} verktyg tilldelade. Tilldela om verktygen först.`);
       return;
     }
-    if (window.confirm(`Are you sure you want to delete "${member.name}"?`)) {
+    if (window.confirm(`Är du säker på att du vill ta bort "${member.name}"?`)) {
       await base44.entities.TeamMember.delete(member.id);
       queryClient.invalidateQueries(['teamMembers']);
     }
@@ -115,7 +115,7 @@ export default function Team() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Team</h1>
             <p className="text-gray-500 mt-1">
-              {teamMembers.length} team member{teamMembers.length !== 1 ? 's' : ''}
+              {teamMembers.length} {teamMembers.length !== 1 ? 'teammedlemmar' : 'teammedlem'}
             </p>
           </div>
           <Button
@@ -123,7 +123,7 @@ export default function Team() {
             className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Add Member
+            Lägg till medlem
           </Button>
         </div>
 
@@ -153,12 +153,12 @@ export default function Team() {
               <Users className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">
-              {teamMembers.length === 0 ? 'No team members yet' : 'No matching members'}
+              {teamMembers.length === 0 ? 'Inga teammedlemmar ännu' : 'Inga matchande medlemmar'}
             </h3>
             <p className="text-gray-500 mb-4">
               {teamMembers.length === 0 
-                ? 'Add team members to assign tools and track usage'
-                : 'Try a different search term'}
+                ? 'Lägg till teammedlemmar för att tilldela verktyg och spåra användning'
+                : 'Prova ett annat sökord'}
             </p>
             {teamMembers.length === 0 && (
               <Button
@@ -166,7 +166,7 @@ export default function Team() {
                 className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add First Member
+                Lägg till första medlemmen
               </Button>
             )}
           </div>

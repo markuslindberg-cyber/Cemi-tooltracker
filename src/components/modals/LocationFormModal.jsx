@@ -67,79 +67,79 @@ export default function LocationFormModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
-            {isEditing ? 'Edit Location' : 'Add New Location'}
+            {isEditing ? 'Redigera plats' : 'Lägg till ny plats'}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Location Name *</Label>
+            <Label>Platsnamn *</Label>
             <Input
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="e.g., Main Warehouse"
+              placeholder="t.ex. Huvudlager"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Type *</Label>
+            <Label>Typ *</Label>
             <Select value={formData.type} onValueChange={(v) => handleChange('type', v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="jobsite">Jobsite</SelectItem>
-                <SelectItem value="warehouse">Warehouse</SelectItem>
-                <SelectItem value="office">Office</SelectItem>
-                <SelectItem value="vehicle">Vehicle</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="jobsite">Arbetsplats</SelectItem>
+                <SelectItem value="warehouse">Lager</SelectItem>
+                <SelectItem value="office">Kontor</SelectItem>
+                <SelectItem value="vehicle">Fordon</SelectItem>
+                <SelectItem value="other">Övrigt</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Address</Label>
+            <Label>Adress</Label>
             <Textarea
               value={formData.address}
               onChange={(e) => handleChange('address', e.target.value)}
-              placeholder="Enter full address"
+              placeholder="Ange fullständig adress"
               rows={2}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Contact Person</Label>
+              <Label>Kontaktperson</Label>
               <Input
                 value={formData.contact_person}
                 onChange={(e) => handleChange('contact_person', e.target.value)}
-                placeholder="Name"
+                placeholder="Namn"
               />
             </div>
             <div className="space-y-2">
-              <Label>Contact Phone</Label>
+              <Label>Telefonnummer</Label>
               <Input
                 value={formData.contact_phone}
                 onChange={(e) => handleChange('contact_phone', e.target.value)}
-                placeholder="Phone number"
+                placeholder="Telefonnummer"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>Anteckningar</Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder="Add any notes..."
+              placeholder="Lägg till anteckningar..."
               rows={2}
             />
           </div>
 
           <div className="flex items-center justify-between pt-2">
             <div>
-              <Label>Active Location</Label>
-              <p className="text-sm text-gray-500">Inactive locations won't appear in transfers</p>
+              <Label>Aktiv plats</Label>
+              <p className="text-sm text-gray-500">Inaktiva platser visas inte i förflyttningar</p>
             </div>
             <Switch
               checked={formData.is_active}
@@ -150,7 +150,7 @@ export default function LocationFormModal({
 
         <DialogFooter className="gap-3">
           <Button variant="outline" onClick={handleClose}>
-            Cancel
+            Avbryt
           </Button>
           <Button
             onClick={handleSubmit}
@@ -160,10 +160,9 @@ export default function LocationFormModal({
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              isEditing ? 'Save Changes' : 'Add Location'
+                Sparar...
+                ) : (
+                isEditing ? 'Spara ändringar' : 'Lägg till plats'
             )}
           </Button>
         </DialogFooter>
