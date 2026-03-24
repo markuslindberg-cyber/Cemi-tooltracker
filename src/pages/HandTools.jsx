@@ -44,6 +44,7 @@ export default function HandTools() {
   const [uploadingCategoryImage, setUploadingCategoryImage] = useState(null);
   const categoryImageInputRef = useRef(null);
   const [showScanModal, setShowScanModal] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const { data: handTools = [], isLoading } = useQuery({
     queryKey: ['handtools'],
