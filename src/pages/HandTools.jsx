@@ -208,6 +208,18 @@ export default function HandTools() {
         availableLocations={locationNames}
         availableAssignedTo={[]}
         showViewToggle={true}
+        statusOptions={[
+          { value: 'i_lager', label: 'I lager' },
+          { value: 'i_bruk', label: 'I bruk' },
+          { value: 'saknas', label: 'Saknas' },
+          { value: 'kasserad', label: 'Kasserad' },
+        ]}
+        conditionOptions={[
+          { value: 'ny', label: 'Ny' },
+          { value: 'bra', label: 'Bra' },
+          { value: 'okej', label: 'Okej' },
+          { value: 'dålig', label: 'Dålig' },
+        ]}
       />
 
       {/* Content */}
