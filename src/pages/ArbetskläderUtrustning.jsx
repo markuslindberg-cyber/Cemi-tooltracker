@@ -25,7 +25,9 @@ const statusMap = {
 
 export default function ArbetskläderUtrustning() {
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState({});
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -44,7 +46,6 @@ export default function ArbetskläderUtrustning() {
 
   const categories = [...new Set(items.map(i => i.category))].sort();
   const subcategories = [...new Set(items.map(i => i.subcategory))].sort();
-  const sizes = [...new Set(items.map(i => i.size))].sort();
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
@@ -52,14 +53,13 @@ export default function ArbetskläderUtrustning() {
         item.name.toLowerCase().includes(search.toLowerCase()) ||
         item.subcategory?.toLowerCase().includes(search.toLowerCase());
       
-      const matchesCategory = !filters.category || item.category === filters.category;
-      const matchesSubcategory = !filters.subcategory || item.subcategory === filters.subcategory;
-      const matchesSize = !filters.size || item.size === filters.size;
-      const matchesStatus = !filters.status || item.status === filters.status;
+      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+      const matchesSubcategory = subcategoryFilter === 'all' || item.subcategory === subcategoryFilter;
+      const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
 
-      return matchesSearch && matchesCategory && matchesSubcategory && matchesSize && matchesStatus;
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesStatus;
     });
-  }, [items, search, filters]);
+  }, [items, search, statusFilter, categoryFilter, subcategoryFilter]);
 
   const deleteItem = async (id) => {
     if (confirm('Är du säker på att du vill ta bort denna artikel?')) {
@@ -125,18 +125,24 @@ export default function ArbetskläderUtrustning() {
 
         {/* Search and Filters */}
         <SearchFilterBar
-          searchValue={search}
+          searchQuery={search}
           onSearchChange={setSearch}
-          filters={filters}
-          onFiltersChange={setFilters}
-          filterOptions={{
-            category: { label: 'Kategori', options: categories },
-            subcategory: { label: 'Typ', options: subcategories },
-            size: { label: 'Storlek', options: sizes },
-            status: { label: 'Status', options: Object.keys(statusMap) },
-          }}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          subcategoryFilter={subcategoryFilter}
+          onSubcategoryChange={setSubcategoryFilter}
+          availableCategories={categories}
+          availableSubcategories={subcategories}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          onClearFilters={() => {
+            setStatusFilter('all');
+            setCategoryFilter('all');
+            setSubcategoryFilter('all');
+          }}
+          showViewToggle={true}
         />
 
         {/* Items Display */}
@@ -145,7 +151,7 @@ export default function ArbetskläderUtrustning() {
             <p className="text-gray-500 text-lg">Inga artiklar hittades</p>
           </div>
         ) : (
-          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6' : 'space-y-4 mt-6'}>
             {filteredItems.map((item) => (
               <div
                 key={item.id}
@@ -176,10 +182,6 @@ export default function ArbetskläderUtrustning() {
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Kategori:</span>
                     <Badge variant="outline">{item.category}</Badge>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Storlek:</span>
-                    <span className="font-medium">{item.size}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Antal:</span>
