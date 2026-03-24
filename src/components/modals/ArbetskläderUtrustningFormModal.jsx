@@ -19,16 +19,55 @@ import {
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-const categories = ['Arbetskläder', 'Skyddsutrustning'];
-const sizes = ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'];
-const subcategories = [
-  'byxor',
-  'shorts',
-  'piratbyxor',
-  'varsel tröja',
-  'tröja',
-  'vinterjacka',
+const categories = [
+  'Arbetskläder varsel',
+  'Arbetskläder',
+  'Skor',
+  'Skyddsutrustning',
 ];
+
+const subcategoriesByCategory = {
+  'Arbetskläder varsel': [
+    'Shorts',
+    'Knåbyxor',
+    'Strechbyxor',
+    'Snickarbyx',
+    'Termobyxor',
+    'Piketrojor',
+    'Fleecejackor',
+    'Västar',
+    'Vinterjacka',
+  ],
+  'Arbetskläder': [
+    'Termounderst all',
+    'Mössor',
+    'Handskar',
+    'Kepsär',
+    'Shorts',
+    'Knåbyxor',
+    'Strechbyxor',
+    'Snickarbyx',
+    'Piketrojor',
+    'Termobyx',
+    'Fleecejackor',
+    'Skaljackor',
+    'Regnkläder/varsel',
+  ],
+  'Skor': [
+    'Skyddsskor',
+    'Vinterskor',
+    'Gummistövlar',
+    'Sågstövlar',
+  ],
+  'Skyddsutrustning': [
+    'Hörselskydd',
+    'Skyddsglasogon',
+    'Skyddshälmar',
+    'Munskydd',
+  ],
+};
+
+const sizes = ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'];
 const statuses = ['i_lager', 'i_bruk', 'saknas', 'kasserad'];
 const conditions = ['ny', 'bra', 'okej', 'dålig'];
 
@@ -69,6 +108,8 @@ export default function ArbetskläderUtrustningFormModal({
     notes: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [customSubcategory, setCustomSubcategory] = useState('');
+  const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -88,6 +129,8 @@ export default function ArbetskläderUtrustningFormModal({
         barcode: item.barcode || '',
         notes: item.notes || '',
       });
+      setCustomSubcategory('');
+      setShowCustomSubcategory(false);
     } else {
       setFormData({
         name: '',
@@ -114,6 +157,11 @@ export default function ArbetskläderUtrustningFormModal({
       if (field === 'location_id') {
         const selectedLocation = locations.find(l => l.id === value);
         updated.location_name = selectedLocation?.name || '';
+      }
+      if (field === 'category') {
+        updated.subcategory = '';
+        setShowCustomSubcategory(false);
+        setCustomSubcategory('');
       }
       return updated;
     });
@@ -200,18 +248,58 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Typ av plagg
             </label>
-            <Select value={formData.subcategory} onValueChange={(v) => handleChange('subcategory', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Välj typ" />
-              </SelectTrigger>
-              <SelectContent>
-                {subcategories.map((sub) => (
-                  <SelectItem key={sub} value={sub}>
-                    {sub}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!showCustomSubcategory ? (
+              <Select value={formData.subcategory} onValueChange={(v) => {
+                if (v === '__custom__') {
+                  setShowCustomSubcategory(true);
+                  setCustomSubcategory('');
+                } else {
+                  handleChange('subcategory', v);
+                }
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj typ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {formData.category && subcategoriesByCategory[formData.category]?.map((sub) => (
+                    <SelectItem key={sub} value={sub}>
+                      {sub}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__custom__">+ Lägg till egen</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  value={customSubcategory}
+                  onChange={(e) => setCustomSubcategory(e.target.value)}
+                  placeholder="Ny underkategori"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (customSubcategory.trim()) {
+                      handleChange('subcategory', customSubcategory.trim());
+                      setShowCustomSubcategory(false);
+                    }
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  OK
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowCustomSubcategory(false);
+                    setCustomSubcategory('');
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  Avbryt
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Storlek */}
