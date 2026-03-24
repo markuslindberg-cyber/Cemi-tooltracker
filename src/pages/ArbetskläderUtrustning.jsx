@@ -9,12 +9,11 @@ import {
   Plus,
   Trash2,
   Edit2,
-  Grid3x3,
-  List,
   ScanLine,
 } from 'lucide-react';
 import ArbetskläderUtrustningFormModal from '@/components/modals/ArbetskläderUtrustningFormModal';
 import ArbetskläderScanModal from '@/components/modals/ArbetskläderScanModal';
+import CheckoutModal from '@/components/modals/CheckoutModal';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
 
 const statusMap = {
@@ -24,13 +23,6 @@ const statusMap = {
   kasserad: { label: 'Kasserad', class: 'bg-gray-100 text-gray-800' },
 };
 
-const conditionMap = {
-  ny: { label: 'Ny', color: 'green' },
-  bra: { label: 'Bra', color: 'blue' },
-  okej: { label: 'Okej', color: 'yellow' },
-  dålig: { label: 'Dålig', color: 'red' },
-};
-
 export default function ArbetskläderUtrustning() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({});
@@ -38,6 +30,7 @@ export default function ArbetskläderUtrustning() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [showScanModal, setShowScanModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ['arbetskläder'],
@@ -104,6 +97,14 @@ export default function ArbetskläderUtrustning() {
             <p className="text-gray-500 mt-1">{filteredItems.length} artiklar</p>
           </div>
           <div className="flex gap-2">
+            <Button
+              onClick={() => setShowCheckoutModal(true)}
+              variant="outline"
+              className="gap-2"
+            >
+              <ScanLine className="w-4 h-4" />
+              Plocka ut
+            </Button>
             <Button
               onClick={() => setShowScanModal(true)}
               variant="outline"
@@ -207,7 +208,7 @@ export default function ArbetskläderUtrustning() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modals */}
       <ArbetskläderUtrustningFormModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
@@ -220,6 +221,12 @@ export default function ArbetskläderUtrustning() {
         onClose={() => setShowScanModal(false)}
         items={items}
         onRefresh={refetch}
+      />
+
+      <CheckoutModal
+        isOpen={showCheckoutModal}
+        onClose={() => setShowCheckoutModal(false)}
+        items={items}
       />
     </div>
   );
