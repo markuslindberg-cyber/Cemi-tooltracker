@@ -94,6 +94,14 @@ export default function Inventory() {
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
   });
 
+  const { data: arbetskläder = [] } = useQuery({
+    queryKey: ['arbetskläder'],
+    queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
+  });
+
+  // Merge tools and arbetskläder for display
+  const allItems = [...tools.map(t => ({ ...t, type: 'tool' })), ...arbetskläder.map(a => ({ ...a, type: 'arbetskläder' }))];
+
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
     queryFn: () => base44.entities.Location.list(),
@@ -120,27 +128,27 @@ export default function Inventory() {
   }, [serviceRecords]);
 
   const filteredTools = useMemo(() => {
-    const filtered = tools.filter(tool => {
+    const filtered = allItems.filter(item => {
       const matchesSearch = !searchQuery || 
-        tool.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.model_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tool.subcategory?.toLowerCase().includes(searchQuery.toLowerCase());
+        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.model_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.subcategory?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesStatus = statusFilter === 'all' || tool.status === statusFilter;
-      const matchesCategory = categoryFilter === 'all' || tool.category === categoryFilter;
-      const matchesSubcategory = subcategoryFilter === 'all' || tool.subcategory === subcategoryFilter;
-      const matchesManufacturer = manufacturerFilter === 'all' || tool.manufacturer === manufacturerFilter;
-      const matchesCondition = conditionFilter === 'all' || tool.condition === conditionFilter;
-      const matchesLocation = locationFilter === 'all' || tool.location_name === locationFilter;
+      const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+      const matchesSubcategory = subcategoryFilter === 'all' || item.subcategory === subcategoryFilter;
+      const matchesManufacturer = manufacturerFilter === 'all' || item.manufacturer === manufacturerFilter;
+      const matchesCondition = conditionFilter === 'all' || item.condition === conditionFilter;
+      const matchesLocation = locationFilter === 'all' || item.location_name === locationFilter;
       const matchesAssignedTo = assignedToFilter === 'all' || 
-        (assignedToFilter === 'unassigned' ? !tool.assigned_to_name : tool.assigned_to_name === assignedToFilter);
+        (assignedToFilter === 'unassigned' ? !item.assigned_to_name : item.assigned_to_name === assignedToFilter);
       
       return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory && 
              matchesManufacturer && matchesCondition && matchesLocation && matchesAssignedTo;
     });
 
-    // Sort the filtered tools
+    // Sort the filtered items
     return filtered.sort((a, b) => {
       if (sortBy === 'last_checked') {
         const aDate = a.last_seen_date ? new Date(a.last_seen_date).getTime() : 0;
@@ -156,32 +164,32 @@ export default function Inventory() {
         return bDate - aDate;
       }
     });
-  }, [tools, searchQuery, statusFilter, categoryFilter, subcategoryFilter, sortBy]);
+  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, sortBy]);
 
   const availableCategories = useMemo(() => {
-    return [...new Set(tools.map(t => t.category).filter(Boolean))].sort();
-  }, [tools]);
+    return [...new Set(allItems.map(t => t.category).filter(Boolean))].sort();
+  }, [allItems]);
 
   const availableSubcategories = useMemo(() => {
     if (categoryFilter === 'all') {
-      return [...new Set(tools.map(t => t.subcategory).filter(Boolean))].sort();
+      return [...new Set(allItems.map(t => t.subcategory).filter(Boolean))].sort();
     }
     return [...new Set(
-      tools.filter(t => t.category === categoryFilter).map(t => t.subcategory).filter(Boolean)
+      allItems.filter(t => t.category === categoryFilter).map(t => t.subcategory).filter(Boolean)
     )].sort();
-  }, [tools, categoryFilter]);
+  }, [allItems, categoryFilter]);
 
   const availableManufacturers = useMemo(() => {
-    return [...new Set(tools.map(t => t.manufacturer).filter(Boolean))].sort();
-  }, [tools]);
+    return [...new Set(allItems.map(t => t.manufacturer).filter(Boolean))].sort();
+  }, [allItems]);
 
   const availableLocations = useMemo(() => {
-    return [...new Set(tools.map(t => t.location_name).filter(Boolean))].sort();
-  }, [tools]);
+    return [...new Set(allItems.map(t => t.location_name).filter(Boolean))].sort();
+  }, [allItems]);
 
   const availableAssignedTo = useMemo(() => {
-    return [...new Set(tools.map(t => t.assigned_to_name).filter(Boolean))].sort();
-  }, [tools]);
+    return [...new Set(allItems.map(t => t.assigned_to_name).filter(Boolean))].sort();
+  }, [allItems]);
 
   const handleTransfer = async (transferData) => {
     await base44.entities.Transfer.create(transferData);
