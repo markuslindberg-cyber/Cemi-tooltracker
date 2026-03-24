@@ -559,10 +559,40 @@ export default function InventoryCheck() {
     setPhase('active');
   };
 
-  const handleEnd = (config, checkedItems, allItems) => {
+  const handleEnd = async (config, checkedItems, allItems) => {
     setFinalChecked(checkedItems);
     setFinalItems(allItems);
     setPhase('summary');
+
+    // Save report
+    let user = null;
+    try { user = await base44.auth.me(); } catch {}
+
+    const checkedArr = allItems.filter(i => checkedItems.has(i.id)).map(i => ({
+      id: i.id, name: i.name, type: i._type, category: i.category || '',
+      barcode: i.barcode || '', location_name: i.location_name || '',
+      status: i.status || '', condition: i.condition || '',
+    }));
+    const uncheckedArr = allItems.filter(i => !checkedItems.has(i.id)).map(i => ({
+      id: i.id, name: i.name, type: i._type, category: i.category || '',
+      barcode: i.barcode || '', location_name: i.location_name || '',
+      status: i.status || '',
+    }));
+
+    await base44.entities.InventoryReport.create({
+      location_name: config.location?.name || null,
+      location_id: config.locationId || null,
+      tool_type: config.toolType,
+      mode: config.mode,
+      performed_by_name: user?.full_name || null,
+      performed_by_email: user?.email || null,
+      performed_at: new Date().toISOString(),
+      total_items: allItems.length,
+      checked_items: checkedItems.size,
+      unchecked_items: allItems.length - checkedItems.size,
+      checked_list: checkedArr,
+      unchecked_list: uncheckedArr,
+    });
   };
 
   const handleNew = () => {
