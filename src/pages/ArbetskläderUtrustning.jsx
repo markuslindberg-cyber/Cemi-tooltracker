@@ -39,6 +39,8 @@ export default function ArbetskläderUtrustning() {
   const [viewMode, setViewMode] = useState('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ['arbetskläder'],
