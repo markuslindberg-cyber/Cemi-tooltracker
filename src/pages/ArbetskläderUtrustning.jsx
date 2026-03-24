@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,10 @@ import {
   Edit2,
   Grid3x3,
   List,
+  Download,
+  Upload,
+  FileSpreadsheet,
+  Loader2,
 } from 'lucide-react';
 import ArbetskläderUtrustningFormModal from '@/components/modals/ArbetskläderUtrustningFormModal';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
