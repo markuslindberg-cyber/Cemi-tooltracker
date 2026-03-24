@@ -85,24 +85,15 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
               <Input value={form.category || ''} onChange={e => handleChange('category', e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Underkategori</Label>
-              <Input value={form.subcategory || ''} onChange={e => handleChange('subcategory', e.target.value)} />
+              <Label>Streckkod</Label>
+              <Input value={form.barcode || ''} onChange={e => handleChange('barcode', e.target.value)} placeholder="Ange eller skanna streckkod" />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label>Status</Label>
-              <Select value={form.status} onValueChange={v => handleChange('status', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="i_lager">I lager</SelectItem>
-                  <SelectItem value="i_bruk">I bruk</SelectItem>
-                  <SelectItem value="saknas">Saknas</SelectItem>
-                  <SelectItem value="kasserad">Kasserad</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-1">
+            <Label>Underkategori</Label>
+            <Input value={form.subcategory || ''} onChange={e => handleChange('subcategory', e.target.value)} />
+          </div>
             <div className="space-y-1">
               <Label>Skick</Label>
               <Select value={form.condition} onValueChange={v => handleChange('condition', v)}>
@@ -156,11 +147,6 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Streckkod</Label>
-            <Input value={form.barcode || ''} onChange={e => handleChange('barcode', e.target.value)} placeholder="Ange eller skanna streckkod" />
           </div>
 
           <div className="space-y-1">
