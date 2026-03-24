@@ -76,6 +76,34 @@ export default function ArbetskläderUtrustning() {
     }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   }, [items, search, statusFilter, categoryFilter, subcategoryFilter, sizeFilter, manufacturerFilter, conditionFilter]);
 
+  const groupedItems = useMemo(() => {
+    const groups = {};
+    filteredItems.forEach(item => {
+      if (!groups[item.name]) {
+        groups[item.name] = {
+          name: item.name,
+          category: item.category,
+          subcategory: item.subcategory,
+          manufacturer: item.manufacturer,
+          location_name: item.location_name,
+          notes: item.notes,
+          sizes: [],
+          items: [],
+        };
+      }
+      groups[item.name].items.push(item);
+      if (item.size) {
+        const sizeEntry = groups[item.name].sizes.find(s => s.size === item.size);
+        if (sizeEntry) {
+          sizeEntry.quantity += item.quantity || 0;
+        } else {
+          groups[item.name].sizes.push({ size: item.size, quantity: item.quantity || 0 });
+        }
+      }
+    });
+    return Object.values(groups).sort((a, b) => a.name.localeCompare(b.name));
+  }, [filteredItems]);
+
   const deleteItem = async (id) => {
     if (confirm('Är du säker på att du vill ta bort denna artikel?')) {
       await base44.entities.ArbetskläderUtrustning.delete(id);
@@ -109,7 +137,7 @@ export default function ArbetskläderUtrustning() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Arbetskläder & Utrustning</h1>
-            <p className="text-gray-500 mt-1">{filteredItems.length} artiklar</p>
+            <p className="text-gray-500 mt-1">{groupedItems.length} artiklar</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -184,34 +212,28 @@ export default function ArbetskläderUtrustning() {
         />
 
         {/* Items Display */}
-        {filteredItems.length === 0 ? (
+        {groupedItems.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">Inga artiklar hittades</p>
           </div>
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6' : 'space-y-4 mt-6'}>
-            {filteredItems.map((item) => (
+            {groupedItems.map((group) => (
               <div
-                key={item.id}
+                key={group.name}
                 className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                    <p className="text-sm text-gray-500">{item.subcategory}</p>
+                    <h3 className="font-semibold text-gray-900">{group.name}</h3>
+                    <p className="text-sm text-gray-500">{group.subcategory}</p>
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => openEditModal(item)}
+                      onClick={() => openEditModal(group.items[0])}
                       className="p-1 hover:bg-gray-100 rounded"
                     >
                       <Edit2 className="w-4 h-4 text-blue-600" />
-                    </button>
-                    <button
-                      onClick={() => deleteItem(item.id)}
-                      className="p-1 hover:bg-gray-100 rounded"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
                   </div>
                 </div>
@@ -219,46 +241,37 @@ export default function ArbetskläderUtrustning() {
                 <div className="space-y-2 mb-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Kategori:</span>
-                    <Badge variant="outline">{item.category}</Badge>
+                    <Badge variant="outline">{group.category}</Badge>
                   </div>
-                  {item.size && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Storlek:</span>
-                      <span className="font-medium">{item.size}</span>
-                    </div>
-                  )}
-                  {item.manufacturer && (
+                  {group.manufacturer && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Tillverkare:</span>
-                      <span className="font-medium">{item.manufacturer}</span>
+                      <span className="font-medium">{group.manufacturer}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Antal:</span>
-                    <span className="font-medium">{item.quantity || 0}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Status:</span>
-                    <Badge className={statusMap[item.status]?.class || ''}>
-                      {statusMap[item.status]?.label || item.status}
-                    </Badge>
-                  </div>
-                  {item.condition && (
+                  {group.sizes.length > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Skick:</span>
-                      <Badge variant="outline">{conditionMap[item.condition]?.label || item.condition}</Badge>
+                      <span className="text-gray-600">Storlekar:</span>
+                      <div className="flex flex-wrap gap-1 justify-end">
+                        {group.sizes.sort((a, b) => {
+                          const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+                          return sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size);
+                        }).map((s, idx) => (
+                          <Badge key={idx} variant="outline" className="bg-blue-50">{s.size} ({s.quantity})</Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  {item.location_name && (
+                  {group.location_name && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Plats:</span>
-                      <span className="font-medium">{item.location_name}</span>
+                      <span className="font-medium">{group.location_name}</span>
                     </div>
                   )}
                 </div>
 
-                {item.notes && (
-                  <p className="text-sm text-gray-600 border-t pt-2">{item.notes}</p>
+                {group.notes && (
+                  <p className="text-sm text-gray-600 border-t pt-2">{group.notes}</p>
                 )}
               </div>
             ))}
