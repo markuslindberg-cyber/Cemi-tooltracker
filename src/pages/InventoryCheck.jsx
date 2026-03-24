@@ -549,7 +549,7 @@ function SummaryStep({ sessionConfig, checkedItems, allItems, onNew }) {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 export default function InventoryCheck() {
-  const [phase, setPhase] = useState('setup'); // 'setup' | 'active' | 'summary'
+  const [phase, setPhase] = useState('setup');
   const [sessionConfig, setSessionConfig] = useState(null);
   const [finalChecked, setFinalChecked] = useState(new Set());
   const [finalItems, setFinalItems] = useState([]);
