@@ -476,21 +476,9 @@ export default function Inventory() {
             availableManufacturers={availableManufacturers}
             availableLocations={availableLocations}
             availableAssignedTo={availableAssignedTo}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
           />
-
-          <div className="flex justify-end">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="updated">Recently Updated</SelectItem>
-                <SelectItem value="last_checked">Last Checked</SelectItem>
-                <SelectItem value="name">Name (A-Z)</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         {/* Content */}

@@ -36,6 +36,8 @@ export default function SearchFilterBar({
   availableLocations = [],
   availableAssignedTo = [],
   availableCategories = [],
+  sortBy,
+  onSortByChange,
 }) {
   const hasFilters = searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all';
 
@@ -174,6 +176,20 @@ export default function SearchFilterBar({
             >
               <X className="w-5 h-5" />
             </Button>
+          )}
+
+          {sortBy !== undefined && onSortByChange && (
+            <Select value={sortBy} onValueChange={onSortByChange}>
+              <SelectTrigger className="w-[170px] h-11 border-gray-200">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="updated">Recently Updated</SelectItem>
+                <SelectItem value="last_checked">Last Checked</SelectItem>
+                <SelectItem value="name">Name (A-Z)</SelectItem>
+                <SelectItem value="category">Category</SelectItem>
+              </SelectContent>
+            </Select>
           )}
 
           {showViewToggle && (
