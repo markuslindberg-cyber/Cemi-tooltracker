@@ -164,8 +164,9 @@ export default function TeamMemberFormModal({
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Sparar...
-                ) : (
-                isEditing ? 'Spara ändringar' : 'Lägg till medlem'
+              </>
+            ) : (
+              isEditing ? 'Spara ändringar' : 'Lägg till medlem'
             )}
           </Button>
         </DialogFooter>
