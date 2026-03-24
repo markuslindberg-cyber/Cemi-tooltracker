@@ -303,7 +303,8 @@ function ActiveInventory({ sessionConfig, onEnd }) {
 
   const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen';
   const typeLabel = sessionConfig.toolType === 'tools' ? 'Maskiner'
-    : sessionConfig.toolType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
+    : sessionConfig.toolType === 'handtools' ? 'Handredskap'
+    : sessionConfig.toolType === 'arbetskläder' ? 'Arbetskläder' : 'Allt';
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
