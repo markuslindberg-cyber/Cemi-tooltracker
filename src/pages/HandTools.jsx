@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, X, Package, MapPin, Edit, Trash2, Grid, List, Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
 import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
+import SearchFilterBar from '@/components/ui/SearchFilterBar';
 
 const statusConfig = {
   i_lager:  { label: 'I lager',  className: 'bg-green-100 text-green-800' },
@@ -30,6 +31,9 @@ export default function HandTools() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
+  const [manufacturerFilter, setManufacturerFilter] = useState('all');
+  const [conditionFilter, setConditionFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editTool, setEditTool] = useState(null);
@@ -47,13 +51,18 @@ export default function HandTools() {
   });
 
   const categories = [...new Set(handTools.map(t => t.category).filter(Boolean))].sort();
+  const subcategories = [...new Set(handTools.map(t => t.subcategory).filter(Boolean))].sort();
+  const manufacturers = [...new Set(handTools.map(t => t.manufacturer).filter(Boolean))].sort();
   const locationNames = [...new Set(handTools.map(t => t.location_name).filter(Boolean))].sort();
 
   const filtered = handTools.filter(t => {
     const q = search.toLowerCase();
-    if (q && !`${t.name} ${t.manufacturer} ${t.category}`.toLowerCase().includes(q)) return false;
+    if (q && !`${t.name} ${t.manufacturer} ${t.category} ${t.subcategory}`.toLowerCase().includes(q)) return false;
     if (statusFilter !== 'all' && t.status !== statusFilter) return false;
     if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
+    if (subcategoryFilter !== 'all' && t.subcategory !== subcategoryFilter) return false;
+    if (manufacturerFilter !== 'all' && t.manufacturer !== manufacturerFilter) return false;
+    if (conditionFilter !== 'all' && t.condition !== conditionFilter) return false;
     if (locationFilter !== 'all' && t.location_name !== locationFilter) return false;
     return true;
   });
@@ -70,7 +79,7 @@ export default function HandTools() {
     queryClient.invalidateQueries(['handtools']);
   };
 
-  const hasFilters = search || statusFilter !== 'all' || categoryFilter !== 'all' || locationFilter !== 'all';
+  const hasFilters = search || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all';
 
   const handleDownloadTemplate = () => {
     const headers = ['name', 'manufacturer', 'category', 'subcategory', 'status', 'condition', 'purchase_date', 'purchase_price', 'location_name', 'notes'];
@@ -142,7 +151,8 @@ export default function HandTools() {
   };
 
   const clearFilters = () => {
-    setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setLocationFilter('all');
+    setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setSubcategoryFilter('all');
+    setManufacturerFilter('all'); setConditionFilter('all'); setLocationFilter('all');
   };
 
   return (
@@ -174,58 +184,31 @@ export default function HandTools() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-        <div className="flex flex-col lg:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Sök på namn, kategori, tillverkare..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-10"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[130px] h-10"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alla statusar</SelectItem>
-                <SelectItem value="i_lager">I lager</SelectItem>
-                <SelectItem value="i_bruk">I bruk</SelectItem>
-                <SelectItem value="saknas">Saknas</SelectItem>
-                <SelectItem value="kasserad">Kasserad</SelectItem>
-              </SelectContent>
-            </Select>
-            {categories.length > 0 && (
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[150px] h-10"><SelectValue placeholder="Kategori" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alla kategorier</SelectItem>
-                  {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
-            {locationNames.length > 0 && (
-              <Select value={locationFilter} onValueChange={setLocationFilter}>
-                <SelectTrigger className="w-[150px] h-10"><SelectValue placeholder="Plats" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Alla platser</SelectItem>
-                  {locationNames.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
-            {hasFilters && (
-              <Button variant="ghost" size="icon" onClick={clearFilters} className="h-10 w-10 text-gray-400">
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-10 w-10 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
-              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className={`h-10 w-10 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><List className="w-4 h-4" /></Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <SearchFilterBar
+        searchQuery={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        categoryFilter={categoryFilter}
+        onCategoryChange={setCategoryFilter}
+        subcategoryFilter={subcategoryFilter}
+        onSubcategoryChange={setSubcategoryFilter}
+        manufacturerFilter={manufacturerFilter}
+        onManufacturerChange={setManufacturerFilter}
+        conditionFilter={conditionFilter}
+        onConditionChange={setConditionFilter}
+        locationFilter={locationFilter}
+        onLocationChange={setLocationFilter}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onClearFilters={clearFilters}
+        availableCategories={categories}
+        availableSubcategories={subcategories}
+        availableManufacturers={manufacturers}
+        availableLocations={locationNames}
+        availableAssignedTo={[]}
+        showViewToggle={true}
+      />
 
       {/* Content */}
       {isLoading ? (
