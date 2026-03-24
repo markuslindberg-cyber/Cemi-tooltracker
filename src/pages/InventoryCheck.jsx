@@ -223,6 +223,11 @@ function ActiveInventory({ sessionConfig, onEnd }) {
     queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
   });
 
+  const { data: arbetskläder = [] } = useQuery({
+    queryKey: ['arbetskläder'],
+    queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
+  });
+
   const updateToolMutation = useMutation({
     mutationFn: ({ id, data, type }) => {
       if (type === 'handtool') return base44.entities.HandTool.update(id, data);
