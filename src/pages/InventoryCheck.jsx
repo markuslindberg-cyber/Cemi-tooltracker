@@ -11,315 +11,282 @@ import {
 import { Badge } from '@/components/ui/badge';
 import {
   Camera, CheckCircle2, Loader2, Search, Package, MapPin,
-  AlertTriangle, Download, RotateCcw, Shovel, Wrench, Globe,
+  AlertTriangle, ArrowLeft, Download, ClipboardList, Globe,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export default function InventoryCheck() {
-  const queryClient = useQueryClient();
+// ─── Excel/CSV export ──────────────────────────────────────────────────────────
+function exportToExcel(sessionConfig, checkedItems, allItems) {
+  const date = new Date().toLocaleDateString('sv-SE');
+  const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen inventering';
+  const typeLabel = sessionConfig.toolType === 'tools' ? 'Maskiner'
+    : sessionConfig.toolType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
 
-  // Setup state
-  const [mode, setMode] = useState(null); // 'location' | 'open'
-  const [selectedLocationId, setSelectedLocationId] = useState('');
-  const [itemType, setItemType] = useState('both'); // 'tools' | 'handtools' | 'both'
-  const [sessionStarted, setSessionStarted] = useState(false);
+  const header = ['Namn', 'Kategori', 'Streckkod', 'Plats', 'Status', 'Skick', 'Kontrollerad', 'Inventeringsdatum'];
 
-  // Scanning state
-  const [scannerActive, setScannerActive] = useState(false);
-  const [scannedItem, setScannedItem] = useState(null);
-  const [scannedItemType, setScannedItemType] = useState(null); // 'tool' | 'handtool'
-  const [manualBarcode, setManualBarcode] = useState('');
-  const [checkedIds, setCheckedIds] = useState(new Set());
-  const [tempStatus, setTempStatus] = useState('');
-  const [tempCondition, setTempCondition] = useState('');
-  const [checkLog, setCheckLog] = useState([]); // for report
+  const rows = allItems.map(item => {
+    const checked = checkedItems.has(item.id);
+    const isHandTool = item._type === 'handtool';
+    return [
+      item.name,
+      item.category || '',
+      item.barcode || '',
+      item.location_name || '',
+      item.status || '',
+      item.condition || '',
+      checked ? 'Ja' : 'Nej',
+      date,
+    ];
+  });
+
+  const csvContent = [
+    [`Inventeringsrapport - ${locationLabel} - ${typeLabel} - ${date}`],
+    [],
+    header,
+    ...rows,
+    [],
+    [`Totalt: ${allItems.length}`, `Kontrollerade: ${checkedItems.size}`, `Ej kontrollerade: ${allItems.length - checkedItems.size}`],
+  ].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `inventering_${locationLabel.replace(/\s/g, '_')}_${date}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// ─── Setup Step ────────────────────────────────────────────────────────────────
+function SetupStep({ onStart }) {
+  const [mode, setMode] = useState(''); // 'location' | 'open'
+  const [locationId, setLocationId] = useState('');
+  const [toolType, setToolType] = useState('both'); // 'tools' | 'handtools' | 'both'
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
     queryFn: () => base44.entities.Location.list('name'),
   });
 
+  const canStart = mode === 'open' || (mode === 'location' && locationId);
+  const selectedLocation = locations.find(l => l.id === locationId);
+
+  return (
+    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Inventeringskontroll</h1>
+          <p className="text-gray-500 mt-1">Välj hur du vill genomföra inventeringen</p>
+        </div>
+
+        {/* Mode selection */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <button
+            onClick={() => setMode('location')}
+            className={cn(
+              "p-6 rounded-2xl border-2 text-left transition-all",
+              mode === 'location'
+                ? "border-[#8B1E1E] bg-[#8B1E1E]/5"
+                : "border-gray-200 bg-white hover:border-gray-300"
+            )}
+          >
+            <MapPin className={cn("w-8 h-8 mb-3", mode === 'location' ? "text-[#8B1E1E]" : "text-gray-400")} />
+            <h3 className="font-semibold text-gray-900">Platsbaserad inventering</h3>
+            <p className="text-sm text-gray-500 mt-1">Inventera maskiner och/eller handredskap på en specifik plats</p>
+          </button>
+
+          <button
+            onClick={() => setMode('open')}
+            className={cn(
+              "p-6 rounded-2xl border-2 text-left transition-all",
+              mode === 'open'
+                ? "border-[#8B1E1E] bg-[#8B1E1E]/5"
+                : "border-gray-200 bg-white hover:border-gray-300"
+            )}
+          >
+            <Globe className={cn("w-8 h-8 mb-3", mode === 'open' ? "text-[#8B1E1E]" : "text-gray-400")} />
+            <h3 className="font-semibold text-gray-900">Öppen inventering</h3>
+            <p className="text-sm text-gray-500 mt-1">Skanna vad som helst, oberoende av plats</p>
+          </button>
+        </div>
+
+        {mode === 'location' && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+            <div className="space-y-2">
+              <Label>Välj plats *</Label>
+              <Select value={locationId} onValueChange={setLocationId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj en plats" />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations.filter(l => l.is_active !== false).map(loc => (
+                    <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Vad ska inventeras?</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'tools', label: 'Maskiner' },
+                  { value: 'handtools', label: 'Handredskap' },
+                  { value: 'both', label: 'Båda' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setToolType(opt.value)}
+                    className={cn(
+                      "py-2 px-3 rounded-xl border text-sm font-medium transition-all",
+                      toolType === opt.value
+                        ? "border-[#8B1E1E] bg-[#8B1E1E] text-white"
+                        : "border-gray-200 text-gray-700 hover:border-gray-300"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {mode === 'open' && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+            <div className="space-y-2">
+              <Label>Vad ska inventeras?</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: 'tools', label: 'Maskiner' },
+                  { value: 'handtools', label: 'Handredskap' },
+                  { value: 'both', label: 'Båda' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setToolType(opt.value)}
+                    className={cn(
+                      "py-2 px-3 rounded-xl border text-sm font-medium transition-all",
+                      toolType === opt.value
+                        ? "border-[#8B1E1E] bg-[#8B1E1E] text-white"
+                        : "border-gray-200 text-gray-700 hover:border-gray-300"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {mode && (
+          <Button
+            onClick={() => onStart({ mode, location: selectedLocation || null, locationId, toolType })}
+            disabled={!canStart}
+            className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-12 text-base"
+          >
+            <ClipboardList className="w-5 h-5 mr-2" />
+            Starta inventering
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Active Inventory ──────────────────────────────────────────────────────────
+function ActiveInventory({ sessionConfig, onEnd }) {
+  const queryClient = useQueryClient();
+  const [scannerActive, setScannerActive] = useState(false);
+  const [scannedItem, setScannedItem] = useState(null);
+  const [manualBarcode, setManualBarcode] = useState('');
+  const [checkedItems, setCheckedItems] = useState(new Set());
+  const [tempStatus, setTempStatus] = useState('');
+  const [tempCondition, setTempCondition] = useState('');
+
   const { data: tools = [] } = useQuery({
     queryKey: ['tools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
-    enabled: sessionStarted,
   });
 
   const { data: handTools = [] } = useQuery({
     queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.list('-updated_date', 1000),
-    enabled: sessionStarted,
+    queryFn: () => base44.entities.HandTool.list('-updated_date', 500),
   });
 
   const updateToolMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Tool.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries(['tools']),
+    mutationFn: ({ id, data, isHandTool }) =>
+      isHandTool ? base44.entities.HandTool.update(id, data) : base44.entities.Tool.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['tools']);
+      queryClient.invalidateQueries(['handtools']);
+    },
   });
 
-  const updateHandToolMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.HandTool.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries(['handtools']),
-  });
+  // Build scoped item list
+  const scopedItems = React.useMemo(() => {
+    const { mode, locationId, toolType } = sessionConfig;
+    let toolList = [];
+    let handToolList = [];
 
-  // Filter items based on mode and selection
-  const filteredTools = (mode === 'location' && selectedLocationId)
-    ? tools.filter(t => t.location_id === selectedLocationId)
-    : tools;
+    if (toolType !== 'handtools') {
+      toolList = tools.map(t => ({ ...t, _type: 'tool' }));
+      if (mode === 'location') toolList = toolList.filter(t => t.location_id === locationId);
+    }
+    if (toolType !== 'tools') {
+      handToolList = handTools.map(t => ({ ...t, _type: 'handtool' }));
+      if (mode === 'location') handToolList = handToolList.filter(t => t.location_id === locationId);
+    }
 
-  const filteredHandTools = (mode === 'location' && selectedLocationId)
-    ? handTools.filter(t => t.location_id === selectedLocationId)
-    : handTools;
-
-  const activeTools = (itemType === 'tools' || itemType === 'both') ? filteredTools : [];
-  const activeHandTools = (itemType === 'handtools' || itemType === 'both') ? filteredHandTools : [];
-  const totalItems = activeTools.length + activeHandTools.length;
-  const checkedCount = checkedIds.size;
-
-  const uncheckedTools = activeTools.filter(t => !checkedIds.has(t.id));
-  const uncheckedHandTools = activeHandTools.filter(t => !checkedIds.has(t.id));
+    return [...toolList, ...handToolList];
+  }, [tools, handTools, sessionConfig]);
 
   useEffect(() => {
     if (!scannerActive) return;
     const scanner = new Html5QrcodeScanner("barcode-scanner", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
     scanner.render(
-      (decodedText) => { handleScan(decodedText); scanner.clear(); setScannerActive(false); },
+      (text) => { handleScan(text); scanner.clear(); setScannerActive(false); },
       () => {}
     );
     return () => { scanner.clear().catch(() => {}); };
-  }, [scannerActive, tools, handTools]);
+  }, [scannerActive, scopedItems]);
 
   const handleScan = (barcode) => {
-    if (itemType !== 'handtools') {
-      const tool = activeTools.find(t => t.barcode === barcode);
-      if (tool) { openItem(tool, 'tool'); return; }
+    const item = scopedItems.find(t => t.barcode === barcode)
+      || (sessionConfig.mode === 'open'
+        ? [...tools.map(t => ({ ...t, _type: 'tool' })), ...handTools.map(t => ({ ...t, _type: 'handtool' }))].find(t => t.barcode === barcode)
+        : null);
+    if (item) {
+      setScannedItem(item);
+      setTempStatus(item.status);
+      setTempCondition(item.condition);
+      setCheckedItems(prev => new Set([...prev, item.id]));
+    } else {
+      alert(`Inget föremål hittades med streckkod: ${barcode}`);
     }
-    if (itemType !== 'tools') {
-      const ht = activeHandTools.find(t => t.barcode === barcode);
-      if (ht) { openItem(ht, 'handtool'); return; }
-    }
-    // open mode: search all
-    if (mode === 'open') {
-      const tool = tools.find(t => t.barcode === barcode);
-      if (tool) { openItem(tool, 'tool'); return; }
-      const ht = handTools.find(t => t.barcode === barcode);
-      if (ht) { openItem(ht, 'handtool'); return; }
-    }
-    alert(`Inget objekt hittades med streckkod: ${barcode}`);
   };
 
-  const openItem = (item, type) => {
-    setScannedItem(item);
-    setScannedItemType(type);
-    setTempStatus(item.status);
-    setTempCondition(item.condition);
-    setCheckedIds(prev => new Set([...prev, item.id]));
-  };
-
-  const handleManualSearch = () => {
-    if (!manualBarcode) return;
-    handleScan(manualBarcode);
-    setManualBarcode('');
-  };
-
-  const handleConfirmCheck = async () => {
+  const handleConfirm = async () => {
     if (!scannedItem) return;
-    const updates = { last_seen_date: new Date().toISOString() };
+    const isHandTool = scannedItem._type === 'handtool';
+    const updates = {};
     if (tempStatus !== scannedItem.status) updates.status = tempStatus;
     if (tempCondition !== scannedItem.condition) updates.condition = tempCondition;
-
-    if (scannedItemType === 'tool') {
-      await updateToolMutation.mutateAsync({ id: scannedItem.id, data: updates });
-    } else {
-      await updateHandToolMutation.mutateAsync({ id: scannedItem.id, data: updates });
-    }
-
-    setCheckLog(prev => [...prev, {
-      name: scannedItem.name,
-      type: scannedItemType === 'tool' ? 'Maskin' : 'Handredskap',
-      barcode: scannedItem.barcode || '',
-      location: scannedItem.location_name || '',
-      status: tempStatus,
-      condition: tempCondition,
-      checked_at: new Date().toLocaleString('sv-SE'),
-    }]);
-
+    updates.last_seen_date = new Date().toISOString();
+    await updateToolMutation.mutateAsync({ id: scannedItem.id, data: updates, isHandTool });
     setScannedItem(null);
   };
 
-  const handleExportExcel = () => {
-    const selectedLoc = locations.find(l => l.id === selectedLocationId);
+  const checkedCount = checkedItems.size;
+  const totalCount = scopedItems.length;
+  const uncheckedItems = scopedItems.filter(t => !checkedItems.has(t.id));
+  const isDone = sessionConfig.mode !== 'open' && checkedCount === totalCount && totalCount > 0;
 
-    // Build rows: checked + unchecked
-    const checkedRows = checkLog.map(r => ({
-      Namn: r.name,
-      Typ: r.type,
-      Streckkod: r.barcode,
-      Plats: r.location,
-      Status: r.status,
-      Skick: r.condition,
-      Inventerad: r.checked_at,
-      Resultat: 'Kontrollerad',
-    }));
-
-    const uncheckedToolRows = uncheckedTools.map(t => ({
-      Namn: t.name,
-      Typ: 'Maskin',
-      Streckkod: t.barcode || '',
-      Plats: t.location_name || '',
-      Status: t.status,
-      Skick: t.condition,
-      Inventerad: '',
-      Resultat: 'EJ KONTROLLERAD',
-    }));
-
-    const uncheckedHandToolRows = uncheckedHandTools.map(t => ({
-      Namn: t.name,
-      Typ: 'Handredskap',
-      Streckkod: t.barcode || '',
-      Plats: t.location_name || '',
-      Status: t.status,
-      Skick: t.condition,
-      Inventerad: '',
-      Resultat: 'EJ KONTROLLERAD',
-    }));
-
-    const allRows = [...checkedRows, ...uncheckedToolRows, ...uncheckedHandToolRows];
-    const headers = Object.keys(allRows[0] || { Namn:'',Typ:'',Streckkod:'',Plats:'',Status:'',Skick:'',Inventerad:'',Resultat:'' });
-
-    const csvLines = [
-      `Inventeringsrapport - ${selectedLoc ? selectedLoc.name : 'Öppen inventering'} - ${new Date().toLocaleDateString('sv-SE')}`,
-      `Kontrollerade: ${checkedCount} / ${totalItems}`,
-      '',
-      headers.join(';'),
-      ...allRows.map(row => headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(';')),
-    ];
-
-    const blob = new Blob(['\ufeff' + csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `inventering_${selectedLoc ? selectedLoc.name.replace(/\s/g,'_') : 'open'}_${new Date().toISOString().slice(0,10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleReset = () => {
-    setMode(null);
-    setSelectedLocationId('');
-    setItemType('both');
-    setSessionStarted(false);
-    setCheckedIds(new Set());
-    setCheckLog([]);
-    setScannedItem(null);
-    setScannerActive(false);
-  };
-
-  // --- SETUP SCREEN ---
-  if (!sessionStarted) {
-    return (
-      <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inventeringskontroll</h1>
-            <p className="text-gray-500 mt-1">Välj typ av inventering för att starta</p>
-          </div>
-
-          {/* Mode selection */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button
-              onClick={() => setMode('location')}
-              className={`p-6 rounded-2xl border-2 text-left transition-all ${mode === 'location' ? 'border-[#8B1E1E] bg-[#8B1E1E]/5' : 'border-gray-200 bg-white hover:border-gray-300'}`}
-            >
-              <MapPin className={`w-8 h-8 mb-3 ${mode === 'location' ? 'text-[#8B1E1E]' : 'text-gray-400'}`} />
-              <h3 className="font-semibold text-gray-900">Platsinventering</h3>
-              <p className="text-sm text-gray-500 mt-1">Inventera ett specifikt kontor eller lager</p>
-            </button>
-
-            <button
-              onClick={() => setMode('open')}
-              className={`p-6 rounded-2xl border-2 text-left transition-all ${mode === 'open' ? 'border-[#8B1E1E] bg-[#8B1E1E]/5' : 'border-gray-200 bg-white hover:border-gray-300'}`}
-            >
-              <Globe className={`w-8 h-8 mb-3 ${mode === 'open' ? 'text-[#8B1E1E]' : 'text-gray-400'}`} />
-              <h3 className="font-semibold text-gray-900">Öppen inventering</h3>
-              <p className="text-sm text-gray-500 mt-1">Inventera fritt oavsett plats</p>
-            </button>
-          </div>
-
-          {mode === 'location' && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-              <div className="space-y-2">
-                <Label>Välj plats</Label>
-                <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Välj plats..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations.filter(l => l.is_active !== false).map(loc => (
-                      <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Vad ska inventeras?</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { value: 'tools', label: 'Maskiner', icon: Wrench },
-                    { value: 'handtools', label: 'Handredskap', icon: Shovel },
-                    { value: 'both', label: 'Båda', icon: Package },
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setItemType(opt.value)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${itemType === opt.value ? 'border-[#8B1E1E] bg-[#8B1E1E]/5 text-[#8B1E1E]' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
-                    >
-                      <opt.icon className="w-5 h-5" />
-                      <span className="text-xs font-medium">{opt.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {mode === 'open' && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-              <div className="space-y-2">
-                <Label>Vad ska inventeras?</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { value: 'tools', label: 'Maskiner', icon: Wrench },
-                    { value: 'handtools', label: 'Handredskap', icon: Shovel },
-                    { value: 'both', label: 'Båda', icon: Package },
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setItemType(opt.value)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${itemType === opt.value ? 'border-[#8B1E1E] bg-[#8B1E1E]/5 text-[#8B1E1E]' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
-                    >
-                      <opt.icon className="w-5 h-5" />
-                      <span className="text-xs font-medium">{opt.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <Button
-            onClick={() => setSessionStarted(true)}
-            disabled={!mode || (mode === 'location' && !selectedLocationId)}
-            className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-12 text-base"
-          >
-            Starta inventering
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // --- ACTIVE SESSION ---
-  const selectedLoc = locations.find(l => l.id === selectedLocationId);
+  const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen';
+  const typeLabel = sessionConfig.toolType === 'tools' ? 'Maskiner'
+    : sessionConfig.toolType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
@@ -327,44 +294,52 @@ export default function InventoryCheck() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inventering</h1>
-            <p className="text-gray-500 mt-1">
-              {selectedLoc ? selectedLoc.name : 'Öppen inventering'} &mdash; {
-                itemType === 'tools' ? 'Maskiner' : itemType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap'
-              }
-            </p>
+            <div className="flex items-center gap-2 mb-1">
+              <button onClick={() => onEnd(sessionConfig, checkedItems, scopedItems)} className="text-gray-400 hover:text-gray-600">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h1 className="text-2xl font-bold text-gray-900">Inventering pågår</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">{locationLabel}</Badge>
+              <Badge variant="outline">{typeLabel}</Badge>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleExportExcel} variant="outline" className="gap-2">
-              <Download className="w-4 h-4" />
-              Exportera rapport
-            </Button>
-            <Button onClick={handleReset} variant="outline" className="gap-2">
-              <RotateCcw className="w-4 h-4" />
-              Ny inventering
-            </Button>
-          </div>
+          <Button
+            onClick={() => onEnd(sessionConfig, checkedItems, scopedItems)}
+            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Avsluta & exportera
+          </Button>
         </div>
 
         {/* Progress */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-gray-600">Framsteg</span>
-            <span className="text-sm font-bold text-[#8B1E1E]">{checkedCount} / {totalItems}</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div
-              className="bg-[#8B1E1E] h-3 rounded-full transition-all duration-500"
-              style={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
-            />
-          </div>
-          {checkedCount === totalItems && totalItems > 0 && (
-            <div className="mt-4 p-3 bg-green-50 rounded-xl border border-green-200 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium text-green-900">Alla objekt kontrollerade!</span>
+        {sessionConfig.mode !== 'open' && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Framsteg</span>
+              <span className="text-sm font-bold text-[#8B1E1E]">{checkedCount} / {totalCount}</span>
             </div>
-          )}
-        </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="bg-[#8B1E1E] h-3 rounded-full transition-all duration-500"
+                style={{ width: `${totalCount > 0 ? (checkedCount / totalCount) * 100 : 0}%` }} />
+            </div>
+            {isDone && (
+              <div className="mt-4 p-3 bg-green-50 rounded-xl border border-green-200 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium text-green-900">Alla föremål kontrollerade!</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {sessionConfig.mode === 'open' && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 text-[#8B1E1E]" />
+            <span className="font-medium text-gray-800">{checkedCount} föremål kontrollerade</span>
+          </div>
+        )}
 
         {/* Scanner */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
@@ -372,21 +347,19 @@ export default function InventoryCheck() {
           {!scannerActive ? (
             <div className="space-y-4">
               <Button onClick={() => setScannerActive(true)} className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-14" size="lg">
-                <Camera className="w-5 h-5 mr-2" />
-                Starta kameraskanner
+                <Camera className="w-5 h-5 mr-2" />Starta kameraskanner
               </Button>
               <div className="relative">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
                 <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER</span></div>
               </div>
               <div className="flex gap-2">
-                <Input
-                  placeholder="Ange streckkod manuellt"
-                  value={manualBarcode}
-                  onChange={(e) => setManualBarcode(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleManualSearch()}
-                />
-                <Button onClick={handleManualSearch} disabled={!manualBarcode}><Search className="w-4 h-4" /></Button>
+                <Input placeholder="Ange streckkod manuellt" value={manualBarcode}
+                  onChange={e => setManualBarcode(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && (handleScan(manualBarcode), setManualBarcode(''))} />
+                <Button onClick={() => { handleScan(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode}>
+                  <Search className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           ) : (
@@ -397,7 +370,7 @@ export default function InventoryCheck() {
           )}
         </div>
 
-        {/* Scanned Item */}
+        {/* Scanned item */}
         {scannedItem && (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
             <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
@@ -409,7 +382,7 @@ export default function InventoryCheck() {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-lg text-gray-900">{scannedItem.name}</h3>
-                  <Badge variant="outline" className="text-xs">{scannedItemType === 'tool' ? 'Maskin' : 'Handredskap'}</Badge>
+                  <Badge variant="outline" className="text-xs">{scannedItem._type === 'handtool' ? 'Handredskap' : 'Maskin'}</Badge>
                 </div>
                 {scannedItem.location_name && (
                   <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
@@ -426,21 +399,20 @@ export default function InventoryCheck() {
                 <Select value={tempStatus} onValueChange={setTempStatus}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {scannedItemType === 'tool' ? (
-                      <>
-                        <SelectItem value="available">Tillgänglig</SelectItem>
-                        <SelectItem value="in_use">I bruk</SelectItem>
-                        <SelectItem value="i_lager">I lager</SelectItem>
-                        <SelectItem value="maintenance">Underhåll</SelectItem>
-                        <SelectItem value="missing">Saknas</SelectItem>
-                        <SelectItem value="retired">Kasserad</SelectItem>
-                      </>
-                    ) : (
+                    {scannedItem._type === 'handtool' ? (
                       <>
                         <SelectItem value="i_lager">I lager</SelectItem>
                         <SelectItem value="i_bruk">I bruk</SelectItem>
                         <SelectItem value="saknas">Saknas</SelectItem>
                         <SelectItem value="kasserad">Kasserad</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="available">Tillgänglig</SelectItem>
+                        <SelectItem value="in_use">I bruk</SelectItem>
+                        <SelectItem value="maintenance">Underhåll</SelectItem>
+                        <SelectItem value="missing">Saknas</SelectItem>
+                        <SelectItem value="retired">Kasserad</SelectItem>
                       </>
                     )}
                   </SelectContent>
@@ -451,19 +423,19 @@ export default function InventoryCheck() {
                 <Select value={tempCondition} onValueChange={setTempCondition}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {scannedItemType === 'tool' ? (
-                      <>
-                        <SelectItem value="new">Ny</SelectItem>
-                        <SelectItem value="good">Bra</SelectItem>
-                        <SelectItem value="fair">Okej</SelectItem>
-                        <SelectItem value="poor">Dålig</SelectItem>
-                      </>
-                    ) : (
+                    {scannedItem._type === 'handtool' ? (
                       <>
                         <SelectItem value="ny">Ny</SelectItem>
                         <SelectItem value="bra">Bra</SelectItem>
                         <SelectItem value="okej">Okej</SelectItem>
                         <SelectItem value="dålig">Dålig</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="new">Ny</SelectItem>
+                        <SelectItem value="good">Bra</SelectItem>
+                        <SelectItem value="fair">Okej</SelectItem>
+                        <SelectItem value="poor">Dålig</SelectItem>
                       </>
                     )}
                   </SelectContent>
@@ -473,28 +445,22 @@ export default function InventoryCheck() {
 
             <div className="flex gap-3 pt-2">
               <Button onClick={() => setScannedItem(null)} variant="outline" className="flex-1">Avbryt</Button>
-              <Button
-                onClick={handleConfirmCheck}
-                className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]"
-                disabled={updateToolMutation.isPending || updateHandToolMutation.isPending}
-              >
-                {(updateToolMutation.isPending || updateHandToolMutation.isPending)
-                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</>
-                  : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta kontroll</>}
+              <Button onClick={handleConfirm} className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]" disabled={updateToolMutation.isPending}>
+                {updateToolMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta</>}
               </Button>
             </div>
           </div>
         )}
 
-        {/* Unchecked items */}
-        {(uncheckedTools.length > 0 || uncheckedHandTools.length > 0) && (
+        {/* Unchecked */}
+        {sessionConfig.mode !== 'open' && uncheckedItems.length > 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
-              Ej kontrollerade ({uncheckedTools.length + uncheckedHandTools.length})
+              Ej kontrollerade ({uncheckedItems.length})
             </h2>
-            <div className="space-y-2 max-h-80 overflow-y-auto">
-              {[...uncheckedTools.map(t => ({...t, _type:'Maskin'})), ...uncheckedHandTools.map(t => ({...t, _type:'Handredskap'}))].map((item) => (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {uncheckedItems.map(item => (
                 <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
@@ -504,10 +470,13 @@ export default function InventoryCheck() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{item.name}</p>
-                      <p className="text-xs text-gray-500">{item._type}{item.barcode ? ` · ${item.barcode}` : ''}</p>
+                      {item.barcode && <p className="text-xs text-gray-500">Streckkod: {item.barcode}</p>}
                     </div>
                   </div>
-                  {item.location_name && <Badge variant="outline" className="text-xs">{item.location_name}</Badge>}
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">{item._type === 'handtool' ? 'Handredskap' : 'Maskin'}</Badge>
+                    {item.location_name && <Badge variant="outline" className="text-xs">{item.location_name}</Badge>}
+                  </div>
                 </div>
               ))}
             </div>
@@ -516,4 +485,93 @@ export default function InventoryCheck() {
       </div>
     </div>
   );
+}
+
+// ─── Summary Step ──────────────────────────────────────────────────────────────
+function SummaryStep({ sessionConfig, checkedItems, allItems, onNew }) {
+  const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen inventering';
+  const typeLabel = sessionConfig.toolType === 'tools' ? 'Maskiner'
+    : sessionConfig.toolType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
+  const date = new Date().toLocaleDateString('sv-SE');
+
+  return (
+    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+            <CheckCircle2 className="w-7 h-7 text-green-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Inventering klar!</h1>
+            <p className="text-gray-500 text-sm">{date}</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">{locationLabel}</Badge>
+            <Badge variant="outline">{typeLabel}</Badge>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="p-4 bg-gray-50 rounded-xl">
+              <p className="text-2xl font-bold text-gray-900">{allItems.length}</p>
+              <p className="text-sm text-gray-500">Totalt</p>
+            </div>
+            <div className="p-4 bg-green-50 rounded-xl">
+              <p className="text-2xl font-bold text-green-700">{checkedItems.size}</p>
+              <p className="text-sm text-gray-500">Kontrollerade</p>
+            </div>
+            <div className="p-4 bg-amber-50 rounded-xl">
+              <p className="text-2xl font-bold text-amber-700">{allItems.length - checkedItems.size}</p>
+              <p className="text-sm text-gray-500">Ej kontrollerade</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            onClick={() => exportToExcel(sessionConfig, checkedItems, allItems)}
+            className="flex-1 bg-green-700 hover:bg-green-800"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Exportera till Excel (CSV)
+          </Button>
+          <Button onClick={onNew} variant="outline" className="flex-1">
+            Ny inventering
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ────────────────────────────────────────────────────────────
+export default function InventoryCheck() {
+  const [phase, setPhase] = useState('setup'); // 'setup' | 'active' | 'summary'
+  const [sessionConfig, setSessionConfig] = useState(null);
+  const [finalChecked, setFinalChecked] = useState(new Set());
+  const [finalItems, setFinalItems] = useState([]);
+
+  const handleStart = (config) => {
+    setSessionConfig(config);
+    setPhase('active');
+  };
+
+  const handleEnd = (config, checkedItems, allItems) => {
+    setFinalChecked(checkedItems);
+    setFinalItems(allItems);
+    setPhase('summary');
+  };
+
+  const handleNew = () => {
+    setSessionConfig(null);
+    setFinalChecked(new Set());
+    setFinalItems([]);
+    setPhase('setup');
+  };
+
+  if (phase === 'setup') return <SetupStep onStart={handleStart} />;
+  if (phase === 'active') return <ActiveInventory sessionConfig={sessionConfig} onEnd={handleEnd} />;
+  if (phase === 'summary') return <SummaryStep sessionConfig={sessionConfig} checkedItems={finalChecked} allItems={finalItems} onNew={handleNew} />;
+  return null;
 }
