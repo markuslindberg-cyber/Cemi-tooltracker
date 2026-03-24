@@ -182,21 +182,21 @@ export default function ToolFormModal({
         <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              {isEditing ? 'Edit Tool' : 'Add New Tool'}
+              {isEditing ? 'Redigera verktyg' : 'Lägg till nytt verktyg'}
             </DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="details" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Tool Details</TabsTrigger>
-              {isEditing && <TabsTrigger value="service">Service History</TabsTrigger>}
+              <TabsTrigger value="details">Verktygsdetaljer</TabsTrigger>
+              {isEditing && <TabsTrigger value="service">Servicehistorik</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="details" className="space-y-6 py-4">
           {/* Template Selection - only show when adding new tool */}
           {!isEditing && (
             <div className="space-y-2 pb-4 border-b border-gray-200">
-              <Label>Start from Template (Optional)</Label>
+              <Label>Starta från mall (valfritt)</Label>
               <Popover open={templateOpen} onOpenChange={setTemplateOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -216,8 +216,8 @@ export default function ToolFormModal({
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0" align="start">
                   <Command>
-                    <CommandInput placeholder="Search tools..." />
-                    <CommandEmpty>No tool found.</CommandEmpty>
+                    <CommandInput placeholder="Sök verktyg..." />
+                    <CommandEmpty>Inget verktyg hittades.</CommandEmpty>
                     <CommandGroup className="max-h-64 overflow-auto">
                       <CommandItem
                         value="scratch"
@@ -229,7 +229,7 @@ export default function ToolFormModal({
                             templateToolId === '' ? "opacity-100" : "opacity-0"
                           )}
                         />
-                        Start from scratch
+                        Börja från grunden
                       </CommandItem>
                       {allTools?.map((t) => (
                         <CommandItem
@@ -251,14 +251,14 @@ export default function ToolFormModal({
                 </PopoverContent>
               </Popover>
               {templateToolId && (
-                <p className="text-xs text-gray-500">Category, subcategory, condition, and location copied from template</p>
+                <p className="text-xs text-gray-500">Kategori, underkategori, skick och plats kopierades från mallen</p>
               )}
             </div>
           )}
 
           {/* Image Upload */}
           <div className="space-y-2">
-            <Label>Tool Image</Label>
+            <Label>Verktygsbild</Label>
             <div className="flex items-center gap-4">
               <div className="w-24 h-24 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                 {formData.image_url ? (
@@ -280,7 +280,7 @@ export default function ToolFormModal({
               <label className="cursor-pointer">
                 <Button variant="outline" size="sm" asChild disabled={uploading}>
                   <span>
-                    {uploading ? 'Uploading...' : 'Upload Image'}
+                    {uploading ? 'Laddar upp...' : 'Ladda upp bild'}
                   </span>
                 </Button>
                 <input
@@ -296,41 +296,41 @@ export default function ToolFormModal({
           {/* Basic Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tool Name *</Label>
+              <Label>Verktygsnamn *</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder="e.g., Impact Driver"
+                placeholder="t.ex. Slagskruvdragare"
               />
             </div>
             <div className="space-y-2">
-              <Label>Manufacturer</Label>
+              <Label>Tillverkare</Label>
               <Input
                 value={formData.manufacturer}
                 onChange={(e) => handleChange('manufacturer', e.target.value)}
-                placeholder="e.g., DeWalt, Milwaukee, Makita"
+                placeholder="t.ex. DeWalt, Milwaukee, Makita"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Model / Serial Number</Label>
+              <Label>Modell / Serienummer</Label>
               <Input
                 value={formData.model_number}
                 onChange={(e) => handleChange('model_number', e.target.value)}
-                placeholder="e.g., 2857-20"
+                placeholder="t.ex. 2857-20"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Category *</Label>
+              <Label>Kategori *</Label>
               <Input
                 value={formData.category}
                 onChange={(e) => handleChange('category', e.target.value)}
-                placeholder="e.g., Power Tools, Hand Tools, etc."
+                placeholder="t.ex. Elmaskiner, Handverktyg, etc."
                 list="category-suggestions"
               />
               <datalist id="category-suggestions">
@@ -340,11 +340,11 @@ export default function ToolFormModal({
               </datalist>
             </div>
             <div className="space-y-2">
-              <Label>Subcategory</Label>
+              <Label>Underkategori</Label>
               <Input
                 value={formData.subcategory}
                 onChange={(e) => handleChange('subcategory', e.target.value)}
-                placeholder="e.g., Husqvarna, Stihl, etc."
+                placeholder="t.ex. Husqvarna, Stihl, etc."
                 list="subcategory-suggestions"
               />
               <datalist id="subcategory-suggestions">
@@ -363,35 +363,35 @@ export default function ToolFormModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="in_use">In Use</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                  <SelectItem value="missing">Missing</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
+                  <SelectItem value="available">Tillgänglig</SelectItem>
+                  <SelectItem value="in_use">I bruk</SelectItem>
+                  <SelectItem value="maintenance">Underhåll</SelectItem>
+                  <SelectItem value="missing">Saknas</SelectItem>
+                  <SelectItem value="retired">Kasserad</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Condition</Label>
+              <Label>Skick</Label>
               <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
+                  <SelectItem value="new">Ny</SelectItem>
+                  <SelectItem value="good">Bra</SelectItem>
+                  <SelectItem value="fair">Okej</SelectItem>
+                  <SelectItem value="poor">Dålig</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Barcode / Tag ID</Label>
+              <Label>Streckkod / Tag-ID</Label>
               <Input
                 value={formData.barcode}
                 onChange={(e) => handleChange('barcode', e.target.value)}
-                placeholder="Scan or enter barcode"
+                placeholder="Skanna eller ange streckkod"
               />
             </div>
           </div>
@@ -399,7 +399,7 @@ export default function ToolFormModal({
           {/* Purchase Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Purchase Date</Label>
+              <Label>Inköpsdatum</Label>
               <Input
                 type="date"
                 value={formData.purchase_date}
@@ -407,7 +407,7 @@ export default function ToolFormModal({
               />
             </div>
             <div className="space-y-2">
-              <Label>Purchase Price ($)</Label>
+              <Label>Inköpspris (kr)</Label>
               <Input
                 type="number"
                 value={formData.purchase_price}
@@ -419,19 +419,19 @@ export default function ToolFormModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Purchased From</Label>
+              <Label>Köpt från</Label>
               <Input
                 value={formData.purchase_location}
                 onChange={(e) => handleChange('purchase_location', e.target.value)}
-                placeholder="e.g., Home Depot, Amazon, Local Hardware Store"
+                placeholder="t.ex. Bauhaus, Clas Ohlson, lokalt järnhandel"
               />
             </div>
             <div className="space-y-2">
-              <Label>Invoice Number</Label>
+              <Label>Fakturanummer</Label>
               <Input
                 value={formData.invoice_number}
                 onChange={(e) => handleChange('invoice_number', e.target.value)}
-                placeholder="e.g., INV-12345"
+                placeholder="t.ex. FAK-12345"
               />
             </div>
           </div>
@@ -442,10 +442,10 @@ export default function ToolFormModal({
               <Label>Location</Label>
               <Select value={formData.location_id} onValueChange={(v) => handleChange('location_id', v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select location" />
+                  <SelectValue placeholder="Välj plats" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={null}>Not assigned</SelectItem>
+                  <SelectItem value={null}>Ej tilldelad</SelectItem>
                   {locations?.map((location) => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name}
@@ -455,13 +455,13 @@ export default function ToolFormModal({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Assigned To</Label>
+              <Label>Tilldelad till</Label>
               <Select value={formData.assigned_to_email} onValueChange={(v) => handleChange('assigned_to_email', v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select team member" />
+                  <SelectValue placeholder="Välj teammedlem" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={null}>Unassigned</SelectItem>
+                  <SelectItem value={null}>Ej tilldelad</SelectItem>
                   {teamMembers?.map((member) => (
                     <SelectItem key={member.email || member.id} value={member.email}>
                       {member.name}
@@ -474,11 +474,11 @@ export default function ToolFormModal({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>Anteckningar</Label>
             <Textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder="Add any additional notes..."
+              placeholder="Lägg till eventuella anteckningar..."
               rows={3}
             />
               </div>
@@ -487,14 +487,14 @@ export default function ToolFormModal({
             {isEditing && (
               <TabsContent value="service" className="space-y-4 py-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Service & Repair History</h3>
+                  <h3 className="text-lg font-semibold">Service- och reparationshistorik</h3>
                   <Button
                     onClick={() => setShowServiceModal(true)}
                     size="sm"
                     className="bg-[#8B1E1E] hover:bg-[#6B1515]"
                   >
                     <Wrench className="w-4 h-4 mr-2" />
-                    Add Service Record
+                    Lägg till servicepost
                   </Button>
                 </div>
                 <ServiceHistoryPanel serviceRecords={serviceRecords} />
@@ -504,7 +504,7 @@ export default function ToolFormModal({
 
           <DialogFooter className="gap-3">
             <Button variant="outline" onClick={handleClose}>
-              Cancel
+              Avbryt
             </Button>
             <Button
               onClick={handleSubmit}
@@ -514,10 +514,9 @@ export default function ToolFormModal({
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
+                  Sparar...
               ) : (
-                isEditing ? 'Save Changes' : 'Add Tool'
+                isEditing ? 'Spara ändringar' : 'Lägg till verktyg'
               )}
             </Button>
           </DialogFooter>
