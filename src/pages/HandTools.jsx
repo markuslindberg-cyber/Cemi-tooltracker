@@ -306,8 +306,8 @@ export default function HandTools() {
             return (
               <div key={`${group.name}-${group.category}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-gray-50">
+                  {/* Left: category image + name */}
                   <div className="flex items-center gap-3">
-                    {/* Category image */}
                     <div className="relative group/catimg">
                       <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
                         {categoryImageMap[group.category]?.image_url
@@ -322,7 +322,38 @@ export default function HandTools() {
                       </label>
                     </div>
                     <div>
-                    <h2 className="font-semibold text-gray-900">{group.name}</h2>
+                      <h2 className="font-semibold text-gray-900">{group.name}</h2>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {editingCategory?.oldName === group.category ? (
+                          <div className="flex items-center gap-1">
+                            <input
+                              autoFocus
+                              className="text-sm border border-gray-300 rounded px-2 py-0.5 w-32"
+                              value={editingCategory.newName}
+                              onChange={e => setEditingCategory(prev => ({ ...prev, newName: e.target.value }))}
+                              onKeyDown={e => { if (e.key === 'Enter') handleRenameCategory(); if (e.key === 'Escape') setEditingCategory(null); }}
+                            />
+                            <button onClick={handleRenameCategory} disabled={savingCategory} className="text-green-600 hover:text-green-700">
+                              {savingCategory ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                            </button>
+                            <button onClick={() => setEditingCategory(null)} className="text-gray-400 hover:text-gray-600"><XIcon className="w-3 h-3" /></button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 group/cat">
+                            <span className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''} · {group.items.length} st totalt</span>
+                            <button
+                              onClick={() => setEditingCategory({ oldName: group.category, newName: group.category })}
+                              className="opacity-0 group-hover/cat:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity ml-1"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Right: status badges */}
+                  <div className="flex gap-2 flex-wrap justify-end">
                     {Object.entries(byStatus).map(([s, count]) => (
                       <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
                     ))}
