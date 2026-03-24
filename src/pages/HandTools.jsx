@@ -170,6 +170,7 @@ export default function HandTools() {
           <Plus className="w-4 h-4" />
           Lägg till redskap
         </Button>
+        </div>
       </div>
 
       {/* Filters */}
