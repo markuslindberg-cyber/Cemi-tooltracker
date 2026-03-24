@@ -41,7 +41,8 @@ const subcategoriesByCategory = {
   'Arbetskläder': [
     'Termounderställ',
     'Mössor',
-    'Handskar',
+    'Sommarhandskar',
+    'Vinterhandskar',
     'Kepsar',
     'Shorts',
     'Knäbyxor',
@@ -67,12 +68,17 @@ const subcategoriesByCategory = {
   ],
 };
 
+const handskeSizes = ['12', '11', '10', '9', '8', '7'];
+
 const sizesByCategory = {
   'Arbetskläder varsel': ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'],
   'Arbetskläder': ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'],
   'Skor': ['47', '46', '45', '44', '43', '42', '41', '40', '39', '38', '37', '36', '35'],
   'Skyddsutrustning': ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS'],
+  'Sommarhandskar': handskeSizes,
+  'Vinterhandskar': handskeSizes,
 };
+
 const statuses = ['i_lager', 'i_bruk', 'saknas', 'kasserad'];
 const conditions = ['ny', 'bra', 'okej', 'dålig'];
 
@@ -317,7 +323,7 @@ export default function ArbetskläderUtrustningFormModal({
                 <SelectValue placeholder="Välj storlek" />
               </SelectTrigger>
               <SelectContent>
-                {(sizesByCategory[formData.category] || sizesByCategory['Arbetskläder varsel']).map((size) => (
+                {(sizesByCategory[formData.subcategory] || sizesByCategory[formData.category] || sizesByCategory['Arbetskläder varsel']).map((size) => (
                   <SelectItem key={size} value={size}>
                     {size}
                   </SelectItem>
