@@ -509,7 +509,8 @@ function ActiveInventory({ sessionConfig, onEnd }) {
 function SummaryStep({ sessionConfig, checkedItems, allItems, onNew }) {
   const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen inventering';
   const typeLabel = sessionConfig.toolType === 'tools' ? 'Maskiner'
-    : sessionConfig.toolType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
+    : sessionConfig.toolType === 'handtools' ? 'Handredskap'
+    : sessionConfig.toolType === 'arbetskläder' ? 'Arbetskläder' : 'Allt';
   const date = new Date().toLocaleDateString('sv-SE');
 
   return (
