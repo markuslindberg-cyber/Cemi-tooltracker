@@ -109,7 +109,7 @@ export default function LocationFormModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Kontaktperson</Label>
+              <Label>Ansvarig person</Label>
               <Input
                 value={formData.contact_person}
                 onChange={(e) => handleChange('contact_person', e.target.value)}

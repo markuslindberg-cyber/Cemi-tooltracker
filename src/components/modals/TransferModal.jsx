@@ -29,12 +29,10 @@ export default function TransferModal({
   isLoading,
 }) {
   const [toLocationId, setToLocationId] = useState('');
-  const [toPersonEmail, setToPersonEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [expectedReturnDate, setExpectedReturnDate] = useState('');
 
   const selectedLocation = locations?.find(l => l.id === toLocationId);
-  const selectedPerson = teamMembers?.find(m => m.email === toPersonEmail);
 
   const handleSubmit = () => {
     onSubmit({
@@ -44,10 +42,10 @@ export default function TransferModal({
       from_location_name: tool.location_name,
       to_location_id: toLocationId,
       to_location_name: selectedLocation?.name || '',
-      from_person_email: tool.assigned_to_email,
-      from_person_name: tool.assigned_to_name,
-      to_person_email: toPersonEmail,
-      to_person_name: selectedPerson?.name || '',
+      from_person_email: '',
+      from_person_name: '',
+      to_person_email: '',
+      to_person_name: '',
       transfer_date: new Date().toISOString(),
       expected_return_date: expectedReturnDate || null,
       status: 'active',
@@ -57,7 +55,6 @@ export default function TransferModal({
 
   const handleClose = () => {
     setToLocationId('');
-    setToPersonEmail('');
     setNotes('');
     setExpectedReturnDate('');
     onClose();
@@ -102,9 +99,6 @@ export default function TransferModal({
                 <p className="font-medium text-gray-900">
                   {selectedLocation?.name || 'Välj destination'}
                 </p>
-                {selectedPerson && (
-                  <p className="text-gray-600 mt-1">till {selectedPerson.name}</p>
-                )}
               </div>
             </div>
 
@@ -123,26 +117,6 @@ export default function TransferModal({
                     {locations?.filter(l => l.is_active !== false).map((location) => (
                       <SelectItem key={location.id} value={location.id}>
                         {location.name} ({location.type?.replace('_', ' ')})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-gray-400" />
-                  Tilldela till (valfritt)
-                </Label>
-                <Select value={toPersonEmail} onValueChange={setToPersonEmail}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Välj teammedlem" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>Ingen (ta bort tilldelning)</SelectItem>
-                    {teamMembers?.filter(m => m.is_active !== false).map((member) => (
-                      <SelectItem key={member.email || member.id} value={member.email}>
-                        {member.name} ({member.role})
                       </SelectItem>
                     ))}
                   </SelectContent>

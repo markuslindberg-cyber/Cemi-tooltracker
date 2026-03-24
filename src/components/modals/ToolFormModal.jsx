@@ -439,7 +439,7 @@ export default function ToolFormModal({
           {/* Assignment */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Location</Label>
+              <Label>Plats</Label>
               <Select value={formData.location_id} onValueChange={(v) => handleChange('location_id', v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Välj plats" />
@@ -449,22 +449,6 @@ export default function ToolFormModal({
                   {locations?.map((location) => (
                     <SelectItem key={location.id} value={location.id}>
                       {location.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Tilldelad till</Label>
-              <Select value={formData.assigned_to_email} onValueChange={(v) => handleChange('assigned_to_email', v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj teammedlem" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>Ej tilldelad</SelectItem>
-                  {teamMembers?.map((member) => (
-                    <SelectItem key={member.email || member.id} value={member.email}>
-                      {member.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
