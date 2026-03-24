@@ -20,13 +20,14 @@ function exportToExcel(sessionConfig, checkedItems, allItems) {
   const date = new Date().toLocaleDateString('sv-SE');
   const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen inventering';
   const typeLabel = sessionConfig.toolType === 'tools' ? 'Maskiner'
-    : sessionConfig.toolType === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
+    : sessionConfig.toolType === 'handtools' ? 'Handredskap'
+    : sessionConfig.toolType === 'arbetskläder' ? 'Arbetskläder' : 'Allt';
 
   const header = ['Namn', 'Typ', 'Kategori', 'Streckkod', 'Plats', 'Status', 'Skick', 'Inventeringsdatum', 'Resultat'];
 
   const toRow = (item, result) => [
     item.name,
-    item._type === 'handtool' ? 'Handredskap' : 'Maskin',
+    item._type === 'handtool' ? 'Handredskap' : item._type === 'arbetskläder' ? 'Arbetskläder' : 'Maskin',
     item.category || '',
     item.barcode || '',
     item.location_name || '',
@@ -64,7 +65,7 @@ function exportToExcel(sessionConfig, checkedItems, allItems) {
 function SetupStep({ onStart }) {
   const [mode, setMode] = useState(''); // 'location' | 'open'
   const [locationId, setLocationId] = useState('');
-  const [toolType, setToolType] = useState('both'); // 'tools' | 'handtools' | 'both'
+  const [toolType, setToolType] = useState('all'); // 'tools' | 'handtools' | 'arbetskläder' | 'all'
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
@@ -220,7 +221,7 @@ function ActiveInventory({ sessionConfig, onEnd }) {
     queryFn: () => base44.entities.HandTool.list('-updated_date', 500),
   });
 
-  const { data: arbetskläder = [] } = useQuery({
+  const { data: arbetskläderData = [] } = useQuery({
     queryKey: ['arbetskläder'],
     queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
   });
@@ -232,14 +233,14 @@ function ActiveInventory({ sessionConfig, onEnd }) {
       return base44.entities.Tool.update(id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['tools']);
-      queryClient.invalidateQueries(['handtools']);
-      queryClient.invalidateQueries(['arbetskläder']);
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+      queryClient.invalidateQueries({ queryKey: ['handtools'] });
+      queryClient.invalidateQueries({ queryKey: ['arbetskläder'] });
     },
   });
 
   // Build scoped item list
-  const scopedItems = React.useMemo(() => {
+  const scopedItems = useMemo(() => {
     const { mode, locationId, toolType } = sessionConfig;
     let toolList = [];
     let handToolList = [];
@@ -254,12 +255,12 @@ function ActiveInventory({ sessionConfig, onEnd }) {
       if (mode === 'location') handToolList = handToolList.filter(t => t.location_id === locationId);
     }
     if (toolType !== 'tools' && toolType !== 'handtools') {
-      arbetskläderList = arbetskläder.map(a => ({ ...a, _type: 'arbetskläder' }));
+      arbetskläderList = arbetskläderData.map(a => ({ ...a, _type: 'arbetskläder' }));
       if (mode === 'location') arbetskläderList = arbetskläderList.filter(a => a.location_id === locationId);
     }
 
     return [...toolList, ...handToolList, ...arbetskläderList];
-  }, [tools, handTools, arbetskläder, sessionConfig]);
+  }, [tools, handTools, arbetskläderData, sessionConfig]);
 
   useEffect(() => {
     if (!scannerActive) return;
@@ -274,7 +275,7 @@ function ActiveInventory({ sessionConfig, onEnd }) {
   const handleScan = (barcode) => {
     const item = scopedItems.find(t => t.barcode === barcode)
       || (sessionConfig.mode === 'open'
-        ? [...tools.map(t => ({ ...t, _type: 'tool' })), ...handTools.map(t => ({ ...t, _type: 'handtool' })), ...arbetskläder.map(a => ({ ...a, _type: 'arbetskläder' }))].find(t => t.barcode === barcode)
+        ? [...tools.map(t => ({ ...t, _type: 'tool' })), ...handTools.map(t => ({ ...t, _type: 'handtool' })), ...arbetskläderData.map(a => ({ ...a, _type: 'arbetskläder' }))].find(t => t.barcode === barcode)
         : null);
     if (item) {
       setScannedItem(item);
@@ -418,21 +419,21 @@ function ActiveInventory({ sessionConfig, onEnd }) {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {(scannedItem._type === 'handtool' || scannedItem._type === 'arbetskläder') ? (
-                            <>
-                              <SelectItem value="i_lager">I lager</SelectItem>
-                              <SelectItem value="i_bruk">I bruk</SelectItem>
-                              <SelectItem value="saknas">Saknas</SelectItem>
-                              <SelectItem value="kasserad">Kasserad</SelectItem>
-                            </>
-                          ) : (
-                            <>
-                              <SelectItem value="available">Tillgänglig</SelectItem>
-                              <SelectItem value="in_use">I bruk</SelectItem>
-                              <SelectItem value="maintenance">Underhåll</SelectItem>
-                              <SelectItem value="missing">Saknas</SelectItem>
-                              <SelectItem value="retired">Kasserad</SelectItem>
-                            </>
-                          )}
+                      <>
+                        <SelectItem value="i_lager">I lager</SelectItem>
+                        <SelectItem value="i_bruk">I bruk</SelectItem>
+                        <SelectItem value="saknas">Saknas</SelectItem>
+                        <SelectItem value="kasserad">Kasserad</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="available">Tillgänglig</SelectItem>
+                        <SelectItem value="in_use">I bruk</SelectItem>
+                        <SelectItem value="maintenance">Underhåll</SelectItem>
+                        <SelectItem value="missing">Saknas</SelectItem>
+                        <SelectItem value="retired">Kasserad</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -442,20 +443,20 @@ function ActiveInventory({ sessionConfig, onEnd }) {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {(scannedItem._type === 'handtool' || scannedItem._type === 'arbetskläder') ? (
-                        <>
-                          <SelectItem value="ny">Ny</SelectItem>
-                          <SelectItem value="bra">Bra</SelectItem>
-                          <SelectItem value="okej">Okej</SelectItem>
-                          <SelectItem value="dålig">Dålig</SelectItem>
-                        </>
-                      ) : (
-                        <>
-                          <SelectItem value="new">Ny</SelectItem>
-                          <SelectItem value="good">Bra</SelectItem>
-                          <SelectItem value="fair">Okej</SelectItem>
-                          <SelectItem value="poor">Dålig</SelectItem>
-                        </>
-                      )}
+                      <>
+                        <SelectItem value="ny">Ny</SelectItem>
+                        <SelectItem value="bra">Bra</SelectItem>
+                        <SelectItem value="okej">Okej</SelectItem>
+                        <SelectItem value="dålig">Dålig</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="new">Ny</SelectItem>
+                        <SelectItem value="good">Bra</SelectItem>
+                        <SelectItem value="fair">Okej</SelectItem>
+                        <SelectItem value="poor">Dålig</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
