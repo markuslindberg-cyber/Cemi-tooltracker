@@ -193,19 +193,7 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
                     <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm text-gray-900">{item.name}</p>
-                        <p className="text-xs text-gray-500">{item.subcategory} • Tillgängligt: {item.quantity}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="number" 
-                          min="1" 
-                          value={item.checkoutQty}
-                          onChange={e => updateQty(item.id, parseInt(e.target.value))}
-                          className="w-14 px-2 py-1 border border-gray-300 rounded text-sm text-center"
-                        />
-                        <button onClick={() => removeItem(item.id)} className="p-1 hover:bg-gray-200 rounded">
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
+                        <p className="text-xs text-gray-500">{item.subcategory} {item.size && `• Storlek: ${item.size}`} • Tillgängligt: {item.quantity}</p>
                       </div>
                     </div>
                   ))}
@@ -240,10 +228,8 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
                   <div key={item.id} className="p-3 flex justify-between items-center">
                     <div>
                       <p className="font-medium text-sm">{item.name}</p>
-                      <p className="text-xs text-gray-500">{item.subcategory}</p>
+                      <p className="text-xs text-gray-500">{item.subcategory} {item.size && `• Storlek: ${item.size}`}</p>
                     </div>
-                    <Badge variant="outline">{item.checkoutQty} st</Badge>
-                  </div>
                 ))}
               </div>
             </div>
