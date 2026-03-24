@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, X, Package, MapPin, Edit, Trash2, Grid, List } from 'lucide-react';
+import { Plus, Search, X, Package, MapPin, Edit, Trash2, Grid, List, Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
 import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
 
@@ -34,6 +34,7 @@ export default function HandTools() {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editTool, setEditTool] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
+  const [importing, setImporting] = useState(false);
 
   const { data: handTools = [], isLoading } = useQuery({
     queryKey: ['handtools'],
@@ -71,6 +72,75 @@ export default function HandTools() {
 
   const hasFilters = search || statusFilter !== 'all' || categoryFilter !== 'all' || locationFilter !== 'all';
 
+  const handleDownloadTemplate = () => {
+    const headers = ['name', 'manufacturer', 'category', 'subcategory', 'status', 'condition', 'purchase_date', 'purchase_price', 'location_name', 'notes'];
+    const exampleRow = ['Räfsa', 'Fiskars', 'Räfsor', '', 'i_lager', 'bra', '2026-01-01', '199', 'Huvud lager', 'Exempelrad'];
+    const emptyRows = Array(19).fill(Array(10).fill(''));
+    const csvContent = [
+      headers.join(','),
+      exampleRow.map(c => `"${c}"`).join(','),
+      ...emptyRows.map(r => r.join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(blob));
+    link.setAttribute('download', 'handredskap_mall.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      file_url,
+      json_schema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          manufacturer: { type: 'string' },
+          category: { type: 'string' },
+          subcategory: { type: 'string' },
+          status: { type: 'string' },
+          condition: { type: 'string' },
+          purchase_date: { type: 'string' },
+          purchase_price: { type: 'number' },
+          location_name: { type: 'string' },
+          notes: { type: 'string' },
+        }
+      }
+    });
+    if (result.status === 'success' && result.output) {
+      const rows = Array.isArray(result.output) ? result.output : [result.output];
+      const valid = rows.filter(r => r.name && r.name.trim());
+      if (valid.length > 0) {
+        await base44.entities.HandTool.bulkCreate(valid.map(r => ({
+          name: r.name,
+          manufacturer: r.manufacturer || '',
+          category: r.category || 'Okategoriserad',
+          subcategory: r.subcategory || '',
+          status: r.status || 'i_lager',
+          condition: r.condition || 'bra',
+          purchase_date: r.purchase_date || undefined,
+          purchase_price: r.purchase_price || undefined,
+          location_name: r.location_name || '',
+          notes: r.notes || '',
+        })));
+        queryClient.invalidateQueries(['handtools']);
+        alert(`${valid.length} redskap importerades!`);
+      } else {
+        alert('Inga gältiga rader hittades i filen.');
+      }
+    } else {
+      alert('Kunde inte läsa filen: ' + (result.details || 'Okänt fel'));
+    }
+    setImporting(false);
+    e.target.value = '';
+  };
+
   const clearFilters = () => {
     setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setLocationFilter('all');
   };
@@ -83,7 +153,20 @@ export default function HandTools() {
           <h1 className="text-2xl font-bold text-gray-900">Handredskap</h1>
           <p className="text-gray-500 text-sm mt-1">{handTools.length} redskap totalt</p>
         </div>
-        <Button onClick={() => setShowBatchModal(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleDownloadTemplate} className="gap-2">
+            <FileSpreadsheet className="w-4 h-4" />
+            Ladda ned mall
+          </Button>
+          <label>
+            <Button variant="outline" disabled={importing} asChild>
+              <span className="gap-2 cursor-pointer">
+                {importing ? <><Loader2 className="w-4 h-4 animate-spin" />Importerar...</> : <><Upload className="w-4 h-4" />Importera CSV</>}
+              </span>
+            </Button>
+            <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImport} className="hidden" disabled={importing} />
+          </label>
+          <Button onClick={() => setShowBatchModal(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] gap-2">
           <Plus className="w-4 h-4" />
           Lägg till redskap
         </Button>
