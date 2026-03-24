@@ -355,46 +355,18 @@ export default function ToolFormModal({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>Streckkod / Tag-ID</Label>
+            <Input
+              value={formData.barcode}
+              onChange={(e) => handleChange('barcode', e.target.value)}
+              placeholder="Skanna eller ange streckkod"
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(v) => handleChange('status', v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available">Tillgänglig</SelectItem>
-                  <SelectItem value="in_use">I bruk</SelectItem>
-                  <SelectItem value="maintenance">Underhåll</SelectItem>
-                  <SelectItem value="missing">Saknas</SelectItem>
-                  <SelectItem value="retired">Kasserad</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Skick</Label>
-              <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">Ny</SelectItem>
-                  <SelectItem value="good">Bra</SelectItem>
-                  <SelectItem value="fair">Okej</SelectItem>
-                  <SelectItem value="poor">Dålig</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Streckkod / Tag-ID</Label>
-              <Input
-                value={formData.barcode}
-                onChange={(e) => handleChange('barcode', e.target.value)}
-                placeholder="Skanna eller ange streckkod"
-              />
-            </div>
-          </div>
 
           {/* Purchase Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
