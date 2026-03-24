@@ -17,6 +17,7 @@ import {
   Wrench,
   Shovel,
   ClipboardList,
+  Shirt,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -31,7 +32,7 @@ const navigation = [
   { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
   { name: 'Maskiner', page: 'Inventory', icon: Package },
   { name: 'Handredskap', page: 'HandTools', icon: Shovel },
-  { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shovel },
+  { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shirt },
   { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench },
   { name: 'Inventeringsrapporter', page: 'InventoryReports', icon: ClipboardList },
   { name: 'Platser', page: 'Locations', icon: MapPin },
