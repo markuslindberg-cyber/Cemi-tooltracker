@@ -15,6 +15,7 @@ import {
   LogOut,
   ChevronDown,
   Wrench,
+  Shovel,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -27,11 +28,12 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
-  { name: 'Inventory', page: 'Inventory', icon: Package },
-  { name: 'Inventory Check', page: 'InventoryCheck', icon: Wrench },
-  { name: 'Locations', page: 'Locations', icon: MapPin },
+  { name: 'Inventarie', page: 'Inventory', icon: Package },
+  { name: 'Handredskap', page: 'HandTools', icon: Shovel },
+  { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench },
+  { name: 'Platser', page: 'Locations', icon: MapPin },
   { name: 'Team', page: 'Team', icon: Users },
-  { name: 'Transfers', page: 'Transfers', icon: ArrowRightLeft },
+  { name: 'Förflyttningar', page: 'Transfers', icon: ArrowRightLeft },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -86,7 +88,7 @@ export default function Layout({ children, currentPageName }) {
               return (
                 <Link
                   key={item.page}
-                  to={createPageUrl(item.page)}
+                  to={item.page === 'HandTools' ? '/HandTools' : createPageUrl(item.page)}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
