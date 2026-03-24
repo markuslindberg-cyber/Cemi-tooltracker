@@ -23,11 +23,21 @@ const statusMap = {
   kasserad: { label: 'Kasserad', class: 'bg-gray-100 text-gray-800' },
 };
 
+const conditionMap = {
+  ny: { label: 'Ny' },
+  bra: { label: 'Bra' },
+  okej: { label: 'Okej' },
+  dålig: { label: 'Dålig' },
+};
+
 export default function ArbetskläderUtrustning() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
+  const [sizeFilter, setSizeFilter] = useState('all');
+  const [manufacturerFilter, setManufacturerFilter] = useState('all');
+  const [conditionFilter, setConditionFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -45,7 +55,9 @@ export default function ArbetskläderUtrustning() {
   });
 
   const categories = [...new Set(items.map(i => i.category))].sort();
-  const subcategories = [...new Set(items.map(i => i.subcategory))].sort();
+  const subcategories = [...new Set(items.map(i => i.subcategory).filter(Boolean))].sort();
+  const sizes = [...new Set(items.map(i => i.size).filter(Boolean))].sort();
+  const manufacturers = [...new Set(items.map(i => i.manufacturer).filter(Boolean))].sort();
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
@@ -56,10 +68,13 @@ export default function ArbetskläderUtrustning() {
       const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
       const matchesSubcategory = subcategoryFilter === 'all' || item.subcategory === subcategoryFilter;
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+      const matchesSize = sizeFilter === 'all' || item.size === sizeFilter;
+      const matchesManufacturer = manufacturerFilter === 'all' || item.manufacturer === manufacturerFilter;
+      const matchesCondition = conditionFilter === 'all' || item.condition === conditionFilter;
 
-      return matchesSearch && matchesCategory && matchesSubcategory && matchesStatus;
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesStatus && matchesSize && matchesManufacturer && matchesCondition;
     });
-  }, [items, search, statusFilter, categoryFilter, subcategoryFilter]);
+  }, [items, search, statusFilter, categoryFilter, subcategoryFilter, sizeFilter, manufacturerFilter, conditionFilter]);
 
   const deleteItem = async (id) => {
     if (confirm('Är du säker på att du vill ta bort denna artikel?')) {
@@ -133,16 +148,39 @@ export default function ArbetskläderUtrustning() {
           onCategoryChange={setCategoryFilter}
           subcategoryFilter={subcategoryFilter}
           onSubcategoryChange={setSubcategoryFilter}
+          locationFilter={sizeFilter}
+          onLocationChange={setSizeFilter}
+          manufacturerFilter={manufacturerFilter}
+          onManufacturerChange={setManufacturerFilter}
+          conditionFilter={conditionFilter}
+          onConditionChange={setConditionFilter}
           availableCategories={categories}
           availableSubcategories={subcategories}
+          availableLocations={sizes}
+          availableManufacturers={manufacturers}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onClearFilters={() => {
             setStatusFilter('all');
             setCategoryFilter('all');
             setSubcategoryFilter('all');
+            setSizeFilter('all');
+            setManufacturerFilter('all');
+            setConditionFilter('all');
           }}
           showViewToggle={true}
+          statusOptions={[
+            { value: 'i_lager', label: 'I lager' },
+            { value: 'i_bruk', label: 'I bruk' },
+            { value: 'saknas', label: 'Saknas' },
+            { value: 'kasserad', label: 'Kasserad' },
+          ]}
+          conditionOptions={[
+            { value: 'ny', label: 'Ny' },
+            { value: 'bra', label: 'Bra' },
+            { value: 'okej', label: 'Okej' },
+            { value: 'dålig', label: 'Dålig' },
+          ]}
         />
 
         {/* Items Display */}
@@ -183,6 +221,18 @@ export default function ArbetskläderUtrustning() {
                     <span className="text-gray-600">Kategori:</span>
                     <Badge variant="outline">{item.category}</Badge>
                   </div>
+                  {item.size && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Storlek:</span>
+                      <span className="font-medium">{item.size}</span>
+                    </div>
+                  )}
+                  {item.manufacturer && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Tillverkare:</span>
+                      <span className="font-medium">{item.manufacturer}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Antal:</span>
                     <span className="font-medium">{item.quantity || 0}</span>
@@ -193,6 +243,12 @@ export default function ArbetskläderUtrustning() {
                       {statusMap[item.status]?.label || item.status}
                     </Badge>
                   </div>
+                  {item.condition && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Skick:</span>
+                      <Badge variant="outline">{conditionMap[item.condition]?.label || item.condition}</Badge>
+                    </div>
+                  )}
                   {item.location_name && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Plats:</span>
