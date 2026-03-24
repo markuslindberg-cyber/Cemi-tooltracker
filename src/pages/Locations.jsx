@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import LocationFormModal from '@/components/modals/LocationFormModal';
@@ -22,6 +23,8 @@ import {
   User,
   Grid,
   List,
+  Shovel,
+  ChevronRight,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -52,9 +55,16 @@ export default function Locations() {
     queryFn: () => base44.entities.Location.list('-created_date'),
   });
 
+  const navigate = useNavigate();
+
   const { data: tools = [] } = useQuery({
     queryKey: ['tools'],
     queryFn: () => base44.entities.Tool.list(),
+  });
+
+  const { data: handTools = [] } = useQuery({
+    queryKey: ['handtools'],
+    queryFn: () => base44.entities.HandTool.list(),
   });
 
   const filteredLocations = locations.filter(location =>
@@ -64,6 +74,10 @@ export default function Locations() {
 
   const getToolCount = (locationId) => {
     return tools.filter(t => t.location_id === locationId).length;
+  };
+
+  const getHandToolCount = (locationId) => {
+    return handTools.filter(t => t.location_id === locationId).length;
   };
 
   const handleSaveLocation = async (locationData) => {
@@ -172,7 +186,8 @@ export default function Locations() {
               return (
                 <div
                   key={location.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                  onClick={() => navigate(`/locations/${location.id}`)}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -199,10 +214,14 @@ export default function Locations() {
                     <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
                     {location.address && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>}
                     <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-gray-500"><Package className="w-4 h-4" /><span>Verktyg</span></div>
-                        <span className="font-medium text-gray-900">{toolCount}</span>
-                      </div>
+                             <div className="flex items-center justify-between text-sm">
+                               <div className="flex items-center gap-2 text-gray-500"><Package className="w-4 h-4" /><span>Maskiner</span></div>
+                               <span className="font-medium text-gray-900">{toolCount}</span>
+                             </div>
+                             <div className="flex items-center justify-between text-sm">
+                               <div className="flex items-center gap-2 text-gray-500"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
+                               <span className="font-medium text-gray-900">{getHandToolCount(location.id)}</span>
+                             </div>
                       {location.contact_person && <div className="flex items-center gap-2 text-sm text-gray-500"><User className="w-4 h-4" /><span>{location.contact_person}</span></div>}
                       {location.contact_phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{location.contact_phone}</span></div>}
                     </div>
@@ -219,7 +238,7 @@ export default function Locations() {
                 const Icon = type.icon;
                 const toolCount = getToolCount(location.id);
                 return (
-                  <div key={location.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                  <div key={location.id} onClick={() => navigate(`/locations/${location.id}`)} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors cursor-pointer">
                     <div className={`p-2 rounded-lg ${type.color.split(' ')[0]}`}>
                       <Icon className={`w-5 h-5 ${type.color.split(' ')[1]}`} />
                     </div>
@@ -233,6 +252,7 @@ export default function Locations() {
                     <div className="flex items-center gap-6 text-sm text-gray-500">
                       {location.contact_person && <span className="hidden sm:block">{location.contact_person}</span>}
                       <span className="flex items-center gap-1"><Package className="w-4 h-4" />{toolCount}</span>
+                      <span className="flex items-center gap-1"><Shovel className="w-4 h-4" />{getHandToolCount(location.id)}</span>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
