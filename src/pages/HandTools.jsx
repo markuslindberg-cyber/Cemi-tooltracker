@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2, Check, X as XIcon } from 'lucide-react';
 import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
@@ -38,6 +38,8 @@ export default function HandTools() {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editTool, setEditTool] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
+  const [editingCategory, setEditingCategory] = useState(null); // { oldName, newName }
+  const [savingCategory, setSavingCategory] = useState(false);
   const [importing, setImporting] = useState(false);
 
   const { data: handTools = [], isLoading } = useQuery({
@@ -73,6 +75,19 @@ export default function HandTools() {
     acc[key].items.push(t);
     return acc;
   }, {});
+
+  const handleRenameCategory = async () => {
+    if (!editingCategory || editingCategory.newName.trim() === editingCategory.oldName) {
+      setEditingCategory(null);
+      return;
+    }
+    setSavingCategory(true);
+    const toUpdate = handTools.filter(t => t.category === editingCategory.oldName);
+    await Promise.all(toUpdate.map(t => base44.entities.HandTool.update(t.id, { category: editingCategory.newName.trim() })));
+    queryClient.invalidateQueries(['handtools']);
+    setSavingCategory(false);
+    setEditingCategory(null);
+  };
 
   const handleDelete = async (id) => {
     await base44.entities.HandTool.delete(id);
@@ -251,7 +266,33 @@ export default function HandTools() {
                 <div className="flex items-center justify-between p-4 border-b border-gray-50">
                   <div>
                     <h2 className="font-semibold text-gray-900">{group.name}</h2>
-                    <p className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''} · {group.items.length} st totalt</p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      {editingCategory?.oldName === group.category ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            autoFocus
+                            className="text-sm border border-gray-300 rounded px-2 py-0.5 w-32"
+                            value={editingCategory.newName}
+                            onChange={e => setEditingCategory(prev => ({ ...prev, newName: e.target.value }))}
+                            onKeyDown={e => { if (e.key === 'Enter') handleRenameCategory(); if (e.key === 'Escape') setEditingCategory(null); }}
+                          />
+                          <button onClick={handleRenameCategory} disabled={savingCategory} className="text-green-600 hover:text-green-700">
+                            {savingCategory ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                          </button>
+                          <button onClick={() => setEditingCategory(null)} className="text-gray-400 hover:text-gray-600"><XIcon className="w-3 h-3" /></button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 group/cat">
+                          <span className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''} · {group.items.length} st totalt</span>
+                          <button
+                            onClick={() => setEditingCategory({ oldName: group.category, newName: group.category })}
+                            className="opacity-0 group-hover/cat:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity ml-1"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2 flex-wrap justify-end">
                     {Object.entries(byStatus).map(([s, count]) => (
