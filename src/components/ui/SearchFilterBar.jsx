@@ -75,6 +75,8 @@ export default function SearchFilterBar({
   availableCategories = [],
   sortBy,
   onSortByChange,
+  statusOptions: customStatusOptions,
+  conditionOptions: customConditionOptions,
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -97,20 +99,20 @@ export default function SearchFilterBar({
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const statusOptions = [
-    { value: 'available', label: 'Available' },
-    { value: 'in_use', label: 'In Use' },
-    { value: 'i_lager', label: 'I Lager' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'missing', label: 'Missing' },
-    { value: 'retired', label: 'Retired' },
+  const statusOptions = customStatusOptions || [
+    { value: 'available', label: 'Tillgänglig' },
+    { value: 'in_use', label: 'I bruk' },
+    { value: 'i_lager', label: 'I lager' },
+    { value: 'maintenance', label: 'Underhåll' },
+    { value: 'missing', label: 'Saknas' },
+    { value: 'retired', label: 'Kasserad' },
   ];
 
-  const conditionOptions = [
-    { value: 'new', label: 'New' },
-    { value: 'good', label: 'Good' },
-    { value: 'fair', label: 'Fair' },
-    { value: 'poor', label: 'Poor' },
+  const conditionOptions = customConditionOptions || [
+    { value: 'new', label: 'Ny' },
+    { value: 'good', label: 'Bra' },
+    { value: 'fair', label: 'Okej' },
+    { value: 'poor', label: 'Dålig' },
   ];
 
   return (
