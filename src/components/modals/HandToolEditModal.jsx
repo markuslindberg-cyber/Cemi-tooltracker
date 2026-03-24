@@ -94,20 +94,15 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
           </div>
 
           <div className="space-y-1">
-            <Label>Plats</Label>
-            <Select value={form.location_id || ''} onValueChange={v => handleChange('location_id', v)}>
-              <SelectTrigger><SelectValue placeholder="Välj plats" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={null}>Ingen plats</SelectItem>
-                {locations?.map(loc => (
-                  <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Bildlänk (URL)</Label>
+            <Input value={form.image_url || ''} onChange={e => handleChange('image_url', e.target.value)} placeholder="https://..." />
+            {form.image_url && (
+              <img src={form.image_url} alt="preview" className="mt-2 h-20 w-20 object-cover rounded-lg border" onError={e => e.target.style.display='none'} />
+            )}
           </div>
 
           <div className="space-y-1">
-            <Label>Anteckningar</Label>
+            <Label>Plats</Label>
             <Textarea value={form.notes || ''} onChange={e => handleChange('notes', e.target.value)} rows={2} />
           </div>
         </div>
