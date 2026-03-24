@@ -131,11 +131,12 @@ function SetupStep({ onStart }) {
 
             <div className="space-y-2">
               <Label>Vad ska inventeras?</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {[
                   { value: 'tools', label: 'Maskiner' },
                   { value: 'handtools', label: 'Handredskap' },
-                  { value: 'both', label: 'Båda' },
+                  { value: 'arbetskläder', label: 'Arbetskläder' },
+                  { value: 'all', label: 'Alla' },
                 ].map(opt => (
                   <button
                     key={opt.value}
