@@ -229,17 +229,13 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
                       <p className="font-medium text-sm">{item.name}</p>
                       <p className="text-xs text-gray-500">{item.subcategory}{item.size && ` • Storlek: ${item.size}`}</p>
                     </div>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Tillbaka</Button>
-              <Button 
-                onClick={handleConfirm}
-                disabled={updateMutation.isPending}
-                className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]"
-              >
-                {updateMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : <><Check className="w-4 h-4 mr-2" />Bekräfta utplockering</>}
-              </Button>
+                    <Badge variant="outline">{item.checkoutQty} st</Badge>
+                  </div>
+                ))}
+                </div>
+                </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
