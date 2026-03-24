@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -102,6 +103,11 @@ export default function ArbetskläderUtrustningFormModal({
   item,
   locations,
 }) {
+  const { data: allItems = [] } = useQuery({
+    queryKey: ['arbetskläder-utrustning'],
+    queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
+  });
+
   const [formData, setFormData] = useState({
     name: '',
     manufacturer: '',
@@ -121,6 +127,7 @@ export default function ArbetskläderUtrustningFormModal({
   const [isLoading, setIsLoading] = useState(false);
   const [customSubcategory, setCustomSubcategory] = useState('');
   const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
 
   useEffect(() => {
     if (item) {
@@ -142,6 +149,7 @@ export default function ArbetskläderUtrustningFormModal({
       });
       setCustomSubcategory('');
       setShowCustomSubcategory(false);
+      setSelectedTemplate('');
     } else {
       setFormData({
         name: '',
@@ -159,8 +167,32 @@ export default function ArbetskläderUtrustningFormModal({
         barcode: '',
         notes: '',
       });
+      setSelectedTemplate('');
     }
   }, [item, isOpen]);
+
+  const loadTemplate = (templateId) => {
+    const template = allItems.find(t => t.id === templateId);
+    if (template) {
+      setFormData({
+        name: template.name || '',
+        manufacturer: template.manufacturer || '',
+        category: template.category || '',
+        subcategory: template.subcategory || '',
+        size: template.size || '',
+        quantity: 0,
+        status: 'i_lager',
+        condition: 'ny',
+        location_id: '',
+        location_name: '',
+        purchase_date: '',
+        purchase_price: '',
+        barcode: '',
+        notes: '',
+      });
+      setSelectedTemplate(templateId);
+    }
+  };
 
   const handleChange = (field, value) => {
     setFormData(prev => {
@@ -216,6 +248,30 @@ export default function ArbetskläderUtrustningFormModal({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Använd som mall (endast när nya arbetskläder skapas) */}
+          {!item && allItems.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Använd tidigare arbetskläder som mall
+              </label>
+              <Select value={selectedTemplate} onValueChange={loadTemplate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj arbetskläder att kopiera från" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allItems.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name} - {template.manufacturer || 'Okänd'} ({template.category})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-600 mt-2">
+                Välj en tidigare artikel för att kopiera dess egenskaper.
+              </p>
+            </div>
+          )}
+
           {/* Namn */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
