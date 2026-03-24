@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Copy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from '@tanstack/react-query';
 
@@ -18,8 +18,10 @@ const defaultForm = {
   category: '',
   subcategory: '',
   condition: 'bra',
+  status: 'i_lager',
   purchase_date: '',
   purchase_price: '',
+  image_url: '',
   notes: '',
 };
 
@@ -85,12 +87,13 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
           category: form.category,
           subcategory: form.subcategory,
           condition: form.condition,
+          status: form.status || 'i_lager',
           notes: form.notes,
+          image_url: form.image_url || undefined,
           purchase_date: form.purchase_date || undefined,
           purchase_price: form.purchase_price ? parseFloat(form.purchase_price) : undefined,
           location_id: dist.location_id || undefined,
           location_name: dist.location_name || undefined,
-          status: 'i_lager',
         });
       }
     }
@@ -108,6 +111,35 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Lägg till handredskap</DialogTitle>
         </DialogHeader>
+
+        {/* Template picker */}
+        {allHandTools.length > 0 && (
+          <div className="space-y-1">
+            <Label className="flex items-center gap-1"><Copy className="w-3.5 h-3.5" />Använd befintligt redskap som mall</Label>
+            <Select onValueChange={id => {
+              const t = allHandTools.find(x => x.id === id);
+              if (t) setForm({
+                name: t.name || '',
+                manufacturer: t.manufacturer || '',
+                category: t.category || '',
+                subcategory: t.subcategory || '',
+                condition: t.condition || 'bra',
+                status: t.status || 'i_lager',
+                purchase_date: t.purchase_date || '',
+                purchase_price: t.purchase_price ? String(t.purchase_price) : '',
+                image_url: t.image_url || '',
+                notes: t.notes || '',
+              });
+            }}>
+              <SelectTrigger><SelectValue placeholder="Välj mall (valfritt)" /></SelectTrigger>
+              <SelectContent>
+                {[...new Map(allHandTools.map(t => [t.name, t])).values()].map(t => (
+                  <SelectItem key={t.id} value={t.id}>{t.name} {t.category ? `(${t.category})` : ''}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-5 py-2">
           {/* Basic Info */}
@@ -156,29 +188,6 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
                 onChange={e => setForm(p => ({ ...p, subcategory: e.target.value }))}
                 placeholder="Valfritt"
               />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <Label>Skick</Label>
-              <Select value={form.condition} onValueChange={v => setForm(p => ({ ...p, condition: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ny">Ny</SelectItem>
-                  <SelectItem value="bra">Bra</SelectItem>
-                  <SelectItem value="okej">Okej</SelectItem>
-                  <SelectItem value="dålig">Dålig</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Inköpsdatum</Label>
-              <Input type="date" value={form.purchase_date} onChange={e => setForm(p => ({ ...p, purchase_date: e.target.value }))} />
-            </div>
-            <div className="space-y-1">
-              <Label>Inköpspris (kr)</Label>
-              <Input type="number" value={form.purchase_price} onChange={e => setForm(p => ({ ...p, purchase_price: e.target.value }))} placeholder="0" />
             </div>
           </div>
 
