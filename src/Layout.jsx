@@ -31,6 +31,7 @@ const navigation = [
   { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
   { name: 'Inventarie', page: 'Inventory', icon: Package },
   { name: 'Handredskap', page: 'HandTools', icon: Shovel },
+  { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shovel },
   { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench },
   { name: 'Inventeringsrapporter', page: 'InventoryReports', icon: ClipboardList },
   { name: 'Platser', page: 'Locations', icon: MapPin },
@@ -90,7 +91,7 @@ export default function Layout({ children, currentPageName }) {
               return (
                 <Link
                   key={item.page}
-                  to={item.page === 'HandTools' ? '/HandTools' : createPageUrl(item.page)}
+                  to={item.page === 'HandTools' ? '/HandTools' : item.page === 'ArbetskläderUtrustning' ? '/ArbetskläderUtrustning' : createPageUrl(item.page)}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",

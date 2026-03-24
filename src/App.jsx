@@ -8,6 +8,7 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import HandTools from './pages/HandTools';
+import ArbetskläderUtrustning from './pages/ArbetskläderUtrustning';
 import LocationDetails from './pages/LocationDetails';
 import InventoryReports from './pages/InventoryReports';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
       <Route path="/HandTools" element={<LayoutWrapper currentPageName="HandTools"><HandTools /></LayoutWrapper>} />
       <Route path="/locations/:locationId" element={<LayoutWrapper currentPageName="Locations"><LocationDetails /></LayoutWrapper>} />
       <Route path="/InventoryReports" element={<LayoutWrapper currentPageName="InventoryReports"><InventoryReports /></LayoutWrapper>} />
+      <Route path="/ArbetskläderUtrustning" element={<LayoutWrapper currentPageName="ArbetskläderUtrustning"><ArbetskläderUtrustning /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
