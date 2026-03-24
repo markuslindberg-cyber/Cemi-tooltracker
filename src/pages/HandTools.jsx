@@ -182,6 +182,27 @@ export default function HandTools() {
     e.target.value = '';
   };
 
+  const handleCategoryImageUpload = async (e, category) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCategoryImage(category);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    // Create or update CategoryImage record
+    const existing = categoryImageMap[category];
+    if (existing) {
+      await base44.entities.CategoryImage.update(existing.id, { image_url: file_url });
+    } else {
+      await base44.entities.CategoryImage.create({ category, image_url: file_url });
+    }
+    // Also update all tools in this category that don't have a custom image
+    const toolsInCat = handTools.filter(t => t.category === category && !t.custom_image);
+    await Promise.all(toolsInCat.map(t => base44.entities.HandTool.update(t.id, { image_url: file_url })));
+    queryClient.invalidateQueries(['categoryimages']);
+    queryClient.invalidateQueries(['handtools']);
+    setUploadingCategoryImage(null);
+    e.target.value = '';
+  };
+
   const clearFilters = () => {
     setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setSubcategoryFilter('all');
     setManufacturerFilter('all'); setConditionFilter('all'); setLocationFilter('all');
