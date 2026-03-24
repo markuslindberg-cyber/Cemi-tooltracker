@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,12 +11,10 @@ import {
   Edit2,
   Grid3x3,
   List,
-  Download,
-  Upload,
-  FileSpreadsheet,
-  Loader2,
+  ScanLine,
 } from 'lucide-react';
 import ArbetskläderUtrustningFormModal from '@/components/modals/ArbetskläderUtrustningFormModal';
+import ArbetskläderScanModal from '@/components/modals/ArbetskläderScanModal';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
 
 const statusMap = {
@@ -39,8 +37,7 @@ export default function ArbetskläderUtrustning() {
   const [viewMode, setViewMode] = useState('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [importing, setImporting] = useState(false);
-  const queryClient = useQueryClient();
+  const [showScanModal, setShowScanModal] = useState(false);
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ['arbetskläder'],
@@ -89,114 +86,6 @@ export default function ArbetskläderUtrustning() {
     refetch();
   };
 
-  const handleDownloadTemplate = () => {
-    const template = [
-      ['name', 'manufacturer', 'category', 'subcategory', 'size', 'quantity', 'status', 'condition', 'barcode', 'location_name', 'notes'],
-      ['T-shirt', 'Bonetex', 'Arbetskläder', 'T-shirt', 'M', 5, 'i_lager', 'bra', 'BAR001', 'Lager', 'Exempel'],
-    ];
-    const csv = template.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'arbetskläder_mall.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleExportToExcel = () => {
-    const header = ['Namn', 'Tillverkare', 'Kategori', 'Typ', 'Storlek', 'Antal', 'Status', 'Skick', 'Streckkod', 'Plats', 'Anteckningar'];
-    const rows = filteredItems.map(item => [
-      item.name,
-      item.manufacturer || '',
-      item.category || '',
-      item.subcategory || '',
-      item.size || '',
-      item.quantity || 0,
-      item.status || '',
-      item.condition || '',
-      item.barcode || '',
-      item.location_name || '',
-      item.notes || '',
-    ]);
-    const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `arbetskläder_${new Date().toLocaleDateString('sv-SE')}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleImportFromExcel = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setImporting(true);
-    try {
-      const fileUrl = await base44.integrations.Core.UploadFile({ file });
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url: fileUrl.file_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            name: { type: "string" },
-            manufacturer: { type: "string" },
-            category: { type: "string" },
-            subcategory: { type: "string" },
-            size: { type: "string" },
-            quantity: { type: "number" },
-            status: { type: "string" },
-            condition: { type: "string" },
-            barcode: { type: "string" },
-            location_name: { type: "string" },
-            notes: { type: "string" },
-          }
-        }
-      });
-
-      if (result.status === 'success' && result.output) {
-        const itemsData = Array.isArray(result.output) ? result.output : [result.output];
-        const validItems = itemsData.filter(item => item.name && item.name.trim() !== '');
-        
-        if (validItems.length === 0) {
-          alert('Inga giltiga data hittades i filen. Kontrollera att du har fyllt i minst Namn-kolumnen.');
-          return;
-        }
-        
-        const itemsToCreate = validItems.map(item => ({
-          name: item.name,
-          manufacturer: item.manufacturer || '',
-          category: item.category || 'Arbetskläder',
-          subcategory: item.subcategory || '',
-          size: item.size || '',
-          quantity: item.quantity || 0,
-          status: item.status || 'i_lager',
-          condition: item.condition || 'bra',
-          barcode: item.barcode || '',
-          location_name: item.location_name || '',
-          notes: item.notes || '',
-        }));
-
-        await base44.entities.ArbetskläderUtrustning.bulkCreate(itemsToCreate);
-        queryClient.invalidateQueries({ queryKey: ['arbetskläder'] });
-        alert(`${itemsToCreate.length} artiklar importerades!`);
-      } else {
-        const errorMsg = result.details || 'Okänt fel';
-        alert(`Kunde inte extrahera data från filen: ${errorMsg}`);
-      }
-    } catch (error) {
-      console.error('Import failed:', error);
-      alert(`Importen misslyckades: ${error.message || error}`);
-    } finally {
-      setImporting(false);
-      e.target.value = '';
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -209,60 +98,25 @@ export default function ArbetskläderUtrustning() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Arbetskläder & Utrustning</h1>
             <p className="text-gray-500 mt-1">{filteredItems.length} artiklar</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             <Button
-              onClick={handleDownloadTemplate}
+              onClick={() => setShowScanModal(true)}
               variant="outline"
+              className="gap-2"
             >
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Ladda ned mall
+              <ScanLine className="w-4 h-4" />
+              Inventera
             </Button>
-            <Button
-              onClick={handleExportToExcel}
-              variant="outline"
-              disabled={items.length === 0}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportera data
-            </Button>
-            <label>
-              <Button
-                variant="outline"
-                disabled={importing}
-                asChild
-              >
-                <span>
-                  {importing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Importerar...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Importera
-                    </>
-                  )}
-                </span>
-              </Button>
-              <input
-                type="file"
-                accept=".csv,.xlsx,.xls"
-                onChange={handleImportFromExcel}
-                className="hidden"
-                disabled={importing}
-              />
-            </label>
             <Button
               onClick={() => setIsModalOpen(true)}
-              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+              className="gap-2"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4" />
               Ny artikel
             </Button>
           </div>
@@ -359,6 +213,13 @@ export default function ArbetskläderUtrustning() {
         onClose={handleModalClose}
         item={editingItem}
         locations={locations}
+      />
+
+      <ArbetskläderScanModal
+        isOpen={showScanModal}
+        onClose={() => setShowScanModal(false)}
+        items={items}
+        onRefresh={refetch}
       />
     </div>
   );
