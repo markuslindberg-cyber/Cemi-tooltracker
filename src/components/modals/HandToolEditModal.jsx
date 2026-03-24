@@ -90,14 +90,35 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label>Streckkod</Label>
-            <Input value={form.barcode || ''} onChange={e => handleChange('barcode', e.target.value)} placeholder="Ange eller skanna streckkod" />
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Status</Label>
+              <Select value={form.status} onValueChange={v => handleChange('status', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="i_lager">I lager</SelectItem>
+                  <SelectItem value="i_bruk">I bruk</SelectItem>
+                  <SelectItem value="saknas">Saknas</SelectItem>
+                  <SelectItem value="kasserad">Kasserad</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label>Skick</Label>
+              <Select value={form.condition} onValueChange={v => handleChange('condition', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ny">Ny</SelectItem>
+                  <SelectItem value="bra">Bra</SelectItem>
+                  <SelectItem value="okej">Okej</SelectItem>
+                  <SelectItem value="dålig">Dålig</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Bild</Label>
             <div className="flex items-center gap-3">
               <div className="w-16 h-16 rounded-lg bg-gray-100 border overflow-hidden flex items-center justify-center shrink-0">
                 {form.image_url
@@ -135,6 +156,11 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Streckkod</Label>
+            <Input value={form.barcode || ''} onChange={e => handleChange('barcode', e.target.value)} placeholder="Ange eller skanna streckkod" />
           </div>
 
           <div className="space-y-1">
