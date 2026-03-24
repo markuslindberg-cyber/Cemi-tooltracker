@@ -73,7 +73,7 @@ export default function ArbetskläderUtrustning() {
       const matchesCondition = conditionFilter === 'all' || item.condition === conditionFilter;
 
       return matchesSearch && matchesCategory && matchesSubcategory && matchesStatus && matchesSize && matchesManufacturer && matchesCondition;
-    });
+    }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   }, [items, search, statusFilter, categoryFilter, subcategoryFilter, sizeFilter, manufacturerFilter, conditionFilter]);
 
   const deleteItem = async (id) => {
