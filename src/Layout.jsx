@@ -31,6 +31,7 @@ const navigation = [
   { name: 'Inventarie', page: 'Inventory', icon: Package },
   { name: 'Handredskap', page: 'HandTools', icon: Shovel },
   { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench },
+  { name: 'Inventeringsrapporter', page: 'InventoryReports', icon: ClipboardList },
   { name: 'Platser', page: 'Locations', icon: MapPin },
   { name: 'Team', page: 'Team', icon: Users },
   { name: 'Förflyttningar', page: 'Transfers', icon: ArrowRightLeft },
