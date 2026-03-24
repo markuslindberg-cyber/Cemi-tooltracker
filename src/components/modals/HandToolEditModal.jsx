@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -9,12 +10,20 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export default function HandToolEditModal({ isOpen, onClose, tool, locations, onSuccess }) {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const { data: categoryImages = [] } = useQuery({
+    queryKey: ['categoryimages'],
+    queryFn: () => base44.entities.CategoryImage.list('category'),
+    enabled: isOpen,
+  });
+  const categoryImageMap = Object.fromEntries(categoryImages.map(ci => [ci.category, ci.image_url]));
 
   useEffect(() => {
     if (tool) setForm({ ...tool });
@@ -27,6 +36,21 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
     } else {
       setForm(p => ({ ...p, [field]: value }));
     }
+  };
+
+  const handleUploadImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(p => ({ ...p, image_url: file_url, custom_image: true }));
+    setUploadingImage(false);
+    e.target.value = '';
+  };
+
+  const handleResetToCategory = () => {
+    const catImg = categoryImageMap[form.category];
+    setForm(p => ({ ...p, image_url: catImg || '', custom_image: false }));
   };
 
   const handleSubmit = async () => {
@@ -94,11 +118,31 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
           </div>
 
           <div className="space-y-1">
-            <Label>Bildlänk (URL)</Label>
-            <Input value={form.image_url || ''} onChange={e => handleChange('image_url', e.target.value)} placeholder="https://..." />
-            {form.image_url && (
-              <img src={form.image_url} alt="preview" className="mt-2 h-20 w-20 object-cover rounded-lg border" onError={e => e.target.style.display='none'} />
-            )}
+            <Label>Bild</Label>
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-lg bg-gray-100 border overflow-hidden flex items-center justify-center shrink-0">
+                {form.image_url
+                  ? <img src={form.image_url} alt="preview" className="w-full h-full object-cover" onError={e => e.target.style.display='none'} />
+                  : <span className="text-xs text-gray-400 text-center px-1">Ingen bild</span>}
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="cursor-pointer">
+                  <span className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors">
+                    {uploadingImage ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Laddar upp...</> : <><Upload className="w-3.5 h-3.5" />Ladda upp bild</>}
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleUploadImage} disabled={uploadingImage} />
+                </label>
+                {categoryImageMap[form.category] && (
+                  <button
+                    onClick={handleResetToCategory}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Återställ till kategoribild
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-1">

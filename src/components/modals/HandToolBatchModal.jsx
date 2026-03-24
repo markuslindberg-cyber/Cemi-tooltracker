@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Trash2, Copy } from "lucide-react";
+import { Loader2, Plus, Trash2, Copy, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from '@tanstack/react-query';
 
@@ -30,6 +30,14 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
   const [quantity, setQuantity] = useState(1);
   const [distributions, setDistributions] = useState([{ location_id: '', location_name: '', count: 1 }]);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const { data: categoryImages = [] } = useQuery({
+    queryKey: ['categoryimages'],
+    queryFn: () => base44.entities.CategoryImage.list('category'),
+    enabled: isOpen,
+  });
+  const categoryImageMap = Object.fromEntries(categoryImages.map(ci => [ci.category, ci.image_url]));
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
@@ -45,6 +53,13 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
 
   const availableCategories = [...new Set(allHandTools.map(t => t.category).filter(Boolean))].sort();
 
+  // When category changes, auto-fill image from category if no custom image set
+  useEffect(() => {
+    if (form.category && categoryImageMap[form.category] && !form.image_url) {
+      setForm(p => ({ ...p, image_url: categoryImageMap[form.category] }));
+    }
+  }, [form.category, categoryImages]);
+
   useEffect(() => {
     if (!isOpen) {
       setForm(defaultForm);
@@ -52,6 +67,16 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
       setDistributions([{ location_id: '', location_name: '', count: 1 }]);
     }
   }, [isOpen]);
+
+  const handleUploadImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(p => ({ ...p, image_url: file_url }));
+    setUploadingImage(false);
+    e.target.value = '';
+  };
 
   const totalDistributed = distributions.reduce((s, d) => s + (parseInt(d.count) || 0), 0);
 
@@ -188,6 +213,29 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
                 onChange={e => setForm(p => ({ ...p, subcategory: e.target.value }))}
                 placeholder="Valfritt"
               />
+            </div>
+          </div>
+
+          {/* Category image preview + upload */}
+          <div className="space-y-1">
+            <Label>Bild</Label>
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-lg bg-gray-100 border overflow-hidden flex items-center justify-center shrink-0">
+                {form.image_url
+                  ? <img src={form.image_url} alt="preview" className="w-full h-full object-cover" />
+                  : <span className="text-xs text-gray-400 text-center px-1">{form.category && categoryImageMap[form.category] ? 'Kategoribild' : 'Ingen bild'}</span>}
+              </div>
+              <div className="space-y-1">
+                <label className="cursor-pointer">
+                  <span className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50">
+                    {uploadingImage ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Laddar upp...</> : <><Upload className="w-3.5 h-3.5" />Ladda upp bild</>}
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleUploadImage} disabled={uploadingImage} />
+                </label>
+                {form.category && categoryImageMap[form.category] && (
+                  <p className="text-xs text-gray-500">Kategoribild används som standard</p>
+                )}
+              </div>
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2, Check, X as XIcon, ScanLine } from 'lucide-react';
+import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2, Check, X as XIcon, ScanLine, Image } from 'lucide-react';
 import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
 import HandToolScanModal from '@/components/modals/HandToolScanModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
@@ -39,15 +39,24 @@ export default function HandTools() {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editTool, setEditTool] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
-  const [editingCategory, setEditingCategory] = useState(null); // { oldName, newName }
+  const [editingCategory, setEditingCategory] = useState(null);
   const [savingCategory, setSavingCategory] = useState(false);
-  const [importing, setImporting] = useState(false);
+  const [uploadingCategoryImage, setUploadingCategoryImage] = useState(null);
+  const categoryImageInputRef = useRef(null);
   const [showScanModal, setShowScanModal] = useState(false);
 
   const { data: handTools = [], isLoading } = useQuery({
     queryKey: ['handtools'],
     queryFn: () => base44.entities.HandTool.list('-updated_date', 1000),
   });
+
+  const { data: categoryImages = [] } = useQuery({
+    queryKey: ['categoryimages'],
+    queryFn: () => base44.entities.CategoryImage.list('category'),
+  });
+
+  // Map: category -> image_url
+  const categoryImageMap = Object.fromEntries(categoryImages.map(ci => [ci.category, ci]));
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
@@ -86,7 +95,13 @@ export default function HandTools() {
     setSavingCategory(true);
     const toUpdate = handTools.filter(t => t.category === editingCategory.oldName);
     await Promise.all(toUpdate.map(t => base44.entities.HandTool.update(t.id, { category: editingCategory.newName.trim() })));
+    // Also rename the category image record if it exists
+    const existing = categoryImageMap[editingCategory.oldName];
+    if (existing) {
+      await base44.entities.CategoryImage.update(existing.id, { category: editingCategory.newName.trim() });
+    }
     queryClient.invalidateQueries(['handtools']);
+    queryClient.invalidateQueries(['categoryimages']);
     setSavingCategory(false);
     setEditingCategory(null);
   };
@@ -270,37 +285,23 @@ export default function HandTools() {
             return (
               <div key={`${group.name}-${group.category}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-gray-50">
-                  <div>
-                    <h2 className="font-semibold text-gray-900">{group.name}</h2>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      {editingCategory?.oldName === group.category ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            autoFocus
-                            className="text-sm border border-gray-300 rounded px-2 py-0.5 w-32"
-                            value={editingCategory.newName}
-                            onChange={e => setEditingCategory(prev => ({ ...prev, newName: e.target.value }))}
-                            onKeyDown={e => { if (e.key === 'Enter') handleRenameCategory(); if (e.key === 'Escape') setEditingCategory(null); }}
-                          />
-                          <button onClick={handleRenameCategory} disabled={savingCategory} className="text-green-600 hover:text-green-700">
-                            {savingCategory ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                          </button>
-                          <button onClick={() => setEditingCategory(null)} className="text-gray-400 hover:text-gray-600"><XIcon className="w-3 h-3" /></button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1 group/cat">
-                          <span className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''} · {group.items.length} st totalt</span>
-                          <button
-                            onClick={() => setEditingCategory({ oldName: group.category, newName: group.category })}
-                            className="opacity-0 group-hover/cat:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity ml-1"
-                          >
-                            <Edit className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
+                  <div className="flex items-center gap-3">
+                    {/* Category image */}
+                    <div className="relative group/catimg">
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                        {categoryImageMap[group.category]?.image_url
+                          ? <img src={categoryImageMap[group.category].image_url} alt={group.category} className="w-full h-full object-cover" />
+                          : <Package className="w-6 h-6 text-gray-300" />}
+                      </div>
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 group-hover/catimg:opacity-100 cursor-pointer transition-opacity">
+                        {uploadingCategoryImage === group.category
+                          ? <Loader2 className="w-4 h-4 text-white animate-spin" />
+                          : <Image className="w-4 h-4 text-white" />}
+                        <input type="file" accept="image/*" className="hidden" onChange={e => handleCategoryImageUpload(e, group.category)} disabled={uploadingCategoryImage === group.category} />
+                      </label>
                     </div>
-                  </div>
-                  <div className="flex gap-2 flex-wrap justify-end">
+                    <div>
+                    <h2 className="font-semibold text-gray-900">{group.name}</h2>
                     {Object.entries(byStatus).map(([s, count]) => (
                       <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
                     ))}
