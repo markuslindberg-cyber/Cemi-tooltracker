@@ -186,11 +186,16 @@ export default function ArbetskläderUtrustningFormModal({
 
     setIsLoading(true);
     try {
+      const dataToSubmit = {
+        ...formData,
+        purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
+      };
+
       if (item) {
-        await base44.entities.ArbetskläderUtrustning.update(item.id, formData);
+        await base44.entities.ArbetskläderUtrustning.update(item.id, dataToSubmit);
         toast.success('Artikel uppdaterad');
       } else {
-        await base44.entities.ArbetskläderUtrustning.create(formData);
+        await base44.entities.ArbetskläderUtrustning.create(dataToSubmit);
         toast.success('Artikel tillagd');
       }
       onClose();
