@@ -218,12 +218,21 @@ function ActiveInventory({ sessionConfig, onEnd }) {
     queryFn: () => base44.entities.HandTool.list('-updated_date', 500),
   });
 
+  const { data: arbetskläder = [] } = useQuery({
+    queryKey: ['arbetskläder'],
+    queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
+  });
+
   const updateToolMutation = useMutation({
-    mutationFn: ({ id, data, isHandTool }) =>
-      isHandTool ? base44.entities.HandTool.update(id, data) : base44.entities.Tool.update(id, data),
+    mutationFn: ({ id, data, type }) => {
+      if (type === 'handtool') return base44.entities.HandTool.update(id, data);
+      if (type === 'arbetskläder') return base44.entities.ArbetskläderUtrustning.update(id, data);
+      return base44.entities.Tool.update(id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['tools']);
       queryClient.invalidateQueries(['handtools']);
+      queryClient.invalidateQueries(['arbetskläder']);
     },
   });
 
@@ -232,6 +241,7 @@ function ActiveInventory({ sessionConfig, onEnd }) {
     const { mode, locationId, toolType } = sessionConfig;
     let toolList = [];
     let handToolList = [];
+    let arbetskläderList = [];
 
     if (toolType !== 'handtools') {
       toolList = tools.map(t => ({ ...t, _type: 'tool' }));
@@ -241,9 +251,13 @@ function ActiveInventory({ sessionConfig, onEnd }) {
       handToolList = handTools.map(t => ({ ...t, _type: 'handtool' }));
       if (mode === 'location') handToolList = handToolList.filter(t => t.location_id === locationId);
     }
+    if (toolType !== 'tools') {
+      arbetskläderList = arbetskläder.map(a => ({ ...a, _type: 'arbetskläder' }));
+      if (mode === 'location') arbetskläderList = arbetskläderList.filter(a => a.location_id === locationId);
+    }
 
-    return [...toolList, ...handToolList];
-  }, [tools, handTools, sessionConfig]);
+    return [...toolList, ...handToolList, ...arbetskläderList];
+  }, [tools, handTools, arbetskläder, sessionConfig]);
 
   useEffect(() => {
     if (!scannerActive) return;
@@ -272,12 +286,11 @@ function ActiveInventory({ sessionConfig, onEnd }) {
 
   const handleConfirm = async () => {
     if (!scannedItem) return;
-    const isHandTool = scannedItem._type === 'handtool';
     const updates = {};
     if (tempStatus !== scannedItem.status) updates.status = tempStatus;
     if (tempCondition !== scannedItem.condition) updates.condition = tempCondition;
     updates.last_seen_date = new Date().toISOString();
-    await updateToolMutation.mutateAsync({ id: scannedItem.id, data: updates, isHandTool });
+    await updateToolMutation.mutateAsync({ id: scannedItem.id, data: updates, type: scannedItem._type });
     setScannedItem(null);
   };
 
@@ -384,7 +397,7 @@ function ActiveInventory({ sessionConfig, onEnd }) {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-lg text-gray-900">{scannedItem.name}</h3>
-                  <Badge variant="outline" className="text-xs">{scannedItem._type === 'handtool' ? 'Handredskap' : 'Maskin'}</Badge>
+                  <Badge variant="outline" className="text-xs">{scannedItem._type === 'handtool' ? 'Handredskap' : scannedItem._type === 'arbetskläder' ? 'Arbetskläder' : 'Maskin'}</Badge>
                 </div>
                 {scannedItem.location_name && (
                   <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
@@ -401,22 +414,22 @@ function ActiveInventory({ sessionConfig, onEnd }) {
                 <Select value={tempStatus} onValueChange={setTempStatus}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {scannedItem._type === 'handtool' ? (
-                      <>
-                        <SelectItem value="i_lager">I lager</SelectItem>
-                        <SelectItem value="i_bruk">I bruk</SelectItem>
-                        <SelectItem value="saknas">Saknas</SelectItem>
-                        <SelectItem value="kasserad">Kasserad</SelectItem>
-                      </>
-                    ) : (
-                      <>
-                        <SelectItem value="available">Tillgänglig</SelectItem>
-                        <SelectItem value="in_use">I bruk</SelectItem>
-                        <SelectItem value="maintenance">Underhåll</SelectItem>
-                        <SelectItem value="missing">Saknas</SelectItem>
-                        <SelectItem value="retired">Kasserad</SelectItem>
-                      </>
-                    )}
+                    {(scannedItem._type === 'handtool' || scannedItem._type === 'arbetskläder') ? (
+                            <>
+                              <SelectItem value="i_lager">I lager</SelectItem>
+                              <SelectItem value="i_bruk">I bruk</SelectItem>
+                              <SelectItem value="saknas">Saknas</SelectItem>
+                              <SelectItem value="kasserad">Kasserad</SelectItem>
+                            </>
+                          ) : (
+                            <>
+                              <SelectItem value="available">Tillgänglig</SelectItem>
+                              <SelectItem value="in_use">I bruk</SelectItem>
+                              <SelectItem value="maintenance">Underhåll</SelectItem>
+                              <SelectItem value="missing">Saknas</SelectItem>
+                              <SelectItem value="retired">Kasserad</SelectItem>
+                            </>
+                          )}
                   </SelectContent>
                 </Select>
               </div>
@@ -425,21 +438,21 @@ function ActiveInventory({ sessionConfig, onEnd }) {
                 <Select value={tempCondition} onValueChange={setTempCondition}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {scannedItem._type === 'handtool' ? (
-                      <>
-                        <SelectItem value="ny">Ny</SelectItem>
-                        <SelectItem value="bra">Bra</SelectItem>
-                        <SelectItem value="okej">Okej</SelectItem>
-                        <SelectItem value="dålig">Dålig</SelectItem>
-                      </>
-                    ) : (
-                      <>
-                        <SelectItem value="new">Ny</SelectItem>
-                        <SelectItem value="good">Bra</SelectItem>
-                        <SelectItem value="fair">Okej</SelectItem>
-                        <SelectItem value="poor">Dålig</SelectItem>
-                      </>
-                    )}
+                    {(scannedItem._type === 'handtool' || scannedItem._type === 'arbetskläder') ? (
+                        <>
+                          <SelectItem value="ny">Ny</SelectItem>
+                          <SelectItem value="bra">Bra</SelectItem>
+                          <SelectItem value="okej">Okej</SelectItem>
+                          <SelectItem value="dålig">Dålig</SelectItem>
+                        </>
+                      ) : (
+                        <>
+                          <SelectItem value="new">Ny</SelectItem>
+                          <SelectItem value="good">Bra</SelectItem>
+                          <SelectItem value="fair">Okej</SelectItem>
+                          <SelectItem value="poor">Dålig</SelectItem>
+                        </>
+                      )}
                   </SelectContent>
                 </Select>
               </div>
@@ -476,7 +489,7 @@ function ActiveInventory({ sessionConfig, onEnd }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">{item._type === 'handtool' ? 'Handredskap' : 'Maskin'}</Badge>
+                    <Badge variant="outline" className="text-xs">{item._type === 'handtool' ? 'Handredskap' : item._type === 'arbetskläder' ? 'Arbetskläder' : 'Maskin'}</Badge>
                     {item.location_name && <Badge variant="outline" className="text-xs">{item.location_name}</Badge>}
                   </div>
                 </div>
