@@ -94,6 +94,20 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
             <Label>Underkategori</Label>
             <Input value={form.subcategory || ''} onChange={e => handleChange('subcategory', e.target.value)} />
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={v => handleChange('status', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="i_lager">I lager</SelectItem>
+                  <SelectItem value="i_bruk">I bruk</SelectItem>
+                  <SelectItem value="saknas">Saknas</SelectItem>
+                  <SelectItem value="kasserad">Kasserad</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-1">
               <Label>Skick</Label>
               <Select value={form.condition} onValueChange={v => handleChange('condition', v)}>
