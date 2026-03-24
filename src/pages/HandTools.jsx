@@ -115,9 +115,9 @@ export default function HandTools() {
   const hasFilters = search || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all';
 
   const handleDownloadTemplate = () => {
-    const headers = ['name', 'manufacturer', 'category', 'subcategory', 'status', 'condition', 'purchase_date', 'purchase_price', 'location_name', 'notes'];
-    const exampleRow = ['Räfsa', 'Fiskars', 'Räfsor', '', 'i_lager', 'bra', '2026-01-01', '199', 'Huvud lager', 'Exempelrad'];
-    const emptyRows = Array(19).fill(Array(10).fill(''));
+    const headers = ['name', 'manufacturer', 'category', 'subcategory', 'status', 'condition', 'purchase_date', 'purchase_price', 'location_name', 'assigned_to_name', 'barcode', 'notes'];
+    const exampleRow = ['Räfsa', 'Fiskars', 'Räfsor', '', 'i_lager', 'bra', '2026-01-01', '199', 'Huvud lager', '', '1234567890', 'Exempelrad'];
+    const emptyRows = Array(19).fill(Array(12).fill(''));
     const csvContent = [
       headers.join(','),
       exampleRow.map(c => `"${c}"`).join(','),
@@ -151,6 +151,8 @@ export default function HandTools() {
           purchase_date: { type: 'string' },
           purchase_price: { type: 'number' },
           location_name: { type: 'string' },
+          assigned_to_name: { type: 'string' },
+          barcode: { type: 'string' },
           notes: { type: 'string' },
         }
       }
@@ -169,6 +171,8 @@ export default function HandTools() {
           purchase_date: r.purchase_date || undefined,
           purchase_price: r.purchase_price || undefined,
           location_name: r.location_name || '',
+          assigned_to_name: r.assigned_to_name || '',
+          barcode: r.barcode || '',
           notes: r.notes || '',
         })));
         queryClient.invalidateQueries(['handtools']);
