@@ -8,6 +8,7 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import HandTools from './pages/HandTools';
+import LocationDetails from './pages/LocationDetails';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/HandTools" element={<LayoutWrapper currentPageName="HandTools"><HandTools /></LayoutWrapper>} />
+      <Route path="/locations/:locationId" element={<LayoutWrapper currentPageName="Locations"><LocationDetails /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
