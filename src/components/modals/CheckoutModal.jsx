@@ -28,6 +28,23 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
 
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
+      // Create checkout report
+      const reportData = {
+        project,
+        recipient_first_name: firstName,
+        recipient_last_name: lastName,
+        checked_out_items: checkoutItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          subcategory: item.subcategory,
+          quantity: item.checkoutQty,
+        })),
+        checked_out_date: new Date().toISOString(),
+      };
+      
+      await base44.entities.CheckoutReport.create(reportData);
+      
+      // Update inventory quantities
       await Promise.all(updates.map(({ id, quantity }) =>
         base44.entities.ArbetskläderUtrustning.update(id, { quantity })
       ));
@@ -66,14 +83,6 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
 
   const canProceedStep1 = project.trim() && firstName.trim() && lastName.trim();
 
-  const handleConfirm = async () => {
-    const updates = checkoutItems.map(item => ({
-      id: item.id,
-      quantity: (item.quantity || 0) - item.checkoutQty,
-    }));
-    await updateMutation.mutateAsync(updates);
-  };
-
   const handleClose = () => {
     setStep(1);
     setProject('');
@@ -97,6 +106,14 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
         i.id === id ? { ...i, checkoutQty: qty } : i
       ));
     }
+  };
+
+  const handleConfirm = async () => {
+    const updates = checkoutItems.map(item => ({
+      id: item.id,
+      quantity: (item.quantity || 0) - item.checkoutQty,
+    }));
+    await updateMutation.mutateAsync(updates);
   };
 
   return (
