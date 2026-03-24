@@ -245,15 +245,15 @@ function ActiveInventory({ sessionConfig, onEnd }) {
     let handToolList = [];
     let arbetskläderList = [];
 
-    if (toolType !== 'handtools') {
+    if (toolType !== 'handtools' && toolType !== 'arbetskläder') {
       toolList = tools.map(t => ({ ...t, _type: 'tool' }));
       if (mode === 'location') toolList = toolList.filter(t => t.location_id === locationId);
     }
-    if (toolType !== 'tools') {
+    if (toolType !== 'tools' && toolType !== 'arbetskläder') {
       handToolList = handTools.map(t => ({ ...t, _type: 'handtool' }));
       if (mode === 'location') handToolList = handToolList.filter(t => t.location_id === locationId);
     }
-    if (toolType !== 'tools') {
+    if (toolType !== 'tools' && toolType !== 'handtools') {
       arbetskläderList = arbetskläder.map(a => ({ ...a, _type: 'arbetskläder' }));
       if (mode === 'location') arbetskläderList = arbetskläderList.filter(a => a.location_id === locationId);
     }
