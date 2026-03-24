@@ -209,18 +209,63 @@ export default function ArbetskläderUtrustning() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Arbetskläder & Utrustning</h1>
             <p className="text-gray-500 mt-1">{filteredItems.length} artiklar</p>
           </div>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Ny artikel
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={handleDownloadTemplate}
+              variant="outline"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Ladda ned mall
+            </Button>
+            <Button
+              onClick={handleExportToExcel}
+              variant="outline"
+              disabled={items.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exportera data
+            </Button>
+            <label>
+              <Button
+                variant="outline"
+                disabled={importing}
+                asChild
+              >
+                <span>
+                  {importing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Importerar...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Importera
+                    </>
+                  )}
+                </span>
+              </Button>
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={handleImportFromExcel}
+                className="hidden"
+                disabled={importing}
+              />
+            </label>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Ny artikel
+            </Button>
+          </div>
         </div>
 
         {/* Search and Filters */}
