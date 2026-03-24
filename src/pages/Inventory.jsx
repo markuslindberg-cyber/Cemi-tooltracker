@@ -94,13 +94,8 @@ export default function Inventory() {
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
   });
 
-  const { data: arbetskläder = [] } = useQuery({
-    queryKey: ['arbetskläder'],
-    queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
-  });
-
-  // Merge tools and arbetskläder for display
-  const allItems = [...tools.map(t => ({ ...t, type: 'tool' })), ...arbetskläder.map(a => ({ ...a, type: 'arbetskläder' }))];
+  // Only display tools (no arbetskläder)
+  const allItems = useMemo(() => tools.map(t => ({ ...t, type: 'tool' })), [tools]);
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
