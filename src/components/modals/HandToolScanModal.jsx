@@ -1,37 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2 } from 'lucide-react';
+import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2, Plus, Minus } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-
-const statusConfig = {
-  i_lager:  { label: 'I lager',  className: 'bg-green-100 text-green-800' },
-  i_bruk:   { label: 'I bruk',   className: 'bg-blue-100 text-blue-800' },
-  saknas:   { label: 'Saknas',   className: 'bg-red-100 text-red-800' },
-  kasserad: { label: 'Kasserad', className: 'bg-gray-100 text-gray-600' },
-};
 
 export default function HandToolScanModal({ isOpen, onClose, handTools }) {
   const queryClient = useQueryClient();
   const [scannerActive, setScannerActive] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
-  const [foundTool, setFoundTool] = useState(null);
-  const [tempStatus, setTempStatus] = useState('');
-  const [tempCondition, setTempCondition] = useState('');
+  const [foundGroup, setFoundGroup] = useState(null); // { barcode, tools: [], countFound: number }
   const [saving, setSaving] = useState(false);
-  const [checkedIds, setCheckedIds] = useState(new Set());
+  const [checkedBarcodes, setCheckedBarcodes] = useState(new Set());
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setScannerActive(false);
-      setFoundTool(null);
+      setFoundGroup(null);
       setManualBarcode('');
       setNotFound(false);
     }
@@ -56,14 +46,17 @@ export default function HandToolScanModal({ isOpen, onClose, handTools }) {
   }, [scannerActive, handTools]);
 
   const handleScan = (barcode) => {
-    const tool = handTools.find(t => t.barcode === barcode);
-    if (tool) {
-      setFoundTool(tool);
-      setTempStatus(tool.status || 'i_lager');
-      setTempCondition(tool.condition || 'bra');
+    const tools = handTools.filter(t => t.barcode === barcode);
+    if (tools.length > 0) {
+      if (foundGroup && foundGroup.barcode === barcode) {
+        // Same barcode scanned again — increment count
+        setFoundGroup(prev => ({ ...prev, countFound: prev.countFound + 1 }));
+      } else {
+        setFoundGroup({ barcode, tools, countFound: 1 });
+      }
       setNotFound(false);
     } else {
-      setFoundTool(null);
+      setFoundGroup(null);
       setNotFound(true);
     }
   };
@@ -75,19 +68,31 @@ export default function HandToolScanModal({ isOpen, onClose, handTools }) {
   };
 
   const handleConfirm = async () => {
-    if (!foundTool) return;
+    if (!foundGroup) return;
     setSaving(true);
-    await base44.entities.HandTool.update(foundTool.id, {
-      status: tempStatus,
-      condition: tempCondition,
-    });
-    setCheckedIds(prev => new Set([...prev, foundTool.id]));
+    // Update last_seen_date on all tools in the group
+    await Promise.all(foundGroup.tools.map(t =>
+      base44.entities.HandTool.update(t.id, {
+        last_seen_date: new Date().toISOString(),
+        status: 'i_lager',
+      })
+    ));
+    setCheckedBarcodes(prev => new Set([...prev, foundGroup.barcode]));
     queryClient.invalidateQueries(['handtools']);
     setSaving(false);
-    setFoundTool(null);
+    setFoundGroup(null);
   };
 
-  const unchecked = handTools.filter(t => t.barcode && !checkedIds.has(t.id));
+  // Unique barcodes across all handtools
+  const allBarcodes = [...new Set(handTools.filter(t => t.barcode).map(t => t.barcode))];
+  const uncheckedBarcodes = allBarcodes.filter(b => !checkedBarcodes.has(b));
+
+  // Summarize group info for display
+  const getGroupLabel = (tools) => {
+    const name = tools[0]?.category || tools[0]?.name || '';
+    const location = tools[0]?.location_name || '';
+    return { name, location, count: tools.length };
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -101,8 +106,8 @@ export default function HandToolScanModal({ isOpen, onClose, handTools }) {
 
         {/* Progress */}
         <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between text-sm">
-          <span className="text-gray-600">Kontrollerade</span>
-          <span className="font-bold text-[#8B1E1E]">{checkedIds.size} / {handTools.filter(t => t.barcode).length}</span>
+          <span className="text-gray-600">Kontrollerade grupper</span>
+          <span className="font-bold text-[#8B1E1E]">{checkedBarcodes.size} / {allBarcodes.length}</span>
         </div>
 
         {/* Scanner */}
@@ -152,85 +157,111 @@ export default function HandToolScanModal({ isOpen, onClose, handTools }) {
         {notFound && (
           <div className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-200 text-sm text-red-700">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            Inget redskap hittades med den streckkoden.
+            Ingen grupp hittades med den streckkoden.
           </div>
         )}
 
-        {/* Found tool */}
-        {foundTool && (
-          <div className="border border-gray-200 rounded-xl p-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                {foundTool.image_url
-                  ? <img src={foundTool.image_url} alt={foundTool.name} className="w-full h-full object-cover rounded-lg" />
-                  : <Package className="w-6 h-6 text-gray-400" />}
+        {/* Found group */}
+        {foundGroup && (() => {
+          const { name, location, count } = getGroupLabel(foundGroup.tools);
+          return (
+            <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                  <Package className="w-6 h-6 text-gray-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900">{name}</p>
+                  {location && (
+                    <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3" />{location}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-1">Förväntat antal: <span className="font-semibold text-gray-700">{count} st</span></p>
+                </div>
+                <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900">{foundTool.name}</p>
-                <p className="text-sm text-gray-500">{foundTool.category}{foundTool.manufacturer ? ` · ${foundTool.manufacturer}` : ''}</p>
-                {foundTool.location_name && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                    <MapPin className="w-3 h-3" />{foundTool.location_name}
+
+              {/* Count input */}
+              <div className="space-y-1">
+                <Label>Antal hittade</Label>
+                <p className="text-xs text-gray-500">Skanna streckkoden igen för att räkna upp, eller ange manuellt</p>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setFoundGroup(prev => ({ ...prev, countFound: Math.max(0, prev.countFound - 1) }))}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <Input
+                    type="number"
+                    min="0"
+                    className="text-center text-xl font-bold w-24"
+                    value={foundGroup.countFound}
+                    onChange={e => setFoundGroup(prev => ({ ...prev, countFound: Math.max(0, parseInt(e.target.value) || 0) }))}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setFoundGroup(prev => ({ ...prev, countFound: prev.countFound + 1 }))}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-gray-500">av {count} st</span>
+                </div>
+                {foundGroup.countFound < count && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    {count - foundGroup.countFound} redskap saknas
+                  </p>
+                )}
+                {foundGroup.countFound === count && (
+                  <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Alla redskap bekräftade!
                   </p>
                 )}
               </div>
-              <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Status</Label>
-                <Select value={tempStatus} onValueChange={setTempStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="i_lager">I lager</SelectItem>
-                    <SelectItem value="i_bruk">I bruk</SelectItem>
-                    <SelectItem value="saknas">Saknas</SelectItem>
-                    <SelectItem value="kasserad">Kasserad</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label>Skick</Label>
-                <Select value={tempCondition} onValueChange={setTempCondition}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ny">Ny</SelectItem>
-                    <SelectItem value="bra">Bra</SelectItem>
-                    <SelectItem value="okej">Okej</SelectItem>
-                    <SelectItem value="dålig">Dålig</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setFoundGroup(null)}>Avbryt</Button>
+                <Button
+                  onClick={handleConfirm}
+                  disabled={saving}
+                  className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]"
+                >
+                  {saving
+                    ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</>
+                    : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta</>
+                  }
+                </Button>
               </div>
             </div>
+          );
+        })()}
 
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setFoundTool(null)}>Avbryt</Button>
-              <Button
-                onClick={handleConfirm}
-                disabled={saving}
-                className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]"
-              >
-                {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta</>}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Unchecked with barcodes */}
-        {unchecked.length > 0 && (
+        {/* Unchecked groups */}
+        {uncheckedBarcodes.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Ej kontrollerade ({unchecked.length})
+              Ej kontrollerade grupper ({uncheckedBarcodes.length})
             </p>
             <div className="space-y-1 max-h-40 overflow-y-auto">
-              {unchecked.map(t => (
-                <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm">
-                  <span className="text-gray-900">{t.name}</span>
-                  <span className="text-xs text-gray-400 font-mono">{t.barcode}</span>
-                </div>
-              ))}
+              {uncheckedBarcodes.map(barcode => {
+                const tools = handTools.filter(t => t.barcode === barcode);
+                const { name, location, count } = getGroupLabel(tools);
+                return (
+                  <div key={barcode} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm">
+                    <div>
+                      <span className="text-gray-900 font-medium">{name}</span>
+                      {location && <span className="text-gray-400 ml-1">· {location}</span>}
+                    </div>
+                    <span className="text-xs text-gray-400">{count} st · <span className="font-mono">{barcode}</span></span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
