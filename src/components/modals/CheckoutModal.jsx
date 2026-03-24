@@ -193,9 +193,8 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
                     <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm text-gray-900">{item.name}</p>
-                        <p className="text-xs text-gray-500">{item.subcategory} {item.size && `• Storlek: ${item.size}`} • Tillgängligt: {item.quantity}</p>
+                        <p className="text-xs text-gray-500">{item.subcategory}{item.size && ` • Storlek: ${item.size}`} • Tillgängligt: {item.quantity}</p>
                       </div>
-                    </div>
                   ))}
                 </div>
               </div>
@@ -228,10 +227,8 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
                   <div key={item.id} className="p-3 flex justify-between items-center">
                     <div>
                       <p className="font-medium text-sm">{item.name}</p>
-                      <p className="text-xs text-gray-500">{item.subcategory} {item.size && `• Storlek: ${item.size}`}</p>
+                      <p className="text-xs text-gray-500">{item.subcategory}{item.size && ` • Storlek: ${item.size}`}</p>
                     </div>
-                ))}
-              </div>
             </div>
 
             <div className="flex gap-3 pt-4">
