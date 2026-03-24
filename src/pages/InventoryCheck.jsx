@@ -274,7 +274,7 @@ function ActiveInventory({ sessionConfig, onEnd }) {
   const handleScan = (barcode) => {
     const item = scopedItems.find(t => t.barcode === barcode)
       || (sessionConfig.mode === 'open'
-        ? [...tools.map(t => ({ ...t, _type: 'tool' })), ...handTools.map(t => ({ ...t, _type: 'handtool' }))].find(t => t.barcode === barcode)
+        ? [...tools.map(t => ({ ...t, _type: 'tool' })), ...handTools.map(t => ({ ...t, _type: 'handtool' })), ...arbetskläder.map(a => ({ ...a, _type: 'arbetskläder' }))].find(t => t.barcode === barcode)
         : null);
     if (item) {
       setScannedItem(item);
