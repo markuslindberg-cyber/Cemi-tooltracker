@@ -20,7 +20,16 @@ import {
   Package,
   Phone,
   User,
+  Grid,
+  List,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +52,7 @@ export default function Locations() {
   const [editLocation, setEditLocation] = useState(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
 
   const { data: locations = [], isLoading: loadingLocations } = useQuery({
     queryKey: ['locations'],
@@ -118,18 +128,24 @@ export default function Locations() {
 
         {/* Search */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              placeholder="Search locations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 border-gray-200"
-            />
+          <div className="flex gap-3 items-center">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Input
+                placeholder="Sök platser..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-11 border-gray-200"
+              />
+            </div>
+            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><List className="w-4 h-4" /></Button>
+            </div>
           </div>
         </div>
 
-        {/* Locations Grid */}
+        {/* Locations */}
         {filteredLocations.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -153,7 +169,7 @@ export default function Locations() {
               </Button>
             )}
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredLocations.map((location) => {
               const type = typeConfig[location.type] || typeConfig.other;
@@ -172,70 +188,73 @@ export default function Locations() {
                       </div>
                       <div className="flex items-center gap-2">
                         {!location.is_active && (
-                          <Badge variant="secondary" className="bg-gray-100 text-gray-500">
-                            Inactive
-                          </Badge>
+                          <Badge variant="secondary" className="bg-gray-100 text-gray-500">Inaktiv</Badge>
                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem onClick={() => setEditLocation(location)}>
-                              <Pencil className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEditLocation(location)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteLocation(location)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteLocation(location)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </div>
-
                     <h3 className="font-semibold text-gray-900 text-lg mb-1">{location.name}</h3>
-                    <Badge className={`${type.color} border-0 text-xs`}>
-                      {location.type?.replace('_', ' ')}
-                    </Badge>
-
-                    {location.address && (
-                      <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>
-                    )}
-
+                    <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
+                    {location.address && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>}
                     <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <Package className="w-4 h-4" />
-                          <span>Tools</span>
-                        </div>
+                        <div className="flex items-center gap-2 text-gray-500"><Package className="w-4 h-4" /><span>Verktyg</span></div>
                         <span className="font-medium text-gray-900">{toolCount}</span>
                       </div>
-
-                      {location.contact_person && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <User className="w-4 h-4" />
-                          <span>{location.contact_person}</span>
-                        </div>
-                      )}
-
-                      {location.contact_phone && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <Phone className="w-4 h-4" />
-                          <span>{location.contact_phone}</span>
-                        </div>
-                      )}
+                      {location.contact_person && <div className="flex items-center gap-2 text-sm text-gray-500"><User className="w-4 h-4" /><span>{location.contact_person}</span></div>}
+                      {location.contact_phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{location.contact_phone}</span></div>}
                     </div>
                   </div>
                 </div>
               );
             })}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="divide-y divide-gray-100">
+              {filteredLocations.map((location) => {
+                const type = typeConfig[location.type] || typeConfig.other;
+                const Icon = type.icon;
+                const toolCount = getToolCount(location.id);
+                return (
+                  <div key={location.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                    <div className={`p-2 rounded-lg ${type.color.split(' ')[0]}`}>
+                      <Icon className={`w-5 h-5 ${type.color.split(' ')[1]}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900">{location.name}</p>
+                        {!location.is_active && <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-xs">Inaktiv</Badge>}
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">{location.address || location.type}</p>
+                    </div>
+                    <div className="flex items-center gap-6 text-sm text-gray-500">
+                      {location.contact_person && <span className="hidden sm:block">{location.contact_person}</span>}
+                      <span className="flex items-center gap-1"><Package className="w-4 h-4" />{toolCount}</span>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem onClick={() => setEditLocation(location)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDeleteLocation(location)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

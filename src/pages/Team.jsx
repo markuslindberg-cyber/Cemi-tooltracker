@@ -18,7 +18,16 @@ import {
   Phone,
   Mail,
   Wrench,
+  Grid,
+  List,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +50,7 @@ export default function Team() {
   const [editMember, setEditMember] = useState(null);
   const [showAddMember, setShowAddMember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
 
   const { data: teamMembers = [], isLoading: loadingMembers } = useQuery({
     queryKey: ['teamMembers'],
@@ -126,18 +136,24 @@ export default function Team() {
 
         {/* Search */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              placeholder="Search team members..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 border-gray-200"
-            />
+          <div className="flex gap-3 items-center">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Input
+                placeholder="Sök teammedlemmar..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-11 border-gray-200"
+              />
+            </div>
+            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><List className="w-4 h-4" /></Button>
+            </div>
           </div>
         </div>
 
-        {/* Team Grid */}
+        {/* Team */}
         {filteredMembers.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -161,87 +177,43 @@ export default function Team() {
               </Button>
             )}
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredMembers.map((member) => {
               const role = roleConfig[member.role] || roleConfig.technician;
               const toolCount = getToolCount(member.email);
-
               return (
-                <div
-                  key={member.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
-                >
+                <div key={member.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <Avatar className="w-14 h-14 border-2 border-gray-100">
                         <AvatarImage src={member.avatar_url} alt={member.name} />
-                        <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold text-lg">
-                          {getInitials(member.name)}
-                        </AvatarFallback>
+                        <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold text-lg">{getInitials(member.name)}</AvatarFallback>
                       </Avatar>
                       <div className="flex items-center gap-2">
-                        {!member.is_active && (
-                          <Badge variant="secondary" className="bg-gray-100 text-gray-500">
-                            Inactive
-                          </Badge>
-                        )}
+                        {!member.is_active && <Badge variant="secondary" className="bg-gray-100 text-gray-500">Inaktiv</Badge>}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem onClick={() => setEditMember(member)}>
-                              <Pencil className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEditMember(member)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteMember(member)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteMember(member)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </div>
-
                     <h3 className="font-semibold text-gray-900 text-lg">{member.name}</h3>
-                    <Badge className={`${role.color} border-0 text-xs mt-1`}>
-                      {role.label}
-                    </Badge>
-
+                    <Badge className={`${role.color} border-0 text-xs mt-1`}>{role.label}</Badge>
                     <div className="mt-4 space-y-2">
-                      {member.email && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <Mail className="w-4 h-4" />
-                          <span className="truncate">{member.email}</span>
-                        </div>
-                      )}
-                      {member.phone && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <Phone className="w-4 h-4" />
-                          <span>{member.phone}</span>
-                        </div>
-                      )}
-                      {member.default_location_name && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <MapPin className="w-4 h-4" />
-                          <span className="truncate">{member.default_location_name}</span>
-                        </div>
-                      )}
+                      {member.email && <div className="flex items-center gap-2 text-sm text-gray-500"><Mail className="w-4 h-4" /><span className="truncate">{member.email}</span></div>}
+                      {member.phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{member.phone}</span></div>}
+                      {member.default_location_name && <div className="flex items-center gap-2 text-sm text-gray-500"><MapPin className="w-4 h-4" /><span className="truncate">{member.default_location_name}</span></div>}
                     </div>
-
                     <div className="mt-4 pt-4 border-t border-gray-100">
                       <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <Wrench className="w-4 h-4" />
-                          <span>Tools Assigned</span>
-                        </div>
+                        <div className="flex items-center gap-2 text-gray-500"><Wrench className="w-4 h-4" /><span>Tilldelade verktyg</span></div>
                         <span className="font-medium text-gray-900">{toolCount}</span>
                       </div>
                     </div>
@@ -249,6 +221,45 @@ export default function Team() {
                 </div>
               );
             })}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="divide-y divide-gray-100">
+              {filteredMembers.map((member) => {
+                const role = roleConfig[member.role] || roleConfig.technician;
+                const toolCount = getToolCount(member.email);
+                return (
+                  <div key={member.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                    <Avatar className="w-10 h-10 border-2 border-gray-100 shrink-0">
+                      <AvatarImage src={member.avatar_url} alt={member.name} />
+                      <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold">{getInitials(member.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900">{member.name}</p>
+                        <Badge className={`${role.color} border-0 text-xs`}>{role.label}</Badge>
+                        {!member.is_active && <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-xs">Inaktiv</Badge>}
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">{member.email}</p>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-6 text-sm text-gray-500">
+                      {member.default_location_name && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{member.default_location_name}</span>}
+                      <span className="flex items-center gap-1"><Wrench className="w-4 h-4" />{toolCount}</span>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem onClick={() => setEditMember(member)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDeleteMember(member)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
