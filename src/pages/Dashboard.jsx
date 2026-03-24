@@ -47,6 +47,11 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Transfer.list('-transfer_date', 5),
   });
 
+  const { data: handTools = [] } = useQuery({
+    queryKey: ['handtools'],
+    queryFn: () => base44.entities.HandTool.list('-updated_date', 500),
+  });
+
   // Stats calculations
   const totalTools = tools.length;
   const availableTools = tools.filter(t => t.status === 'available').length;
@@ -55,6 +60,7 @@ export default function Dashboard() {
   const maintenanceTools = tools.filter(t => t.status === 'maintenance').length;
 
   const totalValue = tools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const handToolsValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
 
   const handleTransfer = async (transferData) => {
     await base44.entities.Transfer.create(transferData);
@@ -253,13 +259,26 @@ export default function Dashboard() {
             {/* Quick Stats */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
-              <p className="text-3xl font-bold text-gray-900">
-                ${totalValue.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">Totalt inköpsvärde</p>
+
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Maskiner</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{tools.length} maskiner</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Handredskap</p>
+                  <p className="text-2xl font-bold text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{handTools.length} redskap</p>
+                </div>
+                <div className="p-4 bg-[#8B1E1E]/5 rounded-xl border border-[#8B1E1E]/10">
+                  <p className="text-xs font-medium text-[#8B1E1E] uppercase tracking-wide mb-1">Totalt</p>
+                  <p className="text-2xl font-bold text-[#8B1E1E]">{(totalValue + handToolsValue).toLocaleString('sv-SE')} kr</p>
+                </div>
+              </div>
 
               <div className="mt-6 pt-6 border-t border-gray-100">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Per status</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Per status (maskiner)</h4>
                 <div className="space-y-2">
                   {[
                     { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
