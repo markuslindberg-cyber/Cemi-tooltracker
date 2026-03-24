@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
-  { name: 'Inventarie', page: 'Inventory', icon: Package },
+  { name: 'Maskiner', page: 'Inventory', icon: Package },
   { name: 'Handredskap', page: 'HandTools', icon: Shovel },
   { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shovel },
   { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench },
