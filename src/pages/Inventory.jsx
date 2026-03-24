@@ -5,6 +5,7 @@ import SearchFilterBar from '@/components/ui/SearchFilterBar';
 import ToolCard from '@/components/ui/ToolCard';
 import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
+import ToolScanModal from '@/components/modals/ToolScanModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -35,6 +36,7 @@ import {
   Download,
   Upload,
   FileSpreadsheet,
+  ScanLine,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -85,6 +87,7 @@ export default function Inventory() {
   const [editTool, setEditTool] = useState(null);
   const [showAddTool, setShowAddTool] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [showScanModal, setShowScanModal] = useState(false);
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
@@ -397,6 +400,13 @@ export default function Inventory() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
+              onClick={() => setShowScanModal(true)}
+              variant="outline"
+            >
+              <ScanLine className="w-4 h-4 mr-2" />
+              Inventera (skanna)
+            </Button>
+            <Button
               onClick={handleDownloadTemplate}
               variant="outline"
             >
@@ -663,6 +673,12 @@ export default function Inventory() {
         locations={locations}
         teamMembers={teamMembers}
         onSubmit={handleTransfer}
+      />
+
+      <ToolScanModal
+        isOpen={showScanModal}
+        onClose={() => setShowScanModal(false)}
+        tools={tools}
       />
 
       <ToolFormModal
