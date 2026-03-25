@@ -395,7 +395,7 @@ export default function Inventory() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inventarie</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Maskiner</h1>
             <p className="text-gray-500 mt-1">
               {filteredTools.length} verktyg
               {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all' || searchQuery) && ' matchar filter'}

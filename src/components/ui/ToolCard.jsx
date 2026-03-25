@@ -36,17 +36,8 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
       {/* Image Section */}
-      <div className="relative h-40 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
-        {tool.image_url ? (
-          <img 
-            src={tool.image_url} 
-            alt={tool.name} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <span className="text-5xl">{categoryIcons[tool.category] || "🔧"}</span>
-        )}
-        <div className="absolute top-3 left-3">
+      <div className="relative h-28 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
+        <div className="absolute top-2 left-2">
           <Badge className={cn("font-medium border", status.color)}>
             {status.label}
           </Badge>
@@ -59,15 +50,15 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
       </div>
 
       {/* Content Section */}
-      <div className="p-4">
+      <div className="p-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">{tool.name}</h3>
+            <h3 className="font-medium text-sm text-gray-900 truncate">{tool.name}</h3>
             {tool.subcategory && (
-              <p className="text-xs text-gray-500 mt-0.5">{tool.subcategory}</p>
+              <p className="text-xs text-gray-500">{tool.subcategory}</p>
             )}
             {tool.model_number && (
-              <p className="text-sm text-gray-500 mt-0.5">{tool.model_number}</p>
+              <p className="text-xs text-gray-500">{tool.model_number}</p>
             )}
           </div>
           <DropdownMenu>
@@ -110,16 +101,16 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
           </DropdownMenu>
         </div>
 
-        <div className="mt-4 space-y-2">
+        <div className="mt-2 space-y-1">
           {tool.location_name && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <MapPin className="w-4 h-4 text-gray-400" />
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <MapPin className="w-3 h-3 text-gray-400" />
               <span className="truncate">{tool.location_name}</span>
             </div>
           )}
           {tool.assigned_to_name && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <User className="w-4 h-4 text-gray-400" />
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <User className="w-3 h-3 text-gray-400" />
               <span className="truncate">{tool.assigned_to_name}</span>
             </div>
           )}
@@ -127,7 +118,7 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
 
           {/* Cost Summary */}
           {(tool.purchase_price || serviceCost > 0) && (
-          <div className="mt-3 pt-3 border-t border-gray-100 space-y-1 text-sm">
+          <div className="mt-2 pt-2 border-t border-gray-100 space-y-0.5 text-xs">
             {tool.purchase_price && (
               <div className="flex justify-between">
                 <span className="text-gray-500">Inköp:</span>
@@ -136,7 +127,7 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
             )}
             {serviceCost > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Servicekostnader:</span>
+                <span className="text-gray-500">Service:</span>
                 <span className="font-medium text-[#8B1E1E]">${serviceCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             )}
@@ -147,7 +138,7 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full mt-4 border-[#8B1E1E]/30 text-[#8B1E1E] hover:bg-[#8B1E1E]/10 hover:text-[#6B1515]"
+          className="w-full mt-2 border-[#8B1E1E]/30 text-[#8B1E1E] hover:bg-[#8B1E1E]/10 hover:text-[#6B1515] text-xs h-7"
           onClick={() => onTransfer?.(tool)}
         >
           <ArrowRightLeft className="w-4 h-4 mr-2" />
