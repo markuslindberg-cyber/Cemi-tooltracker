@@ -115,10 +115,17 @@ export default function HandTools() {
   const hasFilters = search || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all';
 
   const handleDownloadTemplate = () => {
+    const infoRows = [
+      ['=== IMPORTMALL FÖR HANDREDSKAP ===', '', '', '', '', '', '', '', '', '', '', ''],
+      ['Kolumn 1: name', 'Kolumn 2: manufacturer', 'Kolumn 3: category', 'Kolumn 4: subcategory', 'Kolumn 5: status', 'Kolumn 6: condition', 'Kolumn 7: purchase_date', 'Kolumn 8: purchase_price', 'Kolumn 9: location_name', 'Kolumn 10: assigned_to_name', 'Kolumn 11: barcode', 'Kolumn 12: notes'],
+      ['Namn (obligatorisk)', 'Tillverkare/märke', 'Kategori (t.ex. Räfsor)', 'Underkategori', 'Status: i_lager / i_bruk / saknas / kasserad', 'Skick: ny / bra / okej / dålig', 'Köpdatum (ÅÅÅÅ-MM-DD)', 'Köppris (siffra)', 'Platsnamn', 'Tilldelad person', 'Streckkod', 'Anteckningar'],
+      ['--- FYLL I DINA RADER NEDAN FRÅN RAD 6 ---', '', '', '', '', '', '', '', '', '', '', ''],
+    ];
     const headers = ['name', 'manufacturer', 'category', 'subcategory', 'status', 'condition', 'purchase_date', 'purchase_price', 'location_name', 'assigned_to_name', 'barcode', 'notes'];
     const exampleRow = ['Räfsa', 'Fiskars', 'Räfsor', '', 'i_lager', 'bra', '2026-01-01', '199', 'Huvud lager', '', '1234567890', 'Exempelrad'];
     const emptyRows = Array(19).fill(Array(12).fill(''));
     const csvContent = [
+      ...infoRows.map(r => r.map(c => `"${c}"`).join(',')),
       headers.join(','),
       exampleRow.map(c => `"${c}"`).join(','),
       ...emptyRows.map(r => r.join(','))
