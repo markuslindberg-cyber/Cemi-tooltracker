@@ -130,7 +130,7 @@ export default function HandTools() {
       exampleRow.map(c => `"${c}"`).join(','),
       ...emptyRows.map(r => r.join(','))
     ].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.setAttribute('href', URL.createObjectURL(blob));
     link.setAttribute('download', 'handredskap_mall.csv');
