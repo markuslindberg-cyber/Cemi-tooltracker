@@ -143,55 +143,62 @@ export default function HandTools() {
     const file = e.target.files?.[0];
     if (!file) return;
     setImporting(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-      file_url,
-      json_schema: {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-          manufacturer: { type: 'string' },
-          category: { type: 'string' },
-          subcategory: { type: 'string' },
-          status: { type: 'string' },
-          condition: { type: 'string' },
-          purchase_date: { type: 'string' },
-          purchase_price: { type: 'number' },
-          location_name: { type: 'string' },
-          assigned_to_name: { type: 'string' },
-          barcode: { type: 'string' },
-          notes: { type: 'string' },
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            manufacturer: { type: 'string' },
+            category: { type: 'string' },
+            subcategory: { type: 'string' },
+            status: { type: 'string' },
+            condition: { type: 'string' },
+            purchase_date: { type: 'string' },
+            purchase_price: { type: 'number' },
+            location_name: { type: 'string' },
+            assigned_to_name: { type: 'string' },
+            barcode: { type: 'string' },
+            notes: { type: 'string' },
+          }
         }
-      }
-    });
-    if (result.status === 'success' && result.output) {
-      const rows = Array.isArray(result.output) ? result.output : [result.output];
-      const valid = rows.filter(r => r.name && r.name.trim());
-      if (valid.length > 0) {
-        await base44.entities.HandTool.bulkCreate(valid.map(r => ({
-          name: r.name,
-          manufacturer: r.manufacturer || '',
-          category: r.category || 'Okategoriserad',
-          subcategory: r.subcategory || '',
-          status: r.status || 'i_lager',
-          condition: r.condition || 'bra',
-          purchase_date: r.purchase_date || undefined,
-          purchase_price: r.purchase_price || undefined,
-          location_name: r.location_name || '',
-          assigned_to_name: r.assigned_to_name || '',
-          barcode: r.barcode || '',
-          notes: r.notes || '',
-        })));
-        queryClient.invalidateQueries(['handtools']);
-        alert(`${valid.length} redskap importerades!`);
+      });
+      if (result.status === 'success' && result.output) {
+        const rows = Array.isArray(result.output) ? result.output : [result.output];
+        const valid = rows.filter(r => r.name && r.name.trim());
+        if (valid.length > 0) {
+          await base44.entities.HandTool.bulkCreate(valid.map(r => ({
+            name: r.name,
+            manufacturer: r.manufacturer || '',
+            category: r.category || 'Okategoriserad',
+            subcategory: r.subcategory || '',
+            status: r.status || 'i_lager',
+            condition: r.condition || 'bra',
+            purchase_date: r.purchase_date || undefined,
+            purchase_price: r.purchase_price || undefined,
+            location_name: r.location_name || '',
+            assigned_to_name: r.assigned_to_name || '',
+            barcode: r.barcode || '',
+            notes: r.notes || '',
+          })));
+          queryClient.invalidateQueries(['handtools']);
+          alert(`${valid.length} redskap importerades!`);
+        } else {
+          alert('Inga giltiga rader hittades i filen.');
+        }
       } else {
-        alert('Inga gältiga rader hittades i filen.');
+        alert('Kunde inte läsa filen: ' + (result.details || 'Okänt fel'));
       }
-    } else {
-      alert('Kunde inte läsa filen: ' + (result.details || 'Okänt fel'));
+    } catch (err) {
+      alert('Importfel: ' + (err.message?.includes('unicode') || err.message?.includes('utf')
+        ? 'Filen har fel teckenkodning. Ladda ned en ny mall och fyll i den — importera inte den gamla mallen.'
+        : err.message || 'Okänt fel'));
+    } finally {
+      setImporting(false);
+      e.target.value = '';
     }
-    setImporting(false);
-    e.target.value = '';
   };
 
   const handleCategoryImageUpload = async (e, category) => {
