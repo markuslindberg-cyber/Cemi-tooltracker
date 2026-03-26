@@ -30,11 +30,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const roleConfig = {
-  technician: { label: 'Tekniker', color: 'bg-blue-100 text-blue-700' },
-  supervisor: { label: 'Arbetsledare', color: 'bg-purple-100 text-purple-700' },
-  manager: { label: 'Chef', color: 'bg-emerald-100 text-emerald-700' },
-  apprentice: { label: 'Lärling', color: 'bg-amber-100 text-amber-700' },
-  contractor: { label: 'Underleverantör', color: 'bg-gray-100 text-gray-700' },
+  admin: { label: 'Admin', color: 'bg-red-100 text-red-700' },
+  ansvarig: { label: 'Ansvarig', color: 'bg-purple-100 text-purple-700' },
+  verktygsansvarig: { label: 'Verktygsansvarig', color: 'bg-blue-100 text-blue-700' },
 };
 
 export default function Team() {
@@ -173,7 +171,7 @@ export default function Team() {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredMembers.map((member) => {
-              const role = roleConfig[member.role] || roleConfig.technician;
+              const role = roleConfig[member.role] || roleConfig.verktygsansvarig;
               const toolCount = getToolCount(member.email);
               return (
                 <div key={member.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -219,7 +217,7 @@ export default function Team() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-100">
               {filteredMembers.map((member) => {
-                const role = roleConfig[member.role] || roleConfig.technician;
+                const role = roleConfig[member.role] || roleConfig.verktygsansvarig;
                 const toolCount = getToolCount(member.email);
                 return (
                   <div key={member.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
