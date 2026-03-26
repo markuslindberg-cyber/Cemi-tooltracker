@@ -29,43 +29,25 @@ import {
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'ansvarig', 'verktygsansvarig'] },
-  { name: 'Maskiner', page: 'Inventory', icon: Package, roles: ['admin', 'ansvarig', 'verktygsansvarig'] },
-  { name: 'Handredskap', page: 'HandTools', icon: Shovel, roles: ['admin', 'ansvarig', 'verktygsansvarig'] },
-  { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shirt, roles: ['admin', 'ansvarig'] },
-  { name: 'Uttagsrapporter', page: 'CheckoutReports', icon: ClipboardList, roles: ['admin', 'ansvarig'] },
-  { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench, roles: ['admin', 'ansvarig', 'verktygsansvarig'] },
-  { name: 'Inventeringsrapporter', page: 'InventoryReports', icon: ClipboardList, roles: ['admin', 'ansvarig', 'verktygsansvarig'] },
-  { name: 'Platser', page: 'Locations', icon: MapPin, roles: ['admin'] },
-  { name: 'Team', page: 'Team', icon: Users, roles: ['admin'] },
-  { name: 'Förflyttningar', page: 'Transfers', icon: ArrowRightLeft, roles: ['admin', 'ansvarig', 'verktygsansvarig'] },
+  { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
+  { name: 'Maskiner', page: 'Inventory', icon: Package },
+  { name: 'Handredskap', page: 'HandTools', icon: Shovel },
+  { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shirt },
+  { name: 'Uttagsrapporter', page: 'CheckoutReports', icon: ClipboardList },
+  { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench },
+  { name: 'Inventeringsrapporter', page: 'InventoryReports', icon: ClipboardList },
+  { name: 'Platser', page: 'Locations', icon: MapPin },
+  { name: 'Team', page: 'Team', icon: Users },
+  { name: 'Förflyttningar', page: 'Transfers', icon: ArrowRightLeft },
 ];
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [userRole, setUserRole] = useState('verktygsansvarig');
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (user && user.email) {
-      base44.entities.TeamMember.list()
-        .then(members => {
-          const member = members.find(m => m.email === user.email);
-          if (member && member.role) {
-            setUserRole(member.role);
-          }
-        })
-        .catch(() => {});
-    }
-  }, [user]);
-
-  const filteredNavigation = navigation.filter(item => 
-    !item.roles || item.roles.includes(userRole)
-  );
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -106,7 +88,7 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {filteredNavigation.map((item) => {
+            {navigation.map((item) => {
               const isActive = currentPageName === item.page;
               return (
                 <Link
