@@ -257,6 +257,17 @@ export default function Inventory() {
     }
   };
 
+  const handleSearchImages = async () => {
+    try {
+      const response = await base44.functions.invoke('batchSearchToolImages', {});
+      queryClient.invalidateQueries(['tools']);
+      alert(`Bildsökning slutförd: ${response.data?.count || 0} verktyg uppdaterades`);
+    } catch (error) {
+      console.error('Batch search failed:', error);
+      alert('Bildsökningen misslyckades. Försök igen senare.');
+    }
+  };
+
   const clearFilters = () => {
     setSearchQuery('');
     setStatusFilter('all');
@@ -510,6 +521,15 @@ export default function Inventory() {
             >
               <Plus className="w-4 h-4 sm:mr-2" />
               <span className="hidden sm:inline">Lägg till</span>
+            </Button>
+            <Button
+              onClick={handleSearchImages}
+              variant="outline"
+              size="sm"
+              className="hidden md:inline-flex"
+            >
+              <Loader2 className="w-4 h-4 mr-2" />
+              Sök bilder (AI)
             </Button>
           </div>
         </div>
