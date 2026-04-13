@@ -12,6 +12,7 @@ import ArbetskläderUtrustning from './pages/ArbetskläderUtrustning';
 import LocationDetails from './pages/LocationDetails';
 import InventoryReports from './pages/InventoryReports';
 import CheckoutReports from './pages/CheckoutReports';
+import SåldaRedskap from './pages/SåldaRedskap';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
       <Route path="/InventoryReports" element={<LayoutWrapper currentPageName="InventoryReports"><InventoryReports /></LayoutWrapper>} />
       <Route path="/ArbetskläderUtrustning" element={<LayoutWrapper currentPageName="ArbetskläderUtrustning"><ArbetskläderUtrustning /></LayoutWrapper>} />
       <Route path="/CheckoutReports" element={<LayoutWrapper currentPageName="CheckoutReports"><CheckoutReports /></LayoutWrapper>} />
+      <Route path="/SaldaRedskap" element={<LayoutWrapper currentPageName="SåldaRedskap"><SåldaRedskap /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -18,6 +18,7 @@ import {
   Shovel,
   ClipboardList,
   Shirt,
+  Tag,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils";
 const navigation = [
   { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
   { name: 'Maskiner', page: 'Inventory', icon: Package },
+  { name: 'Sålda & Kasserade', page: 'SåldaRedskap', icon: Tag, href: '/SaldaRedskap' },
   { name: 'Handredskap', page: 'HandTools', icon: Shovel },
   { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shirt },
   { name: 'Uttagsrapporter', page: 'CheckoutReports', icon: ClipboardList },
@@ -93,7 +95,7 @@ export default function Layout({ children, currentPageName }) {
               return (
                 <Link
                   key={item.page}
-                  to={item.page === 'HandTools' ? '/HandTools' : item.page === 'ArbetskläderUtrustning' ? '/ArbetskläderUtrustning' : item.page === 'CheckoutReports' ? '/CheckoutReports' : createPageUrl(item.page)}
+                  to={item.href || (item.page === 'HandTools' ? '/HandTools' : item.page === 'ArbetskläderUtrustning' ? '/ArbetskläderUtrustning' : item.page === 'CheckoutReports' ? '/CheckoutReports' : createPageUrl(item.page))}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",

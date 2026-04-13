@@ -1,0 +1,96 @@
+{
+  "name": "Tool",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the tool"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Manufacturer/brand of the tool"
+    },
+    "model_number": {
+      "type": "string",
+      "description": "Model or serial number"
+    },
+    "category": {
+      "type": "string",
+      "description": "Tool category"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Tool subcategory"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "in_use",
+        "i_lager",
+        "maintenance",
+        "missing",
+        "retired",
+        "s\u00e5ld"
+      ],
+      "default": "available",
+      "description": "Current status of the tool"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "new",
+        "good",
+        "fair",
+        "poor"
+      ],
+      "default": "good"
+    },
+    "purchase_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "purchase_price": {
+      "type": "number"
+    },
+    "purchase_location": {
+      "type": "string",
+      "description": "Store or location where the tool was purchased"
+    },
+    "invoice_number": {
+      "type": "string",
+      "description": "Invoice or receipt number for the purchase"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "location_id": {
+      "type": "string",
+      "description": "Reference to Location entity"
+    },
+    "location_name": {
+      "type": "string"
+    },
+    "assigned_to_email": {
+      "type": "string",
+      "description": "Email of the team member assigned"
+    },
+    "assigned_to_name": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "last_seen_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "barcode": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}
