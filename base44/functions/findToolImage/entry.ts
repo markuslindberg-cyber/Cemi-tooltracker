@@ -36,10 +36,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Not enough tool info to search for image' }, { status: 400 });
     }
 
-    // Step 1: Use LLM to find a Bing Images search result page for the tool
+    // Use Bing Images search
     const bingSearchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(searchQuery)}`;
     
-    // Step 2: Use Firecrawl to scrape the Bing Images page and extract the first product image
+    // Use Firecrawl to scrape the Bing Images page
     const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!firecrawlApiKey) {
       return Response.json({ error: 'Firecrawl API key not configured' }, { status: 500 });
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Could not find images on Bing' }, { status: 404 });
     }
 
-    // Get the first valid image URL (filter out small/placeholder images)
+    // Get the first valid image URL
     let imageUrl = null;
     for (const img of firecrawlData.data.images) {
       if (img && img.startsWith('http') && (img.includes('.jpg') || img.includes('.jpeg') || img.includes('.png') || img.includes('.webp'))) {
@@ -89,14 +89,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Could not extract valid image URL' }, { status: 404 });
     }
 
-    // Validate URL format
-    if (!imageUrl.startsWith('http')) {
-      return Response.json({ error: 'Could not find valid image URL' }, { status: 404 });
-    }
-
-    // Check if URL is a direct image file
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    const hasImageExtension = imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
+    return Response.json({ image_url: imageUrl, success: true });
 
   } catch (error) {
     console.error('Error:', error);
