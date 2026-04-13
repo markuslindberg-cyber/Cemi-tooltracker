@@ -114,7 +114,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-3">
+        <div className="grid grid-cols-3 lg:grid-cols-5 gap-1.5 lg:gap-2">
           <StatsCard
             title="Totalt antal verktyg"
             value={totalTools}
