@@ -7,13 +7,13 @@ export default function StatsCard({ title, value, icon: Icon, trend, trendLabel,
 
   return (
     <div className={cn(
-      "bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300",
+      "bg-white rounded-2xl p-3 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300",
       className
     )}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide line-clamp-2">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
           {(trend !== undefined || trendLabel) && (
             <div className="flex items-center gap-1.5 mt-2">
               {trend !== undefined && (
