@@ -492,6 +492,12 @@ export default function Inventory() {
             availableAssignedTo={availableAssignedTo}
             sortBy={sortBy}
             onSortByChange={setSortBy}
+            statusOptions={[
+              { value: 'available', label: 'Tillgänglig' },
+              { value: 'in_use', label: 'I bruk' },
+              { value: 'i_lager', label: 'I lager' },
+              { value: 'maintenance', label: 'Underhåll' },
+            ]}
           />
         </div>
 
