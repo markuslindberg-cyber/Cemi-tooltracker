@@ -18,7 +18,6 @@ import {
   TrendingUp,
   ChevronRight,
   Package,
-  Tag,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -154,15 +153,6 @@ export default function Dashboard() {
               iconClassName="bg-purple-50"
             />
           )}
-          <Link to="/Inventory/SaldaRedskap" className="block">
-            <StatsCard
-              title="Sålda"
-              value={soldTools}
-              icon={Tag}
-              iconClassName="bg-gray-100"
-              className="cursor-pointer hover:shadow-md transition-shadow"
-            />
-          </Link>
         </div>
 
         {/* Missing Tools Alert */}
