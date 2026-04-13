@@ -37,6 +37,11 @@ export default function ToolCard({ tool, serviceCost = 0, onTransfer, onEdit, on
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
       {/* Image Section */}
       <div className="relative h-28 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
+        {tool.image_url ? (
+          <img src={tool.image_url} alt={tool.name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-3xl opacity-40">{categoryIcons[tool.category] || '📦'}</span>
+        )}
         <div className="absolute top-2 left-2">
           <Badge className={cn("font-medium border", status.color)}>
             {status.label}
