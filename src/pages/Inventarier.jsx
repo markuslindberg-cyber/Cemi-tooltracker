@@ -10,6 +10,8 @@ const VISIBLE_ROWS = 20;
 const VISIBLE_COLS = 8;
 const ROW_HEIGHT = 40;
 const COL_WIDTH = 150;
+const MAX_ROWS = 1000;
+const MAX_COLS = 26;
 
 export default function Inventarier() {
   const [workbookId] = useState('default-workbook');
@@ -22,8 +24,15 @@ export default function Inventarier() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   const gridRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const startRow = Math.floor(scrollTop / ROW_HEIGHT);
+  const endRow = Math.min(startRow + VISIBLE_ROWS + 2, MAX_ROWS);
+  const startCol = Math.floor(scrollLeft / COL_WIDTH);
+  const endCol = Math.min(startCol + VISIBLE_COLS + 2, MAX_COLS);
 
   const currentSheet = sheets[activeSheet];
 
@@ -31,6 +40,11 @@ export default function Inventarier() {
   useEffect(() => {
     loadCells();
   }, [activeSheet]);
+
+  const handleGridScroll = (e) => {
+    setScrollTop(e.target.scrollTop);
+    setScrollLeft(e.target.scrollLeft);
+  };
 
   const loadCells = async () => {
     try {
@@ -113,6 +127,25 @@ export default function Inventarier() {
   const handleCellDoubleClick = (row, col) => {
     setEditingCell({ row, col });
     setEditValue(getCellValue(row, col));
+    setTimeout(() => {
+      if (gridRef.current) {
+        const targetTop = row * ROW_HEIGHT;
+        const targetLeft = col * COL_WIDTH;
+        const { scrollTop, scrollLeft, clientHeight, clientWidth } = gridRef.current;
+        
+        if (targetTop < scrollTop) {
+          gridRef.current.scrollTop = targetTop;
+        } else if (targetTop + ROW_HEIGHT > scrollTop + clientHeight) {
+          gridRef.current.scrollTop = targetTop + ROW_HEIGHT - clientHeight;
+        }
+        
+        if (targetLeft < scrollLeft) {
+          gridRef.current.scrollLeft = targetLeft;
+        } else if (targetLeft + COL_WIDTH > scrollLeft + clientWidth) {
+          gridRef.current.scrollLeft = targetLeft + COL_WIDTH - clientWidth;
+        }
+      }
+    }, 0);
   };
 
   const handleKeyDown = (e) => {
@@ -151,10 +184,11 @@ export default function Inventarier() {
 
   const handleExportCSV = () => {
     let csv = '';
-    for (let row = 0; row < VISIBLE_ROWS; row++) {
+    for (let row = 0; row < MAX_ROWS; row++) {
       const rowData = [];
-      for (let col = 0; col < VISIBLE_COLS; col++) {
-        rowData.push(getCellValue(row, col));
+      for (let col = 0; col < MAX_COLS; col++) {
+        const value = getCellValue(row, col);
+        rowData.push(value ? `"${value}"` : '');
       }
       csv += rowData.join(',') + '\n';
     }
@@ -174,23 +208,18 @@ export default function Inventarier() {
       setLoading(true);
       const text = await file.text();
       const rows = text.trim().split('\n');
-      const newCells = { ...cells };
 
       // Parsa CSV
-      for (let row = 0; row < rows.length && row < VISIBLE_ROWS; row++) {
+      for (let row = 0; row < rows.length && row < MAX_ROWS; row++) {
         const columns = rows[row].split(',');
-        for (let col = 0; col < columns.length && col < VISIBLE_COLS; col++) {
-          const value = columns[col].trim();
+        for (let col = 0; col < columns.length && col < MAX_COLS; col++) {
+          const value = columns[col].trim().replace(/^"(.*)"$/, '$1');
           if (value) {
-            const cellKey = getCellKey(row, col);
-            newCells[cellKey] = { value, formula: '', format: 'general' };
-            // Spara till databas
             await saveCell(row, col, value);
           }
         }
       }
 
-      setCells(newCells);
       addToHistory();
       toast.success('CSV-fil importerad');
     } catch (error) {
@@ -325,12 +354,17 @@ export default function Inventarier() {
           </div>
 
           {/* Grid */}
-          <div className="bg-white overflow-auto" style={{ maxHeight: 'calc(100vh - 400px)' }} ref={gridRef}>
-            <table className="border-collapse w-full">
+          <div 
+            className="bg-white overflow-auto" 
+            style={{ maxHeight: 'calc(100vh - 400px)' }} 
+            ref={gridRef}
+            onScroll={handleGridScroll}
+          >
+            <table className="border-collapse" style={{ width: MAX_COLS * COL_WIDTH + 48 }}>
               <thead>
                 <tr className="sticky top-0 z-20 bg-gray-100">
                   <th className="w-12 h-10 bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-600 sticky left-0 z-30"></th>
-                  {Array.from({ length: VISIBLE_COLS }).map((_, col) => (
+                  {Array.from({ length: MAX_COLS }).map((_, col) => (
                     <th
                       key={col}
                       className="h-10 bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-600 text-center"
@@ -342,40 +376,58 @@ export default function Inventarier() {
                 </tr>
               </thead>
               <tbody>
-                {Array.from({ length: VISIBLE_ROWS }).map((_, row) => (
-                  <tr key={row}>
-                    <td className="w-12 h-10 bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-600 text-center sticky left-0 z-10">
-                      {row + 1}
-                    </td>
-                    {Array.from({ length: VISIBLE_COLS }).map((_, col) => (
-                      <td
-                        key={`${row}-${col}`}
-                        onClick={() => handleCellClick(row, col)}
-                        onDoubleClick={() => handleCellDoubleClick(row, col)}
-                        className={`border border-gray-200 cursor-cell text-sm p-0 ${
-                          selection.row === row && selection.col === col
-                            ? 'bg-blue-100 border-blue-500 border-2'
-                            : 'hover:bg-gray-50'
-                        }`}
-                        style={{ width: COL_WIDTH, height: ROW_HEIGHT }}
-                      >
-                        {editingCell?.row === row && editingCell?.col === col ? (
-                          <input
-                            autoFocus
-                            type="text"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            onBlur={() => saveCell(row, col, editValue)}
-                            className="w-full h-full border-0 outline-none text-sm p-2"
-                          />
-                        ) : (
-                          <div className="truncate px-2 py-2">{getCellValue(row, col)}</div>
-                        )}
+                {/* Top padding */}
+                <tr style={{ height: startRow * ROW_HEIGHT }}>
+                  <td colSpan={MAX_COLS + 1}></td>
+                </tr>
+
+                {/* Visible rows */}
+                {Array.from({ length: endRow - startRow }).map((_, i) => {
+                  const row = startRow + i;
+                  return (
+                    <tr key={row}>
+                      <td className="w-12 h-10 bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-600 text-center sticky left-0 z-10">
+                        {row + 1}
                       </td>
-                    ))}
-                  </tr>
-                ))}
+                      {/* Visible columns */}
+                      {Array.from({ length: endCol - startCol }).map((_, i) => {
+                        const col = startCol + i;
+                        return (
+                          <td
+                            key={`${row}-${col}`}
+                            onClick={() => handleCellClick(row, col)}
+                            onDoubleClick={() => handleCellDoubleClick(row, col)}
+                            className={`border border-gray-200 cursor-cell text-sm p-0 ${
+                              selection.row === row && selection.col === col
+                                ? 'bg-blue-100 border-blue-500 border-2'
+                                : 'hover:bg-gray-50'
+                            }`}
+                            style={{ width: COL_WIDTH, height: ROW_HEIGHT }}
+                          >
+                            {editingCell?.row === row && editingCell?.col === col ? (
+                              <input
+                                autoFocus
+                                type="text"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                onBlur={() => saveCell(row, col, editValue)}
+                                className="w-full h-full border-0 outline-none text-sm p-2"
+                              />
+                            ) : (
+                              <div className="truncate px-2 py-2">{getCellValue(row, col)}</div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+
+                {/* Bottom padding */}
+                <tr style={{ height: Math.max(0, (MAX_ROWS - endRow) * ROW_HEIGHT) }}>
+                  <td colSpan={MAX_COLS + 1}></td>
+                </tr>
               </tbody>
             </table>
           </div>
