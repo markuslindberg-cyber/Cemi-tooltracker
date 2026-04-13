@@ -89,6 +89,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Could not extract valid image URL' }, { status: 404 });
     }
 
+    // Save the suggested image to the tool
+    await base44.entities.Tool.update(tool_id, { suggested_image_url: imageUrl });
+
     return Response.json({ image_url: imageUrl, success: true });
 
   } catch (error) {
