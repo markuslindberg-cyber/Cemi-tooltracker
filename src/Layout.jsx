@@ -66,6 +66,9 @@ const navigation = [
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openMenus, setOpenMenus] = useState({});
+
+  const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
   const [user, setUser] = useState(null);
   const location = useLocation();
 
@@ -121,43 +124,47 @@ export default function Layout({ children }) {
               const isActive = isActivePath(item.path);
 
               if (item.children) {
+                const isOpen = openMenus[item.name];
                 return (
-                  <DropdownMenu key={item.name}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className={cn(
-                          "flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                          isActive
-                            ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
-                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          <item.icon className={cn(
-                            "w-5 h-5",
-                            isActive ? "text-[#8B1E1E]" : "text-gray-400"
-                          )} />
-                          {item.name}
-                        </div>
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-52">
-                      {item.children.map((child) => (
-                        <DropdownMenuItem key={child.name} asChild>
+                  <div key={item.name}>
+                    <button
+                      onClick={() => toggleMenu(item.name)}
+                      className={cn(
+                        "flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
+                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <item.icon className={cn(
+                          "w-5 h-5",
+                          isActive ? "text-[#8B1E1E]" : "text-gray-400"
+                        )} />
+                        {item.name}
+                      </div>
+                      <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200", isOpen && "rotate-180")} />
+                    </button>
+                    {isOpen && (
+                      <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
+                        {item.children.map((child) => (
                           <Link
+                            key={child.name}
                             to={child.path}
                             onClick={() => setSidebarOpen(false)}
                             className={cn(
-                              location.pathname === child.path ? "text-[#8B1E1E] font-medium" : ""
+                              "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                              location.pathname === child.path
+                                ? "text-[#8B1E1E] bg-[#8B1E1E]/10"
+                                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                             )}
                           >
                             {child.name}
                           </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               }
 
