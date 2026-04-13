@@ -377,19 +377,21 @@ export default function ToolFormModal({
                 )}
               </div>
               <div className="flex flex-col gap-2">
-                <label className="cursor-pointer">
-                  <Button variant="outline" size="sm" asChild disabled={uploading}>
-                    <span>
-                      {uploading ? 'Laddar upp...' : 'Ladda upp bild'}
-                    </span>
-                  </Button>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={uploading}
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  {uploading ? 'Laddar upp...' : 'Ladda upp bild'}
+                </Button>
                 {isEditing && (
                   <Button
                     variant="outline"
