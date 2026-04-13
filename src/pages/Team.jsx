@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import TeamMemberFormModal from '@/components/modals/TeamMemberFormModal';
+import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ export default function Team() {
   const [showAddMember, setShowAddMember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
+  const [memberToDelete, setMemberToDelete] = useState(null);
 
   const { data: teamMembers = [], isLoading: loadingMembers } = useQuery({
     queryKey: ['teamMembers'],
@@ -87,16 +89,21 @@ export default function Team() {
     setIsLoading(false);
   };
 
-  const handleDeleteMember = async (member) => {
-    const toolCount = getToolCount(member.email);
-    if (toolCount > 0) {
-      alert(`Kan inte ta bort "${member.name}" – de har ${toolCount} verktyg tilldelade. Tilldela om verktygen först.`);
-      return;
+  const handleDeleteMember = (member) => {
+    setMemberToDelete(member);
+  };
+
+  const confirmDeleteMember = async (unassign) => {
+    if (!memberToDelete) return;
+    setIsLoading(true);
+    if (unassign) {
+      await base44.functions.invoke('unassignToolsFromEntity', { entityType: 'TeamMember', entityId: memberToDelete.id });
     }
-    if (window.confirm(`Är du säker på att du vill ta bort "${member.name}"?`)) {
-      await base44.entities.TeamMember.delete(member.id);
-      queryClient.invalidateQueries(['teamMembers']);
-    }
+    await base44.entities.TeamMember.delete(memberToDelete.id);
+    queryClient.invalidateQueries(['teamMembers']);
+    queryClient.invalidateQueries(['tools']);
+    setMemberToDelete(null);
+    setIsLoading(false);
   };
 
   if (loadingMembers) {
@@ -268,6 +275,20 @@ export default function Team() {
         locations={locations}
         onSubmit={handleSaveMember}
         isLoading={isLoading}
+      />
+      <DeleteConfirmationModal
+        isOpen={!!memberToDelete}
+        onClose={() => setMemberToDelete(null)}
+        title={`Ta bort ${memberToDelete?.name}?`}
+        description={
+          memberToDelete && getToolCount(memberToDelete.email) > 0
+            ? `${memberToDelete.name} har ${getToolCount(memberToDelete.email)} verktyg tilldelade. Vad vill du göra med dessa?`
+            : `Är du säker på att du vill ta bort ${memberToDelete?.name}? Åtgärden kan inte ångras.`
+        }
+        hasTools={memberToDelete ? getToolCount(memberToDelete.email) > 0 : false}
+        onUnassignAndDelete={() => confirmDeleteMember(true)}
+        onDeleteOnly={() => confirmDeleteMember(false)}
+        onConfirmNoTools={() => confirmDeleteMember(false)}
       />
     </div>
   );

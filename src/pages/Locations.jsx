@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import LocationFormModal from '@/components/modals/LocationFormModal';
+import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -49,6 +50,7 @@ export default function Locations() {
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
+  const [locationToDelete, setLocationToDelete] = useState(null);
 
   const { data: locations = [], isLoading: loadingLocations } = useQuery({
     queryKey: ['locations'],
@@ -93,16 +95,22 @@ export default function Locations() {
     setIsLoading(false);
   };
 
-  const handleDeleteLocation = async (location) => {
-    const toolCount = getToolCount(location.id);
-    if (toolCount > 0) {
-      alert(`Kan inte ta bort "${location.name}" – den har ${toolCount} verktyg tilldelade. Tilldela om verktygen först.`);
-      return;
+  const handleDeleteLocation = (location) => {
+    setLocationToDelete(location);
+  };
+
+  const confirmDeleteLocation = async (unassign) => {
+    if (!locationToDelete) return;
+    setIsLoading(true);
+    if (unassign) {
+      await base44.functions.invoke('unassignToolsFromEntity', { entityType: 'Location', entityId: locationToDelete.id });
     }
-    if (window.confirm(`Är du säker på att du vill ta bort "${location.name}"?`)) {
-      await base44.entities.Location.delete(location.id);
-      queryClient.invalidateQueries(['locations']);
-    }
+    await base44.entities.Location.delete(locationToDelete.id);
+    queryClient.invalidateQueries(['locations']);
+    queryClient.invalidateQueries(['tools']);
+    queryClient.invalidateQueries(['handtools']);
+    setLocationToDelete(null);
+    setIsLoading(false);
   };
 
   if (loadingLocations) {
@@ -282,6 +290,20 @@ export default function Locations() {
         location={editLocation}
         onSubmit={handleSaveLocation}
         isLoading={isLoading}
+      />
+      <DeleteConfirmationModal
+        isOpen={!!locationToDelete}
+        onClose={() => setLocationToDelete(null)}
+        title={`Ta bort ${locationToDelete?.name}?`}
+        description={
+          locationToDelete && (getToolCount(locationToDelete.id) + getHandToolCount(locationToDelete.id)) > 0
+            ? `Platsen har ${getToolCount(locationToDelete.id) + getHandToolCount(locationToDelete.id)} verktyg/handredskap kopplade. Vad vill du göra med dessa?`
+            : `Är du säker på att du vill ta bort ${locationToDelete?.name}? Åtgärden kan inte ångras.`
+        }
+        hasTools={locationToDelete ? (getToolCount(locationToDelete.id) + getHandToolCount(locationToDelete.id)) > 0 : false}
+        onUnassignAndDelete={() => confirmDeleteLocation(true)}
+        onDeleteOnly={() => confirmDeleteLocation(false)}
+        onConfirmNoTools={() => confirmDeleteLocation(false)}
       />
     </div>
   );
