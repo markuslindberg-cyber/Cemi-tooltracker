@@ -50,8 +50,15 @@ const navigation = [
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
     ]
   },
-  { name: 'Inventeringskontroll', path: '/InventoryCheck', icon: Wrench },
-  { name: 'Inventeringsrapporter', path: '/InventoryReports', icon: BookText },
+  {
+    name: 'Inventeringskontroll',
+    path: '/InventoryCheck',
+    icon: Wrench,
+    children: [
+      { name: 'Översikt', path: '/InventoryCheck' },
+      { name: 'Inventeringsrapporter', path: '/InventoryReports' },
+    ]
+  },
   { name: 'Platser', path: '/Locations', icon: MapPin },
   { name: 'Team', path: '/Team', icon: Users },
   { name: 'Förflyttningar', path: '/Transfers', icon: ArrowRightLeft },
