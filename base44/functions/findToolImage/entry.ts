@@ -38,15 +38,23 @@ Deno.serve(async (req) => {
 
     // Use LLM to find image URL
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Find the best product image URL for: ${searchQuery}. Return a URL that directly links to an image file or a product page with a clear product image. The image should be professional and relevant. Return only the URL, nothing else.`,
+      prompt: `Find a direct image file URL (ending in .jpg, .png, .gif, or .webp) for a product image of: ${searchQuery}. IMPORTANT: Return ONLY the direct image file URL - not a web page link. The image should be a professional product photo from a manufacturer or retailer website. Return only the URL, nothing else.`,
       add_context_from_internet: true,
     });
 
     const imageUrl = result.trim();
 
-    // Validate URL format
+    // Validate URL is a direct image file
     if (!imageUrl.startsWith('http')) {
       return Response.json({ error: 'Could not find valid image URL' }, { status: 404 });
+    }
+
+    // Check if URL appears to be an image file
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const hasImageExtension = imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
+    
+    if (!hasImageExtension) {
+      return Response.json({ error: 'URL does not appear to be a direct image file' }, { status: 404 });
     }
 
     // Save as suggested image URL for approval
