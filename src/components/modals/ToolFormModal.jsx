@@ -363,11 +363,12 @@ export default function ToolFormModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available">Tillgänglig</SelectItem>
-                  <SelectItem value="in_use">I bruk</SelectItem>
-                  <SelectItem value="maintenance">Underhåll</SelectItem>
-                  <SelectItem value="missing">Saknas</SelectItem>
-                  <SelectItem value="retired">Kasserad</SelectItem>
+                   <SelectItem value="available">Tillgänglig</SelectItem>
+                   <SelectItem value="in_use">I bruk</SelectItem>
+                   <SelectItem value="maintenance">Underhåll</SelectItem>
+                   <SelectItem value="missing">Saknas</SelectItem>
+                   <SelectItem value="retired">Kasserad</SelectItem>
+                   <SelectItem value="sålda">Såld</SelectItem>
                 </SelectContent>
               </Select>
             </div>
