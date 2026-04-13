@@ -66,6 +66,8 @@ export default function ToolFormModal({
   const [templateToolId, setTemplateToolId] = useState('');
   const [templateOpen, setTemplateOpen] = useState(false);
   const [searchingImage, setSearchingImage] = useState(false);
+  const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
+  const [customSubcategory, setCustomSubcategory] = useState('');
 
   const { data: allTools = [] } = useQuery({
     queryKey: ['tools'],
@@ -625,41 +627,81 @@ export default function ToolFormModal({
                 </div>
                 <div className="space-y-2">
                   <Label>Underkategori</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
+                  {!showCustomSubcategory ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between"
+                        >
+                          {formData.subcategory || "Välj underkategori..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Sök underkategori..." />
+                          <CommandEmpty>Ingen underkategori hittades.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {availableSubcategories.map((sub) => (
+                              <CommandItem
+                                key={sub}
+                                value={sub}
+                                onSelect={() => handleChange('subcategory', sub)}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.subcategory === sub ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {sub}
+                              </CommandItem>
+                            ))}
+                            <CommandItem
+                              value="__custom__"
+                              onSelect={() => setShowCustomSubcategory(true)}
+                            >
+                              + Lägg till egen
+                            </CommandItem>
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        value={customSubcategory}
+                        onChange={(e) => setCustomSubcategory(e.target.value)}
+                        placeholder="Ny underkategori"
+                        autoFocus
+                      />
                       <Button
                         variant="outline"
-                        role="combobox"
-                        className="w-full justify-between"
+                        onClick={() => {
+                          if (customSubcategory.trim()) {
+                            handleChange('subcategory', customSubcategory.trim());
+                            setShowCustomSubcategory(false);
+                            setCustomSubcategory('');
+                          }
+                        }}
+                        className="whitespace-nowrap"
                       >
-                        {formData.subcategory || "Välj underkategori..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        OK
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Sök underkategori..." />
-                        <CommandEmpty>Ingen underkategori hittades.</CommandEmpty>
-                        <CommandGroup className="max-h-64 overflow-auto">
-                          {availableSubcategories.map((sub) => (
-                            <CommandItem
-                              key={sub}
-                              value={sub}
-                              onSelect={() => handleChange('subcategory', sub)}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.subcategory === sub ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {sub}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setShowCustomSubcategory(false);
+                          setCustomSubcategory('');
+                        }}
+                        className="whitespace-nowrap"
+                      >
+                        Avbryt
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
