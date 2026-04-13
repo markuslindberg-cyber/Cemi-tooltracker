@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ToolFormModal from '@/components/modals/ToolFormModal';
+import HandToolEditModal from '@/components/modals/HandToolEditModal';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ export default function LocationDetails() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editTool, setEditTool] = useState(null);
+  const [editHandTool, setEditHandTool] = useState(null);
 
   const { data: location, isLoading: loadingLocation } = useQuery({
     queryKey: ['location', locationId],
@@ -79,6 +81,11 @@ export default function LocationDetails() {
     queryClient.invalidateQueries(['tools-for-location', locationId]);
     queryClient.invalidateQueries(['tools']);
     setEditTool(null);
+  };
+
+  const handleHandToolSuccess = () => {
+    queryClient.invalidateQueries(['handtools-for-location', locationId]);
+    setEditHandTool(null);
   };
 
   const { data: handTools = [], isLoading: loadingHandTools } = useQuery({
@@ -195,7 +202,7 @@ export default function LocationDetails() {
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-gray-100">
                   {handTools.map(tool => (
-                    <div key={tool.id} className="flex items-center gap-4 p-4">
+                    <div key={tool.id} className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setEditHandTool(tool)}>
                       {tool.image_url ? (
                         <img src={tool.image_url} alt={tool.name} className="w-12 h-12 rounded-xl object-cover" />
                       ) : (
@@ -228,6 +235,14 @@ export default function LocationDetails() {
         locations={allLocations}
         teamMembers={teamMembers}
         onSubmit={handleSaveTool}
+      />
+
+      <HandToolEditModal
+        isOpen={!!editHandTool}
+        onClose={() => setEditHandTool(null)}
+        tool={editHandTool}
+        locations={allLocations}
+        onSuccess={handleHandToolSuccess}
       />
     </div>
   );
