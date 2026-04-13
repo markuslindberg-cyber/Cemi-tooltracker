@@ -94,8 +94,9 @@ export default function Inventory() {
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
   });
 
-  // Only display tools (no arbetskläder)
-  const allItems = useMemo(() => tools.map(t => ({ ...t, type: 'tool' })), [tools]);
+  // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap)
+  const HIDDEN_STATUSES = ['såld', 'retired', 'missing'];
+  const allItems = useMemo(() => tools.filter(t => !HIDDEN_STATUSES.includes(t.status)).map(t => ({ ...t, type: 'tool' })), [tools]);
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
