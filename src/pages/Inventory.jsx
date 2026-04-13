@@ -6,6 +6,7 @@ import ToolCard from '@/components/ui/ToolCard';
 import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import ToolScanModal from '@/components/modals/ToolScanModal';
+import BulkMoveModal from '@/components/modals/BulkMoveModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -37,6 +38,8 @@ import {
   Upload,
   FileSpreadsheet,
   ScanLine,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -88,6 +91,34 @@ export default function Inventory() {
   const [showAddTool, setShowAddTool] = useState(false);
   const [importing, setImporting] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
+  const [selectedTools, setSelectedTools] = useState(new Set());
+  const [showBulkMove, setShowBulkMove] = useState(false);
+
+  const toggleSelectTool = (id) => {
+    setSelectedTools(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTools.size === filteredTools.length) {
+      setSelectedTools(new Set());
+    } else {
+      setSelectedTools(new Set(filteredTools.map(t => t.id)));
+    }
+  };
+
+  const handleBulkMove = async (locationId, locationName) => {
+    await Promise.all(
+      [...selectedTools].map(id =>
+        base44.entities.Tool.update(id, { location_id: locationId, location_name: locationName })
+      )
+    );
+    queryClient.invalidateQueries(['tools']);
+    setSelectedTools(new Set());
+  };
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
@@ -403,6 +434,15 @@ export default function Inventory() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            {selectedTools.size > 0 && (
+              <Button
+                onClick={() => setShowBulkMove(true)}
+                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                Ändra plats ({selectedTools.size})
+              </Button>
+            )}
             <Button
               onClick={() => setShowScanModal(true)}
               variant="outline"
@@ -502,6 +542,21 @@ export default function Inventory() {
         </div>
 
         {/* Content */}
+        {/* Select all bar */}
+        {filteredTools.length > 0 && (
+          <div className="flex items-center gap-3">
+            <button onClick={toggleSelectAll} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
+              {selectedTools.size === filteredTools.length && filteredTools.length > 0
+                ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                : <Square className="w-4 h-4" />}
+              {selectedTools.size === filteredTools.length && filteredTools.length > 0 ? 'Avmarkera alla' : 'Markera alla'}
+            </button>
+            {selectedTools.size > 0 && (
+              <span className="text-sm text-gray-500">{selectedTools.size} markerade</span>
+            )}
+          </div>
+        )}
+
         {filteredTools.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -533,15 +588,25 @@ export default function Inventory() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredTools.map((tool) => {
               const serviceCost = serviceCostsByTool[tool.id] || 0;
+              const isSelected = selectedTools.has(tool.id);
               return (
-                <ToolCard
-                  key={tool.id}
-                  tool={tool}
-                  serviceCost={serviceCost}
-                  onTransfer={setTransferTool}
-                  onEdit={setEditTool}
-                  onStatusChange={handleStatusChange}
-                />
+                <div key={tool.id} className={`relative rounded-2xl ${isSelected ? 'ring-2 ring-[#8B1E1E]' : ''}`}>
+                  <button
+                    onClick={() => toggleSelectTool(tool.id)}
+                    className="absolute top-2 left-2 z-10 bg-white rounded-md shadow p-0.5"
+                  >
+                    {isSelected
+                      ? <CheckSquare className="w-5 h-5 text-[#8B1E1E]" />
+                      : <Square className="w-5 h-5 text-gray-400" />}
+                  </button>
+                  <ToolCard
+                    tool={tool}
+                    serviceCost={serviceCost}
+                    onTransfer={setTransferTool}
+                    onEdit={setEditTool}
+                    onStatusChange={handleStatusChange}
+                  />
+                </div>
               );
             })}
           </div>
@@ -674,6 +739,14 @@ export default function Inventory() {
           </div>
         )}
       </div>
+
+      <BulkMoveModal
+        isOpen={showBulkMove}
+        onClose={() => setShowBulkMove(false)}
+        selectedCount={selectedTools.size}
+        locations={locations}
+        onSubmit={handleBulkMove}
+      />
 
       {/* Modals */}
       <TransferModal
