@@ -134,13 +134,15 @@ export default function Dashboard() {
             iconClassName="bg-blue-50"
           />
           {missingTools > 0 ? (
-            <StatsCard
-              title="Saknas"
-              value={missingTools}
-              icon={AlertTriangle}
-              iconClassName="bg-[#8B1E1E]/10"
-              className="border-[#8B1E1E]/20 bg-[#8B1E1E]/5"
-            />
+            <Link to="/Inventory/SaldaRedskap" className="block">
+              <StatsCard
+                title="Saknas"
+                value={missingTools}
+                icon={AlertTriangle}
+                iconClassName="bg-[#8B1E1E]/10"
+                className="border-[#8B1E1E]/20 bg-[#8B1E1E]/5 cursor-pointer hover:shadow-md transition-shadow"
+              />
+            </Link>
           ) : (
             <StatsCard
               title="Platser"
