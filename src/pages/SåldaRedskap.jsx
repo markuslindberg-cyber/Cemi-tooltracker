@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import ToolFormModal from '@/components/modals/ToolFormModal';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -16,11 +17,31 @@ const INACTIVE_STATUSES = ['såld', 'retired', 'missing'];
 export default function SåldaRedskap() {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [editTool, setEditTool] = useState(null);
+  const queryClient = useQueryClient();
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['inactive-tools'],
     queryFn: () => base44.entities.Tool.list(),
   });
+
+  const { data: allLocations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
+  });
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: () => base44.entities.TeamMember.list(),
+  });
+
+  const handleSaveTool = async (toolData) => {
+    if (editTool?.id) {
+      await base44.entities.Tool.update(editTool.id, toolData);
+    }
+    queryClient.invalidateQueries(['inactive-tools']);
+    setEditTool(null);
+  };
 
   const inactiveTools = tools.filter(t => INACTIVE_STATUSES.includes(t.status));
 
@@ -107,7 +128,7 @@ export default function SåldaRedskap() {
               {filtered.map((tool, i) => {
                 const cfg = statusConfig[tool.status] || { label: tool.status, color: 'bg-gray-100 text-gray-700' };
                 return (
-                  <tr key={tool.id} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr key={tool.id} onClick={() => setEditTool(tool)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                     <td className="px-4 py-3 font-medium text-gray-900">{tool.name}</td>
                     <td className="px-4 py-3 text-gray-600">{tool.manufacturer || '—'}</td>
                     <td className="px-4 py-3 text-gray-600">{tool.model_number || '—'}</td>
@@ -125,6 +146,15 @@ export default function SåldaRedskap() {
           </table>
         </div>
       )}
+
+      <ToolFormModal
+        isOpen={!!editTool}
+        onClose={() => setEditTool(null)}
+        tool={editTool}
+        locations={allLocations}
+        teamMembers={teamMembers}
+        onSubmit={handleSaveTool}
+      />
     </div>
   );
 }
