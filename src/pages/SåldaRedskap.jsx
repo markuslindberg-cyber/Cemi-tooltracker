@@ -4,6 +4,7 @@ import ToolFormModal from '@/components/modals/ToolFormModal';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Search, Tag, AlertTriangle, Trash2 } from 'lucide-react';
 
 const statusConfig = {
@@ -41,6 +42,13 @@ export default function SåldaRedskap() {
     }
     queryClient.invalidateQueries(['inactive-tools']);
     setEditTool(null);
+  };
+
+  const handleDelete = async (e, toolId) => {
+    e.stopPropagation();
+    if (!confirm('Är du säker på att du vill radera denna maskin permanent?')) return;
+    await base44.entities.Tool.delete(toolId);
+    queryClient.invalidateQueries(['inactive-tools']);
   };
 
   const inactiveTools = tools.filter(t => INACTIVE_STATUSES.includes(t.status));
@@ -122,6 +130,7 @@ export default function SåldaRedskap() {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Plats</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Streckkod</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -139,6 +148,11 @@ export default function SåldaRedskap() {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{tool.location_name || '—'}</td>
                     <td className="px-4 py-3 text-gray-500 font-mono text-xs">{tool.barcode || '—'}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Button size="sm" variant="ghost" onClick={(e) => handleDelete(e, tool.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </td>
                   </tr>
                 );
               })}
