@@ -435,11 +435,11 @@ export default function Inventory() {
               {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all' || searchQuery) && ' matchar filter'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 md:gap-2">
             {selectedTools.size > 0 && (
               <Button
                 onClick={() => setShowBulkMove(true)}
-                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+                className="bg-[#8B1E1E] hover:bg-[#6B1515] md:inline-flex hidden"
               >
                 <MapPin className="w-4 h-4 mr-2" />
                 Ändra plats ({selectedTools.size})
@@ -448,13 +448,17 @@ export default function Inventory() {
             <Button
               onClick={() => setShowScanModal(true)}
               variant="outline"
+              size="sm"
+              className="hidden sm:inline-flex"
             >
-              <ScanLine className="w-4 h-4 mr-2" />
-              Inventera (skanna)
+              <ScanLine className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Inventera (skanna)</span>
             </Button>
             <Button
               onClick={handleDownloadTemplate}
               variant="outline"
+              size="sm"
+              className="hidden md:inline-flex"
             >
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Ladda ned mall
@@ -462,6 +466,8 @@ export default function Inventory() {
             <Button
               onClick={handleExportToExcel}
               variant="outline"
+              size="sm"
+              className="hidden md:inline-flex"
               disabled={tools.length === 0}
             >
               <Download className="w-4 h-4 mr-2" />
@@ -470,6 +476,8 @@ export default function Inventory() {
             <label>
               <Button
                 variant="outline"
+                size="sm"
+                className="hidden md:inline-flex"
                 disabled={importing}
                 asChild
               >
@@ -497,10 +505,11 @@ export default function Inventory() {
             </label>
             <Button
               onClick={() => setShowAddTool(true)}
-              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 sm:flex-none"
+              size="sm"
             >
-              <Plus className="w-5 h-5 mr-2" />
-              Lägg till verktyg
+              <Plus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Lägg till</span>
             </Button>
           </div>
         </div>
