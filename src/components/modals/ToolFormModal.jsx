@@ -212,11 +212,21 @@ export default function ToolFormModal({
     }
   };
 
-  const handleRejectImage = () => {
+  const handleRejectImage = async () => {
     setFormData(prev => ({
       ...prev,
       suggested_image_url: ''
     }));
+    // Search for next image automatically
+    setSearchingImage(true);
+    try {
+      await base44.functions.invoke('findToolImage', { tool_id: tool?.id });
+      queryClient.invalidateQueries(['tools']);
+    } catch (error) {
+      console.error('Image search failed:', error);
+    } finally {
+      setSearchingImage(false);
+    }
   };
 
   const handleSubmit = () => {
