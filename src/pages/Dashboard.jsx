@@ -18,6 +18,7 @@ import {
   TrendingUp,
   ChevronRight,
   Package,
+  Tag,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -57,6 +58,8 @@ export default function Dashboard() {
   const inUseTools = tools.filter(t => t.status === 'in_use').length;
   const missingTools = tools.filter(t => t.status === 'missing').length;
   const maintenanceTools = tools.filter(t => t.status === 'maintenance').length;
+
+  const soldTools = tools.filter(t => t.status === 'såld').length;
 
   const totalValue = tools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const handToolsValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
@@ -112,7 +115,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
           <StatsCard
             title="Totalt antal verktyg"
             value={totalTools}
@@ -151,6 +154,15 @@ export default function Dashboard() {
               iconClassName="bg-purple-50"
             />
           )}
+          <Link to="/Inventory/SaldaRedskap" className="block">
+            <StatsCard
+              title="Sålda"
+              value={soldTools}
+              icon={Tag}
+              iconClassName="bg-gray-100"
+              className="cursor-pointer hover:shadow-md transition-shadow"
+            />
+          </Link>
         </div>
 
         {/* Missing Tools Alert */}
