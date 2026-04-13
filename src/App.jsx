@@ -9,6 +9,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import HandTools from './pages/HandTools';
 import ArbetskläderUtrustning from './pages/ArbetskläderUtrustning';
+import RequestWorkwear from './pages/RequestWorkwear';
 import LocationDetails from './pages/LocationDetails';
 import InventoryReports from './pages/InventoryReports';
 import CheckoutReports from './pages/CheckoutReports';
@@ -72,6 +73,7 @@ const AuthenticatedApp = () => {
       <Route path="/ArbetskladerUtrustning" element={<LayoutWrapper currentPageName="ArbetskläderUtrustning"><ArbetskläderUtrustning /></LayoutWrapper>} />
       <Route path="/Arbetsklader/CheckoutReports" element={<LayoutWrapper currentPageName="CheckoutReports"><CheckoutReports /></LayoutWrapper>} />
       <Route path="/Inventory/SaldaRedskap" element={<LayoutWrapper currentPageName="SåldaRedskap"><SåldaRedskap /></LayoutWrapper>} />
+      <Route path="/RequestWorkwear" element={<LayoutWrapper currentPageName="RequestWorkwear"><RequestWorkwear /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -48,6 +48,7 @@ const navigation = [
     children: [
       { name: 'Översikt', path: '/ArbetskladerUtrustning' },
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
+      { name: 'Begär artiklar', path: '/RequestWorkwear' },
     ]
   },
   {
