@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { base44 } from '@/api/base44Client';
 import {
   LayoutDashboard,
@@ -19,6 +18,7 @@ import {
   ClipboardList,
   Shirt,
   Tag,
+  BookText,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,22 +30,37 @@ import {
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: 'Dashboard', page: 'Dashboard', icon: LayoutDashboard },
-  { name: 'Maskiner', page: 'Inventory', icon: Package },
-  { name: 'Sålda & Kasserade', page: 'SåldaRedskap', icon: Tag, href: '/SaldaRedskap' },
-  { name: 'Handredskap', page: 'HandTools', icon: Shovel },
-  { name: 'Arbetskläder', page: 'ArbetskläderUtrustning', icon: Shirt },
-  { name: 'Uttagsrapporter', page: 'CheckoutReports', icon: ClipboardList },
-  { name: 'Inventeringskontroll', page: 'InventoryCheck', icon: Wrench },
-  { name: 'Inventeringsrapporter', page: 'InventoryReports', icon: ClipboardList },
-  { name: 'Platser', page: 'Locations', icon: MapPin },
-  { name: 'Team', page: 'Team', icon: Users },
-  { name: 'Förflyttningar', page: 'Transfers', icon: ArrowRightLeft },
+  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  {
+    name: 'Maskiner',
+    path: '/Inventory',
+    icon: Package,
+    children: [
+      { name: 'Översikt', path: '/Inventory' },
+      { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
+    ]
+  },
+  { name: 'Handredskap', path: '/HandTools', icon: Shovel },
+  {
+    name: 'Arbetskläder',
+    path: '/ArbetskladerUtrustning',
+    icon: Shirt,
+    children: [
+      { name: 'Översikt', path: '/ArbetskladerUtrustning' },
+      { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
+    ]
+  },
+  { name: 'Inventeringskontroll', path: '/InventoryCheck', icon: Wrench },
+  { name: 'Inventeringsrapporter', path: '/InventoryReports', icon: BookText },
+  { name: 'Platser', path: '/Locations', icon: MapPin },
+  { name: 'Team', path: '/Team', icon: Users },
+  { name: 'Förflyttningar', path: '/Transfers', icon: ArrowRightLeft },
 ];
 
-export default function Layout({ children, currentPageName }) {
+export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -54,6 +69,11 @@ export default function Layout({ children, currentPageName }) {
   const getInitials = (name) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const isActivePath = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
   };
 
   return (
@@ -74,7 +94,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
-            <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
                 <Wrench className="w-5 h-5 text-white" />
               </div>
@@ -91,16 +111,58 @@ export default function Layout({ children, currentPageName }) {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
-              const isActive = currentPageName === item.page;
+              const isActive = isActivePath(item.path);
+
+              if (item.children) {
+                return (
+                  <DropdownMenu key={item.name}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={cn(
+                          "flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                          isActive
+                            ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className={cn(
+                            "w-5 h-5",
+                            isActive ? "text-[#8B1E1E]" : "text-gray-400"
+                          )} />
+                          {item.name}
+                        </div>
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-52">
+                      {item.children.map((child) => (
+                        <DropdownMenuItem key={child.name} asChild>
+                          <Link
+                            to={child.path}
+                            onClick={() => setSidebarOpen(false)}
+                            className={cn(
+                              location.pathname === child.path ? "text-[#8B1E1E] font-medium" : ""
+                            )}
+                          >
+                            {child.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+
               return (
                 <Link
-                  key={item.page}
-                  to={item.href || (item.page === 'HandTools' ? '/HandTools' : item.page === 'ArbetskläderUtrustning' ? '/ArbetskläderUtrustning' : item.page === 'CheckoutReports' ? '/CheckoutReports' : createPageUrl(item.page))}
+                  key={item.name}
+                  to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                    isActive 
-                      ? "bg-[#8B1E1E]/10 text-[#8B1E1E]" 
+                    isActive
+                      ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >
