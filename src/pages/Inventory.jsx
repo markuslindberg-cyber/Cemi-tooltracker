@@ -543,7 +543,7 @@ export default function Inventory() {
 
         {/* Content */}
         {/* Select all bar */}
-        {filteredTools.length > 0 && (
+        {selectedTools.size > 0 && filteredTools.length > 0 && (
           <div className="flex items-center gap-3">
             <button onClick={toggleSelectAll} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
               {selectedTools.size === filteredTools.length && filteredTools.length > 0
@@ -591,14 +591,16 @@ export default function Inventory() {
               const isSelected = selectedTools.has(tool.id);
               return (
                 <div key={tool.id} className={`relative rounded-2xl ${isSelected ? 'ring-2 ring-[#8B1E1E]' : ''}`}>
-                  <button
-                    onClick={() => toggleSelectTool(tool.id)}
-                    className="absolute top-2 left-2 z-10 bg-white rounded-md shadow p-0.5"
-                  >
-                    {isSelected
-                      ? <CheckSquare className="w-5 h-5 text-[#8B1E1E]" />
-                      : <Square className="w-5 h-5 text-gray-400" />}
-                  </button>
+                  {selectedTools.size > 0 && (
+                    <button
+                      onClick={() => toggleSelectTool(tool.id)}
+                      className="absolute top-2 left-2 z-10 bg-white rounded-md shadow p-0.5"
+                    >
+                      {isSelected
+                        ? <CheckSquare className="w-5 h-5 text-[#8B1E1E]" />
+                        : <Square className="w-5 h-5 text-gray-400" />}
+                    </button>
+                  )}
                   <ToolCard
                     tool={tool}
                     serviceCost={serviceCost}
@@ -616,11 +618,13 @@ export default function Inventory() {
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="w-10">
-                    <button onClick={toggleSelectAll}>
-                      {selectedTools.size === filteredTools.length && filteredTools.length > 0
-                        ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
-                        : <Square className="w-4 h-4 text-gray-400" />}
-                    </button>
+                    {selectedTools.size > 0 && (
+                      <button onClick={toggleSelectAll}>
+                        {selectedTools.size === filteredTools.length && filteredTools.length > 0
+                          ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                          : <Square className="w-4 h-4 text-gray-400" />}
+                      </button>
+                    )}
                   </TableHead>
                   <TableHead className="font-semibold">Verktyg</TableHead>
                   <TableHead className="font-semibold">Kategori</TableHead>
@@ -643,9 +647,13 @@ export default function Inventory() {
                       onClick={() => setEditTool(tool)}
                     >
                       <TableCell onClick={e => { e.stopPropagation(); toggleSelectTool(tool.id); }}>
-                        {selectedTools.has(tool.id)
-                          ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
-                          : <Square className="w-4 h-4 text-gray-400" />}
+                        {selectedTools.size > 0 && (
+                          <>
+                            {selectedTools.has(tool.id)
+                              ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                              : <Square className="w-4 h-4 text-gray-400" />}
+                          </>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
