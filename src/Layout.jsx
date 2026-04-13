@@ -38,6 +38,7 @@ const navigation = [
     children: [
       { name: 'Översikt', path: '/Inventory' },
       { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
+      { name: 'Förflyttningar', path: '/Transfers' },
     ]
   },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel },
@@ -63,7 +64,6 @@ const navigation = [
   },
   { name: 'Platser', path: '/Locations', icon: MapPin },
   { name: 'Team', path: '/Team', icon: Users },
-  { name: 'Förflyttningar', path: '/Transfers', icon: ArrowRightLeft },
 ];
 
 export default function Layout({ children }) {
