@@ -38,23 +38,50 @@ Deno.serve(async (req) => {
 
     // Use LLM to find image URL
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Find a direct image file URL (ending in .jpg, .png, .gif, or .webp) for a product image of: ${searchQuery}. IMPORTANT: Return ONLY the direct image file URL - not a web page link. The image should be a professional product photo from a manufacturer or retailer website. Return only the URL, nothing else.`,
+      prompt: `Find the best direct product image file URL for: ${searchQuery}. The URL MUST end with an image extension like .jpg, .jpeg, .png, .gif, or .webp. DO NOT return links to product pages or websites. Return ONLY the complete image URL starting with http, nothing else.`,
       add_context_from_internet: true,
     });
 
-    const imageUrl = result.trim();
+    let imageUrl = result.trim();
 
-    // Validate URL is a direct image file
+    // Validate URL format
     if (!imageUrl.startsWith('http')) {
       return Response.json({ error: 'Could not find valid image URL' }, { status: 404 });
     }
 
-    // Check if URL appears to be an image file
+    // Check if URL is a direct image file
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     const hasImageExtension = imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
     
-    if (!hasImageExtension) {
-      return Response.json({ error: 'URL does not appear to be a direct image file' }, { status: 404 });
+    // If not a direct image, try to extract image from the page
+    if (!hasImageExtension && imageUrl.includes('://')) {
+      try {
+        const pageResponse = await fetch(imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const html = await pageResponse.text();
+        
+        // Try to extract og:image meta tag
+        const ogImageMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i);
+        if (ogImageMatch && ogImageMatch[1]) {
+          imageUrl = ogImageMatch[1];
+        } else {
+          // Try to find src attribute of img tags
+          const imgMatches = html.match(/<img[^>]+src=["']([^"']+\.(?:jpg|jpeg|png|gif|webp))["']/gi);
+          if (imgMatches && imgMatches.length > 0) {
+            // Get the largest/most likely product image (typically 2nd-4th img)
+            const srcMatch = imgMatches[Math.min(2, imgMatches.length - 1)].match(/src=["']([^"']+)["']/i);
+            if (srcMatch && srcMatch[1]) {
+              imageUrl = srcMatch[1].startsWith('http') ? srcMatch[1] : new URL(srcMatch[1], imageUrl).href;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to extract image from page:', error);
+      }
+    }
+    
+    // Final validation
+    if (!imageUrl.startsWith('http') || !imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext))) {
+      return Response.json({ error: 'Could not extract valid image URL' }, { status: 404 });
     }
 
     // Save as suggested image URL for approval
