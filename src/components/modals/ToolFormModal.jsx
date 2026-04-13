@@ -238,16 +238,16 @@ export default function ToolFormModal({
     onSubmit(data);
 
     // After saving, check if model number changed and ask about updating matching tools
-    if (isEditing && tool?.id && formData.model_number !== tool.model_number && formData.manufacturer && formData.model_number) {
+    if (isEditing && tool?.id && formData.model_number !== tool.model_number && formData.manufacturer && tool.model_number) {
       const matchingTools = allTools.filter(
         t => t.manufacturer === formData.manufacturer &&
-             t.model_number === formData.model_number &&
+             t.model_number === tool.model_number &&
              t.id !== tool.id
       );
 
       if (matchingTools.length > 0) {
         const shouldUpdateAll = window.confirm(
-          `Hittade ${matchingTools.length} andra maskiner av typ "${formData.manufacturer} ${formData.model_number}". Vill du uppdatera modellnumret på dem också?`
+          `Hittade ${matchingTools.length} andra maskiner av typ "${formData.manufacturer} ${tool.model_number}". Vill du uppdatera deras modellnummer till "${formData.model_number}"?`
         );
 
         if (shouldUpdateAll) {
