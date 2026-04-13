@@ -541,17 +541,41 @@ export default function ToolFormModal({
                 </div>
                 <div className="space-y-2">
                   <Label>Underkategori</Label>
-                  <Input
-                    value={formData.subcategory}
-                    onChange={(e) => handleChange('subcategory', e.target.value)}
-                    placeholder="t.ex. Husqvarna, Stihl, etc."
-                    list="subcategory-suggestions"
-                  />
-                  <datalist id="subcategory-suggestions">
-                    {availableSubcategories.map((sub) => (
-                      <option key={sub} value={sub} />
-                    ))}
-                  </datalist>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                      >
+                        {formData.subcategory || "Välj underkategori..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Sök underkategori..." />
+                        <CommandEmpty>Ingen underkategori hittades.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-auto">
+                          {availableSubcategories.map((sub) => (
+                            <CommandItem
+                              key={sub}
+                              value={sub}
+                              onSelect={() => handleChange('subcategory', sub)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.subcategory === sub ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {sub}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
