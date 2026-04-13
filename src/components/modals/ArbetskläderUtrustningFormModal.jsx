@@ -303,7 +303,7 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Kategori *
             </label>
-            <Select value={formData.category} onValueChange={(v) => handleChange('category', v)}>
+            <Select value={formData.category || ''} onValueChange={(v) => handleChange('category', v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Välj kategori" />
               </SelectTrigger>
@@ -323,7 +323,7 @@ export default function ArbetskläderUtrustningFormModal({
               Typ av plagg
             </label>
             {!showCustomSubcategory ? (
-              <Select value={formData.subcategory} onValueChange={(v) => {
+              <Select value={formData.subcategory || ''} onValueChange={(v) => {
                 if (v === '__custom__') {
                   setShowCustomSubcategory(true);
                   setCustomSubcategory('');
@@ -381,7 +381,7 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Storlek
             </label>
-            <Select value={formData.size} onValueChange={(v) => handleChange('size', v)}>
+            <Select value={formData.size || ''} onValueChange={(v) => handleChange('size', v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Välj storlek" />
               </SelectTrigger>
@@ -413,7 +413,7 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
-            <Select value={formData.status} onValueChange={(v) => handleChange('status', v)}>
+            <Select value={formData.status || 'i_lager'} onValueChange={(v) => handleChange('status', v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -432,7 +432,7 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Skick
             </label>
-            <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
+            <Select value={formData.condition || 'bra'} onValueChange={(v) => handleChange('condition', v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -451,11 +451,12 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Plats
             </label>
-            <Select value={formData.location_id} onValueChange={(v) => handleChange('location_id', v)}>
+            <Select value={formData.location_id || ''} onValueChange={(v) => handleChange('location_id', v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Välj plats" />
               </SelectTrigger>
               <SelectContent>
+                  <SelectItem value={null}>Ingen plats</SelectItem>
                 {locations.map((loc) => (
                   <SelectItem key={loc.id} value={loc.id}>
                     {loc.name}
