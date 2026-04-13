@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     let successCount = 0;
     let errorCount = 0;
 
-    // Process each tool - invoke findToolImage for each
+    // Process each tool - invoke findToolImage for each with delay to avoid rate limiting
     for (const tool of toolsWithoutImages) {
       try {
         await base44.functions.invoke('findToolImage', { tool_id: tool.id });
@@ -31,6 +31,8 @@ Deno.serve(async (req) => {
         console.error(`Failed to search image for tool ${tool.id}:`, error);
         errorCount++;
       }
+      // Wait 2 seconds between requests to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     return Response.json({
