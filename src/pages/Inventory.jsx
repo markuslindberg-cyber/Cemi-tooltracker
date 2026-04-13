@@ -615,6 +615,13 @@ export default function Inventory() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
+                  <TableHead className="w-10">
+                    <button onClick={toggleSelectAll}>
+                      {selectedTools.size === filteredTools.length && filteredTools.length > 0
+                        ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                        : <Square className="w-4 h-4 text-gray-400" />}
+                    </button>
+                  </TableHead>
                   <TableHead className="font-semibold">Verktyg</TableHead>
                   <TableHead className="font-semibold">Kategori</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
@@ -632,9 +639,14 @@ export default function Inventory() {
                   return (
                     <TableRow 
                       key={tool.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className={`hover:bg-gray-50 cursor-pointer ${selectedTools.has(tool.id) ? 'bg-[#8B1E1E]/5' : ''}`}
                       onClick={() => setEditTool(tool)}
                     >
+                      <TableCell onClick={e => { e.stopPropagation(); toggleSelectTool(tool.id); }}>
+                        {selectedTools.has(tool.id)
+                          ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                          : <Square className="w-4 h-4 text-gray-400" />}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
