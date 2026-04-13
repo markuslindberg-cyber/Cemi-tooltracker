@@ -259,8 +259,10 @@ export default function Dashboard() {
                   { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
                   { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
                   { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
-                  { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
-                ].map(({ label, count, color }) => (
+                   { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
+                   { label: 'Sålda', count: tools?.filter(t => t.status === 'sålda').length || 0, color: 'bg-gray-400' },
+                   { label: 'Kasserade', count: tools?.filter(t => t.status === 'retired').length || 0, color: 'bg-gray-300' },
+                  ].map(({ label, count, color }) => (
                   <div key={label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${color}`} />
