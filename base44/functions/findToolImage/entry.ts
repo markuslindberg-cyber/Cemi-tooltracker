@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     // Use LLM to find image URL
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Find a high-quality product image URL for: ${searchQuery}. Return ONLY a direct image URL (must start with http). The image should be a clear, professional photo of the product. Return just the URL, nothing else.`,
+      prompt: `Find the best product image URL for: ${searchQuery}. Return a URL that directly links to an image file or a product page with a clear product image. The image should be professional and relevant. Return only the URL, nothing else.`,
       add_context_from_internet: true,
     });
 
