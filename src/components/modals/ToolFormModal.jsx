@@ -49,6 +49,7 @@ const defaultTool = {
   notes: '',
   barcode: '',
   image_url: '',
+  suggested_image_url: '',
 };
 
 export default function ToolFormModal({
@@ -66,6 +67,7 @@ export default function ToolFormModal({
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [templateToolId, setTemplateToolId] = useState('');
   const [templateOpen, setTemplateOpen] = useState(false);
+  const [searchingImage, setSearchingImage] = useState(false);
 
   const { data: allTools = [] } = useQuery({
     queryKey: ['tools'],
@@ -158,6 +160,35 @@ export default function ToolFormModal({
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleSearchImage = async () => {
+    setSearchingImage(true);
+    try {
+      await base44.functions.invoke('findToolImage', { tool_id: tool?.id });
+      queryClient.invalidateQueries(['tools']);
+    } catch (error) {
+      console.error('Image search failed:', error);
+    } finally {
+      setSearchingImage(false);
+    }
+  };
+
+  const handleApproveImage = () => {
+    if (formData.suggested_image_url) {
+      setFormData(prev => ({
+        ...prev,
+        image_url: prev.suggested_image_url,
+        suggested_image_url: ''
+      }));
+    }
+  };
+
+  const handleRejectImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      suggested_image_url: ''
+    }));
   };
 
   const handleSubmit = () => {
@@ -277,21 +308,67 @@ export default function ToolFormModal({
                   <Upload className="w-6 h-6 text-gray-400" />
                 )}
               </div>
-              <label className="cursor-pointer">
-                <Button variant="outline" size="sm" asChild disabled={uploading}>
-                  <span>
-                    {uploading ? 'Laddar upp...' : 'Ladda upp bild'}
-                  </span>
-                </Button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-              </label>
+              <div className="flex flex-col gap-2">
+                <label className="cursor-pointer">
+                  <Button variant="outline" size="sm" asChild disabled={uploading}>
+                    <span>
+                      {uploading ? 'Laddar upp...' : 'Ladda upp bild'}
+                    </span>
+                  </Button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+                {isEditing && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSearchImage}
+                    disabled={searchingImage || !formData.name}
+                  >
+                    {searchingImage ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Söker...
+                      </>
+                    ) : (
+                      'Sök bild (AI)'
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Suggested Image Approval */}
+          {formData.suggested_image_url && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+              <p className="text-sm font-medium text-blue-900">AI hittade en bild - godkänn eller avslå:</p>
+              <div className="w-full h-48 bg-white rounded-lg overflow-hidden border border-blue-100">
+                <img src={formData.suggested_image_url} alt="Suggested" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleApproveImage}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  Godkänn bild
+                </Button>
+                <Button
+                  onClick={handleRejectImage}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Avslå
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Basic Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

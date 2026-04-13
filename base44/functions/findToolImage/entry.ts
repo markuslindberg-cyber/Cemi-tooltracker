@@ -49,10 +49,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Could not find valid image URL' }, { status: 404 });
     }
 
-    // Update tool with image URL
-    await base44.entities.Tool.update(tool_id, { image_url: imageUrl });
+    // Save as suggested image URL for approval
+    await base44.entities.Tool.update(tool_id, { suggested_image_url: imageUrl });
 
-    return Response.json({ success: true, image_url: imageUrl });
+    return Response.json({ success: true, suggested_image_url: imageUrl });
   } catch (error) {
     console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });

@@ -64,6 +64,10 @@
     "image_url": {
       "type": "string"
     },
+    "suggested_image_url": {
+      "type": "string",
+      "description": "AI-generated image URL pending approval"
+    },
     "location_id": {
       "type": "string",
       "description": "Reference to Location entity"
