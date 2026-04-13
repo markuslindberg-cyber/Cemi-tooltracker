@@ -36,13 +36,58 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Not enough tool info to search for image' }, { status: 400 });
     }
 
-    // Use LLM to find image URL
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Find the best direct product image file URL for: ${searchQuery}. The URL MUST end with an image extension like .jpg, .jpeg, .png, .gif, or .webp. DO NOT return links to product pages or websites. Return ONLY the complete image URL starting with http, nothing else.`,
-      add_context_from_internet: true,
+    // Step 1: Use LLM to find a Bing Images search result page for the tool
+    const bingSearchUrl = `https://www.bing.com/images/search?q=${encodeURIComponent(searchQuery)}`;
+    
+    // Step 2: Use Firecrawl to scrape the Bing Images page and extract the first product image
+    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    if (!firecrawlApiKey) {
+      return Response.json({ error: 'Firecrawl API key not configured' }, { status: 500 });
+    }
+
+    const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: bingSearchUrl,
+        extract: {
+          schema: {
+            type: 'object',
+            properties: {
+              images: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                },
+                description: 'All image URLs found on the page',
+              },
+            },
+          },
+        },
+      }),
     });
 
-    let imageUrl = result.trim();
+    const firecrawlData = await firecrawlResponse.json();
+    
+    if (!firecrawlData.success || !firecrawlData.data?.images || firecrawlData.data.images.length === 0) {
+      return Response.json({ error: 'Could not find images on Bing' }, { status: 404 });
+    }
+
+    // Get the first valid image URL (filter out small/placeholder images)
+    let imageUrl = null;
+    for (const img of firecrawlData.data.images) {
+      if (img && img.startsWith('http') && (img.includes('.jpg') || img.includes('.jpeg') || img.includes('.png') || img.includes('.webp'))) {
+        imageUrl = img;
+        break;
+      }
+    }
+
+    if (!imageUrl) {
+      return Response.json({ error: 'Could not extract valid image URL' }, { status: 404 });
+    }
 
     // Validate URL format
     if (!imageUrl.startsWith('http')) {
@@ -52,42 +97,7 @@ Deno.serve(async (req) => {
     // Check if URL is a direct image file
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     const hasImageExtension = imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
-    
-    // If not a direct image, try to extract image from the page
-    if (!hasImageExtension && imageUrl.includes('://')) {
-      try {
-        const pageResponse = await fetch(imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-        const html = await pageResponse.text();
-        
-        // Try to extract og:image meta tag
-        const ogImageMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i);
-        if (ogImageMatch && ogImageMatch[1]) {
-          imageUrl = ogImageMatch[1];
-        } else {
-          // Try to find src attribute of img tags
-          const imgMatches = html.match(/<img[^>]+src=["']([^"']+\.(?:jpg|jpeg|png|gif|webp))["']/gi);
-          if (imgMatches && imgMatches.length > 0) {
-            // Get the largest/most likely product image (typically 2nd-4th img)
-            const srcMatch = imgMatches[Math.min(2, imgMatches.length - 1)].match(/src=["']([^"']+)["']/i);
-            if (srcMatch && srcMatch[1]) {
-              imageUrl = srcMatch[1].startsWith('http') ? srcMatch[1] : new URL(srcMatch[1], imageUrl).href;
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to extract image from page:', error);
-      }
-    }
-    
-    // Final validation
-    if (!imageUrl.startsWith('http') || !imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext))) {
-      return Response.json({ error: 'Could not extract valid image URL' }, { status: 404 });
-    }
 
-    // Save as suggested image URL for approval
-    await base44.entities.Tool.update(tool_id, { suggested_image_url: imageUrl });
-
-    return Response.json({ success: true, suggested_image_url: imageUrl });
   } catch (error) {
     console.error('Error:', error);
     return Response.json({ error: error.message }, { status: 500 });
