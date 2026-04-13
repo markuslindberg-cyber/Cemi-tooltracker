@@ -229,12 +229,42 @@ export default function ToolFormModal({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const data = {
       ...formData,
       purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
     };
     onSubmit(data);
+
+    // After saving, check if image changed and ask about updating matching tools
+    if (isEditing && tool?.id && formData.image_url && formData.image_url !== tool.image_url && formData.manufacturer && formData.model_number) {
+      const shouldUpdateAll = window.confirm(
+        `Vill du uppdatera bilden på alla andra maskiner av typ "${formData.manufacturer} ${formData.model_number}"?`
+      );
+
+      if (shouldUpdateAll) {
+        try {
+          const matchingTools = allTools.filter(
+            t => t.manufacturer === formData.manufacturer &&
+                 t.model_number === formData.model_number &&
+                 t.id !== tool.id &&
+                 !t.image_url
+          );
+
+          if (matchingTools.length > 0) {
+            await Promise.all(
+              matchingTools.map(t =>
+                base44.entities.Tool.update(t.id, { image_url: formData.image_url })
+              )
+            );
+
+            queryClient.invalidateQueries(['tools']);
+          }
+        } catch (error) {
+          console.error('Bulk update failed:', error);
+        }
+      }
+    }
   };
 
   const handleClose = () => {
