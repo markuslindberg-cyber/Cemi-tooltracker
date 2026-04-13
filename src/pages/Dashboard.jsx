@@ -157,7 +157,7 @@ export default function Dashboard() {
 
         {/* Missing Tools Alert */}
         {missingTools > 0 && (
-          <div className="bg-gradient-to-r from-[#8B1E1E] to-[#6B1515] rounded-2xl p-6 text-white shadow-lg shadow-[#8B1E1E]/25">
+          <div className="bg-gradient-to-r from-[#8B1E1E] to-[#6B1515] rounded-2xl p-4 text-white shadow-lg shadow-[#8B1E1E]/25">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-white/20 rounded-xl">
