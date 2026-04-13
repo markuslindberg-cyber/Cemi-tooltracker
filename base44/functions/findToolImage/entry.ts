@@ -27,10 +27,10 @@ Deno.serve(async (req) => {
       return Response.json({ message: 'Tool already has an image', image_url: tool.image_url });
     }
 
-    // Build search query
-    const searchQuery = [tool.name, tool.manufacturer, tool.model_number]
-      .filter(Boolean)
-      .join(' ');
+    // Build search query - prioritize model number for better results
+    const searchQuery = tool.model_number
+      ? `${tool.model_number} ${tool.manufacturer || ''} ${tool.name || ''}`
+      : [tool.name, tool.manufacturer].filter(Boolean).join(' ');
 
     if (!searchQuery) {
       return Response.json({ error: 'Not enough tool info to search for image' }, { status: 400 });
