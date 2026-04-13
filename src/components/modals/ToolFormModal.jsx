@@ -503,17 +503,41 @@ export default function ToolFormModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Kategori *</Label>
-                  <Input
-                    value={formData.category}
-                    onChange={(e) => handleChange('category', e.target.value)}
-                    placeholder="t.ex. Elmaskiner, Handverktyg, etc."
-                    list="category-suggestions"
-                  />
-                  <datalist id="category-suggestions">
-                    {availableCategories.map((cat) => (
-                      <option key={cat} value={cat} />
-                    ))}
-                  </datalist>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                      >
+                        {formData.category || "Välj kategori..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Sök kategori..." />
+                        <CommandEmpty>Ingen kategori hittades.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-auto">
+                          {availableCategories.map((cat) => (
+                            <CommandItem
+                              key={cat}
+                              value={cat}
+                              onSelect={() => handleChange('category', cat)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.category === cat ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {cat}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label>Underkategori</Label>
