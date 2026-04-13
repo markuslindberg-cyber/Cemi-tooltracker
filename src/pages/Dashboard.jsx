@@ -178,7 +178,7 @@ export default function Dashboard() {
                   <p className="text-white/80 text-sm">Granska och hantera saknad utrustning</p>
                 </div>
               </div>
-              <Link to={createPageUrl('Inventory') + '?status=missing'}>
+              <Link to="/Inventory/SaldaRedskap">
                 <Button variant="secondary" className="bg-white text-[#8B1E1E] hover:bg-gray-50">
                   Visa alla
                   <ChevronRight className="w-4 h-4 ml-1" />
