@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Plus, Save, Undo2, Redo2, Download, Trash2 } from 'lucide-react';
+import { Plus, Save, Undo2, Redo2, Download, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
 const VISIBLE_ROWS = 20;
@@ -23,6 +23,7 @@ export default function Inventarier() {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const gridRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const currentSheet = sheets[activeSheet];
 
@@ -165,6 +166,41 @@ export default function Inventarier() {
     a.click();
   };
 
+  const handleImportCSV = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      const text = await file.text();
+      const rows = text.trim().split('\n');
+      const newCells = { ...cells };
+
+      // Parsa CSV
+      for (let row = 0; row < rows.length && row < VISIBLE_ROWS; row++) {
+        const columns = rows[row].split(',');
+        for (let col = 0; col < columns.length && col < VISIBLE_COLS; col++) {
+          const value = columns[col].trim();
+          if (value) {
+            const cellKey = getCellKey(row, col);
+            newCells[cellKey] = { value, formula: '', format: 'general' };
+            // Spara till databas
+            await saveCell(row, col, value);
+          }
+        }
+      }
+
+      setCells(newCells);
+      addToHistory();
+      toast.success('CSV-fil importerad');
+    } catch (error) {
+      toast.error('Kunde inte importera CSV-fil');
+    } finally {
+      setLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleUndo = () => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
@@ -208,6 +244,22 @@ export default function Inventarier() {
               <Redo2 className="w-4 h-4" />
               Gör om
             </Button>
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Importera CSV
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleImportCSV}
+              className="hidden"
+            />
             <Button
               onClick={handleExportCSV}
               variant="outline"
