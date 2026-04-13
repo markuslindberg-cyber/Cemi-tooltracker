@@ -40,6 +40,7 @@ import {
   ScanLine,
   CheckSquare,
   Square,
+  Tag,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -56,6 +57,7 @@ const statusConfig = {
   maintenance: { label: "Underhåll", color: "bg-amber-100 text-amber-700" },
   missing: { label: "Saknas", color: "bg-red-100 text-red-700" },
   retired: { label: "Kasserad", color: "bg-gray-100 text-gray-600" },
+  sålda: { label: "Såld", color: "bg-gray-100 text-gray-600" },
 };
 
 const categoryLabels = {
@@ -537,6 +539,7 @@ export default function Inventory() {
               { value: 'in_use', label: 'I bruk' },
               { value: 'i_lager', label: 'I lager' },
               { value: 'maintenance', label: 'Underhåll' },
+              { value: 'sålda', label: 'Såld' },
             ]}
           />
         </div>
@@ -746,6 +749,18 @@ export default function Inventory() {
                               >
                                 <AlertTriangle className="w-4 h-4 mr-2" />
                                 Rapportera saknad
+                              </DropdownMenuItem>
+                            )}
+                            {tool.status !== 'sålda' && (
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(tool, 'sålda');
+                                }}
+                                className="text-gray-600"
+                              >
+                                <Tag className="w-4 h-4 mr-2" />
+                                Markera som såld
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
