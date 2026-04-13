@@ -137,7 +137,7 @@ export default function ToolFormModal({
     }
     if (field === 'assigned_to_email') {
       const member = teamMembers?.find(m => m.email === value);
-      setFormData(prev => ({ ...prev, [field]: value, assigned_to_name: member?.name || '' }));
+      setFormData(prev => ({ ...prev, [field]: value || '', assigned_to_name: member?.name || '' }));
     }
     // Reset subcategory when category changes
     if (field === 'category') {
