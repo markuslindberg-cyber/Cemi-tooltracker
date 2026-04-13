@@ -165,7 +165,10 @@ export default function ToolFormModal({
   const handleSearchImage = async () => {
     setSearchingImage(true);
     try {
-      await base44.functions.invoke('findToolImage', { tool_id: tool?.id });
+      const response = await base44.functions.invoke('findToolImage', { tool_id: tool?.id });
+      if (response.data?.image_url) {
+        setFormData(prev => ({ ...prev, suggested_image_url: response.data.image_url }));
+      }
       queryClient.invalidateQueries(['tools']);
     } catch (error) {
       console.error('Image search failed:', error);
