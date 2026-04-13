@@ -46,9 +46,10 @@ const navigation = [
     path: '/ArbetskladerUtrustning',
     icon: Shirt,
     children: [
-      { name: 'Översikt', path: '/ArbetskladerUtrustning' },
+      { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning' },
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
       { name: 'Begär artiklar', path: '/RequestWorkwear' },
+      { name: 'Inventarier', path: '/Inventarier' },
     ]
   },
   {
