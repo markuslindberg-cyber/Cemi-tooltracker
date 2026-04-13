@@ -31,7 +31,7 @@
         "maintenance",
         "missing",
         "retired",
-        "s\u00e5ld"
+        "s\u00e5lda"
       ],
       "default": "available",
       "description": "Current status of the tool"
