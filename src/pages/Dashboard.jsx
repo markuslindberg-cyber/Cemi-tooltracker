@@ -4,11 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatsCard from '@/components/ui/StatsCard';
-import ToolCard from '@/components/ui/ToolCard';
 import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Wrench,
   MapPin,
@@ -19,6 +17,7 @@ import {
   Clock,
   TrendingUp,
   ChevronRight,
+  Package,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -92,7 +91,7 @@ export default function Dashboard() {
     refetchTools();
   };
 
-  const recentlyUsedTools = tools.slice(0, 8);
+  const recentlyUsedTools = tools.filter(t => !['såld','retired','missing'].includes(t.status)).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
@@ -177,125 +176,123 @@ export default function Dashboard() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Tools */}
+          {/* Recent Tools - simple list */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Senaste verktyg</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Senaste maskiner</h2>
               <Link to={createPageUrl('Inventory')}>
                 <Button variant="ghost" size="sm" className="text-[#8B1E1E] hover:text-[#6B1515] hover:bg-[#8B1E1E]/10">
-                  Visa alla
-                  <ArrowRight className="w-4 h-4 ml-1" />
+                  Visa alla <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recentlyUsedTools.map((tool) => (
-                <ToolCard
-                  key={tool.id}
-                  tool={tool}
-                  onTransfer={setTransferTool}
-                  onEdit={setEditTool}
-                  onStatusChange={handleStatusChange}
-                />
-              ))}
-            </div>
-            {tools.length === 0 && (
+            {tools.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Wrench className="w-8 h-8 text-gray-400" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Inga verktyg ännu</h3>
-                <p className="text-gray-500 mb-4">Lägg till ditt första verktyg för att börja spåra inventariet</p>
-                <Button
-                  onClick={() => setShowAddTool(true)}
-                  className="bg-[#8B1E1E] hover:bg-[#6B1515]"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Lägg till första verktyget
+                <Wrench className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 mb-4">Inga maskiner ännu</p>
+                <Button onClick={() => setShowAddTool(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+                  <Plus className="w-4 h-4 mr-2" /> Lägg till maskin
                 </Button>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="divide-y divide-gray-100">
+                  {recentlyUsedTools.map(tool => (
+                    <div key={tool.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setEditTool(tool)}>
+                      {tool.image_url ? (
+                        <img src={tool.image_url} alt={tool.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                          <Package className="w-5 h-5 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{tool.name}</p>
+                        <p className="text-sm text-gray-500 truncate">{tool.manufacturer}{tool.model_number ? ` · ${tool.model_number}` : ''}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                          tool.status === 'available' ? 'bg-emerald-100 text-emerald-700' :
+                          tool.status === 'in_use' ? 'bg-blue-100 text-blue-700' :
+                          tool.status === 'maintenance' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {tool.status === 'available' ? 'Tillgänglig' :
+                           tool.status === 'in_use' ? 'I bruk' :
+                           tool.status === 'i_lager' ? 'I lager' :
+                           tool.status === 'maintenance' ? 'Underhåll' : tool.status}
+                        </span>
+                        {tool.location_name && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[120px]">{tool.location_name}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Recent Activity */}
+          {/* Sidebar */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Senaste aktivitet</h2>
+            {/* Inventory value */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Maskiner ({tools.length})</span>
+                  <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Handredskap ({handTools.length})</span>
+                  <span className="font-medium text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</span>
+                </div>
+                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                  <span className="text-sm font-semibold text-gray-700">Totalt</span>
+                  <span className="font-bold text-[#8B1E1E]">{(totalValue + handToolsValue).toLocaleString('sv-SE')} kr</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                {[
+                  { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
+                  { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
+                  { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
+                  { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
+                ].map(({ label, count, color }) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${color}`} />
+                      <span className="text-sm text-gray-600">{label}</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-900">Senaste förflyttningar</h3>
+              </div>
               {recentTransfers.length > 0 ? (
                 <div className="divide-y divide-gray-100">
                   {recentTransfers.map((transfer) => (
-                    <div key={transfer.id} className="p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                          <ArrowRight className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">{transfer.tool_name}</p>
-                          <p className="text-sm text-gray-500 mt-0.5">
-                            {transfer.from_location_name || 'Okänd'} → {transfer.to_location_name || 'Okänd'}
-                          </p>
-                          {transfer.to_person_name && (
-                            <p className="text-xs text-gray-400 mt-1">
-                              Tilldelad {transfer.to_person_name}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {transfer.transfer_date && format(new Date(transfer.transfer_date), 'MMM d')}
-                        </div>
-                      </div>
+                    <div key={transfer.id} className="px-5 py-3">
+                      <p className="font-medium text-gray-900 text-sm truncate">{transfer.tool_name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">
+                        {transfer.from_location_name || '—'} → {transfer.to_location_name || '—'}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM')}
+                      </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center">
-                  <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">Inga senaste förflyttningar</p>
+                <div className="p-6 text-center">
+                  <Clock className="w-7 h-7 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-400 text-sm">Inga förflyttningar</p>
                 </div>
               )}
-            </div>
-
-            {/* Quick Stats */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
-
-              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Maskiner</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{tools.length} maskiner</p>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Handredskap</p>
-                  <p className="text-2xl font-bold text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{handTools.length} redskap</p>
-                </div>
-                <div className="p-4 bg-[#8B1E1E]/5 rounded-xl border border-[#8B1E1E]/10">
-                  <p className="text-xs font-medium text-[#8B1E1E] uppercase tracking-wide mb-1">Totalt</p>
-                  <p className="text-2xl font-bold text-[#8B1E1E]">{(totalValue + handToolsValue).toLocaleString('sv-SE')} kr</p>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-gray-100">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Per status (maskiner)</h4>
-                <div className="space-y-2">
-                  {[
-                    { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
-                    { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
-                    { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
-                    { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
-                  ].map(({ label, count, color }) => (
-                    <div key={label} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${color}`} />
-                        <span className="text-sm text-gray-600">{label}</span>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900">{count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
