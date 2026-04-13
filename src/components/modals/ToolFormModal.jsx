@@ -350,6 +350,34 @@ export default function ToolFormModal({
         }
       }
     }
+
+    // Check if subcategory changed and ask about updating matching tools
+    if (isEditing && tool?.id && formData.subcategory !== tool.subcategory && formData.manufacturer && formData.model_number) {
+      const matchingTools = allTools.filter(
+        t => t.manufacturer === formData.manufacturer &&
+             t.model_number === formData.model_number &&
+             t.id !== tool.id
+      );
+
+      if (matchingTools.length > 0) {
+        const shouldUpdateAll = window.confirm(
+          `Vill du uppdatera underkategorin på ${matchingTools.length} andra maskiner av typ "${formData.manufacturer} ${formData.model_number}" till "${formData.subcategory}"?`
+        );
+
+        if (shouldUpdateAll) {
+          try {
+            await Promise.all(
+              matchingTools.map(t =>
+                base44.entities.Tool.update(t.id, { subcategory: formData.subcategory })
+              )
+            );
+            queryClient.invalidateQueries(['tools']);
+          } catch (error) {
+            console.error('Bulk update failed:', error);
+          }
+        }
+      }
+    }
   };
 
   const handleClose = () => {
