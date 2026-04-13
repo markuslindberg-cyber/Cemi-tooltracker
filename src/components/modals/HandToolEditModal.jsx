@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+
+const subcategoriesByCategory = {
+  'Spadar': ['Rakspad', 'Rundad', 'Fyrkantig'],
+  'Räfsor': ['Järnräfsa', 'Träräfsa', 'Bamburäfsa'],
+  'Krattor': ['Metallkratta', 'Plast-kratta', 'Bambu-kratta'],
+  'Sagar': ['Handsåg', 'Bågså', 'Nippelkätting'],
+  'Hammrar': ['Klumhugg', 'Gummihammer', 'Slägga'],
+  'Skufflar': ['Järnskuffel', 'Träskuffel', 'Plast-skuffel'],
+  'Banor': ['Järnbana', 'Träbana'],
+};
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -17,6 +27,8 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
+  const [customSubcategory, setCustomSubcategory] = useState('');
 
   const { data: categoryImages = [] } = useQuery({
     queryKey: ['categoryimages'],
@@ -92,7 +104,50 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
 
           <div className="space-y-1">
             <Label>Underkategori</Label>
-            <Input value={form.subcategory || ''} onChange={e => handleChange('subcategory', e.target.value)} />
+            {!showCustomSubcategory ? (
+              <div className="flex gap-2">
+                <Input value={form.subcategory || ''} onChange={e => handleChange('subcategory', e.target.value)} />
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCustomSubcategory(true)}
+                  className="whitespace-nowrap"
+                >
+                  + Ny
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  value={customSubcategory}
+                  onChange={(e) => setCustomSubcategory(e.target.value)}
+                  placeholder="Ny underkategori"
+                  autoFocus
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (customSubcategory.trim()) {
+                      handleChange('subcategory', customSubcategory.trim());
+                      setShowCustomSubcategory(false);
+                      setCustomSubcategory('');
+                    }
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  OK
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowCustomSubcategory(false);
+                    setCustomSubcategory('');
+                  }}
+                  className="whitespace-nowrap"
+                >
+                  Avbryt
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
