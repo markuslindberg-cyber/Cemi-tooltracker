@@ -52,11 +52,8 @@ export default function LokalvardArtikelDetaljer() {
         utgaende: fundArticle.utgaende || false
       });
 
-      // Hitta alla artikel-IDs med samma streckkod
-            const sameStreckkodIds = artiklarData        .filter(a => a.streckkod === fundArticle.streckkod)
-                    .map(a => a.id);
       const relateradeUttag = uttagData.filter(u => 
-        u.artiklar?.some(a => sameStreckkodIds.includes(a.artikel_id))
+        u.artiklar?.some(a => a.artikel_id === fundArticle.id)
       );
       setTransaktioner(relateradeUttag.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       
@@ -153,7 +150,7 @@ export default function LokalvardArtikelDetaljer() {
   if (!artikel) return null;
 
   const totalInköpt = artikel.antal_inkopta;
-  const totalUttag = transaktioner.reduce((sum, t) => sum + (sameStreckkodIds.includes(a.artikel_id)), 0);
+  const totalUttag = transaktioner.reduce((sum, t) => sum + (t.artiklar?.[0]?.antal || 0), 0);
   const saldo = totalInköpt - totalUttag;
 
   return (
