@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,7 @@ import { Loader2, Plus, Edit2, Upload, FileDown, ArrowUp, ArrowDown, AlertCircle
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function LokalvardLager() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [search, setSearch] = useState('');
@@ -301,7 +303,7 @@ export default function LokalvardLager() {
                 }
 
                 return (
-                  <tr key={artikel.id} className={`${saldoBg} transition-colors hover:bg-blue-50`}>
+                  <tr key={artikel.id} className={`${saldoBg} transition-colors hover:bg-blue-50 cursor-pointer`} onClick={() => !editingId && navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)}>
                     {editingId === artikel.id ? (
                       <>
                         <td className="px-4 py-3">
