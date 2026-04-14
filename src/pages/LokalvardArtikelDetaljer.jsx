@@ -470,7 +470,7 @@ export default function LokalvardArtikelDetaljer() {
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h2 className="text-xl font-semibold mb-4">Tidigare varianter av denna artikel</h2>
-        {artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).length === 0 ? (
+        {!artikelData || artikelData.length === 0 || artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).length === 0 ? (
           <p className="text-gray-600">Inga tidigare varianter</p>
         ) : (
           <div className="overflow-x-auto">
@@ -484,7 +484,7 @@ export default function LokalvardArtikelDetaljer() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).sort((a, b) => new Date(b.inkopsdatum) - new Date(a.inkopsdatum)).map(variant => (
+                {artikelData && artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).sort((a, b) => new Date(b.inkopsdatum) - new Date(a.inkopsdatum)).map(variant => (
                   <tr key={variant.id} className="bg-gray-50">
                     <td className="px-4 py-3 text-sm">{variant.inkopsdatum}</td>
                     <td className="px-4 py-3 text-right text-sm">{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
