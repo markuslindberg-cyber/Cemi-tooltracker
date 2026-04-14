@@ -50,6 +50,11 @@ export default function KostnadPerKund() {
           customerMap[k.id] = k.namn;
         });
 
+        const customerNameToTypeMap = {};
+        kunder.forEach(k => {
+          customerNameToTypeMap[k.namn] = k.typ;
+        });
+
         const personalMap = {};
         personal.forEach(p => {
           personalMap[p.id] = p.name;
@@ -57,12 +62,12 @@ export default function KostnadPerKund() {
 
         const costMap = {};
         uttag.forEach(u => {
+          const kundtypForUttag = customerNameToTypeMap[u.kund_namn] || 'Okänd';
           if (!costMap[u.kund_id]) {
-            const kundenObj = kunder.find(k => k.id === u.kund_id);
             costMap[u.kund_id] = { 
               kund_id: u.kund_id, 
               namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', 
-              kundtyp: kundenObj?.typ || 'Okänd',
+              kundtyp: kundtypForUttag,
               personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', 
               total: 0 
             };
