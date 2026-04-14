@@ -11,6 +11,7 @@ import HandTools from './pages/HandTools';
 import ArbetskläderUtrustning from './pages/ArbetskläderUtrustning';
 import Inventarier from './pages/Inventarier';
 import RequestWorkwear from './pages/RequestWorkwear';
+import ArbetskläderRequestWorkwear from './pages/ArbetskläderRequestWorkwear';
 import LokalvardUttag from './pages/LokalvardUttag';
 import LokalvardNyttUttag from './pages/LokalvardNyttUttag';
 import LokalvardBegaranAttGodkanna from './pages/LokalvardBegaranAttGodkanna';
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
       <Route path="/Arbetsklader/CheckoutReports" element={<LayoutWrapper currentPageName="CheckoutReports"><CheckoutReports /></LayoutWrapper>} />
       <Route path="/Inventory/SaldaRedskap" element={<LayoutWrapper currentPageName="SåldaRedskap"><SåldaRedskap /></LayoutWrapper>} />
       <Route path="/RequestWorkwear" element={<LayoutWrapper currentPageName="RequestWorkwear"><RequestWorkwear /></LayoutWrapper>} />
+      <Route path="/ArbetskläderRequestWorkwear" element={<LayoutWrapper currentPageName="ArbetskläderRequestWorkwear"><ArbetskläderRequestWorkwear /></LayoutWrapper>} />
       <Route path="/Inventarier" element={<LayoutWrapper currentPageName="Inventarier"><Inventarier /></LayoutWrapper>} />
       <Route path="/Lokalvard/Uttag" element={<LayoutWrapper currentPageName="LokalvardUttag"><LokalvardUttag /></LayoutWrapper>} />
       <Route path="/Lokalvard/BegaranAttGodkanna" element={<LayoutWrapper currentPageName="LokalvardBegaranAttGodkanna"><LokalvardBegaranAttGodkanna /></LayoutWrapper>} />
