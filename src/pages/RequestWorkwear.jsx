@@ -65,6 +65,11 @@ export default function RequestWorkwear() {
     queryFn: () => base44.entities.Kund.list('-updated_date', 10000).catch(() => []),
   });
 
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
+  });
+
   const customers = allCustomers.filter(k => k.typ !== 'Internt');
 
   useEffect(() => {
@@ -125,22 +130,24 @@ export default function RequestWorkwear() {
   };
 
   const handleSubmit = () => {
-    if (!selectedCustomer || formData.requested_items.length === 0) {
-      alert('Välj en kund och lägg till minst en artikel');
-      return;
-    }
+   if (!selectedCustomer || formData.requested_items.length === 0) {
+     alert('Välj en kund och lägg till minst en artikel');
+     return;
+   }
 
-    const submitData = {
-      ...formData,
-      customer_id: selectedCustomer.id,
-      customer_name: selectedCustomer.name,
-      request_date: new Date().toISOString(),
-      requested_by_email: user?.email || '',
-      requested_by_name: user?.full_name || '',
-      status: 'pending',
-    };
+   const teamMember = teamMembers.find(tm => tm.id === user?.id);
 
-    createRequestMutation.mutate(submitData);
+   const submitData = {
+     ...formData,
+     customer_id: selectedCustomer.id,
+     customer_name: selectedCustomer.namn,
+     request_date: new Date().toISOString(),
+     requested_by_email: user?.email || '',
+     requested_by_name: teamMember?.name || user?.full_name || '',
+     status: 'pending',
+   };
+
+   createRequestMutation.mutate(submitData);
   };
 
   return (
@@ -167,7 +174,7 @@ export default function RequestWorkwear() {
                 variant="outline"
                 className="w-full justify-start text-left font-normal"
               >
-                {selectedCustomer ? selectedCustomer.name : "Sök och välj kund..."}
+                {selectedCustomer ? selectedCustomer.namn : "Sök och välj kund..."}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0" align="start">
@@ -177,20 +184,20 @@ export default function RequestWorkwear() {
                 <CommandGroup>
                   {customers.map((customer) => (
                     <CommandItem
-                      key={customer.id}
-                      value={customer.id}
-                      onSelect={() => {
-                        setSelectedCustomer(customer);
-                        setFormData(prev => ({
-                          ...prev,
-                          customer_id: customer.id,
-                          customer_name: customer.name,
-                        }));
-                        setCustomerOpen(false);
-                      }}
-                    >
-                      {customer.name}
-                    </CommandItem>
+                       key={customer.id}
+                       value={customer.id}
+                       onSelect={() => {
+                         setSelectedCustomer(customer);
+                         setFormData(prev => ({
+                           ...prev,
+                           customer_id: customer.id,
+                           customer_name: customer.namn,
+                         }));
+                         setCustomerOpen(false);
+                       }}
+                     >
+                       {customer.namn}
+                     </CommandItem>
                   ))}
                 </CommandGroup>
               </Command>
