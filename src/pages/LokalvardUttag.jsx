@@ -49,9 +49,17 @@ export default function LokalvardUttag() {
     [uttag]
   );
 
+  const availablePersonal = useMemo(
+    () => [...new Set(uttag.map(u => u.personal_id).filter(Boolean))],
+    [uttag]
+  );
+
+  const [selectedPersonal, setSelectedPersonal] = useState([]);
+
   const filtered = uttag.filter(u => 
     (selectedMonths.length === 0 || selectedMonths.includes(u.manad)) &&
-    (selectedCustomers.length === 0 || selectedCustomers.includes(u.kund_id))
+    (selectedCustomers.length === 0 || selectedCustomers.includes(u.kund_id)) &&
+    (selectedPersonal.length === 0 || selectedPersonal.includes(u.personal_id))
   );
 
   const sorted = [...filtered].sort((a, b) => {
@@ -193,16 +201,16 @@ export default function LokalvardUttag() {
        <div className="flex items-center justify-between flex-wrap gap-3">
          <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
          <div className="flex items-center gap-2 flex-wrap">
-           {(selectedMonths.length > 0 || selectedCustomers.length > 0) && (
-             <Button 
-               size="sm" 
-               variant="outline" 
-               onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); }}
-               className="gap-1 text-xs"
-             >
-               <RotateCcw className="w-3 h-3" /> Rensa alla
-             </Button>
-           )}
+           {(selectedMonths.length > 0 || selectedCustomers.length > 0 || selectedPersonal.length > 0) && (
+               <Button 
+                 size="sm" 
+                 variant="outline" 
+                 onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); setSelectedPersonal([]); }}
+                 className="gap-1 text-xs"
+               >
+                 <RotateCcw className="w-3 h-3" /> Rensa alla
+               </Button>
+             )}
           {/* Månad filter */}
           <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
             <Calendar className="w-4 h-4 text-gray-400" />
@@ -225,6 +233,37 @@ export default function LokalvardUttag() {
                 </div>
                 {selectedMonths.length > 0 && (
                   <button onClick={() => setSelectedMonths([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
+                    <X className="w-3 h-3" /> Rensa
+                  </button>
+                )}
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Personal filter */}
+          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+            <span className="text-xs font-semibold text-gray-500 uppercase">Personal</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+                  {selectedPersonal.length === 0 ? 'Alla' : `${selectedPersonal.length}`}
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60 p-2" align="end">
+                <div className="space-y-1 max-h-60 overflow-y-auto">
+                  {availablePersonal.map(pid => {
+                    const person = uttag.find(u => u.personal_id === pid);
+                    return (
+                      <label key={pid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                        <Checkbox checked={selectedPersonal.includes(pid)} onCheckedChange={(checked) => setSelectedPersonal(prev => checked ? [...prev, pid] : prev.filter(x => x !== pid))} />
+                        <span className="text-sm">{person?.personal_namn}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {selectedPersonal.length > 0 && (
+                  <button onClick={() => setSelectedPersonal([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
                     <X className="w-3 h-3" /> Rensa
                   </button>
                 )}
