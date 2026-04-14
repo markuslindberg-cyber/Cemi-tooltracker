@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Loader2, Plus, Edit2, Trash2, AlertCircle } from 'lucide-react';
+import { Loader2, Plus, Edit2, Trash2, AlertCircle, Upload, FileSpreadsheet } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -15,6 +15,7 @@ export default function LokalvardLager() {
   const [showForm, setShowForm] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState('');
   const [barcodeError, setBarcodeError] = useState('');
+  const [importing, setImporting] = useState(false);
   const [formData, setFormData] = useState({
     benamning: '',
     artikelnummer: '',
@@ -147,6 +148,87 @@ export default function LokalvardLager() {
 
   const isLowStock = (artikel) => artikel.current_quantity <= artikel.lagertroskelvarde;
 
+  const handleDownloadTemplate = () => {
+    const infoRows = [
+      ['=== IMPORTMALL FÖR LOKALVÅRDSARTIKLAR ===', '', '', '', '', '', '', '', '', ''],
+      ['Kolumn 1: benamning', 'Kolumn 2: artikelnummer', 'Kolumn 3: streckkod', 'Kolumn 4: pris', 'Kolumn 5: inkopsdatum', 'Kolumn 6: antal_inkopta', 'Kolumn 7: lagertroskelvarde', 'Kolumn 8: subcategory', 'Kolumn 9: current_quantity', 'Kolumn 10: utgaende'],
+      ['Namn (obligatorisk)', 'Artikelnummer (obligatorisk)', 'Streckkod', 'Pris per enhet (obligatorisk)', 'Inköpsdatum (obligatorisk, ÅÅÅÅ-MM-DD)', 'Antal inköpta (obligatorisk)', 'Lagertröskelvärde (obligatorisk)', 'Underkategori', 'Aktuellt antal', 'Utgående (true/false)'],
+      ['--- FYLL I DINA RADER NEDAN FRÅN RAD 6 ---', '', '', '', '', '', '', '', '', ''],
+    ];
+    const headers = ['benamning', 'artikelnummer', 'streckkod', 'pris', 'inkopsdatum', 'antal_inkopta', 'lagertroskelvarde', 'subcategory', 'current_quantity', 'utgaende'];
+    const exampleRow = ['Rengöringsduk', 'ART-001', '1234567890', '49.99', '2026-01-01', '100', '20', 'Textilier', '45', 'false'];
+    const emptyRows = Array(19).fill(Array(10).fill(''));
+    const csvContent = [
+      ...infoRows.map(r => r.map(c => `"${c}"`).join(',')),
+      headers.join(','),
+      exampleRow.map(c => `"${c}"`).join(','),
+      ...emptyRows.map(r => r.join(','))
+    ].join('\n');
+    const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(blob));
+    link.setAttribute('download', 'lokalvard_artiklar_mall.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: {
+          type: 'object',
+          properties: {
+            benamning: { type: 'string' },
+            artikelnummer: { type: 'string' },
+            streckkod: { type: 'string' },
+            pris: { type: 'number' },
+            inkopsdatum: { type: 'string' },
+            antal_inkopta: { type: 'number' },
+            lagertroskelvarde: { type: 'number' },
+            subcategory: { type: 'string' },
+            current_quantity: { type: 'number' },
+            utgaende: { type: 'boolean' },
+          }
+        }
+      });
+      if (result.status === 'success' && result.output) {
+        const rows = Array.isArray(result.output) ? result.output : [result.output];
+        const valid = rows.filter(r => r.benamning && r.artikelnummer && r.pris && r.inkopsdatum && r.antal_inkopta && r.lagertroskelvarde);
+        if (valid.length > 0) {
+          await base44.entities.LokalvardsArtikel.bulkCreate(valid.map(r => ({
+            benamning: r.benamning,
+            artikelnummer: r.artikelnummer,
+            streckkod: r.streckkod || null,
+            pris: r.pris,
+            inkopsdatum: r.inkopsdatum,
+            antal_inkopta: r.antal_inkopta,
+            lagertroskelvarde: r.lagertroskelvarde,
+            subcategory: r.subcategory || null,
+            current_quantity: r.current_quantity || 0,
+            utgaende: r.utgaende || false,
+          })));
+          queryClient.invalidateQueries(['lokalvardsArtiklar']);
+          alert(`${valid.length} artiklar importerades!`);
+        } else {
+          alert('Inga giltiga rader hittades i filen.');
+        }
+      } else {
+        alert('Kunde inte läsa filen: ' + (result.details || 'Okänt fel'));
+      }
+    } catch (err) {
+      alert('Importfel: ' + (err.message || 'Okänt fel'));
+    } finally {
+      setImporting(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -154,17 +236,31 @@ export default function LokalvardLager() {
           <h1 className="text-3xl font-bold">Lager – Lokalvård</h1>
           <p className="text-gray-600 mt-2">Hantera lokalvårdsartiklar och lagernivåer</p>
         </div>
-        <Button
-          onClick={() => {
-            resetForm();
-            setEditingArtikel(null);
-            setShowForm(true);
-          }}
-          className="bg-[#8B1E1E] hover:bg-[#6B1515]"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Ny artikel
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleDownloadTemplate} className="gap-2">
+            <FileSpreadsheet className="w-4 h-4" />
+            Ladda ned mall
+          </Button>
+          <label>
+            <Button variant="outline" disabled={importing} asChild>
+              <span className="gap-2 cursor-pointer">
+                {importing ? <><Loader2 className="w-4 h-4 animate-spin" />Importerar...</> : <><Upload className="w-4 h-4" />Importera CSV</>}
+              </span>
+            </Button>
+            <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImport} className="hidden" disabled={importing} />
+          </label>
+          <Button
+            onClick={() => {
+              resetForm();
+              setEditingArtikel(null);
+              setShowForm(true);
+            }}
+            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Ny artikel
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
