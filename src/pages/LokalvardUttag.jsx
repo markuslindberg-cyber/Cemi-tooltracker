@@ -115,7 +115,10 @@ export default function LokalvardUttag() {
                     <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                       <div>
                         <p className="font-medium text-gray-900">{artikel.benamning}</p>
-                        <p className="text-sm text-gray-600">Antal: {artikel.antal}</p>
+                        {artikel.subcategory && (
+                          <p className="text-xs text-gray-500 mt-0.5">{artikel.subcategory}</p>
+                        )}
+                        <p className="text-sm text-gray-600 mt-1">Antal: {artikel.antal}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-gray-900">{artikel.total_pris.toFixed(2)} kr</p>
