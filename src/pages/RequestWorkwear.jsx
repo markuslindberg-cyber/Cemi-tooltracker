@@ -149,9 +149,16 @@ export default function RequestWorkwear() {
       </div>
 
       <Card className="p-6 space-y-6">
-        {/* Customer Selection */}
-        <div className="space-y-2">
-          <Label>Välj kund *</Label>
+         {/* Requester Info */}
+         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+           <p className="text-sm text-gray-600">Begäran från</p>
+           <p className="font-semibold text-gray-900">{user?.full_name}</p>
+           <p className="text-sm text-gray-600">{user?.email}</p>
+         </div>
+
+         {/* Customer Selection */}
+         <div className="space-y-2">
+           <Label>Välj kund *</Label>
           <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
             <PopoverTrigger asChild>
               <Button
