@@ -415,98 +415,25 @@ export default function LokalvardUttag() {
                   </button>
 
                   {isExpanded && (
-                    <div className="border-t bg-gray-50">
-                      <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                      <thead className="bg-white border-b">
-                        <tr>
-                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Tid</th>
-                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Personal</th>
-                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Artikel</th>
-                          <th className="px-4 py-2 text-right font-semibold text-gray-700">Antal</th>
-                          <th className="px-4 py-2 text-right font-semibold text-gray-700">Pris</th>
-                          <th className="px-4 py-2 text-right font-semibold text-gray-700">Totalt</th>
-                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Order</th>
-                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Åtgärd</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {group.uttag.map(u => {
-                          const isEditing = editingId === u.id;
-                          const tid = u.datum.split('T')[1]?.slice(0, 5) || '';
-                          return (
-                            <React.Fragment key={u.id}>
-                              <tr className={isEditing ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'}>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm">{tid}</td>
-                                <td className="px-4 py-2">{isEditing ? <input type="text" value={editForm.personal_namn} onChange={(e) => setEditForm({...editForm, personal_namn: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-32" /> : u.personal_namn}</td>
-                                <td colSpan="5" className="px-4 py-2">
-                                  {isEditing ? (
-                                    <div className="flex gap-2 items-center">
-                                      Order:
-                                      <input type="text" value={editForm.ordernummer} onChange={(e) => setEditForm({...editForm, ordernummer: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-24" placeholder="Ordernummer" />
-                                    </div>
-                                  ) : (
-                                    <span>{u.ordernummer || '-'}</span>
-                                  )}
-                                </td>
-                                <td className="px-4 py-2 whitespace-nowrap">
-                                  {isEditing ? (
-                                    <div className="flex gap-1">
-                                      <button onClick={handleSaveEdit} className="text-green-600 font-semibold hover:bg-green-100 px-2 py-1 rounded text-sm">✓</button>
-                                      <button onClick={handleCancelEdit} className="text-red-600 font-semibold hover:bg-red-100 px-2 py-1 rounded text-sm">✕</button>
-                                    </div>
-                                  ) : (
-                                    <button onClick={() => handleEditClick(u)} className="text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-xs">Redigera</button>
-                                  )}
-                                </td>
-                              </tr>
-                              {u.artiklar.map((artikel, articleIdx) => {
-                                const isArticleEditing = editingArticleId === `${u.id}-${articleIdx}`;
-                                return (
-                                  <tr key={`${u.id}-${articleIdx}`} className="bg-gray-50 border-b">
-                                    <td className="px-4 py-2"></td>
-                                    <td className="px-4 py-2"></td>
-                                    <td className="px-4 py-2 text-sm text-gray-700">{artikel.benamning} {artikel.subcategory && `(${artikel.subcategory})`}</td>
-                                    <td className="px-4 py-2 text-right">
-                                      {isArticleEditing ? (
-                                        <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-16 text-right" />
-                                      ) : (
-                                        artikel.antal
-                                      )}
-                                    </td>
-                                    <td className="px-4 py-2 text-right">
-                                      {isArticleEditing ? (
-                                        <input type="number" step="0.01" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-20 text-right" />
-                                      ) : (
-                                        `${artikel.pris_per_enhet.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`
-                                      )}
-                                    </td>
-                                    <td className="px-4 py-2 text-right font-semibold">
-                                      {isArticleEditing 
-                                        ? `${(parseInt(editArticleForm.antal) * parseFloat(editArticleForm.pris_per_enhet)).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`
-                                        : `${artikel.total_pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`
-                                      }
-                                    </td>
-                                    <td className="px-4 py-2"></td>
-                                    <td className="px-4 py-2 whitespace-nowrap">
-                                      {isArticleEditing ? (
-                                        <div className="flex gap-1">
-                                          <button onClick={() => handleSaveArticle(u.id, articleIdx)} className="text-green-600 font-semibold hover:bg-green-100 px-2 py-1 rounded text-sm">✓</button>
-                                          <button onClick={handleCancelArticleEdit} className="text-red-600 font-semibold hover:bg-red-100 px-2 py-1 rounded text-sm">✕</button>
-                                        </div>
-                                      ) : (
-                                        <button onClick={() => handleEditArticle(u.id, artikel, articleIdx)} className="text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-xs">Redigera</button>
-                                      )}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </React.Fragment>
-                          );
-                        })}
-                      </tbody>
-                      </table>
-                      </div>
+                    <div className="border-t bg-gray-50 px-4 py-3 space-y-2">
+                      {group.uttag.map(u => {
+                        const tid = u.datum.split('T')[1]?.slice(0, 5) || '';
+                        const totalArtikel = u.artiklar.reduce((sum, a) => sum + a.total_pris, 0);
+                        return (
+                          <div key={u.id} className="bg-white rounded p-3 flex items-center justify-between text-sm border border-gray-200">
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">{tid} • {u.personal_namn}</div>
+                              <div className="text-xs text-gray-600 mt-0.5">
+                                {u.artiklar.map((a, i) => `${a.benamning} (${a.antal}st)`).join(', ')}
+                              </div>
+                            </div>
+                            <div className="text-right ml-4">
+                              <div className="font-semibold text-gray-900">{totalArtikel.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                              {u.ordernummer && <div className="text-xs text-gray-500">{u.ordernummer}</div>}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
