@@ -469,29 +469,40 @@ export default function LokalvardArtikelDetaljer() {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">Tidigare varianter av denna artikel</h2>
-        {!artikelData || artikelData.length === 0 || artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).length === 0 ? (
-          <p className="text-gray-600">Inga tidigare varianter</p>
+        <h2 className="text-xl font-semibold mb-4">Uttag av denna artikel</h2>
+        {!transaktioner || transaktioner.length === 0 ? (
+          <p className="text-gray-600">Inga uttag registrerade</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Inköpsdatum</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Datum</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Personal</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Kund</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">Antal</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold">Pris per enhet</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold">Antal inköpt</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Typ/Underkategori</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">Totalt</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {artikelData && artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).sort((a, b) => new Date(b.inkopsdatum) - new Date(a.inkopsdatum)).map(variant => (
-                  <tr key={variant.id} className="bg-gray-50">
-                    <td className="px-4 py-3 text-sm">{variant.inkopsdatum}</td>
-                    <td className="px-4 py-3 text-right text-sm">{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                    <td className="px-4 py-3 text-right text-sm">{variant.antal_inkopta}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{variant.subcategory || '-'}</td>
-                  </tr>
-                ))}
+                {transaktioner.map(uttag => {
+                  const matchingItems = uttag.artiklar.filter(item => item.artikel_id === artikel.id);
+                  return matchingItems.map((item, idx) => (
+                    <tr key={`${uttag.id}-${idx}`} className={idx === 0 ? '' : 'bg-gray-50'}>
+                      {idx === 0 && (
+                        <>
+                          <td className="px-4 py-3 text-sm" rowSpan={matchingItems.length}>{uttag.datum}</td>
+                          <td className="px-4 py-3 text-sm" rowSpan={matchingItems.length}>{uttag.personal_namn}</td>
+                          <td className="px-4 py-3 text-sm" rowSpan={matchingItems.length}>{uttag.kund_namn}</td>
+                        </>
+                      )}
+                      <td className="px-4 py-3 text-right text-sm">{item.antal}</td>
+                      <td className="px-4 py-3 text-right text-sm">{item.pris_per_enhet.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                      <td className="px-4 py-3 text-right text-sm font-semibold">{(item.antal * item.pris_per_enhet).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                    </tr>
+                  ));
+                })}
               </tbody>
             </table>
           </div>
