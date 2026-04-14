@@ -136,15 +136,11 @@ export default function Layout({ children }) {
 
   const userRole = user?.role;
 
-  // Filtrera navigering baserat på roll
-  const navigation = allNavigation
-    .filter(item => hasAccess(item.roles, userRole))
-    .map(item => ({
-      ...item,
-      children: item.children
-        ? item.children.filter(child => hasAccess(child.roles, userRole))
-        : undefined,
-    }));
+  // Filtrera navigering baserat på roll (PAUSAD - full access)
+  const navigation = allNavigation.map(item => ({
+    ...item,
+    children: item.children ? item.children : undefined,
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
