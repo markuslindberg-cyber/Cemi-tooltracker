@@ -179,7 +179,8 @@ export default function LokalvardUttag() {
     setEditForm({
       personal_namn: item.personal_namn,
       kund_namn: item.kund_namn,
-      ordernummer: item.ordernummer || ''
+      ordernummer: item.ordernummer || '',
+      total_kostnad: item.total_kostnad
     });
   };
 
@@ -190,6 +191,7 @@ export default function LokalvardUttag() {
         personal_namn: editForm.personal_namn,
         kund_namn: editForm.kund_namn,
         ordernummer: editForm.ordernummer || null,
+        total_kostnad: parseFloat(editForm.total_kostnad) || 0,
       }
     });
   };
@@ -398,7 +400,7 @@ export default function LokalvardUttag() {
                                   <td className="px-4 py-2">{isEditing ? <input type="text" value={editForm.personal_namn} onChange={(e) => setEditForm({...editForm, personal_namn: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-32" /> : u.personal_namn}</td>
                                   <td className="px-4 py-2">{u.artiklar[0]?.benamning} {u.artiklar[0]?.subcategory && `(${u.artiklar[0].subcategory})`}</td>
                                   <td className="px-4 py-2 text-right">{uttaget}</td>
-                                  <td className="px-4 py-2 text-right font-semibold">{u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                                  <td className="px-4 py-2 text-right font-semibold">{isEditing ? <input type="number" step="0.01" value={editForm.total_kostnad} onChange={(e) => setEditForm({...editForm, total_kostnad: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-24 text-right" /> : `${u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`}</td>
                                   <td className="px-4 py-2">{isEditing ? <input type="text" value={editForm.ordernummer} onChange={(e) => setEditForm({...editForm, ordernummer: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-24" /> : (u.ordernummer || '-')}</td>
                                   <td className="px-4 py-2 whitespace-nowrap">
                                     {isEditing ? (
