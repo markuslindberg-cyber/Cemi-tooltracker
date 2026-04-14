@@ -363,7 +363,6 @@ export default function LokalvardUttag() {
                           </th>
                           <th className="px-3 py-2 text-left font-semibold">Artikel</th>
                           <th className="px-3 py-2 text-right font-semibold">Antal</th>
-                          <th className="px-3 py-2 text-right font-semibold">Pris/enhet</th>
                           <th className="px-3 py-2 text-right font-semibold">Saldo</th>
                           <th className="px-3 py-2 text-right font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('total_kostnad')}>
                             <div className="flex items-center justify-end gap-1">
@@ -380,7 +379,6 @@ export default function LokalvardUttag() {
                           const isEditing = editingId === u.id;
                           const artikel = artiklar.find(a => a.benamning === u.artiklar[0]?.benamning);
                           const uttaget = u.artiklar[0]?.antal || 0;
-                          const prisPerEnhet = u.artiklar[0]?.pris_per_enhet || 0;
                           const currentStock = artikel?.current_quantity || 0;
                           const saldo = currentStock - uttaget;
                           return (
@@ -390,7 +388,6 @@ export default function LokalvardUttag() {
                               <td className="px-3 py-2">{isEditing ? <input type="text" value={editForm.kund_namn} onChange={(e) => setEditForm({...editForm, kund_namn: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-32" /> : u.kund_namn}</td>
                               <td className="px-3 py-2">{u.artiklar[0]?.benamning} {u.artiklar[0]?.subcategory && `(${u.artiklar[0].subcategory})`}</td>
                               <td className="px-3 py-2 text-right">{uttaget}</td>
-                              <td className="px-3 py-2 text-right">{prisPerEnhet.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
                               <td className={`px-3 py-2 text-right font-semibold ${saldo < 0 ? 'text-red-600' : ''}`}>{saldo}</td>
                               <td className="px-3 py-2 text-right font-semibold">{u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
                               <td className="px-3 py-2">{isEditing ? <input type="text" value={editForm.ordernummer} onChange={(e) => setEditForm({...editForm, ordernummer: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-24" /> : (u.ordernummer || '-')}</td>
