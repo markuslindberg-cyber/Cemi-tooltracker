@@ -49,7 +49,7 @@ export default function RequestWorkwear() {
 
   const { data: items = [] } = useQuery({
     queryKey: ['lokalvardLager'],
-    queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
+    queryFn: () => base44.entities.Inventarier.list('-updated_date', 10000).catch(() => []),
   });
 
   const { data: handlers = [] } = useQuery({
@@ -62,7 +62,7 @@ export default function RequestWorkwear() {
 
   const { data: allCustomers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Kund.list('-updated_date', 500).catch(() => []),
+    queryFn: () => base44.entities.Kund.list('-updated_date', 10000).catch(() => []),
   });
 
   const customers = allCustomers.filter(k => k.typ !== 'Internt');

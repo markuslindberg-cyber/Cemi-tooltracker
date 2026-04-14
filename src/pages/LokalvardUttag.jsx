@@ -19,7 +19,7 @@ export default function LokalvardUttag() {
 
   const { data: uttag = [], isLoading } = useQuery({
     queryKey: ['uttag'],
-    queryFn: () => base44.entities.Uttag.list('-datum', 500).catch(() => []),
+    queryFn: () => base44.entities.Uttag.list('-datum', 10000).catch(() => []),
   });
 
   const updateMutation = useMutation({

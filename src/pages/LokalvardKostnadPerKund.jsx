@@ -15,7 +15,7 @@ export default function LokalvardKostnadPerKund() {
 
   const { data: uttag = [], isLoading: loadingUttag } = useQuery({
     queryKey: ['uttag'],
-    queryFn: () => base44.entities.Uttag.list('-datum', 1000).catch(() => []),
+    queryFn: () => base44.entities.Uttag.list('-datum', 10000).catch(() => []),
   });
 
   const { data: kunder = [] } = useQuery({

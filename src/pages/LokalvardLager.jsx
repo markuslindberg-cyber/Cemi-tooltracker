@@ -19,7 +19,7 @@ export default function LokalvardLager() {
 
   const { data: artiklar = [], isLoading } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
-    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 500).catch(() => []),
+    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).catch(() => []),
   });
 
   const updateMutation = useMutation({
