@@ -8,12 +8,14 @@ import {
   Package,
   MapPin,
   Users,
+  ArrowRightLeft,
   Menu,
   X,
   LogOut,
   ChevronDown,
   Wrench,
   Shovel,
+  ClipboardList,
   Shirt,
   SprayCan,
 } from 'lucide-react';
@@ -22,102 +24,80 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-// Rollbaserad navigering
-// roles: array av roller som har tillgång. Tom array = alla roller.
-const allNavigation = [
-  {
-    name: 'Dashboard',
-    path: '/',
-    icon: LayoutDashboard,
-    roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare', 'lokalvårdare'],
-  },
+const navigation = [
+  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   {
     name: 'Maskiner',
     path: '/Inventory',
     icon: Package,
-    roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'],
     children: [
-      { name: 'Översikt', path: '/Inventory', roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'] },
-      { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap', roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'] },
-      { name: 'Förflyttningar', path: '/Transfers', roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'] },
+      { name: 'Översikt', path: '/Inventory' },
+      { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
+      { name: 'Förflyttningar', path: '/Transfers' },
     ]
   },
-  {
-    name: 'Handredskap',
-    path: '/HandTools',
-    icon: Shovel,
-    roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'],
-  },
+  { name: 'Handredskap', path: '/HandTools', icon: Shovel },
   {
     name: 'Arbetskläder',
     path: '/ArbetskladerUtrustning',
     icon: Shirt,
-    roles: ['ägare', 'admin', 'admin_lokalvård'],
     children: [
-      { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning', roles: ['ägare', 'admin', 'admin_lokalvård'] },
-      { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports', roles: ['ägare', 'admin', 'admin_lokalvård'] },
+      { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning' },
+      { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
     ]
   },
   {
     name: 'Lokalvård',
     path: '/Lokalvard',
     icon: SprayCan,
-    roles: ['ägare', 'admin_lokalvård', 'lokalvårdare'],
     children: [
-      { name: 'Lager', path: '/Inventarier', roles: ['ägare', 'admin_lokalvård'] },
-      { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['ägare', 'admin_lokalvård'] },
-      { name: 'Begäran att godkänna', path: '/Lokalvard/BegaranAttGodkanna', roles: ['ägare', 'admin_lokalvård'] },
-      { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['ägare', 'admin_lokalvård'] },
-      { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['ägare', 'admin_lokalvård'] },
-      { name: 'Begäran om uttag av lokalvårdsartiklar', path: '/RequestWorkwear', roles: ['ägare', 'admin_lokalvård', 'lokalvårdare'] },
-      { name: 'Nytt uttag', path: '/Lokalvard/NyttUttag', roles: ['ägare', 'admin_lokalvård'] },
+      { name: 'Lager', path: '/Inventarier' },
+      { name: 'Uttag', path: '/Lokalvard/Uttag' },
+      { name: 'Begäran att godkänna', path: '/Lokalvard/BegaranAttGodkanna' },
+      { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
+      { name: 'Kunder', path: '/Lokalvard/Kunder' },
+      { name: 'Begäran om uttag av lokalvårdsartiklar', path: '/RequestWorkwear' },
+      { name: 'Nytt uttag', path: '/Lokalvard/NyttUttag' },
     ]
   },
   {
     name: 'Inventeringskontroll',
     path: '/InventoryCheck',
     icon: Wrench,
-    roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'],
     children: [
-      { name: 'Inventering', path: '/InventoryCheck', roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'] },
-      { name: 'Inventeringsrapporter', path: '/InventoryReports', roles: ['ägare', 'admin', 'admin_lokalvård', 'verktygsförvaltare'] },
+      { name: 'Inventering', path: '/InventoryCheck' },
+      { name: 'Inventeringsrapporter', path: '/InventoryReports' },
     ]
   },
   {
     name: 'Platser',
     path: '/Locations',
     icon: MapPin,
-    roles: ['ägare', 'admin', 'admin_lokalvård'],
     children: [
-      { name: 'Kontor', path: '/Locations', roles: ['ägare', 'admin', 'admin_lokalvård'] },
+      { name: 'Kontor', path: '/Locations' },
     ]
   },
   {
     name: 'Team',
     path: '/Team',
     icon: Users,
-    roles: ['ägare', 'admin', 'admin_lokalvård'],
     children: [
-      { name: 'Personal', path: '/Team', roles: ['ägare', 'admin', 'admin_lokalvård'] },
+      { name: 'Personal', path: '/Team' },
     ]
   },
 ];
 
-function hasAccess(itemRoles, userRole) {
-  if (!userRole) return false;
-  return itemRoles.includes(userRole);
-}
-
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
-  const [user, setUser] = useState(null);
-  const location = useLocation();
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
+  const [user, setUser] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -132,18 +112,6 @@ export default function Layout({ children }) {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
-
-  const userRole = user?.role;
-
-  // Filtrera navigering baserat på roll
-  const navigation = allNavigation
-    .filter(item => hasAccess(item.roles, userRole))
-    .map(item => ({
-      ...item,
-      children: item.children
-        ? item.children.filter(child => hasAccess(child.roles, userRole))
-        : undefined,
-    }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,7 +150,7 @@ export default function Layout({ children }) {
             {navigation.map((item) => {
               const isActive = isActivePath(item.path);
 
-              if (item.children && item.children.length > 0) {
+              if (item.children) {
                 const isOpen = openMenus[item.name];
                 return (
                   <div key={item.name}>
@@ -265,9 +233,6 @@ export default function Layout({ children }) {
                         {user.full_name || 'User'}
                       </p>
                       <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                      {userRole && (
-                        <p className="text-xs text-[#8B1E1E] truncate capitalize">{userRole}</p>
-                      )}
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
@@ -303,7 +268,7 @@ export default function Layout({ children }) {
             </div>
             <span className="font-bold text-gray-900">ToolTrack</span>
           </Link>
-          <div className="w-10" />
+          <div className="w-10" /> {/* Spacer for centering */}
         </header>
 
         {/* Page Content */}
