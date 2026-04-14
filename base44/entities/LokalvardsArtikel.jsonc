@@ -41,6 +41,11 @@
       "type": "number",
       "description": "Aktuellt antal i lager",
       "default": 0
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Underkategori f\u00f6r artikeln",
+      "nullable": true
     }
   },
   "required": [
