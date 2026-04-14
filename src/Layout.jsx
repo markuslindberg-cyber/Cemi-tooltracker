@@ -17,8 +17,7 @@ import {
   Shovel,
   ClipboardList,
   Shirt,
-  Tag,
-  BookText,
+  SprayCan,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -49,8 +48,19 @@ const navigation = [
     children: [
       { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning' },
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
-      { name: 'Begär artiklar', path: '/RequestWorkwear' },
-      { name: 'Inventarier', path: '/Inventarier' },
+    ]
+  },
+  {
+    name: 'Lokalvård',
+    path: '/Lokalvard',
+    icon: SprayCan,
+    children: [
+      { name: 'Lager', path: '/Inventarier' },
+      { name: 'Uttag', path: '/Lokalvard/Uttag' },
+      { name: 'Begäran att godkänna', path: '/Lokalvard/BegaranAttGodkanna' },
+      { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
+      { name: 'Kunder', path: '/Lokalvard/Kunder' },
+      { name: 'Begäran om uttag av lokalvårdsartiklar', path: '/RequestWorkwear' },
     ]
   },
   {
@@ -58,12 +68,26 @@ const navigation = [
     path: '/InventoryCheck',
     icon: Wrench,
     children: [
-      { name: 'Översikt', path: '/InventoryCheck' },
+      { name: 'Inventering', path: '/InventoryCheck' },
       { name: 'Inventeringsrapporter', path: '/InventoryReports' },
     ]
   },
-  { name: 'Platser', path: '/Locations', icon: MapPin },
-  { name: 'Team', path: '/Team', icon: Users },
+  {
+    name: 'Platser',
+    path: '/Locations',
+    icon: MapPin,
+    children: [
+      { name: 'Kontor', path: '/Locations' },
+    ]
+  },
+  {
+    name: 'Team',
+    path: '/Team',
+    icon: Users,
+    children: [
+      { name: 'Personal', path: '/Team' },
+    ]
+  },
 ];
 
 export default function Layout({ children }) {

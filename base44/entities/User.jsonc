@@ -1,0 +1,18 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "\u00e4gare",
+        "admin",
+        "admin_lokalv\u00e5rd",
+        "verktygsf\u00f6rvaltare",
+        "lokalv\u00e5rdare"
+      ],
+      "default": "verktygsf\u00f6rvaltare",
+      "description": "Anv\u00e4ndarens roll i systemet"
+    }
+  }
+}
