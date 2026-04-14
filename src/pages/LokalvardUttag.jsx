@@ -56,6 +56,15 @@ export default function LokalvardUttag() {
     queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
   });
 
+  const artikelMap = useMemo(() => {
+    const map = {};
+    artiklar.forEach(a => {
+      map[a.id] = a;
+      map[a.streckkod] = a;
+    });
+    return map;
+  }, [artiklar]);
+
   const { data: personal = [] } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
@@ -494,7 +503,10 @@ export default function LokalvardUttag() {
                                 <div className="font-semibold text-gray-900">{tid} • {u.personal_namn}</div>
                                 <div className="text-xs text-gray-600 mt-0.5">
                                  {u.ordernummer && <span>{u.ordernummer} • </span>}
-                                 {u.artiklar.map((a, i) => a.artikel_id || a.benamning).join(', ')}
+                                 {u.artiklar.map((a, i) => {
+                                   const artikelData = artikelMap[a.artikel_id];
+                                   return artikelData?.benamning || a.benamning || a.artikel_id || 'Okänd artikel';
+                                 }).join(', ')}
                                 </div>
                               </div>
                               <div className="text-right ml-4">
