@@ -23,7 +23,7 @@ const defaultMember = {
   name: '',
   email: '',
   phone: '',
-  role: 'technician',
+  role: 'admin lokalvård',
   default_location_id: '',
   default_location_name: '',
   is_active: true,
@@ -118,6 +118,8 @@ export default function TeamMemberFormModal({
                 <SelectItem value="manager">Chef</SelectItem>
                 <SelectItem value="apprentice">Lärling</SelectItem>
                 <SelectItem value="contractor">Underleverantör</SelectItem>
+                <SelectItem value="admin lokalvård">Admin Lokalvård</SelectItem>
+                <SelectItem value="lokalvårdare">Lokalvårdare</SelectItem>
               </SelectContent>
             </Select>
           </div>

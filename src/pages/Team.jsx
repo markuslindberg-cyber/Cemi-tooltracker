@@ -36,6 +36,8 @@ const roleConfig = {
   manager: { label: 'Chef', color: 'bg-emerald-100 text-emerald-700' },
   apprentice: { label: 'Lärling', color: 'bg-amber-100 text-amber-700' },
   contractor: { label: 'Underleverantör', color: 'bg-gray-100 text-gray-700' },
+  'admin lokalvård': { label: 'Admin Lokalvård', color: 'bg-red-100 text-red-700' },
+  lokalvårdare: { label: 'Lokalvårdare', color: 'bg-orange-100 text-orange-700' },
 };
 
 export default function Team() {
