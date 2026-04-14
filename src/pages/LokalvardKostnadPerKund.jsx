@@ -24,7 +24,7 @@ export default function KostnadPerKund() {
       try {
         const [uttag, kunder] = await Promise.all([
           base44.entities.Uttag.list(null, 10000),
-          base44.entities.Kund.list()
+          base44.entities.Kund.list(null, 10000)
         ]);
         setAllCustomers(kunder);
 
@@ -33,11 +33,15 @@ export default function KostnadPerKund() {
 
         const filtered = uttag.filter(u => selectedPeriods.length === 0 || selectedPeriods.includes(u.månad));
 
+        const customerMap = {};
+        kunder.forEach(k => {
+          customerMap[k.id] = k.namn;
+        });
+
         const costMap = {};
         filtered.forEach(u => {
           if (!costMap[u.kund_id]) {
-            const kund = kunder.find(k => k.id === u.kund_id);
-            costMap[u.kund_id] = { kund_id: u.kund_id, namn: kund?.namn || u.kund_namn || 'Okänd', total: 0 };
+            costMap[u.kund_id] = { kund_id: u.kund_id, namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', total: 0 };
           }
           costMap[u.kund_id].total += u.total_kostnad;
         });
@@ -125,15 +129,15 @@ export default function KostnadPerKund() {
               </PopoverTrigger>
               <PopoverContent className="w-60 p-2" align="end">
                 <div className="space-y-1 max-h-60 overflow-y-auto">
-                  {allCustomers.map(k => (
-                    <label key={k.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                  {data.map(item => (
+                    <label key={item.kund_id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
                       <Checkbox
-                        checked={selectedCustomerIds.includes(k.id)}
+                        checked={selectedCustomerIds.includes(item.kund_id)}
                         onCheckedChange={(checked) => {
-                          setSelectedCustomerIds(prev => checked ? [...prev, k.id] : prev.filter(id => id !== k.id));
+                          setSelectedCustomerIds(prev => checked ? [...prev, item.kund_id] : prev.filter(id => id !== item.kund_id));
                         }}
                       />
-                      <span className="text-sm">{k.namn}</span>
+                      <span className="text-sm">{item.namn}</span>
                     </label>
                   ))}
                 </div>
