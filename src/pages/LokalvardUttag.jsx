@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, Fragment } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,6 +15,8 @@ export default function LokalvardUttag() {
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [editingArticleId, setEditingArticleId] = useState(null);
+  const [editArticleForm, setEditArticleForm] = useState({});
   const [uploading, setUploading] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
 
@@ -183,6 +185,36 @@ export default function LokalvardUttag() {
       total_kostnad: item.total_kostnad,
       antal: item.artiklar[0]?.antal || 0
     });
+  };
+
+  const handleEditArticle = (uttagId, artikel, articleIndex) => {
+    setEditingArticleId(`${uttagId}-${articleIndex}`);
+    setEditArticleForm({
+      antal: artikel.antal,
+      pris_per_enhet: artikel.pris_per_enhet
+    });
+  };
+
+  const handleSaveArticle = (uttagId, articleIndex) => {
+    const editingItem = uttag.find(u => u.id === uttagId);
+    const updatedArtiklar = editingItem.artiklar.map((a, idx) => 
+      idx === articleIndex 
+        ? { ...a, antal: parseInt(editArticleForm.antal) || 0, pris_per_enhet: parseFloat(editArticleForm.pris_per_enhet) || 0, total_pris: (parseInt(editArticleForm.antal) || 0) * (parseFloat(editArticleForm.pris_per_enhet) || 0) }
+        : a
+    );
+    const newTotal = updatedArtiklar.reduce((sum, a) => sum + a.total_pris, 0);
+    updateMutation.mutate({
+      id: uttagId,
+      data: {
+        artiklar: updatedArtiklar,
+        total_kostnad: newTotal
+      }
+    });
+    setEditingArticleId(null);
+  };
+
+  const handleCancelArticleEdit = () => {
+    setEditingArticleId(null);
   };
 
   const handleSaveEdit = () => {
@@ -380,46 +412,95 @@ export default function LokalvardUttag() {
                   {isExpanded && (
                     <div className="border-t bg-gray-50">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead className="bg-white border-b">
-                            <tr>
-                              <th className="px-4 py-2 text-left font-semibold text-gray-700">Tid</th>
-                              <th className="px-4 py-2 text-left font-semibold text-gray-700">Personal</th>
-                              <th className="px-4 py-2 text-left font-semibold text-gray-700">Artikel</th>
-                              <th className="px-4 py-2 text-right font-semibold text-gray-700">Antal</th>
-                              <th className="px-4 py-2 text-right font-semibold text-gray-700">Totalt</th>
-                              <th className="px-4 py-2 text-left font-semibold text-gray-700">Order</th>
-                              <th className="px-4 py-2 text-left font-semibold text-gray-700">Åtgärd</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y">
-                            {group.uttag.map(u => {
-                              const isEditing = editingId === u.id;
-                              const uttaget = u.artiklar[0]?.antal || 0;
-                              const tid = u.datum.split('T')[1]?.slice(0, 5) || '';
-                              return (
-                                <tr key={u.id} className={isEditing ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'}>
-                                  <td className="px-4 py-2 whitespace-nowrap text-sm">{tid}</td>
-                                  <td className="px-4 py-2">{isEditing ? <input type="text" value={editForm.personal_namn} onChange={(e) => setEditForm({...editForm, personal_namn: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-32" /> : u.personal_namn}</td>
-                                  <td className="px-4 py-2">{u.artiklar[0]?.benamning} {u.artiklar[0]?.subcategory && `(${u.artiklar[0].subcategory})`}</td>
-                                  <td className="px-4 py-2 text-right">{isEditing ? <input type="number" value={editForm.antal} onChange={(e) => setEditForm({...editForm, antal: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-16 text-right" /> : uttaget}</td>
-                                  <td className="px-4 py-2 text-right font-semibold">{isEditing ? <input type="number" step="0.01" value={editForm.total_kostnad} onChange={(e) => setEditForm({...editForm, total_kostnad: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-24 text-right" /> : `${u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`}</td>
-                                  <td className="px-4 py-2">{isEditing ? <input type="text" value={editForm.ordernummer} onChange={(e) => setEditForm({...editForm, ordernummer: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-24" /> : (u.ordernummer || '-')}</td>
-                                  <td className="px-4 py-2 whitespace-nowrap">
-                                    {isEditing ? (
-                                      <div className="flex gap-1">
-                                        <button onClick={handleSaveEdit} className="text-green-600 font-semibold hover:bg-green-100 px-2 py-1 rounded text-sm">✓</button>
-                                        <button onClick={handleCancelEdit} className="text-red-600 font-semibold hover:bg-red-100 px-2 py-1 rounded text-sm">✕</button>
-                                      </div>
-                                    ) : (
-                                      <button onClick={() => handleEditClick(u)} className="text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-xs">Redigera</button>
-                                    )}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                      <table className="w-full text-sm">
+                      <thead className="bg-white border-b">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Tid</th>
+                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Personal</th>
+                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Artikel</th>
+                          <th className="px-4 py-2 text-right font-semibold text-gray-700">Antal</th>
+                          <th className="px-4 py-2 text-right font-semibold text-gray-700">Pris</th>
+                          <th className="px-4 py-2 text-right font-semibold text-gray-700">Totalt</th>
+                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Order</th>
+                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Åtgärd</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {group.uttag.map(u => {
+                          const isEditing = editingId === u.id;
+                          const tid = u.datum.split('T')[1]?.slice(0, 5) || '';
+                          return (
+                            <React.Fragment key={u.id}>
+                              <tr className={isEditing ? 'bg-blue-100' : 'bg-white hover:bg-gray-100'}>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm">{tid}</td>
+                                <td className="px-4 py-2">{isEditing ? <input type="text" value={editForm.personal_namn} onChange={(e) => setEditForm({...editForm, personal_namn: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-32" /> : u.personal_namn}</td>
+                                <td colSpan="5" className="px-4 py-2">
+                                  {isEditing ? (
+                                    <div className="flex gap-2 items-center">
+                                      Order:
+                                      <input type="text" value={editForm.ordernummer} onChange={(e) => setEditForm({...editForm, ordernummer: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-24" placeholder="Ordernummer" />
+                                    </div>
+                                  ) : (
+                                    <span>{u.ordernummer || '-'}</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2 whitespace-nowrap">
+                                  {isEditing ? (
+                                    <div className="flex gap-1">
+                                      <button onClick={handleSaveEdit} className="text-green-600 font-semibold hover:bg-green-100 px-2 py-1 rounded text-sm">✓</button>
+                                      <button onClick={handleCancelEdit} className="text-red-600 font-semibold hover:bg-red-100 px-2 py-1 rounded text-sm">✕</button>
+                                    </div>
+                                  ) : (
+                                    <button onClick={() => handleEditClick(u)} className="text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-xs">Redigera</button>
+                                  )}
+                                </td>
+                              </tr>
+                              {u.artiklar.map((artikel, articleIdx) => {
+                                const isArticleEditing = editingArticleId === `${u.id}-${articleIdx}`;
+                                return (
+                                  <tr key={`${u.id}-${articleIdx}`} className="bg-gray-50 border-b">
+                                    <td className="px-4 py-2"></td>
+                                    <td className="px-4 py-2"></td>
+                                    <td className="px-4 py-2 text-sm text-gray-700">{artikel.benamning} {artikel.subcategory && `(${artikel.subcategory})`}</td>
+                                    <td className="px-4 py-2 text-right">
+                                      {isArticleEditing ? (
+                                        <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-16 text-right" />
+                                      ) : (
+                                        artikel.antal
+                                      )}
+                                    </td>
+                                    <td className="px-4 py-2 text-right">
+                                      {isArticleEditing ? (
+                                        <input type="number" step="0.01" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-20 text-right" />
+                                      ) : (
+                                        `${artikel.pris_per_enhet.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`
+                                      )}
+                                    </td>
+                                    <td className="px-4 py-2 text-right font-semibold">
+                                      {isArticleEditing 
+                                        ? `${(parseInt(editArticleForm.antal) * parseFloat(editArticleForm.pris_per_enhet)).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`
+                                        : `${artikel.total_pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`
+                                      }
+                                    </td>
+                                    <td className="px-4 py-2"></td>
+                                    <td className="px-4 py-2 whitespace-nowrap">
+                                      {isArticleEditing ? (
+                                        <div className="flex gap-1">
+                                          <button onClick={() => handleSaveArticle(u.id, articleIdx)} className="text-green-600 font-semibold hover:bg-green-100 px-2 py-1 rounded text-sm">✓</button>
+                                          <button onClick={handleCancelArticleEdit} className="text-red-600 font-semibold hover:bg-red-100 px-2 py-1 rounded text-sm">✕</button>
+                                        </div>
+                                      ) : (
+                                        <button onClick={() => handleEditArticle(u.id, artikel, articleIdx)} className="text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-xs">Redigera</button>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                      </table>
                       </div>
                     </div>
                   )}
