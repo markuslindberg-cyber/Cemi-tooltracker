@@ -70,7 +70,16 @@ export default function LokalvardLager() {
     return true;
   });
 
-  const sorted = [...filtered].sort((a, b) => {
+  const grouped = {};
+  filtered.forEach(a => {
+    const key = a.artikelnummer;
+    if (!grouped[key]) {
+      grouped[key] = { ...a, variants: [] };
+    }
+    grouped[key].variants.push(a);
+  });
+
+  const sorted = Object.values(grouped).sort((a, b) => {
     let aVal = a[sortBy];
     let bVal = b[sortBy];
     
@@ -318,20 +327,22 @@ export default function LokalvardLager() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {sorted.map(artikel => {
-                const saldo = calculateSaldo(artikel);
-                let saldoColor = 'text-gray-900';
-                let saldoBg = '';
-                if (saldo === 0) {
-                  saldoColor = 'text-red-600 font-semibold';
-                  saldoBg = 'bg-red-50';
-                } else if (saldo < (artikel.lagertroskelvarde || 10)) {
-                  saldoColor = 'text-yellow-600 font-semibold';
-                  saldoBg = 'bg-yellow-50';
-                }
+               {sorted.map((gruppe) => {
+                 const artikel = gruppe.variants[0];
+                 const totalSaldo = gruppe.variants.reduce((sum, a) => sum + calculateSaldo(a), 0);
+                 let saldoColor = 'text-gray-900';
+                 let saldoBg = '';
+                 if (totalSaldo === 0) {
+                   saldoColor = 'text-red-600 font-semibold';
+                   saldoBg = 'bg-red-50';
+                 } else if (totalSaldo < (artikel.lagertroskelvarde || 10)) {
+                   saldoColor = 'text-yellow-600 font-semibold';
+                   saldoBg = 'bg-yellow-50';
+                 }
 
-                return (
-                   <tr key={artikel.id} className={`${saldoBg} transition-colors`}>
+                 return (
+                    <React.Fragment key={artikel.id}>
+                      <tr className={`${saldoBg} transition-colors`}>
                      {editingId === artikel.id ? (
                       <>
                         <td className="px-4 py-3">
@@ -409,8 +420,8 @@ export default function LokalvardLager() {
                          </td>
                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
                          <td className="px-4 py-3 text-right">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                         <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
-                         <td className={`px-4 py-3 text-right ${saldoColor}`}>{saldo}</td>
+                         <td className="px-4 py-3 text-right">{gruppe.variants.reduce((sum, a) => sum + a.antal_inkopta, 0)}</td>
+                         <td className={`px-4 py-3 text-right ${saldoColor}`}>{totalSaldo}</td>
                          <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
                          <td className="px-4 py-3">
                            {artikel.utgaende ? (
@@ -429,10 +440,46 @@ export default function LokalvardLager() {
                            </button>
                          </td>
                       </>
-                    )}
-                  </tr>
-                );
-              })}
+                      )}
+                      </tr>
+                      {gruppe.variants.length > 1 && !editingId && gruppe.variants.slice(1).map(variant => {
+                      const variantSaldo = calculateSaldo(variant);
+                      let variantColor = 'text-gray-700';
+                      if (variantSaldo === 0) variantColor = 'text-red-600 font-semibold';
+                      else if (variantSaldo < (variant.lagertroskelvarde || 10)) variantColor = 'text-yellow-600 font-semibold';
+
+                      return (
+                      <tr key={variant.id} className="bg-gray-50 border-t-2 border-gray-200">
+                        <td className="px-4 py-2 text-sm text-gray-600">
+                          <span className="ml-4">→ {variant.subcategory || 'Variant'}</span>
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-600">{variant.streckkod}</td>
+                        <td className="px-4 py-2 text-right text-sm">{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                        <td className="px-4 py-2 text-right text-sm">{variant.antal_inkopta}</td>
+                        <td className={`px-4 py-2 text-right text-sm ${variantColor}`}>{variantSaldo}</td>
+                        <td className="px-4 py-2 text-right text-sm text-gray-600">{variant.lagertroskelvarde}</td>
+                        <td className="px-4 py-2">
+                          {variant.utgaende ? (
+                            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Utgående</span>
+                          ) : (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Aktiv</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleEditClick(variant); }}
+                            className="text-blue-600 hover:bg-blue-50 p-1 rounded"
+                            title="Redigera"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                      );
+                      })}
+                      </React.Fragment>
+                      );
+                      })}
             </tbody>
           </table>
         </div>
