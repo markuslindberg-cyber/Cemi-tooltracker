@@ -22,9 +22,10 @@ export default function KostnadPerKund() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [uttag, kunder] = await Promise.all([
+        const [uttag, kunder, personal] = await Promise.all([
           base44.entities.Uttag.list(null, 10000),
-          base44.entities.Kund.list(null, 10000)
+          base44.entities.Kund.list(null, 10000),
+          base44.entities.TeamMember.list(null, 10000)
         ]);
         setAllCustomers(kunder);
 
@@ -38,10 +39,15 @@ export default function KostnadPerKund() {
           customerMap[k.id] = k.namn;
         });
 
+        const personalMap = {};
+        personal.forEach(p => {
+          personalMap[p.id] = p.name;
+        });
+
         const costMap = {};
         filtered.forEach(u => {
           if (!costMap[u.kund_id]) {
-            costMap[u.kund_id] = { kund_id: u.kund_id, namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', total: 0 };
+            costMap[u.kund_id] = { kund_id: u.kund_id, namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', total: 0 };
           }
           costMap[u.kund_id].total += u.total_kostnad;
         });
