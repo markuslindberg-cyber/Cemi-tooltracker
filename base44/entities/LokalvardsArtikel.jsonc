@@ -12,8 +12,7 @@
     },
     "streckkod": {
       "type": "string",
-      "description": "Streckkod f\u00f6r artikeln",
-      "nullable": true
+      "description": "Unik streckkod"
     },
     "pris": {
       "type": "number",
@@ -25,12 +24,13 @@
       "description": "Datum d\u00e5 artikeln k\u00f6ptes in"
     },
     "antal_inkopta": {
-      "type": "number",
+      "type": "integer",
       "description": "Totalt antal ink\u00f6pta enheter"
     },
     "lagertroskelvarde": {
-      "type": "number",
-      "description": "L\u00e4gsta antal i lager innan best\u00e4llning kr\u00e4vs"
+      "type": "integer",
+      "description": "L\u00e4gsta antal i lager innan best\u00e4llning kr\u00e4vs",
+      "default": 10
     },
     "utgaende": {
       "type": "boolean",
@@ -50,7 +50,7 @@
   },
   "required": [
     "benamning",
-    "artikelnummer",
+    "streckkod",
     "pris",
     "inkopsdatum",
     "antal_inkopta",
