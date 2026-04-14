@@ -47,6 +47,15 @@ export default function RequestWorkwear() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (handlers.length > 0 && !selectedHandler) {
+      const adminHandler = handlers.find(h => h.role === 'admin lokalvård');
+      if (adminHandler) {
+        setSelectedHandler(adminHandler);
+      }
+    }
+  }, [handlers, selectedHandler]);
+
   const { data: items = [] } = useQuery({
     queryKey: ['lokalvardLager'],
     queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
