@@ -188,13 +188,14 @@ export default function LokalvardLager() {
     setEditingId(null);
   };
 
-  const tomma = artiklar.filter(a => calculateSaldo(a) === 0).length;
-  const lågtSaldo = artiklar.filter(a => {
-    const saldo = calculateSaldo(a);
-    return saldo > 0 && saldo < (a.lagertroskelvarde || 10);
+  const tomma = Object.values(grouped).filter(g => g.variants.reduce((sum, a) => sum + calculateSaldo(a), 0) === 0).length;
+  const lågtSaldo = Object.values(grouped).filter(g => {
+    const total = g.variants.reduce((sum, a) => sum + calculateSaldo(a), 0);
+    const treshold = g.variants[0]?.lagertroskelvarde || 10;
+    return total > 0 && total < treshold;
   }).length;
   const totaltVärde = artiklar.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
-  const filteredTotal = sorted.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
+  const filteredTotal = sorted.reduce((sum, g) => sum + (g.variants.reduce((sum, a) => sum + calculateSaldo(a), 0) * g.pris), 0);
 
   if (artiklarLoading || uttagLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
