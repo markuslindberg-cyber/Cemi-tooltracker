@@ -74,7 +74,7 @@ export default function KostnadPerKund() {
       }
     };
     loadData();
-  }, [selectedPeriods]);
+  }, [selectedPeriods, selectedCustomerTypes]);
 
   const data = allData
     .filter(d => selectedCustomerIds.length === 0 || selectedCustomerIds.includes(d.kund_id))
