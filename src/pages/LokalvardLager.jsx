@@ -24,6 +24,7 @@ export default function LokalvardLager() {
     antal_inkopta: '',
     lagertroskelvarde: '',
     current_quantity: '',
+    subcategory: '',
     utgaende: false,
   });
 
@@ -67,6 +68,7 @@ export default function LokalvardLager() {
       antal_inkopta: '',
       lagertroskelvarde: '',
       current_quantity: '',
+      subcategory: '',
       utgaende: false,
     });
     setBarcodeInput('');
@@ -92,6 +94,7 @@ export default function LokalvardLager() {
       antal_inkopta: existingArtikel.antal_inkopta.toString(),
       lagertroskelvarde: existingArtikel.lagertroskelvarde.toString(),
       current_quantity: '',
+      subcategory: existingArtikel.subcategory || '',
       utgaende: existingArtikel.utgaende,
     });
     
@@ -109,6 +112,7 @@ export default function LokalvardLager() {
       antal_inkopta: parseInt(formData.antal_inkopta),
       lagertroskelvarde: parseInt(formData.lagertroskelvarde),
       current_quantity: parseInt(formData.current_quantity || 0),
+      subcategory: formData.subcategory || null,
       utgaende: formData.utgaende,
     };
 
@@ -130,6 +134,7 @@ export default function LokalvardLager() {
       antal_inkopta: artikel.antal_inkopta.toString(),
       lagertroskelvarde: artikel.lagertroskelvarde.toString(),
       current_quantity: artikel.current_quantity.toString(),
+      subcategory: artikel.subcategory || '',
       utgaende: artikel.utgaende,
     });
     setShowForm(true);
@@ -259,6 +264,14 @@ export default function LokalvardLager() {
               />
             </div>
             <div>
+              <label className="text-sm text-gray-600">Underkategori</label>
+              <Input
+                value={formData.subcategory}
+                onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                placeholder="T.ex. Rengöringsmedel"
+              />
+            </div>
+            <div>
               <label className="text-sm text-gray-600">Aktuellt antal i lager</label>
               <Input
                 type="number"
@@ -325,6 +338,9 @@ export default function LokalvardLager() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h3 className="font-semibold text-gray-900">{artikel.benamning}</h3>
+                    {artikel.subcategory && (
+                      <span className="text-sm text-gray-500">— {artikel.subcategory}</span>
+                    )}
                     {isLowStock(artikel) && (
                       <div className="flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded text-red-700 text-xs font-medium">
                         <AlertCircle className="w-3 h-3" />
