@@ -70,7 +70,7 @@ export default function LokalvardLager() {
     if (filterTyp === 'empty') return a.current_quantity === 0;
     if (filterTyp === 'utgaende') return !!a.utgaende;
     return true;
-  });
+  }).sort((a, b) => new Date(b.updated_date) - new Date(a.updated_date));
 
   const grouped = {};
   filtered.forEach(a => {
