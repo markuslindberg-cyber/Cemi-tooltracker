@@ -62,7 +62,7 @@ export default function KostnadPerKund() {
             costMap[u.kund_id] = { 
               kund_id: u.kund_id, 
               namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', 
-              kundtyp: kundenObj?.typ || '',
+              kundtyp: kundenObj?.typ || 'Okänd',
               personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', 
               total: 0 
             };
@@ -71,6 +71,11 @@ export default function KostnadPerKund() {
         });
 
         const sorted = Object.values(costMap).sort((a, b) => b.total - a.total);
+        
+        // Uppdatera tillgängliga kundtyper baserat på faktisk data
+        const typesFromData = [...new Set(sorted.map(item => item.kundtyp).filter(Boolean))].sort();
+        setAvailableCustomerTypes(typesFromData);
+        
         setAllData(sorted);
       } catch (error) {
         toast.error('Kunde inte ladda kostnaddata');
