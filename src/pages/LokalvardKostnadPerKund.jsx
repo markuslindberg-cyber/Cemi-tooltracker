@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Download, ChevronDown, X, TrendingUp } from 'lucide-react';
+import { Download, ChevronDown, X, TrendingUp, RotateCcw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#84cc16', '#22c55e'];
@@ -73,16 +73,26 @@ export default function LokalvardKostnadPerKund() {
           Kostnad per kund
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Månad filter */}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-            <span className="text-xs font-semibold text-gray-500 uppercase">Månad</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
-                  {selectedMonths.length === 0 ? 'Alla' : `${selectedMonths.length}`}
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </PopoverTrigger>
+           {(selectedMonths.length > 0 || selectedCustomerIds.length > 0) && (
+             <Button 
+               size="sm" 
+               variant="outline" 
+               onClick={() => { setSelectedMonths([]); setSelectedCustomerIds([]); }}
+               className="gap-1 text-xs"
+             >
+               <RotateCcw className="w-3 h-3" /> Rensa alla
+             </Button>
+           )}
+           {/* Månad filter */}
+           <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+             <span className="text-xs font-semibold text-gray-500 uppercase">Månad</span>
+             <Popover>
+               <PopoverTrigger asChild>
+                 <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+                   {selectedMonths.length === 0 ? 'Alla' : `${selectedMonths.length}`}
+                   <ChevronDown className="w-3.5 h-3.5" />
+                 </button>
+               </PopoverTrigger>
               <PopoverContent className="w-48 p-2" align="end">
                 <div className="space-y-1 max-h-60 overflow-y-auto">
                   {availableMonths.map(p => (

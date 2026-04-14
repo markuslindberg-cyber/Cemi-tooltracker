@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, Calendar, ChevronDown, X, Upload, FileDown, Download, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, Calendar, ChevronDown, X, Upload, FileDown, Download, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function LokalvardUttag() {
@@ -185,9 +185,19 @@ export default function LokalvardUttag() {
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
-        <div className="flex items-center gap-2 flex-wrap">
+       <div className="flex items-center justify-between flex-wrap gap-3">
+         <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
+         <div className="flex items-center gap-2 flex-wrap">
+           {(selectedMonths.length > 0 || selectedCustomers.length > 0) && (
+             <Button 
+               size="sm" 
+               variant="outline" 
+               onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); }}
+               className="gap-1 text-xs"
+             >
+               <RotateCcw className="w-3 h-3" /> Rensa alla
+             </Button>
+           )}
           {/* Månad filter */}
           <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
             <Calendar className="w-4 h-4 text-gray-400" />

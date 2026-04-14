@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Plus, Edit2, Upload, FileDown, ArrowUp, ArrowDown, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Plus, Edit2, Upload, FileDown, ArrowUp, ArrowDown, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function LokalvardLager() {
@@ -206,26 +206,36 @@ export default function LokalvardLager() {
       </div>
 
       {/* Filterflikar */}
-      <div className="flex gap-1">
-        {[
-          { key: 'alla', label: 'Alla artiklar' },
-          { key: 'empty', label: `Slut i lager (${tomma})` },
-          { key: 'lowStock', label: `Lågt lager (${lågtSaldo})` },
-          { key: 'utgaende', label: 'Utgående' }
-        ].map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setFilterTyp(key)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              filterTyp === key
-                ? 'bg-gray-800 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+       <div className="flex gap-1 flex-wrap items-center">
+         {[
+           { key: 'alla', label: 'Alla artiklar' },
+           { key: 'empty', label: `Slut i lager (${tomma})` },
+           { key: 'lowStock', label: `Lågt lager (${lågtSaldo})` },
+           { key: 'utgaende', label: 'Utgående' }
+         ].map(({ key, label }) => (
+           <button
+             key={key}
+             onClick={() => setFilterTyp(key)}
+             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+               filterTyp === key
+                 ? 'bg-gray-800 text-white'
+                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+             }`}
+           >
+             {label}
+           </button>
+         ))}
+         {filterTyp !== 'alla' && (
+           <Button 
+             size="sm" 
+             variant="outline" 
+             onClick={() => setFilterTyp('alla')}
+             className="gap-1 text-xs ml-auto"
+           >
+             <RotateCcw className="w-3 h-3" /> Rensa
+           </Button>
+         )}
+       </div>
 
       {/* Status badges */}
       {(tomma > 0 || lågtSaldo > 0) && (
