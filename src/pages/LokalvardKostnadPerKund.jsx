@@ -72,11 +72,11 @@ export default function KostnadPerKund() {
   if (loading) return <div className="flex justify-center p-8">Laddar...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-4">
+    <div className="max-w-6xl mx-auto p-4 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <TrendingUp className="w-6 h-6 text-blue-500" />
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <TrendingUp className="w-8 h-8 text-blue-500" />
           Kostnad per kund
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
@@ -162,42 +162,51 @@ export default function KostnadPerKund() {
             <span className="text-xl font-bold text-blue-900">{total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
           </div>
 
-          {/* Chart */}
-          <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <ResponsiveContainer width="100%" height={Math.max(40 * data.length, 300)}>
-              <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                <YAxis dataKey="namn" type="category" tick={{ fontSize: 12 }} width={115} />
-                <Tooltip formatter={(value) => [`${value.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`, 'Kostnad']} />
-                <Bar dataKey="total" radius={[0, 4, 4, 0]}>
-                  {data.map((_, index) => (
-                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {/* Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Chart */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <h2 className="text-lg font-semibold mb-4">Kostnadsfördelning</h2>
+              <ResponsiveContainer width="100%" height={Math.max(40 * data.length, 300)}>
+                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                  <YAxis dataKey="namn" type="category" tick={{ fontSize: 12 }} width={115} />
+                  <Tooltip formatter={(value) => [`${value.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`, 'Kostnad']} />
+                  <Bar dataKey="total" radius={[0, 4, 4, 0]}>
+                    {data.map((_, index) => (
+                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-          {/* List */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            {data.map((item, index) => (
-              <div
-                key={item.kund_id}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors border-b last:border-b-0"
-              >
-                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                <span className="flex-1 text-left font-medium text-sm">{item.namn}</span>
-                <div className="text-right">
-                  <div className="font-bold text-sm">{item.total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
-                  <div className="text-xs text-gray-400">{total > 0 ? ((item.total / total) * 100).toFixed(1) : 0}%</div>
-                </div>
+            {/* List */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <h2 className="text-lg font-semibold mb-4">Detaljerad lista</h2>
+              <div className="max-h-[500px] overflow-y-auto">
+                {data.map((item, index) => (
+                  <div
+                    key={item.kund_id}
+                    className="flex items-center justify-between py-2 border-b last:border-b-0 hover:bg-gray-50 px-2 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-sm text-gray-700">{item.namn}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-sm">{item.total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                      <div className="text-xs text-gray-500">{total > 0 ? ((item.total / total) * 100).toFixed(1) : 0}%</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </>
       ) : (
-        <div className="text-center py-12 text-gray-400">Ingen data för vald period</div>
+        <div className="text-center py-12 text-gray-500">Inga uttag matchar de valda filtren.</div>
       )}
     </div>
   );
