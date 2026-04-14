@@ -493,9 +493,8 @@ export default function LokalvardUttag() {
                               <div className="flex-1">
                                 <div className="font-semibold text-gray-900">{tid} • {u.personal_namn}</div>
                                 <div className="text-xs text-gray-600 mt-0.5">
-                                 {u.ordernummer && <span>{u.ordernummer}</span>}
-                                 {u.ordernummer && u.artiklar.length > 0 && <span> • </span>}
-                                 {u.artiklar.map((a, i) => a.benamning).join(', ')}
+                                 {u.ordernummer && <span>{u.ordernummer} • </span>}
+                                 {u.artiklar.map((a, i) => a.artikel_id || a.benamning).join(', ')}
                                 </div>
                               </div>
                               <div className="text-right ml-4">
