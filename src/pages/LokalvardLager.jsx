@@ -142,6 +142,7 @@ export default function LokalvardLager() {
       benamning: artikel.benamning,
       pris: artikel.pris,
       current_quantity: artikel.current_quantity,
+      lagertroskelvarde: artikel.lagertroskelvarde,
       utgaende: !!artikel.utgaende,
     });
   };
@@ -153,6 +154,7 @@ export default function LokalvardLager() {
         benamning: editForm.benamning,
         pris: parseFloat(editForm.pris),
         current_quantity: parseInt(editForm.current_quantity),
+        lagertroskelvarde: parseInt(editForm.lagertroskelvarde),
         utgaende: editForm.utgaende,
       }
     });
@@ -277,6 +279,12 @@ export default function LokalvardLager() {
                     {sortBy === 'current_quantity' && (sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />)}
                   </div>
                 </th>
+                <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('lagertroskelvarde')}>
+                  <div className="flex items-center justify-end gap-2">
+                    Tröskelvärde
+                    {sortBy === 'lagertroskelvarde' && (sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />)}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Åtgärd</th>
               </tr>
             </thead>
@@ -324,6 +332,14 @@ export default function LokalvardLager() {
                           />
                         </td>
                         <td className="px-4 py-3">
+                          <input
+                            type="number"
+                            value={editForm.lagertroskelvarde}
+                            onChange={(e) => setEditForm({ ...editForm, lagertroskelvarde: e.target.value })}
+                            className="px-2 py-1 border border-gray-300 rounded w-full text-right"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={handleSaveEdit}
@@ -355,6 +371,7 @@ export default function LokalvardLager() {
                         <td className="px-4 py-3 text-right">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
                         <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
                         <td className={`px-4 py-3 text-right ${saldoColor}`}>{artikel.current_quantity}</td>
+                        <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
                         <td className="px-4 py-3">
                           <button
                             onClick={() => handleEditClick(artikel)}
