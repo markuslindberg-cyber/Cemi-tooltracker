@@ -165,6 +165,7 @@ export default function LokalvardLager() {
   const tomma = artiklar.filter(a => a.current_quantity === 0).length;
   const lågtSaldo = artiklar.filter(a => a.current_quantity > 0 && a.current_quantity < (a.lagertroskelvarde || 10)).length;
   const totaltVärde = artiklar.reduce((sum, a) => sum + (a.current_quantity * a.pris), 0);
+  const filteredTotal = sorted.reduce((sum, a) => sum + (a.current_quantity * a.pris), 0);
 
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
@@ -197,7 +198,7 @@ export default function LokalvardLager() {
       {/* Totalt lagervärde */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
         <span className="text-sm text-blue-700 font-medium">Totalt lagervärde ({sorted.length} artiklar)</span>
-        <span className="text-xl font-bold text-blue-900">{totaltVärde.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+        <span className="text-xl font-bold text-blue-900">{filteredTotal.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
       </div>
 
       {/* Filterflikar */}
