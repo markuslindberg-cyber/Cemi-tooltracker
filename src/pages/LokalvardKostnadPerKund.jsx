@@ -156,13 +156,13 @@ export default function LokalvardKostnadPerKund() {
 
           {/* Chart */}
           <div className="bg-white rounded-lg p-4 border border-gray-200">
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="namn" angle={-40} textAnchor="end" tick={{ fontSize: 12 }} interval={0} />
-                <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+            <ResponsiveContainer width="100%" height={Math.max(40 * data.length, 300)}>
+              <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                <YAxis dataKey="namn" type="category" tick={{ fontSize: 12 }} width={115} />
                 <Tooltip formatter={(value) => [`${value.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr`, 'Kostnad']} />
-                <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="total" radius={[0, 4, 4, 0]}>
                   {data.map((_, index) => (
                     <Cell key={index} fill={COLORS[index % COLORS.length]} />
                   ))}
