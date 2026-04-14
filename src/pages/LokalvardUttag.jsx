@@ -520,9 +520,9 @@ export default function LokalvardUttag() {
                                   const isEditing = editingArticleId === `${u.id}-${articleIndex}`;
                                   return (
                                     <div key={articleIndex} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                      <div className="flex-1">
-                                        <div className="font-medium text-gray-900">{artikel.benamning}</div>
-                                      </div>
+                                       <div className="flex-1">
+                                         <div className="font-medium text-gray-900">{artikelMap[artikel.artikel_id]?.benamning || artikel.benamning || artikel.artikel_id}</div>
+                                       </div>
                                       {isEditing ? (
                                         <div className="flex items-center gap-2">
                                           <input
