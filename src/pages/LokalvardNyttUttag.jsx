@@ -1,22 +1,300 @@
-import React from 'react';
-import { PackagePlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { Loader2, Barcode, Plus, X, Check, AlertCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function LokalvardNyttUttag() {
+  const queryClient = useQueryClient();
+  const [user, setUser] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [scannedItems, setScannedItems] = useState([]);
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+  }, []);
+
+  const { data: approvedRequests = [], isLoading: loadingRequests } = useQuery({
+    queryKey: ['approvedRequests'],
+    queryFn: async () => {
+      const requests = await base44.entities.WorkwearRequest.filter({ status: 'approved' });
+      return requests;
+    },
+  });
+
+  const { data: allItems = [] } = useQuery({
+    queryKey: ['lokalvardLager'],
+    queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
+  });
+
+  const createCheckoutMutation = useMutation({
+    mutationFn: async (data) => {
+      const checkout = await base44.entities.LokalvardCheckout.create(data);
+      // Uppdatera request status till completed
+      if (selectedRequest?.id) {
+        await base44.entities.WorkwearRequest.update(selectedRequest.id, { status: 'completed' });
+      }
+      return checkout;
+    },
+    onSuccess: () => {
+      setSelectedRequest(null);
+      setScannedItems([]);
+      setBarcodeInput('');
+      queryClient.invalidateQueries(['approvedRequests']);
+      setSuccess('Uttag registrerat!');
+      setTimeout(() => setSuccess(''), 3000);
+    },
+    onError: (err) => {
+      setError(err.message || 'Fel vid registrering av uttag');
+    },
+  });
+
+  const handleBarcodeInput = (barcode) => {
+    const item = allItems.find(i => i.barcode === barcode);
+    
+    if (!item) {
+      setError(`Streckkod ${barcode} hittades inte i lagret`);
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
+    const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
+    if (!requestedItem) {
+      setError(`${item.name} är inte på begäran`);
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
+    const existingScanned = scannedItems.find(si => si.item_id === item.id);
+    if (existingScanned) {
+      if (existingScanned.scanned_quantity >= requestedItem.quantity) {
+        setError(`${item.name} är redan skannad i rätt mängd`);
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+      setScannedItems(prev =>
+        prev.map(si =>
+          si.item_id === item.id
+            ? { ...si, scanned_quantity: si.scanned_quantity + 1 }
+            : si
+        )
+      );
+    } else {
+      setScannedItems(prev => [...prev, {
+        item_id: item.id,
+        name: item.name,
+        barcode: item.barcode,
+        quantity: requestedItem.quantity,
+        scanned_quantity: 1,
+        replacement_items: [],
+      }]);
+    }
+    
+    setBarcodeInput('');
+    setError('');
+  };
+
+  const removeScannedItem = (itemId) => {
+    setScannedItems(prev => prev.filter(si => si.item_id !== itemId));
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedRequest || scannedItems.length === 0) {
+      setError('Välj en begäran och skanna minst en artikel');
+      return;
+    }
+
+    const submitData = {
+      request_id: selectedRequest.id,
+      customer_id: selectedRequest.customer_id,
+      customer_name: selectedRequest.customer_name,
+      checked_out_items: scannedItems,
+      checked_out_date: new Date().toISOString(),
+      checked_out_by_email: user?.email || '',
+      checked_out_by_name: user?.full_name || '',
+    };
+
+    createCheckoutMutation.mutate(submitData);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Nytt uttag – Lokalvård</h1>
-          <p className="text-gray-500 mt-1">Skapa ett nytt uttag av lokalvårdsartiklar</p>
-        </div>
-        <div className="flex items-center justify-center h-64 bg-white rounded-xl border border-gray-200">
-          <div className="text-center text-gray-400">
-            <PackagePlus className="w-12 h-12 mx-auto mb-3" />
-            <p className="text-lg font-medium">Nytt uttag</p>
-            <p className="text-sm">Sidan är under konstruktion</p>
-          </div>
-        </div>
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Skanna uttag – Lokalvård</h1>
+        <p className="text-gray-600 mt-2">Välja godkänd begäran och skanna artiklar via streckkod</p>
       </div>
+
+      {/* Request Selection */}
+      <Card className="p-6 space-y-4">
+        <div className="space-y-2">
+          <Label>Välj begäran att utföra *</Label>
+          {loadingRequests ? (
+            <div className="flex items-center gap-2 text-gray-500">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Laddar begäranden...
+            </div>
+          ) : (
+            <Select value={selectedRequest?.id || ''} onValueChange={(id) => {
+              const request = approvedRequests.find(r => r.id === id);
+              setSelectedRequest(request);
+              setScannedItems([]);
+              setBarcodeInput('');
+              setError('');
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sök och välj godkänd begäran..." />
+              </SelectTrigger>
+              <SelectContent>
+                {approvedRequests.map(request => (
+                  <SelectItem key={request.id} value={request.id}>
+                    {request.customer_name} - {request.requested_items.length} artikel(r)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </Card>
+
+      {selectedRequest && (
+        <Card className="p-6 space-y-6">
+          {/* Begärad items info */}
+          <div>
+            <h3 className="font-semibold text-lg mb-3">Begärda artiklar</h3>
+            <div className="space-y-2">
+              {selectedRequest.requested_items.map((item) => {
+                const scanned = scannedItems.find(si => si.item_id === item.id);
+                const isComplete = scanned && scanned.scanned_quantity >= item.quantity;
+                
+                return (
+                  <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border ${
+                    isComplete ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                  }`}>
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-gray-600">{item.subcategory}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold">
+                        {scanned?.scanned_quantity || 0}/{item.quantity}
+                      </p>
+                      {isComplete && (
+                        <Check className="w-5 h-5 text-green-600 ml-auto" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Barcode Scanner */}
+          <div className="border-t pt-6 space-y-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Barcode className="w-4 h-4" />
+                Skanna streckkod
+              </Label>
+              <Input
+                type="text"
+                placeholder="Scanna streckkod här..."
+                value={barcodeInput}
+                onChange={(e) => setBarcodeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleBarcodeInput(barcodeInput);
+                  }
+                }}
+                autoFocus
+                className="text-lg"
+              />
+            </div>
+
+            {/* Scanned Items */}
+            {scannedItems.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-semibold">Skannde artiklar</h4>
+                <div className="space-y-2">
+                  {scannedItems.map(item => (
+                    <div key={item.item_id} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      <div>
+                        <p className="font-medium text-blue-900">{item.name}</p>
+                        <p className="text-sm text-blue-700">Streckkod: {item.barcode} • Antal: {item.scanned_quantity}/{item.quantity}</p>
+                      </div>
+                      <button
+                        onClick={() => removeScannedItem(item.item_id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Messages */}
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <AlertCircle className="w-4 h-4" />
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+              <Check className="w-4 h-4" />
+              {success}
+            </div>
+          )}
+
+          {/* Submit */}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              onClick={handleSubmit}
+              disabled={createCheckoutMutation.isPending || scannedItems.length === 0}
+              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+            >
+              {createCheckoutMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Registrerar...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Registrera uttag
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={() => {
+                setSelectedRequest(null);
+                setScannedItems([]);
+                setBarcodeInput('');
+                setError('');
+              }}
+              variant="outline"
+            >
+              Avbryt
+            </Button>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
