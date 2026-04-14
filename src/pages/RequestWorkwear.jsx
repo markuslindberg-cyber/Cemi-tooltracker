@@ -62,7 +62,7 @@ export default function RequestWorkwear() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.LokalvardCustomer.list('-updated_date', 500).catch(() => []),
+    queryFn: () => base44.entities.Kund.list('-updated_date', 500).catch(() => []),
   });
 
   useEffect(() => {
