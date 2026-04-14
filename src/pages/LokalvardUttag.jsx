@@ -30,6 +30,11 @@ export default function LokalvardUttag() {
     queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
   });
 
+  const { data: personal = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Uttag.update(id, data),
     onSuccess: () => {
@@ -52,17 +57,25 @@ export default function LokalvardUttag() {
     [uttag]
   );
 
+  const personalMap = useMemo(() => {
+    const map = {};
+    personal.forEach(p => {
+      map[p.id] = p.name;
+    });
+    return map;
+  }, [personal]);
+
   const availablePersonal = useMemo(
     () => {
       const seen = new Map();
       uttag.forEach(u => {
         if (u.personal_id && !seen.has(u.personal_id)) {
-          seen.set(u.personal_id, u.personal_namn);
+          seen.set(u.personal_id, personalMap[u.personal_id] || u.personal_namn);
         }
       });
       return Array.from(seen.entries());
     },
-    [uttag]
+    [uttag, personalMap]
   );
 
   const [selectedPersonal, setSelectedPersonal] = useState([]);

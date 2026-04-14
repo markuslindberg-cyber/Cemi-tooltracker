@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,19 @@ export default function LokalvardNyttUttag() {
     queryKey: ['lokalvardLager'],
     queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
   });
+
+  const { data: personal = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
+  });
+
+  const personalMap = useMemo(() => {
+    const map = {};
+    personal.forEach(p => {
+      map[p.id] = p.name;
+    });
+    return map;
+  }, [personal]);
 
   const createCheckoutMutation = useMutation({
     mutationFn: async (data) => {
@@ -124,7 +137,7 @@ export default function LokalvardNyttUttag() {
       checked_out_items: scannedItems,
       checked_out_date: new Date().toISOString(),
       checked_out_by_email: user?.email || '',
-      checked_out_by_name: user?.full_name || '',
+      checked_out_by_name: personalMap[user?.id] || user?.full_name || '',
     };
 
     createCheckoutMutation.mutate(submitData);

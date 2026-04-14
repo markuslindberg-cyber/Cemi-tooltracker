@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +14,23 @@ export default function LokalvardBegaranAttGodkanna() {
   const [rejectNotes, setRejectNotes] = useState('');
   const [user, setUser] = useState(null);
 
-  React.useEffect(() => {
+  const { data: personal = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: async () => {
+      const members = await base44.entities.TeamMember.list(null, 10000).catch(() => []);
+      return members;
+    },
+  });
+
+  const personalMap = React.useMemo(() => {
+    const map = {};
+    personal.forEach(p => {
+      map[p.id] = p.name;
+    });
+    return map;
+  }, [personal]);
+
+  useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
@@ -31,7 +47,7 @@ export default function LokalvardBegaranAttGodkanna() {
       base44.entities.WorkwearRequest.update(requestId, {
         status: 'approved',
         approved_by_email: user?.email,
-        approved_by_name: user?.full_name,
+        approved_by_name: personalMap[user?.id] || user?.full_name,
         approved_date: new Date().toISOString(),
       }),
     onSuccess: () => {
