@@ -74,11 +74,10 @@ export default function LokalvardLager() {
 
   const grouped = {};
   filtered.forEach(a => {
-    const key = a.artikelnummer;
+    const key = a.streckkod;
     if (!grouped[key]) {
-      grouped[key] = { ...a, variants: [] };
+      grouped[key] = a;
     }
-    grouped[key].variants.push(a);
   });
 
   const sorted = Object.values(grouped).sort((a, b) => {
@@ -192,14 +191,13 @@ export default function LokalvardLager() {
     setEditingId(null);
   };
 
-  const tomma = Object.values(grouped).filter(g => g.variants.reduce((sum, a) => sum + calculateSaldo(a), 0) === 0).length;
-  const lågtSaldo = Object.values(grouped).filter(g => {
-    const total = g.variants.reduce((sum, a) => sum + calculateSaldo(a), 0);
-    const treshold = g.variants[0]?.lagertroskelvarde || 10;
-    return total > 0 && total < treshold;
+  const tomma = sorted.filter(a => calculateSaldo(a) === 0).length;
+  const lågtSaldo = sorted.filter(a => {
+    const saldo = calculateSaldo(a);
+    return saldo > 0 && saldo < (a.lagertroskelvarde || 10);
   }).length;
   const totaltVärde = artiklar.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
-  const filteredTotal = sorted.reduce((sum, g) => sum + (g.variants.reduce((sum, a) => sum + calculateSaldo(a), 0) * g.pris), 0);
+  const filteredTotal = sorted.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
 
   if (artiklarLoading || uttagLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
@@ -338,140 +336,134 @@ export default function LokalvardLager() {
               </tr>
             </thead>
             <tbody className="divide-y">
-               {sorted.map((gruppe) => {
-                 const artikel = gruppe.variants[0];
-                 const totalSaldo = gruppe.variants.reduce((sum, a) => sum + calculateSaldo(a), 0);
-                 let saldoColor = 'text-gray-900';
-                 let saldoBg = '';
-                 if (totalSaldo === 0) {
-                   saldoColor = 'text-red-600 font-semibold';
-                   saldoBg = 'bg-red-50';
-                 } else if (totalSaldo < (artikel.lagertroskelvarde || 10)) {
-                   saldoColor = 'text-yellow-600 font-semibold';
-                   saldoBg = 'bg-yellow-50';
-                 }
+                {sorted.map((artikel) => {
+                  const saldo = calculateSaldo(artikel);
+                  let saldoColor = 'text-gray-900';
+                  let saldoBg = '';
+                  if (saldo === 0) {
+                    saldoColor = 'text-red-600 font-semibold';
+                    saldoBg = 'bg-red-50';
+                  } else if (saldo < (artikel.lagertroskelvarde || 10)) {
+                    saldoColor = 'text-yellow-600 font-semibold';
+                    saldoBg = 'bg-yellow-50';
+                  }
 
-                 return (
-                    <React.Fragment key={artikel.id}>
-                      <tr className={`${saldoBg} transition-colors`}>
-                     {editingId === artikel.id ? (
-                      <>
-                        <td className="px-4 py-3">
-                          <input
-                            type="text"
-                            value={editForm.benamning}
-                            onChange={(e) => setEditForm({ ...editForm, benamning: e.target.value })}
-                            className="px-2 py-1 border border-gray-300 rounded w-full"
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
-                        <td className="px-4 py-3">
-                          <input
-                            type="date"
-                            value={editForm.inkopsdatum}
-                            onChange={(e) => setEditForm({ ...editForm, inkopsdatum: e.target.value })}
-                            className="px-2 py-1 border border-gray-300 rounded w-full"
-                          />
-                        </td>
-                        <td className="px-4 py-3">
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={editForm.pris}
-                            onChange={(e) => setEditForm({ ...editForm, pris: e.target.value })}
-                            className="px-2 py-1 border border-gray-300 rounded w-full text-right"
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
-                        <td className="px-4 py-3">
-                          <input
-                            type="number"
-                            value={editForm.current_quantity}
-                            onChange={(e) => setEditForm({ ...editForm, current_quantity: e.target.value })}
-                            className="px-2 py-1 border border-gray-300 rounded w-full text-right"
-                          />
-                        </td>
-                        <td className="px-4 py-3">
+                  return (
+                     <React.Fragment key={artikel.id}>
+                       <tr className={`${saldoBg} transition-colors`}>
+                      {editingId === artikel.id ? (
+                       <>
+                         <td className="px-4 py-3">
+                           <input
+                             type="text"
+                             value={editForm.benamning}
+                             onChange={(e) => setEditForm({ ...editForm, benamning: e.target.value })}
+                             className="px-2 py-1 border border-gray-300 rounded w-full"
+                           />
+                         </td>
+                         <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
+                         <td className="px-4 py-3">
+                           <input
+                             type="date"
+                             value={editForm.inkopsdatum}
+                             onChange={(e) => setEditForm({ ...editForm, inkopsdatum: e.target.value })}
+                             className="px-2 py-1 border border-gray-300 rounded w-full"
+                           />
+                         </td>
+                         <td className="px-4 py-3">
                            <input
                              type="number"
-                             value={editForm.lagertroskelvarde}
-                             onChange={(e) => setEditForm({ ...editForm, lagertroskelvarde: e.target.value })}
+                             step="0.01"
+                             value={editForm.pris}
+                             onChange={(e) => setEditForm({ ...editForm, pris: e.target.value })}
+                             className="px-2 py-1 border border-gray-300 rounded w-full text-right"
+                           />
+                         </td>
+                         <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
+                         <td className="px-4 py-3">
+                           <input
+                             type="number"
+                             value={editForm.current_quantity}
+                             onChange={(e) => setEditForm({ ...editForm, current_quantity: e.target.value })}
                              className="px-2 py-1 border border-gray-300 rounded w-full text-right"
                            />
                          </td>
                          <td className="px-4 py-3">
-                           <label className="flex items-center gap-2 cursor-pointer">
-                             <Checkbox checked={editForm.utgaende} onCheckedChange={(checked) => setEditForm({ ...editForm, utgaende: !!checked })} />
-                             <span className="text-xs text-gray-600">Utgående</span>
-                           </label>
-                         </td>
-                         <td className="px-4 py-3">
-                           <div className="flex items-center gap-2">
-                             <button
-                               onClick={handleSaveEdit}
-                               className="text-green-600 hover:bg-green-50 p-1 rounded font-semibold"
-                               title="Spara"
-                             >
-                               ✓
-                             </button>
-                             <button
-                               onClick={handleCancelEdit}
-                               className="text-red-600 hover:bg-red-50 p-1 rounded font-semibold"
-                               title="Avbryt"
-                             >
-                               ✕
-                             </button>
-                           </div>
-                         </td>
-                      </>
-                    ) : (
-                       <>
-                         <td className="px-4 py-3">
-                           <button
-                             onClick={() => navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)}
-                             className="font-medium text-blue-600 hover:underline text-left"
-                           >
-                             <div className="flex items-center gap-2">
-                               <span>{artikel.benamning}</span>
-                               {artikel.subcategory && <span className="text-sm text-gray-500">— {artikel.subcategory}</span>}
-                             </div>
-                           </button>
-                         </td>
-                         <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
-                         <td className="px-4 py-3 text-sm text-gray-600">{artikel.inkopsdatum}</td>
-                         <td className="px-4 py-3 text-right">
-                           <div className="flex flex-col items-end">
-                             <span className="font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
-                             {gruppe.variants.length > 1 && gruppe.variants[1]?.pris && artikel.pris !== gruppe.variants[1].pris && (
-                               <span className="text-xs text-gray-500">förr: {gruppe.variants[1].pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
-                             )}
-                           </div>
-                         </td>
-                         <td className="px-4 py-3 text-right">{gruppe.variants.reduce((sum, a) => sum + a.antal_inkopta, 0)}</td>
-                         <td className={`px-4 py-3 text-right ${saldoColor}`}>{totalSaldo}</td>
-                         <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
-                         <td className="px-4 py-3">
-                           {artikel.utgaende ? (
-                             <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Utgående</span>
-                           ) : (
-                             <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Aktiv</span>
-                           )}
-                         </td>
-                         <td className="px-4 py-3">
-                           <button
-                             onClick={(e) => { e.stopPropagation(); handleEditClick(artikel); }}
-                             className="text-blue-600 hover:bg-blue-50 p-1 rounded"
-                             title="Redigera"
-                           >
-                             <Edit2 className="w-4 h-4" />
-                           </button>
-                         </td>
-                      </>
-                      )}
-                      </tr>
-                      </React.Fragment>
-                      );
-                      })}
+                            <input
+                              type="number"
+                              value={editForm.lagertroskelvarde}
+                              onChange={(e) => setEditForm({ ...editForm, lagertroskelvarde: e.target.value })}
+                              className="px-2 py-1 border border-gray-300 rounded w-full text-right"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <Checkbox checked={editForm.utgaende} onCheckedChange={(checked) => setEditForm({ ...editForm, utgaende: !!checked })} />
+                              <span className="text-xs text-gray-600">Utgående</span>
+                            </label>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={handleSaveEdit}
+                                className="text-green-600 hover:bg-green-50 p-1 rounded font-semibold"
+                                title="Spara"
+                              >
+                                ✓
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="text-red-600 hover:bg-red-50 p-1 rounded font-semibold"
+                                title="Avbryt"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </td>
+                       </>
+                     ) : (
+                        <>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)}
+                              className="font-medium text-blue-600 hover:underline text-left"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>{artikel.benamning}</span>
+                                {artikel.subcategory && <span className="text-sm text-gray-500">— {artikel.subcategory}</span>}
+                              </div>
+                            </button>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.inkopsdatum}</td>
+                          <td className="px-4 py-3 text-right">
+                            <span className="font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+                          </td>
+                          <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
+                          <td className={`px-4 py-3 text-right ${saldoColor}`}>{saldo}</td>
+                          <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
+                          <td className="px-4 py-3">
+                            {artikel.utgaende ? (
+                              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Utgående</span>
+                            ) : (
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Aktiv</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleEditClick(artikel); }}
+                              className="text-blue-600 hover:bg-blue-50 p-1 rounded"
+                              title="Redigera"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                       </>
+                       )}
+                       </tr>
+                       </React.Fragment>
+                       );
+                       })}
             </tbody>
           </table>
         </div>
