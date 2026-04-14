@@ -297,6 +297,7 @@ export default function LokalvardLager() {
                     {sortBy === 'lagertroskelvarde' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                   </div>
                 </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Åtgärd</th>
               </tr>
             </thead>
@@ -313,8 +314,8 @@ export default function LokalvardLager() {
                 }
 
                 return (
-                  <tr key={artikel.id} className={`${saldoBg} transition-colors hover:bg-blue-50 cursor-pointer`} onClick={() => !editingId && navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)}>
-                    {editingId === artikel.id ? (
+                   <tr key={artikel.id} className={`${saldoBg} transition-colors`}>
+                     {editingId === artikel.id ? (
                       <>
                         <td className="px-4 py-3">
                           <input
@@ -344,55 +345,72 @@ export default function LokalvardLager() {
                           />
                         </td>
                         <td className="px-4 py-3">
-                          <input
-                            type="number"
-                            value={editForm.lagertroskelvarde}
-                            onChange={(e) => setEditForm({ ...editForm, lagertroskelvarde: e.target.value })}
-                            className="px-2 py-1 border border-gray-300 rounded w-full text-right"
-                          />
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={handleSaveEdit}
-                              className="text-green-600 hover:bg-green-50 p-1 rounded font-semibold"
-                              title="Spara"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              onClick={handleCancelEdit}
-                              className="text-red-600 hover:bg-red-50 p-1 rounded font-semibold"
-                              title="Avbryt"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </td>
+                           <input
+                             type="number"
+                             value={editForm.lagertroskelvarde}
+                             onChange={(e) => setEditForm({ ...editForm, lagertroskelvarde: e.target.value })}
+                             className="px-2 py-1 border border-gray-300 rounded w-full text-right"
+                           />
+                         </td>
+                         <td className="px-4 py-3">
+                           <label className="flex items-center gap-2 cursor-pointer">
+                             <Checkbox checked={editForm.utgaende} onCheckedChange={(checked) => setEditForm({ ...editForm, utgaende: !!checked })} />
+                             <span className="text-xs text-gray-600">Utgående</span>
+                           </label>
+                         </td>
+                         <td className="px-4 py-3">
+                           <div className="flex items-center gap-2">
+                             <button
+                               onClick={handleSaveEdit}
+                               className="text-green-600 hover:bg-green-50 p-1 rounded font-semibold"
+                               title="Spara"
+                             >
+                               ✓
+                             </button>
+                             <button
+                               onClick={handleCancelEdit}
+                               className="text-red-600 hover:bg-red-50 p-1 rounded font-semibold"
+                               title="Avbryt"
+                             >
+                               ✕
+                             </button>
+                           </div>
+                         </td>
                       </>
                     ) : (
-                      <>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{artikel.benamning}</span>
-                            {artikel.subcategory && <span className="text-sm text-gray-500">— {artikel.subcategory}</span>}
-                            {artikel.utgaende && <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">Utgående</span>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
-                        <td className="px-4 py-3 text-right">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                        <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
-                        <td className={`px-4 py-3 text-right ${saldoColor}`}>{artikel.current_quantity}</td>
-                        <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleEditClick(artikel)}
-                            className="text-blue-600 hover:bg-blue-50 p-1 rounded"
-                            title="Redigera"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        </td>
+                       <>
+                         <td className="px-4 py-3">
+                           <button
+                             onClick={() => navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)}
+                             className="font-medium text-blue-600 hover:underline text-left"
+                           >
+                             <div className="flex items-center gap-2">
+                               <span>{artikel.benamning}</span>
+                               {artikel.subcategory && <span className="text-sm text-gray-500">— {artikel.subcategory}</span>}
+                             </div>
+                           </button>
+                         </td>
+                         <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
+                         <td className="px-4 py-3 text-right">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                         <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
+                         <td className={`px-4 py-3 text-right ${saldoColor}`}>{artikel.current_quantity}</td>
+                         <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
+                         <td className="px-4 py-3">
+                           {artikel.utgaende ? (
+                             <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Utgående</span>
+                           ) : (
+                             <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Aktiv</span>
+                           )}
+                         </td>
+                         <td className="px-4 py-3">
+                           <button
+                             onClick={(e) => { e.stopPropagation(); handleEditClick(artikel); }}
+                             className="text-blue-600 hover:bg-blue-50 p-1 rounded"
+                             title="Redigera"
+                           >
+                             <Edit2 className="w-4 h-4" />
+                           </button>
+                         </td>
                       </>
                     )}
                   </tr>
