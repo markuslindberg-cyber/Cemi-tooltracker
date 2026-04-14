@@ -14,6 +14,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function RequestWorkwear() {
   const queryClient = useQueryClient();
@@ -27,6 +39,8 @@ export default function RequestWorkwear() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedQty, setSelectedQty] = useState(1);
   const [user, setUser] = useState(null);
+  const [selectedHandler, setSelectedHandler] = useState(null);
+  const [handlerOpen, setHandlerOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -35,6 +49,14 @@ export default function RequestWorkwear() {
   const { data: items = [] } = useQuery({
     queryKey: ['arbetskläder'],
     queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
+  });
+
+  const { data: handlers = [] } = useQuery({
+    queryKey: ['handlers'],
+    queryFn: async () => {
+      const allUsers = await base44.entities.User.list();
+      return allUsers.filter(u => u.role === 'lokalvårdare' || u.role === 'admin_lokalvård');
+    },
   });
 
   const createRequestMutation = useMutation({
@@ -105,7 +127,7 @@ export default function RequestWorkwear() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Begär arbetskläder & skyddsutrustning</h1>
+        <h1 className="text-3xl font-bold">Begäran om uttag av lokalvårdsartiklar</h1>
         <p className="text-gray-600 mt-2">Fyll i formuläret för att göra en begäran</p>
       </div>
 
@@ -137,6 +159,41 @@ export default function RequestWorkwear() {
             onChange={(e) => setFormData(prev => ({ ...prev, project: e.target.value }))}
             placeholder="t.ex. PROJ-2024-001"
           />
+        </div>
+
+        {/* Handler Selection */}
+        <div className="space-y-2">
+          <Label>Välj handläggare (Lokalvårdare eller Admin lokalvård)</Label>
+          <Popover open={handlerOpen} onOpenChange={setHandlerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                {selectedHandler ? selectedHandler.full_name : "Sök och välj handläggare..."}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Sök handläggare..." />
+                <CommandEmpty>Ingen handläggare hittad.</CommandEmpty>
+                <CommandGroup>
+                  {handlers.map((handler) => (
+                    <CommandItem
+                      key={handler.id}
+                      value={handler.id}
+                      onSelect={() => {
+                        setSelectedHandler(handler);
+                        setHandlerOpen(false);
+                      }}
+                    >
+                      {handler.full_name} ({handler.email})
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Item Selection */}
