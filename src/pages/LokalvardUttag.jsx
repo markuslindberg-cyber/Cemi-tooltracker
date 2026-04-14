@@ -79,7 +79,7 @@ export default function LokalvardUttag() {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(column);
-      setSortOrder('desc');
+      setSortOrder('asc');
     }
   };
 
@@ -133,9 +133,16 @@ export default function LokalvardUttag() {
     (selectedPersonal.length === 0 || selectedPersonal.includes(u.personal_id))
   );
 
+  const sortField = (item) => {
+    if (sortBy === 'personal_namn') return item.personal_namn;
+    if (sortBy === 'kund_namn') return item.kund_namn;
+    if (sortBy === 'total_kostnad') return item.total_kostnad;
+    return item.datum;
+  };
+
   const sorted = [...filtered].sort((a, b) => {
-    let aVal = a[sortBy];
-    let bVal = b[sortBy];
+    let aVal = sortField(a);
+    let bVal = sortField(b);
     if (typeof aVal === 'string') {
       aVal = aVal.toLowerCase();
       bVal = bVal.toLowerCase();
@@ -445,6 +452,26 @@ export default function LokalvardUttag() {
         <>
           <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
             <span className="text-sm text-blue-700 font-medium">Totalt {sorted.length} uttag</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-blue-600 font-medium uppercase">Sortera:</span>
+              {[
+                { key: 'datum', label: 'Datum' },
+                { key: 'personal_namn', label: 'Personal' },
+                { key: 'kund_namn', label: 'Kund' },
+                { key: 'total_kostnad', label: 'Kostnad' }
+              ].map(col => (
+                <button
+                  key={col.key}
+                  onClick={() => handleSort(col.key)}
+                  className={`px-2 py-1 text-xs font-medium rounded transition-colors flex items-center gap-1 ${
+                    sortBy === col.key ? 'bg-blue-200 text-blue-900' : 'bg-white text-blue-600 hover:bg-blue-100'
+                  }`}
+                >
+                  {col.label}
+                  {sortBy === col.key && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
+                </button>
+              ))}
+            </div>
             <span className="text-xl font-bold text-blue-900">{total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
           </div>
 
