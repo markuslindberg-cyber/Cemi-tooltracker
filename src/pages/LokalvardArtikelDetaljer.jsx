@@ -498,35 +498,7 @@ export default function LokalvardArtikelDetaljer() {
         )}
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-         <h2 className="text-xl font-semibold mb-4">Alla uttag av denna artikel</h2>
-        {transaktioner.length === 0 ? (
-          <p className="text-gray-600">Ingen uttag registrerad än</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Datum</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Kund</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Ordernummer</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold">Antal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {transaktioner.map(uttag => (
-                  <tr key={uttag.id}>
-                    <td className="px-4 py-3">{uttag.datum}</td>
-                    <td className="px-4 py-3">{uttag.kund_namn}</td>
-                    <td className="px-4 py-3">{uttag.ordernummer || '-'}</td>
-                    <td className="px-4 py-3 text-right">{uttag.artiklar?.[0]?.antal || 0}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+
     </div>
   );
 }
