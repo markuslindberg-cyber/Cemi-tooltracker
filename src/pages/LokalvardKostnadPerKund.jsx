@@ -45,8 +45,6 @@ export default function KostnadPerKund() {
         const types = [...new Set(kunder.map(k => k.typ).filter(Boolean))].sort();
         setAvailableCustomerTypes(types);
 
-        const filtered = uttag.filter(u => selectedPeriods.length === 0 || selectedPeriods.includes(u.manad));
-
         const customerMap = {};
         kunder.forEach(k => {
           customerMap[k.id] = k.namn;
@@ -58,7 +56,7 @@ export default function KostnadPerKund() {
         });
 
         const costMap = {};
-        filtered.forEach(u => {
+        uttag.forEach(u => {
           if (!costMap[u.kund_id]) {
             costMap[u.kund_id] = { kund_id: u.kund_id, namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', total: 0 };
           }
@@ -74,7 +72,7 @@ export default function KostnadPerKund() {
       }
     };
     loadData();
-  }, [selectedPeriods, selectedCustomerTypes]);
+  }, []);
 
   const data = allData
     .filter(d => selectedCustomerIds.length === 0 || selectedCustomerIds.includes(d.kund_id))
