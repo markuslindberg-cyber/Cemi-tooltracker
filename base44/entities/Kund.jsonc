@@ -4,7 +4,7 @@
   "properties": {
     "namn": {
       "type": "string",
-      "description": "Kundens namn"
+      "description": "Kundnamn"
     },
     "typ": {
       "type": "string",
@@ -17,12 +17,11 @@
         "Koncernbolag",
         "Internt"
       ],
-      "description": "Typ av kund"
+      "description": "Kundtyp"
     },
     "projektnummer": {
       "type": "string",
-      "description": "Kundens projektnummer",
-      "nullable": true
+      "description": "Projektnummer eller projektnamn"
     }
   },
   "required": [
