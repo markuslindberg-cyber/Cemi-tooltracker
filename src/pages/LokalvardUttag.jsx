@@ -53,7 +53,15 @@ export default function LokalvardUttag() {
   );
 
   const availablePersonal = useMemo(
-    () => [...new Set(uttag.map(u => u.personal_id).filter(Boolean))],
+    () => {
+      const seen = new Map();
+      uttag.forEach(u => {
+        if (u.personal_id && !seen.has(u.personal_id)) {
+          seen.set(u.personal_id, u.personal_namn);
+        }
+      });
+      return Array.from(seen.entries());
+    },
     [uttag]
   );
 
@@ -311,15 +319,12 @@ export default function LokalvardUttag() {
               </PopoverTrigger>
               <PopoverContent className="w-60 p-2" align="end">
                 <div className="space-y-1 max-h-60 overflow-y-auto">
-                  {availablePersonal.map(pid => {
-                    const person = uttag.find(u => u.personal_id === pid);
-                    return (
-                      <label key={pid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
-                        <Checkbox checked={selectedPersonal.includes(pid)} onCheckedChange={(checked) => setSelectedPersonal(prev => checked ? [...prev, pid] : prev.filter(x => x !== pid))} />
-                        <span className="text-sm">{person?.personal_namn}</span>
-                      </label>
-                    );
-                  })}
+                  {availablePersonal.map(([pid, namn]) => (
+                    <label key={pid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                      <Checkbox checked={selectedPersonal.includes(pid)} onCheckedChange={(checked) => setSelectedPersonal(prev => checked ? [...prev, pid] : prev.filter(x => x !== pid))} />
+                      <span className="text-sm">{namn}</span>
+                    </label>
+                  ))}
                 </div>
                 {selectedPersonal.length > 0 && (
                   <button onClick={() => setSelectedPersonal([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
