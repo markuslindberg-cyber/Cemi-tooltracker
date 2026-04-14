@@ -108,7 +108,6 @@ const allNavigation = [
 
 function hasAccess(itemRoles, userRole) {
   if (!userRole) return false;
-  if (userRole === 'ägare' || userRole === 'admin') return true;
   return itemRoles.includes(userRole);
 }
 
