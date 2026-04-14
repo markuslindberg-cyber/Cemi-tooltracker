@@ -48,8 +48,8 @@ export default function RequestWorkwear() {
   }, []);
 
   const { data: items = [] } = useQuery({
-    queryKey: ['arbetskläder'],
-    queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
+    queryKey: ['lokalvardLager'],
+    queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
   });
 
   const { data: handlers = [] } = useQuery({
@@ -222,7 +222,9 @@ export default function RequestWorkwear() {
           <div className="space-y-2">
             <Label>Välj artikel</Label>
             <Select value={selectedItem?.id || ''} onValueChange={(id) => {
-              setSelectedItem(items.find(i => i.id === id));
+              const item = items.find(i => i.id === id);
+              setSelectedItem(item);
+              setSelectedQty(1);
             }}>
               <SelectTrigger>
                 <SelectValue placeholder="Sök och välj artikel..." />
@@ -230,7 +232,7 @@ export default function RequestWorkwear() {
               <SelectContent>
                 {items.map(item => (
                   <SelectItem key={item.id} value={item.id}>
-                    {item.name} {item.subcategory && `- ${item.subcategory}`}
+                    {item.name} {item.subcategory && `- ${item.subcategory}`} (Tillgängligt: {item.quantity || 0})
                   </SelectItem>
                 ))}
               </SelectContent>
