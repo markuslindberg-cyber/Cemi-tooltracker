@@ -61,6 +61,7 @@ const navigation = [
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
       { name: 'Kunder', path: '/Lokalvard/Kunder' },
       { name: 'Begäran om uttag av lokalvårdsartiklar', path: '/RequestWorkwear' },
+      { name: 'Nytt uttag', path: '/Lokalvard/NyttUttag' },
     ]
   },
   {

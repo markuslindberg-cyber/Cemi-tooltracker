@@ -12,6 +12,7 @@ import ArbetskläderUtrustning from './pages/ArbetskläderUtrustning';
 import Inventarier from './pages/Inventarier';
 import RequestWorkwear from './pages/RequestWorkwear';
 import LokalvardUttag from './pages/LokalvardUttag';
+import LokalvardNyttUttag from './pages/LokalvardNyttUttag';
 import LokalvardBegaranAttGodkanna from './pages/LokalvardBegaranAttGodkanna';
 import LokalvardKostnadPerKund from './pages/LokalvardKostnadPerKund';
 import LokalvardKunder from './pages/LokalvardKunder';
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
       <Route path="/Lokalvard/BegaranAttGodkanna" element={<LayoutWrapper currentPageName="LokalvardBegaranAttGodkanna"><LokalvardBegaranAttGodkanna /></LayoutWrapper>} />
       <Route path="/Lokalvard/KostnadPerKund" element={<LayoutWrapper currentPageName="LokalvardKostnadPerKund"><LokalvardKostnadPerKund /></LayoutWrapper>} />
       <Route path="/Lokalvard/Kunder" element={<LayoutWrapper currentPageName="LokalvardKunder"><LokalvardKunder /></LayoutWrapper>} />
+      <Route path="/Lokalvard/NyttUttag" element={<LayoutWrapper currentPageName="LokalvardNyttUttag"><LokalvardNyttUttag /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
