@@ -13,6 +13,8 @@ export default function LokalvardLager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingArtikel, setEditingArtikel] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [barcodeInput, setBarcodeInput] = useState('');
+  const [barcodeError, setBarcodeError] = useState('');
   const [formData, setFormData] = useState({
     benamning: '',
     artikelnummer: '',
@@ -67,6 +69,34 @@ export default function LokalvardLager() {
       current_quantity: '',
       utgaende: false,
     });
+    setBarcodeInput('');
+    setBarcodeError('');
+  };
+
+  const handleBarcodeInput = (barcode) => {
+    const existingArtikel = artiklar.find(a => a.streckkod === barcode);
+    
+    if (!existingArtikel) {
+      setBarcodeError(`Streckkod ${barcode} hittades inte. Fylla in manuellt.`);
+      setTimeout(() => setBarcodeError(''), 3000);
+      return;
+    }
+
+    // Autofylla med befintlig artikelinfo
+    setFormData({
+      benamning: existingArtikel.benamning,
+      artikelnummer: existingArtikel.artikelnummer,
+      streckkod: existingArtikel.streckkod,
+      pris: existingArtikel.pris.toString(),
+      inkopsdatum: existingArtikel.inkopsdatum,
+      antal_inkopta: existingArtikel.antal_inkopta.toString(),
+      lagertroskelvarde: existingArtikel.lagertroskelvarde.toString(),
+      current_quantity: '',
+      utgaende: existingArtikel.utgaende,
+    });
+    
+    setBarcodeInput('');
+    setBarcodeError('');
   };
 
   const handleSubmit = () => {
@@ -146,6 +176,27 @@ export default function LokalvardLager() {
           <h3 className="text-lg font-semibold">
             {editingArtikel ? 'Redigera artikel' : 'Ny artikel'}
           </h3>
+
+          {!editingArtikel && (
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600">Skanna streckkod för att fylla info automatiskt</label>
+              <Input
+                placeholder="Scanna streckkod här..."
+                value={barcodeInput}
+                onChange={(e) => setBarcodeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleBarcodeInput(barcodeInput);
+                  }
+                }}
+                autoFocus
+                className="text-lg"
+              />
+              {barcodeError && (
+                <p className="text-sm text-red-600">{barcodeError}</p>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
