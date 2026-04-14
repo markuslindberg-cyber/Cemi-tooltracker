@@ -23,7 +23,7 @@ const defaultMember = {
   name: '',
   email: '',
   phone: '',
-  role: 'technician',
+  role: 'verktygsförvaltare',
   default_location_id: '',
   default_location_name: '',
   is_active: true,
@@ -113,11 +113,11 @@ export default function TeamMemberFormModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="technician">Tekniker</SelectItem>
-                <SelectItem value="supervisor">Arbetsledare</SelectItem>
-                <SelectItem value="manager">Chef</SelectItem>
-                <SelectItem value="apprentice">Lärling</SelectItem>
-                <SelectItem value="contractor">Underleverantör</SelectItem>
+                <SelectItem value="ägare">Ägare</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="admin_lokalvård">Admin lokalvård</SelectItem>
+                <SelectItem value="verktygsförvaltare">Verktygsförvaltare</SelectItem>
+                <SelectItem value="lokalvårdare">Lokalvårdare</SelectItem>
               </SelectContent>
             </Select>
           </div>
