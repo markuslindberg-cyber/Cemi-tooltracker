@@ -58,7 +58,14 @@ export default function KostnadPerKund() {
         const costMap = {};
         uttag.forEach(u => {
           if (!costMap[u.kund_id]) {
-            costMap[u.kund_id] = { kund_id: u.kund_id, namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', total: 0 };
+            const kundenObj = kunder.find(k => k.id === u.kund_id);
+            costMap[u.kund_id] = { 
+              kund_id: u.kund_id, 
+              namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', 
+              kundtyp: kundenObj?.typ || '',
+              personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', 
+              total: 0 
+            };
           }
           costMap[u.kund_id].total += u.total_kostnad;
         });
@@ -76,7 +83,7 @@ export default function KostnadPerKund() {
 
   const data = allData
     .filter(d => selectedCustomerIds.length === 0 || selectedCustomerIds.includes(d.kund_id))
-    .filter(d => selectedCustomerTypes.length === 0 || selectedCustomerTypes.includes(customerTypeMap[d.kund_id]));
+    .filter(d => selectedCustomerTypes.length === 0 || selectedCustomerTypes.includes(d.kundtyp));
 
   const total = data.reduce((sum, item) => sum + item.total, 0);
 
