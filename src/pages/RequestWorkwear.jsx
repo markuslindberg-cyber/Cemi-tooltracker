@@ -47,15 +47,6 @@ export default function RequestWorkwear() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (handlers.length > 0 && !selectedHandler) {
-      const adminHandler = handlers.find(h => h.role === 'admin lokalvård');
-      if (adminHandler) {
-        setSelectedHandler(adminHandler);
-      }
-    }
-  }, [handlers, selectedHandler]);
-
   const { data: items = [] } = useQuery({
     queryKey: ['lokalvardLager'],
     queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
@@ -73,6 +64,15 @@ export default function RequestWorkwear() {
     queryKey: ['customers'],
     queryFn: () => base44.entities.LokalvardCustomer.list('-updated_date', 500).catch(() => []),
   });
+
+  useEffect(() => {
+    if (handlers.length > 0 && !selectedHandler) {
+      const adminHandler = handlers.find(h => h.role === 'admin lokalvård');
+      if (adminHandler) {
+        setSelectedHandler(adminHandler);
+      }
+    }
+  }, [handlers, selectedHandler]);
 
   const createRequestMutation = useMutation({
    mutationFn: (data) => base44.entities.WorkwearRequest.create(data),
