@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Plus, Edit2, Upload, FileDown, ArrowUp, ArrowDown, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import AddArtikelDialog from '@/components/dialogs/AddArtikelDialog';
 
 export default function LokalvardLager() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function LokalvardLager() {
   const [editForm, setEditForm] = useState({});
   const [uploading, setUploading] = useState(false);
   const [filterTyp, setFilterTyp] = useState('alla');
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { data: artiklar = [], isLoading: artiklarLoading } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
@@ -221,7 +223,7 @@ export default function LokalvardLager() {
             <Upload className="w-4 h-4 mr-1" /> Importera
           </Button>
           <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
-          <Button size="sm" onClick={() => window.location.href = '/Lokalvard/Lager?new=true'} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+          <Button size="sm" onClick={() => setAddDialogOpen(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
             <Plus className="w-4 h-4 mr-1" /> Ny artikel
           </Button>
         </div>
@@ -503,6 +505,9 @@ export default function LokalvardLager() {
           </table>
         </div>
       </div>
+
+      {/* Dialog för att lägga till ny artikel */}
+      <AddArtikelDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} artiklar={artiklar} />
     </div>
   );
 }
