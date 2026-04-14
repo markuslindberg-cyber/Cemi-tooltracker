@@ -129,15 +129,15 @@ export default function KostnadPerKund() {
               </PopoverTrigger>
               <PopoverContent className="w-60 p-2" align="end">
                 <div className="space-y-1 max-h-60 overflow-y-auto">
-                  {data.map(item => (
-                    <label key={item.kund_id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                  {allCustomers.map(k => (
+                    <label key={k.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
                       <Checkbox
-                        checked={selectedCustomerIds.includes(item.kund_id)}
+                        checked={selectedCustomerIds.includes(k.id)}
                         onCheckedChange={(checked) => {
-                          setSelectedCustomerIds(prev => checked ? [...prev, item.kund_id] : prev.filter(id => id !== item.kund_id));
+                          setSelectedCustomerIds(prev => checked ? [...prev, k.id] : prev.filter(id => id !== k.id));
                         }}
                       />
-                      <span className="text-sm">{item.namn}</span>
+                      <span className="text-sm">{k.namn}</span>
                     </label>
                   ))}
                 </div>
