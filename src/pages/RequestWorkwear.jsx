@@ -30,9 +30,8 @@ import {
 export default function RequestWorkwear() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    recipient_first_name: '',
-    recipient_last_name: '',
-    project: '',
+    customer_id: '',
+    customer_name: '',
     requested_items: [],
     notes: '',
   });
@@ -41,6 +40,8 @@ export default function RequestWorkwear() {
   const [user, setUser] = useState(null);
   const [selectedHandler, setSelectedHandler] = useState(null);
   const [handlerOpen, setHandlerOpen] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -59,20 +60,25 @@ export default function RequestWorkwear() {
     },
   });
 
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers'],
+    queryFn: () => base44.entities.LokalvardCustomer.list('-updated_date', 500).catch(() => []),
+  });
+
   const createRequestMutation = useMutation({
-    mutationFn: (data) => base44.entities.WorkwearRequest.create(data),
-    onSuccess: () => {
-      setFormData({
-        recipient_first_name: '',
-        recipient_last_name: '',
-        project: '',
-        requested_items: [],
-        notes: '',
-      });
-      setSelectedItem(null);
-      queryClient.invalidateQueries(['workwearRequests']);
-      alert('Begäran skickad!');
-    },
+   mutationFn: (data) => base44.entities.WorkwearRequest.create(data),
+   onSuccess: () => {
+     setFormData({
+       customer_id: '',
+       customer_name: '',
+       requested_items: [],
+       notes: '',
+     });
+     setSelectedItem(null);
+     setSelectedCustomer(null);
+     queryClient.invalidateQueries(['workwearRequests']);
+     alert('Begäran skickad!');
+   },
   });
 
   const addItem = () => {
@@ -108,13 +114,15 @@ export default function RequestWorkwear() {
   };
 
   const handleSubmit = () => {
-    if (!formData.recipient_first_name || !formData.recipient_last_name || formData.requested_items.length === 0) {
-      alert('Fyll i namn och lägg till minst en artikel');
+    if (!selectedCustomer || formData.requested_items.length === 0) {
+      alert('Välj en kund och lägg till minst en artikel');
       return;
     }
 
     const submitData = {
       ...formData,
+      customer_id: selectedCustomer.id,
+      customer_name: selectedCustomer.name,
       request_date: new Date().toISOString(),
       requested_by_email: user?.email || '',
       requested_by_name: user?.full_name || '',
@@ -132,33 +140,44 @@ export default function RequestWorkwear() {
       </div>
 
       <Card className="p-6 space-y-6">
-        {/* Recipient Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Förnamn *</Label>
-            <Input
-              value={formData.recipient_first_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, recipient_first_name: e.target.value }))}
-              placeholder="Förnamn"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Efternamn *</Label>
-            <Input
-              value={formData.recipient_last_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, recipient_last_name: e.target.value }))}
-              placeholder="Efternamn"
-            />
-          </div>
-        </div>
-
+        {/* Customer Selection */}
         <div className="space-y-2">
-          <Label>Projektnummer</Label>
-          <Input
-            value={formData.project}
-            onChange={(e) => setFormData(prev => ({ ...prev, project: e.target.value }))}
-            placeholder="t.ex. PROJ-2024-001"
-          />
+          <Label>Välj kund *</Label>
+          <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal"
+              >
+                {selectedCustomer ? selectedCustomer.name : "Sök och välj kund..."}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Sök kund..." />
+                <CommandEmpty>Ingen kund hittad.</CommandEmpty>
+                <CommandGroup>
+                  {customers.map((customer) => (
+                    <CommandItem
+                      key={customer.id}
+                      value={customer.id}
+                      onSelect={() => {
+                        setSelectedCustomer(customer);
+                        setFormData(prev => ({
+                          ...prev,
+                          customer_id: customer.id,
+                          customer_name: customer.name,
+                        }));
+                        setCustomerOpen(false);
+                      }}
+                    >
+                      {customer.name}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Handler Selection */}
