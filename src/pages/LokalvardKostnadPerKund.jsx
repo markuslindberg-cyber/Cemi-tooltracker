@@ -31,8 +31,10 @@ export default function KostnadPerKund() {
         const periods = [...new Set(uttag.map(u => u.månad).filter(Boolean))].sort((a, b) => b.localeCompare(a));
         setAvailablePeriods(periods);
 
+        const filtered = uttag.filter(u => selectedPeriods.length === 0 || selectedPeriods.includes(u.månad));
+
         const costMap = {};
-        uttag.forEach(u => {
+        filtered.forEach(u => {
           if (!costMap[u.kund_id]) {
             const kund = kunder.find(k => k.id === u.kund_id);
             costMap[u.kund_id] = { kund_id: u.kund_id, namn: kund?.namn || u.kund_namn || 'Okänd', total: 0 };
@@ -49,15 +51,11 @@ export default function KostnadPerKund() {
       }
     };
     loadData();
-  }, []);
+  }, [selectedPeriods]);
 
-  const data = allData.filter(d => {
-    const matchesCustomer = selectedCustomerIds.length === 0 || selectedCustomerIds.includes(d.kund_id);
-    return matchesCustomer;
-  }).map(item => {
-    const periodTotal = item.total;
-    return { ...item, total: periodTotal };
-  }).sort((a, b) => b.total - a.total);
+  const data = selectedCustomerIds.length === 0
+    ? allData
+    : allData.filter(d => selectedCustomerIds.includes(d.kund_id));
 
   const total = data.reduce((sum, item) => sum + item.total, 0);
 
