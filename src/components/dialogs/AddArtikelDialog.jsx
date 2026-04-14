@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -22,13 +22,14 @@ export default function AddArtikelDialog({ open, onOpenChange, artiklar }) {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [addedItems, setAddedItems] = useState([]);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.LokalvardsArtikel.create(data),
-    onSuccess: () => {
+    onSuccess: (newItem) => {
       queryClient.invalidateQueries(['lokalvardsArtiklar']);
+      setAddedItems(prev => [{ ...form, id: newItem.id }, ...prev]);
       resetForm();
-      onOpenChange(false);
     },
   });
 
@@ -51,6 +52,7 @@ export default function AddArtikelDialog({ open, onOpenChange, artiklar }) {
   useEffect(() => {
     if (open) {
       resetForm();
+      setAddedItems([]);
     }
   }, [open]);
 
@@ -106,22 +108,28 @@ export default function AddArtikelDialog({ open, onOpenChange, artiklar }) {
     }
   };
 
+  const handleRemoveAdded = (id) => {
+    setAddedItems(prev => prev.filter(item => item.id !== id));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Lägg till ny artikel</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {errors.submit && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{errors.submit}</AlertDescription>
-            </Alert>
-          )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Formulär */}
+          <div className="space-y-4">
+            {errors.submit && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{errors.submit}</AlertDescription>
+              </Alert>
+            )}
 
-          <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Streckkod */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -232,18 +240,51 @@ export default function AddArtikelDialog({ open, onOpenChange, artiklar }) {
               </label>
             </div>
           </div>
+
+          {/* Nyligen tillagda artiklar */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Nyligen tillagda ({addedItems.length})</h3>
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              {addedItems.length === 0 ? (
+                <p className="text-xs text-gray-500 py-4 text-center">Inga artiklar tillagda än</p>
+              ) : (
+                addedItems.map((item) => (
+                  <div key={item.id} className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <p className="text-sm font-medium text-gray-900 truncate">{item.benamning}</p>
+                      </div>
+                      <div className="text-xs text-gray-600 space-y-0.5">
+                        <p>Streckkod: {item.streckkod}</p>
+                        <p>{item.antal_inkopta} st × {parseFloat(item.pris).toLocaleString('sv-SE')} kr</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveAdded(item.id)}
+                      className="text-gray-400 hover:text-red-600 flex-shrink-0"
+                      title="Ta bort från listan"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="mt-6">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            Stäng
           </Button>
           <Button
             onClick={handleSave}
             disabled={loading || createMutation.isPending}
             className="bg-[#8B1E1E] hover:bg-[#6B1515]"
           >
-            {loading ? 'Sparar...' : 'Lägg till artikel'}
+            {loading ? 'Sparar...' : 'Lägg till nästa artikel'}
           </Button>
         </DialogFooter>
       </DialogContent>
