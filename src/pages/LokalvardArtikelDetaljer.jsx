@@ -182,8 +182,13 @@ export default function LokalvardArtikelDetaljer() {
               <p className="text-lg font-semibold">{artikel.artikelnummer || '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Pris</p>
+              <p className="text-sm text-gray-600">Nuvarande pris</p>
               <p className="text-lg font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</p>
+              {inköp.length > 1 && inköp[inköp.length - 1]?.pris && inköp[inköp.length - 1].pris !== artikel.pris && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Tidigare pris: {inköp[inköp.length - 1].pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
+                </p>
+              )}
             </div>
             <div>
               <p className="text-sm text-gray-600">Inköpsdatum</p>

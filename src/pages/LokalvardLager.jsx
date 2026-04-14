@@ -439,7 +439,14 @@ export default function LokalvardLager() {
                          </td>
                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.inkopsdatum}</td>
-                         <td className="px-4 py-3 text-right">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                         <td className="px-4 py-3 text-right">
+                           <div className="flex flex-col items-end">
+                             <span className="font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+                             {gruppe.variants.length > 1 && gruppe.variants[1]?.pris && artikel.pris !== gruppe.variants[1].pris && (
+                               <span className="text-xs text-gray-500">förr: {gruppe.variants[1].pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+                             )}
+                           </div>
+                         </td>
                          <td className="px-4 py-3 text-right">{gruppe.variants.reduce((sum, a) => sum + a.antal_inkopta, 0)}</td>
                          <td className={`px-4 py-3 text-right ${saldoColor}`}>{totalSaldo}</td>
                          <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
@@ -475,7 +482,11 @@ export default function LokalvardLager() {
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-600">{variant.streckkod}</td>
                         <td className="px-4 py-2 text-sm text-gray-600">{variant.inkopsdatum}</td>
-                        <td className="px-4 py-2 text-right text-sm">{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                        <td className="px-4 py-2 text-right text-sm">
+                          <div className="flex flex-col items-end">
+                            <span>{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+                          </div>
+                        </td>
                         <td className="px-4 py-2 text-right text-sm">{variant.antal_inkopta}</td>
                         <td className={`px-4 py-2 text-right text-sm ${variantColor}`}>{variantSaldo}</td>
                         <td className="px-4 py-2 text-right text-sm text-gray-600">{variant.lagertroskelvarde}</td>
