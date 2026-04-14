@@ -22,7 +22,33 @@ export default function LokalvardUttag() {
 
   const { data: uttag = [], isLoading: uttagLoading } = useQuery({
     queryKey: ['uttag'],
-    queryFn: () => base44.entities.Uttag.list('-datum', 10000).catch(() => []),
+    queryFn: async () => {
+      const [uttagData, checkoutData] = await Promise.all([
+        base44.entities.Uttag.list('-datum', 10000).catch(() => []),
+        base44.entities.LokalvardCheckout.list('-checked_out_date', 10000).catch(() => [])
+      ]);
+      
+      const checkoutAsUttag = checkoutData.map(co => ({
+        id: co.id,
+        datum: co.checked_out_date,
+        personal_id: '',
+        personal_namn: co.checked_out_by_name,
+        kund_id: co.customer_id,
+        kund_namn: co.customer_name,
+        ordernummer: co.request_id,
+        artiklar: co.checked_out_items.map(item => ({
+          artikel_id: item.item_id,
+          benamning: item.name,
+          antal: item.scanned_quantity || item.quantity,
+          pris_per_enhet: 0,
+          total_pris: 0
+        })),
+        total_kostnad: 0,
+        manad: co.checked_out_date.substring(0, 7)
+      }));
+      
+      return [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+    },
   });
 
   const { data: artiklar = [] } = useQuery({
