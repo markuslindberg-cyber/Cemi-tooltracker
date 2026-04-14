@@ -550,15 +550,15 @@ function SummaryStep({ sessionConfig, checkedItems, allItems, onNew }) {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="p-4 bg-gray-50 rounded-xl">
               <p className="text-2xl font-bold text-gray-900">{allItems.length}</p>
-              <p className="text-sm text-gray-500">Totalt</p>
+              <p className="text-sm text-gray-500">{sessionConfig.toolType === 'tools' ? 'Maskiner' : sessionConfig.toolType === 'handtools' ? 'Handredskap' : sessionConfig.toolType === 'arbetskläder' ? 'Arbetskläder' : sessionConfig.toolType === 'lokalvards' ? 'Lokalvård' : 'Totalt'}</p>
             </div>
             <div className="p-4 bg-green-50 rounded-xl">
               <p className="text-2xl font-bold text-green-700">{checkedItems.size}</p>
-              <p className="text-sm text-gray-500">Kontrollerade</p>
+              <p className="text-sm text-gray-500">Skannade</p>
             </div>
             <div className="p-4 bg-amber-50 rounded-xl">
               <p className="text-2xl font-bold text-amber-700">{allItems.length - checkedItems.size}</p>
-              <p className="text-sm text-gray-500">Ej kontrollerade</p>
+              <p className="text-sm text-gray-500">Ej skannande</p>
             </div>
           </div>
         </div>
