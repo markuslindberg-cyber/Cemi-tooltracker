@@ -10,6 +10,7 @@ export default function LokalvardArtikelDetaljer() {
   const { artikelnummer } = useParams();
   const navigate = useNavigate();
   const [artikel, setArtikel] = useState(null);
+  const [artikelData, setArtikelData] = useState([]);
   const [transaktioner, setTransaktioner] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -31,6 +32,8 @@ export default function LokalvardArtikelDetaljer() {
         base44.entities.Uttag.list(null, 10000),
         base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([])
       ]);
+      
+      window.artiklarData = artiklarData;
 
       const fundArticle = artiklarData.find(a => a.artikelnummer === artikelnummer);
       if (!fundArticle) {
@@ -56,6 +59,7 @@ export default function LokalvardArtikelDetaljer() {
       
       const relateradeInköp = inköpData?.filter(i => i.artikel_id === fundArticle.id) || [];
       setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
+      setArtikelData(artiklarData);
     } catch (error) {
       toast.error('Kunde inte ladda data');
       navigate('/Lokalvard/Lager');
@@ -465,7 +469,37 @@ export default function LokalvardArtikelDetaljer() {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">Alla uttag av denna artikel</h2>
+        <h2 className="text-xl font-semibold mb-4">Tidigare varianter av denna artikel</h2>
+        {artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).length === 0 ? (
+          <p className="text-gray-600">Inga tidigare varianter</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Inköpsdatum</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">Pris per enhet</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold">Antal inköpt</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Typ/Underkategori</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {artikelData.filter(a => a.artikelnummer === artikelnummer && a.id !== artikel.id).sort((a, b) => new Date(b.inkopsdatum) - new Date(a.inkopsdatum)).map(variant => (
+                  <tr key={variant.id} className="bg-gray-50">
+                    <td className="px-4 py-3 text-sm">{variant.inkopsdatum}</td>
+                    <td className="px-4 py-3 text-right text-sm">{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                    <td className="px-4 py-3 text-right text-sm">{variant.antal_inkopta}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{variant.subcategory || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+         <h2 className="text-xl font-semibold mb-4">Alla uttag av denna artikel</h2>
         {transaktioner.length === 0 ? (
           <p className="text-gray-600">Ingen uttag registrerad än</p>
         ) : (
