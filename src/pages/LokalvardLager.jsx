@@ -469,46 +469,6 @@ export default function LokalvardLager() {
                       </>
                       )}
                       </tr>
-                      {gruppe.variants.length > 1 && !editingId && gruppe.variants.slice(1).map(variant => {
-                      const variantSaldo = calculateSaldo(variant);
-                      let variantColor = 'text-gray-700';
-                      if (variantSaldo === 0) variantColor = 'text-red-600 font-semibold';
-                      else if (variantSaldo < (variant.lagertroskelvarde || 10)) variantColor = 'text-yellow-600 font-semibold';
-
-                      return (
-                      <tr key={variant.id} className="bg-gray-50 border-t-2 border-gray-200">
-                        <td className="px-4 py-2 text-sm text-gray-600">
-                          <span className="ml-4">→ {variant.subcategory || 'Variant'}</span>
-                        </td>
-                        <td className="px-4 py-2 text-sm text-gray-600">{variant.streckkod}</td>
-                        <td className="px-4 py-2 text-sm text-gray-600">{variant.inkopsdatum}</td>
-                        <td className="px-4 py-2 text-right text-sm">
-                          <div className="flex flex-col items-end">
-                            <span>{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2 text-right text-sm">{variant.antal_inkopta}</td>
-                        <td className={`px-4 py-2 text-right text-sm ${variantColor}`}>{variantSaldo}</td>
-                        <td className="px-4 py-2 text-right text-sm text-gray-600">{variant.lagertroskelvarde}</td>
-                        <td className="px-4 py-2">
-                          {variant.utgaende ? (
-                            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Utgående</span>
-                          ) : (
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Aktiv</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleEditClick(variant); }}
-                            className="text-blue-600 hover:bg-blue-50 p-1 rounded"
-                            title="Redigera"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                      );
-                      })}
                       </React.Fragment>
                       );
                       })}
