@@ -501,13 +501,7 @@ export default function LokalvardUttag() {
                             <div className="bg-white rounded p-3 flex items-center justify-between text-sm border border-gray-200">
                               <div className="flex-1">
                                 <div className="font-semibold text-gray-900">{tid} • {u.personal_namn}</div>
-                                <div className="text-xs text-gray-600 mt-0.5">
-                                 {u.ordernummer && <span>{u.ordernummer} • </span>}
-                                 {u.artiklar.map((a, i) => {
-                                   const artikelData = artikelMap[a.artikel_id];
-                                   return artikelData?.benamning || a.benamning || a.artikel_id || 'Okänd artikel';
-                                 }).join(', ')}
-                                </div>
+                                {u.ordernummer && <div className="text-xs text-gray-600 mt-0.5">{u.ordernummer}</div>}
                               </div>
                               <div className="text-right ml-4">
                                 <div className="font-semibold text-gray-900">{totalArtikel.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
