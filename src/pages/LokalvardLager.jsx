@@ -33,9 +33,10 @@ export default function LokalvardLager() {
 
   const calculateSaldo = (aggregatedArtikel) => {
     const totalUttaget = uttag.reduce((sum, u) => {
-      const matchingWithdrawals = u.artiklar.filter(itemInWithdrawal =>
-        aggregatedArtikel.all_artikel_ids.includes(itemInWithdrawal.artikel_id)
-      );
+      const matchingWithdrawals = u.artiklar.filter(itemInWithdrawal => {
+        const matchingArticle = artiklar.find(a => a.id === itemInWithdrawal.artikel_id);
+        return matchingArticle && matchingArticle.streckkod === aggregatedArtikel.streckkod;
+      });
       return sum + matchingWithdrawals.reduce((s, a) => s + (a.antal || 0), 0);
     }, 0);
     return aggregatedArtikel.total_antal_inkopta - totalUttaget;
