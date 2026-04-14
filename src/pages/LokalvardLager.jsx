@@ -168,6 +168,7 @@ export default function LokalvardLager() {
       current_quantity: artikel.current_quantity,
       lagertroskelvarde: artikel.lagertroskelvarde,
       utgaende: !!artikel.utgaende,
+      inkopsdatum: artikel.inkopsdatum,
     });
   };
 
@@ -180,6 +181,7 @@ export default function LokalvardLager() {
         current_quantity: parseInt(editForm.current_quantity),
         lagertroskelvarde: parseInt(editForm.lagertroskelvarde),
         utgaende: editForm.utgaende,
+        inkopsdatum: editForm.inkopsdatum,
       }
     });
   };
@@ -299,6 +301,12 @@ export default function LokalvardLager() {
                     {sortBy === 'streckkod' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                   </div>
                 </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('inkopsdatum')}>
+                  <div className="flex items-center gap-1">
+                    Inköpsdatum
+                    {sortBy === 'inkopsdatum' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('pris')}>
                   <div className="flex items-center justify-end gap-1">
                     Pris
@@ -355,6 +363,14 @@ export default function LokalvardLager() {
                           />
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="date"
+                            value={editForm.inkopsdatum}
+                            onChange={(e) => setEditForm({ ...editForm, inkopsdatum: e.target.value })}
+                            className="px-2 py-1 border border-gray-300 rounded w-full"
+                          />
+                        </td>
                         <td className="px-4 py-3">
                           <input
                             type="number"
@@ -420,6 +436,7 @@ export default function LokalvardLager() {
                            </button>
                          </td>
                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
+                         <td className="px-4 py-3 text-sm text-gray-600">{artikel.inkopsdatum}</td>
                          <td className="px-4 py-3 text-right">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
                          <td className="px-4 py-3 text-right">{gruppe.variants.reduce((sum, a) => sum + a.antal_inkopta, 0)}</td>
                          <td className={`px-4 py-3 text-right ${saldoColor}`}>{totalSaldo}</td>
@@ -455,6 +472,7 @@ export default function LokalvardLager() {
                           <span className="ml-4">→ {variant.subcategory || 'Variant'}</span>
                         </td>
                         <td className="px-4 py-2 text-sm text-gray-600">{variant.streckkod}</td>
+                        <td className="px-4 py-2 text-sm text-gray-600">{variant.inkopsdatum}</td>
                         <td className="px-4 py-2 text-right text-sm">{variant.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
                         <td className="px-4 py-2 text-right text-sm">{variant.antal_inkopta}</td>
                         <td className={`px-4 py-2 text-right text-sm ${variantColor}`}>{variantSaldo}</td>
