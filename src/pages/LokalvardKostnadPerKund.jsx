@@ -36,14 +36,13 @@ export default function LokalvardKostnadPerKund() {
     const costMap = {};
     filtered.forEach(u => {
       if (!costMap[u.kund_id]) {
-        const kund = kunder.find(k => k.id === u.kund_id);
-        costMap[u.kund_id] = { kund_id: u.kund_id, namn: kund?.namn || 'Okänd', total: 0 };
+        costMap[u.kund_id] = { kund_id: u.kund_id, namn: u.kund_namn || 'Okänd', total: 0 };
       }
       costMap[u.kund_id].total += u.total_kostnad;
     });
 
     return Object.values(costMap).sort((a, b) => b.total - a.total);
-  }, [uttag, kunder, selectedMonths]);
+  }, [uttag, selectedMonths]);
 
   const data = selectedCustomerIds.length === 0
     ? costData
