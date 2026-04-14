@@ -480,18 +480,86 @@ export default function LokalvardUttag() {
                         const tid = u.datum.split('T')[1]?.slice(0, 5) || '';
                         const totalArtikel = u.artiklar.reduce((sum, a) => sum + a.total_pris, 0);
                         return (
-                          <div key={u.id} className="bg-white rounded p-3 flex items-center justify-between text-sm border border-gray-200">
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-900">{tid} • {u.personal_namn}</div>
-                              <div className="text-xs text-gray-600 mt-0.5">
-                                {u.artiklar.map((a, i) => `${a.benamning} (${a.antal}st)`).join(', ')}
+                          <Fragment key={u.id}>
+                            <div className="bg-white rounded p-3 flex items-center justify-between text-sm border border-gray-200">
+                              <div className="flex-1">
+                                <div className="font-semibold text-gray-900">{tid} • {u.personal_namn}</div>
+                                <div className="text-xs text-gray-600 mt-0.5">
+                                  {u.artiklar.map((a, i) => `${a.benamning} (${a.antal}st)`).join(', ')}
+                                </div>
                               </div>
+                              <div className="text-right ml-4">
+                                <div className="font-semibold text-gray-900">{totalArtikel.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                                {u.ordernummer && <div className="text-xs text-gray-500">{u.ordernummer}</div>}
+                              </div>
+                              <button
+                                onClick={() => setExpandedGroups(prev => ({ ...prev, [`detail-${u.id}`]: !prev[`detail-${u.id}`] }))}
+                                className="ml-3 p-1 hover:bg-gray-200 rounded"
+                              >
+                                <ChevronDown className={`w-4 h-4 transition-transform ${expandedGroups[`detail-${u.id}`] ? 'rotate-180' : ''}`} />
+                              </button>
                             </div>
-                            <div className="text-right ml-4">
-                              <div className="font-semibold text-gray-900">{totalArtikel.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
-                              {u.ordernummer && <div className="text-xs text-gray-500">{u.ordernummer}</div>}
-                            </div>
-                          </div>
+                            {expandedGroups[`detail-${u.id}`] && (
+                              <div className="bg-gray-100 px-4 py-3 space-y-2 border-t border-gray-200 rounded-b">
+                                {u.artiklar.map((artikel, articleIndex) => {
+                                  const isEditing = editingArticleId === `${u.id}-${articleIndex}`;
+                                  return (
+                                    <div key={articleIndex} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
+                                      <div className="flex-1">
+                                        <div className="font-medium text-gray-900">{artikel.benamning}</div>
+                                      </div>
+                                      {isEditing ? (
+                                        <div className="flex items-center gap-2">
+                                          <input
+                                            type="number"
+                                            value={editArticleForm.antal}
+                                            onChange={(e) => setEditArticleForm({ ...editArticleForm, antal: e.target.value })}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                            placeholder="Antal"
+                                          />
+                                          <span className="text-gray-400">st @</span>
+                                          <input
+                                            type="number"
+                                            step="0.01"
+                                            value={editArticleForm.pris_per_enhet}
+                                            onChange={(e) => setEditArticleForm({ ...editArticleForm, pris_per_enhet: e.target.value })}
+                                            className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                            placeholder="Pris"
+                                          />
+                                          <span className="text-gray-400">kr</span>
+                                          <button
+                                            onClick={() => handleSaveArticle(u.id, articleIndex)}
+                                            className="px-2 py-1 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700"
+                                          >
+                                            ✓
+                                          </button>
+                                          <button
+                                            onClick={handleCancelArticleEdit}
+                                            className="px-2 py-1 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center gap-3">
+                                          <div className="text-right">
+                                            <div className="text-sm font-medium text-gray-900">{artikel.antal} st @ {artikel.pris_per_enhet.toFixed(2)} kr</div>
+                                            <div className="text-xs text-gray-500">{artikel.total_pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                                          </div>
+                                          <button
+                                            onClick={() => handleEditArticle(u.id, artikel, articleIndex)}
+                                            className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700"
+                                          >
+                                            Redigera
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </Fragment>
                         );
                       })}
                     </div>
