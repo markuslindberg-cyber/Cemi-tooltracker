@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Loader2, Barcode, Plus, X, Check, AlertCircle, Upload, FileSpreadsheet } from 'lucide-react';
+import { Loader2, Barcode, X, Check, AlertCircle } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Select,
@@ -17,12 +17,11 @@ import {
 export default function LokalvardNyttUttag() {
   const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [scannedItems, setScannedItems] = useState([]);
-  const [barcodeInput, setBarcodeInput] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [importing, setImporting] = useState(false);
+   const [selectedRequest, setSelectedRequest] = useState(null);
+   const [scannedItems, setScannedItems] = useState([]);
+   const [barcodeInput, setBarcodeInput] = useState('');
+   const [error, setError] = useState('');
+   const [success, setSuccess] = useState('');
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -131,111 +130,13 @@ export default function LokalvardNyttUttag() {
     createCheckoutMutation.mutate(submitData);
   };
 
-  const handleDownloadTemplate = () => {
-    const infoRows = [
-      ['=== IMPORTMALL FÖR UTTAG ===', '', '', '', '', ''],
-      ['Kolumn 1: kund_namn', 'Kolumn 2: personal_namn', 'Kolumn 3: artikel_benamning', 'Kolumn 4: artikel_antal', 'Kolumn 5: artikel_pris_per_enhet', 'Kolumn 6: ordernummer'],
-      ['Kundens namn (obligatorisk)', 'Personalens namn (obligatorisk)', 'Artikelns namn (obligatorisk)', 'Antal (obligatorisk)', 'Pris per enhet (obligatorisk)', 'Ordernummer (valfritt)'],
-      ['--- FYLL I DINA RADER NEDAN FRÅN RAD 6 ---', '', '', '', '', ''],
-    ];
-    const headers = ['kund_namn', 'personal_namn', 'artikel_benamning', 'artikel_antal', 'artikel_pris_per_enhet', 'ordernummer'];
-    const exampleRow = ['Företag AB', 'Anna Andersson', 'Rengöringsduk', '5', '49.99', 'ORD-001'];
-    const emptyRows = Array(19).fill(Array(6).fill(''));
-    const csvContent = [
-      ...infoRows.map(r => r.map(c => `"${c}"`).join(',')),
-      headers.join(','),
-      exampleRow.map(c => `"${c}"`).join(','),
-      ...emptyRows.map(r => r.join(','))
-    ].join('\n');
-    const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.setAttribute('href', URL.createObjectURL(blob));
-    link.setAttribute('download', 'lokalvard_uttag_mall.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: 'object',
-          properties: {
-            kund_namn: { type: 'string' },
-            personal_namn: { type: 'string' },
-            artikel_benamning: { type: 'string' },
-            artikel_antal: { type: 'number' },
-            artikel_pris_per_enhet: { type: 'number' },
-            ordernummer: { type: 'string' },
-          }
-        }
-      });
-      if (result.status === 'success' && result.output) {
-        const rows = Array.isArray(result.output) ? result.output : [result.output];
-        const valid = rows.filter(r => r.kund_namn && r.personal_namn && r.artikel_benamning && r.artikel_antal && r.artikel_pris_per_enhet);
-        if (valid.length > 0) {
-          const today = new Date().toISOString().split('T')[0];
-          const manad = today.substring(0, 7);
-          await base44.entities.Uttag.bulkCreate(valid.map(r => ({
-            datum: new Date().toISOString(),
-            personal_id: '',
-            personal_namn: r.personal_namn,
-            kund_id: '',
-            kund_namn: r.kund_namn,
-            ordernummer: r.ordernummer || null,
-            artiklar: [{
-              artikel_id: '',
-              benamning: r.artikel_benamning,
-              antal: r.artikel_antal,
-              pris_per_enhet: r.artikel_pris_per_enhet,
-              total_pris: r.artikel_antal * r.artikel_pris_per_enhet,
-            }],
-            total_kostnad: r.artikel_antal * r.artikel_pris_per_enhet,
-            manad: manad,
-          })));
-          queryClient.invalidateQueries(['uttag']);
-          alert(`${valid.length} uttag importerades!`);
-        } else {
-          alert('Inga giltiga rader hittades i filen.');
-        }
-      } else {
-        alert('Kunde inte läsa filen: ' + (result.details || 'Okänt fel'));
-      }
-    } catch (err) {
-      alert('Importfel: ' + (err.message || 'Okänt fel'));
-    } finally {
-      setImporting(false);
-      e.target.value = '';
-    }
-  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Skanna uttag – Lokalvård</h1>
-          <p className="text-gray-600 mt-2">Välja godkänd begäran och skanna artiklar via streckkod</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleDownloadTemplate} className="gap-2">
-            <FileSpreadsheet className="w-4 h-4" />
-            Ladda ned mall
-          </Button>
-          <label>
-            <Button variant="outline" disabled={importing} asChild>
-              <span className="gap-2 cursor-pointer">
-                {importing ? <><Loader2 className="w-4 h-4 animate-spin" />Importerar...</> : <><Upload className="w-4 h-4" />Importera CSV</>}
-              </span>
-            </Button>
-            <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImport} className="hidden" disabled={importing} />
-          </label>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Skanna uttag – Lokalvård</h1>
+        <p className="text-gray-600 mt-2">Välja godkänd begäran och skanna artiklar via streckkod</p>
       </div>
 
       {/* Request Selection */}
