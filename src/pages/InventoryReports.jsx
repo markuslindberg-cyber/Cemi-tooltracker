@@ -37,13 +37,22 @@ function exportReport(report) {
 }
 
 function ReportCard({ report }) {
-  const [expanded, setExpanded] = useState(false);
-  const unchecked = report.unchecked_list || [];
-  const checked = report.checked_list || [];
-  const pct = report.total_items > 0 ? Math.round((report.checked_items / report.total_items) * 100) : 0;
-  const typeLabel = report.tool_type === 'tools' ? 'Maskiner' : report.tool_type === 'handtools' ? 'Handredskap' : 'Maskiner & Handredskap';
+   const [expanded, setExpanded] = useState(false);
+   const unchecked = report.unchecked_list || [];
+   const checked = report.checked_list || [];
+   const pct = report.total_items > 0 ? Math.round((report.checked_items / report.total_items) * 100) : 0;
+   const typeLabel = report.tool_type === 'tools' ? 'Maskiner' : report.tool_type === 'handtools' ? 'Handredskap' : report.tool_type === 'arbetskläder' ? 'Arbetskläder' : report.tool_type === 'lokalvards' ? 'Lokalvård' : 'Maskiner & Handredskap';
 
-  return (
+   // Group unchecked items by category
+   const uncheckedByCategory = {};
+   unchecked.forEach(item => {
+     const cat = item.category || 'Övrigt';
+     if (!uncheckedByCategory[cat]) uncheckedByCategory[cat] = [];
+     uncheckedByCategory[cat].push(item);
+   });
+   const sortedCategories = Object.keys(uncheckedByCategory).sort();
+
+   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
@@ -95,13 +104,22 @@ function ReportCard({ report }) {
               <h4 className="text-sm font-semibold text-amber-700 flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-4 h-4" /> Ej kontrollerade ({unchecked.length})
               </h4>
-              <div className="space-y-2">
-                {unchecked.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm py-1.5 px-3 bg-amber-50 rounded-lg">
-                    <span className="font-medium text-gray-900">{item.name}</span>
-                    <div className="flex items-center gap-2">
-                      {item.location_name && <span className="text-xs text-gray-500">{item.location_name}</span>}
-                      <Badge variant="outline" className="text-xs">{item.type === 'handtool' ? 'Handredskap' : 'Maskin'}</Badge>
+              <div className="space-y-4">
+                {sortedCategories.map(category => (
+                  <div key={category}>
+                    <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                      {category} ({uncheckedByCategory[category].length})
+                    </div>
+                    <div className="space-y-2">
+                      {uncheckedByCategory[category].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between text-sm py-1.5 px-3 bg-amber-50 rounded-lg">
+                          <span className="font-medium text-gray-900">{item.name}</span>
+                          <div className="flex items-center gap-2">
+                            {item.location_name && <span className="text-xs text-gray-500">{item.location_name}</span>}
+                            <Badge variant="outline" className="text-xs">{item.type === 'handtool' ? 'Handredskap' : item.type === 'arbetskläder' ? 'Arbetskläder' : item.type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}</Badge>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
