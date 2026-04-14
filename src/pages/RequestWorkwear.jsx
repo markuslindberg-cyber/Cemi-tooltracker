@@ -60,10 +60,12 @@ export default function RequestWorkwear() {
     },
   });
 
-  const { data: customers = [] } = useQuery({
+  const { data: allCustomers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Kund.list('-updated_date', 500).catch(() => []),
   });
+
+  const customers = allCustomers.filter(k => k.typ !== 'Internt');
 
   useEffect(() => {
     if (handlers.length > 0 && !selectedHandler) {
