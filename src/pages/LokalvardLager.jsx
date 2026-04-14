@@ -31,12 +31,14 @@ export default function LokalvardLager() {
     queryFn: () => base44.entities.Uttag.list(null, 10000).catch(() => []),
   });
 
-  const calculateSaldo = (artikel) => {
+  const calculateSaldo = (aggregatedArtikel) => {
     const totalUttaget = uttag.reduce((sum, u) => {
-      const artiklarMatch = u.artiklar.filter(a => a.benamning === artikel.benamning);
-      return sum + artiklarMatch.reduce((s, a) => s + (a.antal || 0), 0);
+      const matchingWithdrawals = u.artiklar.filter(itemInWithdrawal =>
+        aggregatedArtikel.all_artikel_ids.includes(itemInWithdrawal.artikel_id)
+      );
+      return sum + matchingWithdrawals.reduce((s, a) => s + (a.antal || 0), 0);
     }, 0);
-    return artikel.antal_inkopta - totalUttaget;
+    return aggregatedArtikel.total_antal_inkopta - totalUttaget;
   };
 
   const updateMutation = useMutation({
@@ -63,24 +65,62 @@ export default function LokalvardLager() {
     }
   };
 
-  const filtered = artiklar.filter(a => {
-    const matchSearch = a.benamning.toLowerCase().includes(search.toLowerCase()) || a.streckkod?.includes(search);
-    if (!matchSearch) return false;
-    if (filterTyp === 'lowStock') return a.current_quantity < (a.lagertroskelvarde || 10);
-    if (filterTyp === 'empty') return a.current_quantity === 0;
-    if (filterTyp === 'utgaende') return !!a.utgaende;
-    return true;
-  }).sort((a, b) => new Date(b.updated_date) - new Date(a.updated_date));
+  const groupedByStreckkod = {};
+  artiklar.forEach(artikel => {
+    const streckkod = artikel.streckkod;
+    if (!streckkod) return;
 
-  const grouped = {};
-  filtered.forEach(a => {
-    const key = a.streckkod;
-    if (!grouped[key]) {
-      grouped[key] = a;
+    if (!groupedByStreckkod[streckkod]) {
+      groupedByStreckkod[streckkod] = {
+        id: artikel.id,
+        benamning: artikel.benamning,
+        artikelnummer: artikel.artikelnummer,
+        streckkod: artikel.streckkod,
+        pris: artikel.pris,
+        inkopsdatum: artikel.inkopsdatum,
+        lagertroskelvarde: artikel.lagertroskelvarde,
+        utgaende: artikel.utgaende,
+        subcategory: artikel.subcategory,
+        total_antal_inkopta: 0,
+        total_current_quantity: 0,
+        all_artikel_ids: [],
+      };
     }
+
+    const currentGroup = groupedByStreckkod[streckkod];
+
+    if (new Date(artikel.inkopsdatum) > new Date(currentGroup.inkopsdatum)) {
+      Object.assign(currentGroup, {
+        id: artikel.id,
+        benamning: artikel.benamning,
+        artikelnummer: artikel.artikelnummer,
+        pris: artikel.pris,
+        inkopsdatum: artikel.inkopsdatum,
+        lagertroskelvarde: artikel.lagertroskelvarde,
+        utgaende: artikel.utgaende,
+        subcategory: artikel.subcategory,
+      });
+    }
+
+    currentGroup.total_antal_inkopta += artikel.antal_inkopta;
+    currentGroup.total_current_quantity += artikel.current_quantity;
+    currentGroup.all_artikel_ids.push(artikel.id);
   });
 
-  const sorted = Object.values(grouped).sort((a, b) => {
+  let processedArtiklar = Object.values(groupedByStreckkod);
+
+  const filteredProcessedArtiklar = processedArtiklar.filter(a => {
+    const matchSearch = a.benamning.toLowerCase().includes(search.toLowerCase()) || a.streckkod?.includes(search);
+    if (!matchSearch) return false;
+    
+    const saldoForGroup = calculateSaldo(a);
+    if (filterTyp === 'lowStock') return saldoForGroup > 0 && saldoForGroup < (a.lagertroskelvarde || 10);
+    if (filterTyp === 'empty') return saldoForGroup === 0;
+    if (filterTyp === 'utgaende') return !!a.utgaende;
+    return true;
+  });
+
+  const sorted = filteredProcessedArtiklar.sort((a, b) => {
     let aVal = a[sortBy];
     let bVal = b[sortBy];
     
@@ -196,7 +236,7 @@ export default function LokalvardLager() {
     const saldo = calculateSaldo(a);
     return saldo > 0 && saldo < (a.lagertroskelvarde || 10);
   }).length;
-  const totaltVärde = artiklar.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
+  const totaltVärde = processedArtiklar.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
   const filteredTotal = sorted.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
 
   if (artiklarLoading || uttagLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
@@ -379,7 +419,7 @@ export default function LokalvardLager() {
                              className="px-2 py-1 border border-gray-300 rounded w-full text-right"
                            />
                          </td>
-                         <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
+                         <td className="px-4 py-3 text-right">{artikel.total_antal_inkopta}</td>
                          <td className="px-4 py-3">
                            <input
                              type="number"
@@ -439,7 +479,7 @@ export default function LokalvardLager() {
                           <td className="px-4 py-3 text-right">
                             <span className="font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
                           </td>
-                          <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
+                          <td className="px-4 py-3 text-right">{artikel.total_antal_inkopta}</td>
                           <td className={`px-4 py-3 text-right ${saldoColor}`}>{saldo}</td>
                           <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
                           <td className="px-4 py-3">
