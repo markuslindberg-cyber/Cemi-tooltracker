@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Edit2, Loader2, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const kundTyper = ['Cemi', 'PHM', 'Övrig', 'BRF', 'Kommersiella', 'Koncernbolag', 'Internt'];
 
 export default function LokalvardKunder() {
-  const queryClient = useQueryClient();
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [form, setForm] = useState({ namn: '', typ: 'Cemi', projektnummer: '' });
-  const [submitting, setSubmitting] = useState(false);
+   const queryClient = useQueryClient();
+   const [editingId, setEditingId] = useState(null);
+   const [editForm, setEditForm] = useState({});
+   const [form, setForm] = useState({ namn: '', typ: 'Cemi', projektnummer: '' });
+   const [submitting, setSubmitting] = useState(false);
+   const [sortBy, setSortBy] = useState('namn');
+   const [sortOrder, setSortOrder] = useState('asc');
 
   const { data: kunder = [], isLoading } = useQuery({
     queryKey: ['kunder'],
@@ -67,10 +69,31 @@ export default function LokalvardKunder() {
   };
 
   const handleDelete = (id) => {
-    if (confirm('Är du säker på att du vill ta bort denna kund?')) {
-      deleteMutation.mutate(id);
-    }
-  };
+     if (confirm('Är du säker på att du vill ta bort denna kund?')) {
+       deleteMutation.mutate(id);
+     }
+   };
+
+   const handleSort = (column) => {
+     if (sortBy === column) {
+       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+     } else {
+       setSortBy(column);
+       setSortOrder('asc');
+     }
+   };
+
+   const sorted = [...kunder].sort((a, b) => {
+     let aVal = a[sortBy];
+     let bVal = b[sortBy];
+     if (typeof aVal === 'string') {
+       aVal = aVal.toLowerCase();
+       bVal = bVal.toLowerCase();
+     }
+     if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+     if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+     return 0;
+   });
 
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
@@ -121,19 +144,34 @@ export default function LokalvardKunder() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="px-4 py-2 text-left font-semibold">Namn</th>
-                <th className="px-4 py-2 text-left font-semibold">Typ</th>
-                <th className="px-4 py-2 text-left font-semibold">Projektnummer</th>
+                <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('namn')}>
+                  <div className="flex items-center gap-1">
+                    Namn
+                    {sortBy === 'namn' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
+                  </div>
+                </th>
+                <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('typ')}>
+                  <div className="flex items-center gap-1">
+                    Typ
+                    {sortBy === 'typ' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
+                  </div>
+                </th>
+                <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('projektnummer')}>
+                  <div className="flex items-center gap-1">
+                    Projektnummer
+                    {sortBy === 'projektnummer' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
+                  </div>
+                </th>
                 <th className="px-4 py-2 text-left font-semibold">Åtgärd</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {kunder.length === 0 ? (
+              {sorted.length === 0 ? (
                 <tr>
                   <td colSpan="4" className="px-4 py-8 text-center text-gray-500">Inga kunder ännu</td>
                 </tr>
               ) : (
-                kunder.map(kund => {
+                sorted.map(kund => {
                   const isEditing = editingId === kund.id;
                   return (
                     <tr key={kund.id} className={isEditing ? 'bg-blue-50' : 'hover:bg-gray-50'}>
