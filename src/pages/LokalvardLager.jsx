@@ -19,10 +19,23 @@ export default function LokalvardLager() {
   const [uploading, setUploading] = useState(false);
   const [filterTyp, setFilterTyp] = useState('alla');
 
-  const { data: artiklar = [], isLoading } = useQuery({
+  const { data: artiklar = [], isLoading: artiklarLoading } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
     queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).catch(() => []),
   });
+
+  const { data: uttag = [], isLoading: uttagLoading } = useQuery({
+    queryKey: ['uttag'],
+    queryFn: () => base44.entities.Uttag.list(null, 10000).catch(() => []),
+  });
+
+  const calculateSaldo = (artikel) => {
+    const totalUttaget = uttag.reduce((sum, u) => {
+      const artiklarMatch = u.artiklar.filter(a => a.benamning === artikel.benamning);
+      return sum + artiklarMatch.reduce((s, a) => s + (a.antal || 0), 0);
+    }, 0);
+    return artikel.antal_inkopta - totalUttaget;
+  };
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.LokalvardsArtikel.update(id, data),
@@ -166,12 +179,15 @@ export default function LokalvardLager() {
     setEditingId(null);
   };
 
-  const tomma = artiklar.filter(a => a.current_quantity === 0).length;
-  const lågtSaldo = artiklar.filter(a => a.current_quantity > 0 && a.current_quantity < (a.lagertroskelvarde || 10)).length;
-  const totaltVärde = artiklar.reduce((sum, a) => sum + (a.current_quantity * a.pris), 0);
-  const filteredTotal = sorted.reduce((sum, a) => sum + (a.current_quantity * a.pris), 0);
+  const tomma = artiklar.filter(a => calculateSaldo(a) === 0).length;
+  const lågtSaldo = artiklar.filter(a => {
+    const saldo = calculateSaldo(a);
+    return saldo > 0 && saldo < (a.lagertroskelvarde || 10);
+  }).length;
+  const totaltVärde = artiklar.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
+  const filteredTotal = sorted.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
 
-  if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
+  if (artiklarLoading || uttagLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-4">
@@ -303,12 +319,13 @@ export default function LokalvardLager() {
             </thead>
             <tbody className="divide-y">
               {sorted.map(artikel => {
+                const saldo = calculateSaldo(artikel);
                 let saldoColor = 'text-gray-900';
                 let saldoBg = '';
-                if (artikel.current_quantity === 0) {
+                if (saldo === 0) {
                   saldoColor = 'text-red-600 font-semibold';
                   saldoBg = 'bg-red-50';
-                } else if (artikel.current_quantity < (artikel.lagertroskelvarde || 10)) {
+                } else if (saldo < (artikel.lagertroskelvarde || 10)) {
                   saldoColor = 'text-yellow-600 font-semibold';
                   saldoBg = 'bg-yellow-50';
                 }
@@ -393,7 +410,7 @@ export default function LokalvardLager() {
                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
                          <td className="px-4 py-3 text-right">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
                          <td className="px-4 py-3 text-right">{artikel.antal_inkopta}</td>
-                         <td className={`px-4 py-3 text-right ${saldoColor}`}>{artikel.current_quantity}</td>
+                         <td className={`px-4 py-3 text-right ${saldoColor}`}>{saldo}</td>
                          <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
                          <td className="px-4 py-3">
                            {artikel.utgaende ? (
