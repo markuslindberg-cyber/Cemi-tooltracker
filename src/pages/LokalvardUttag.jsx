@@ -61,6 +61,11 @@ export default function LokalvardUttag() {
     queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
   });
 
+  const { data: kunder = [] } = useQuery({
+    queryKey: ['kunder'],
+    queryFn: () => base44.entities.Kund.list(null, 10000).catch(() => []),
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Uttag.update(id, data),
     onSuccess: () => {
@@ -90,6 +95,22 @@ export default function LokalvardUttag() {
     });
     return map;
   }, [personal]);
+
+  const personalNameToId = useMemo(() => {
+    const map = {};
+    personal.forEach(p => {
+      map[p.name] = p.id;
+    });
+    return map;
+  }, [personal]);
+
+  const kundeNameToId = useMemo(() => {
+    const map = {};
+    kunder.forEach(k => {
+      map[k.namn] = k.id;
+    });
+    return map;
+  }, [kunder]);
 
   const availablePersonal = useMemo(
     () => {
@@ -192,9 +213,9 @@ export default function LokalvardUttag() {
         if (valid.length > 0) {
           await base44.entities.Uttag.bulkCreate(valid.map(r => ({
             datum: r.datum,
-            personal_id: '',
+            personal_id: personalNameToId[r.personal_namn] || '',
             personal_namn: r.personal_namn,
-            kund_id: '',
+            kund_id: kundeNameToId[r.kund_namn] || '',
             kund_namn: r.kund_namn,
             ordernummer: r.ordernummer || null,
             artiklar: [{
