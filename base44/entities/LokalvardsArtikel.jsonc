@@ -1,0 +1,54 @@
+{
+  "name": "LokalvardsArtikel",
+  "type": "object",
+  "properties": {
+    "benamning": {
+      "type": "string",
+      "description": "Artikelns ben\u00e4mning"
+    },
+    "artikelnummer": {
+      "type": "string",
+      "description": "Unikt artikelnummer"
+    },
+    "streckkod": {
+      "type": "string",
+      "description": "Streckkod f\u00f6r artikeln",
+      "nullable": true
+    },
+    "pris": {
+      "type": "number",
+      "description": "Pris per enhet"
+    },
+    "inkopsdatum": {
+      "type": "string",
+      "format": "date",
+      "description": "Datum d\u00e5 artikeln k\u00f6ptes in"
+    },
+    "antal_inkopta": {
+      "type": "number",
+      "description": "Totalt antal ink\u00f6pta enheter"
+    },
+    "lagertroskelvarde": {
+      "type": "number",
+      "description": "L\u00e4gsta antal i lager innan best\u00e4llning kr\u00e4vs"
+    },
+    "utgaende": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indikerar om artikeln \u00e4r utg\u00e5ende"
+    },
+    "current_quantity": {
+      "type": "number",
+      "description": "Aktuellt antal i lager",
+      "default": 0
+    }
+  },
+  "required": [
+    "benamning",
+    "artikelnummer",
+    "pris",
+    "inkopsdatum",
+    "antal_inkopta",
+    "lagertroskelvarde"
+  ]
+}

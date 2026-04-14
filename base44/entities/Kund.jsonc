@@ -1,0 +1,32 @@
+{
+  "name": "Kund",
+  "type": "object",
+  "properties": {
+    "namn": {
+      "type": "string",
+      "description": "Kundens namn"
+    },
+    "typ": {
+      "type": "string",
+      "enum": [
+        "Cemi",
+        "PHM",
+        "\u00d6vrig",
+        "BRF",
+        "Kommersiella",
+        "Koncernbolag",
+        "Internt"
+      ],
+      "description": "Typ av kund"
+    },
+    "projektnummer": {
+      "type": "string",
+      "description": "Kundens projektnummer",
+      "nullable": true
+    }
+  },
+  "required": [
+    "namn",
+    "typ"
+  ]
+}
