@@ -194,11 +194,11 @@ export default function LokalvardUttag() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = ['datum', 'personal_namn', 'kund_namn', 'ordernummer', 'artikel_benamning', 'antal', 'pris_per_enhet', 'manad'];
+    const headers = ['datum', 'personal', 'kund', 'ordernummer', 'streckkod', 'antal', 'pris', 'månad'];
     const infoRows = [
       ['=== IMPORTMALL FÖR UTTAG ===', '', '', '', '', '', '', ''],
       headers,
-      ['2026-01-15', 'Anna Andersson', 'Företag AB', 'ORD-001', 'Rengöringsduk', '5', '49.99', '2026-01'],
+      ['2026-01-15', 'Anna Andersson', 'Företag AB', 'ORD-001', '71617', '5', '49.99', '2026-01'],
     ];
     const csv = [...infoRows.map(r => r.map(c => `"${c}"`).join(',')), ...Array(19).fill(Array(8).fill('')).map(r => r.join(','))].join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
