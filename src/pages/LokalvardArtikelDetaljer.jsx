@@ -39,7 +39,7 @@ export default function LokalvardArtikelDetaljer() {
     try {
       const [artiklarData, uttagData, inköpData] = await Promise.all([
         base44.entities.LokalvardsArtikel.list(null, 10000),
-        base44.entities.Uttag.list(null, 10000),
+        base44.entities.Uttag.list(null, 100000),
         base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([])
       ]);
       

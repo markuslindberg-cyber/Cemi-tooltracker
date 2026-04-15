@@ -31,12 +31,9 @@ export default function LokalvardLager() {
   const { data: uttag = [], isLoading: uttagLoading } = useQuery({
     queryKey: ['uttag'],
     queryFn: async () => {
-      const data = await base44.entities.Uttag.list(null, 10000).catch(() => []);
-      console.log('Hämtade uttag:', data.length, data);
+      const data = await base44.entities.Uttag.list(null, 100000).catch(() => []);
       return data;
     },
-    refetchInterval: 3000,
-    staleTime: 0,
   });
 
   const { data: inköp = [] } = useQuery({
