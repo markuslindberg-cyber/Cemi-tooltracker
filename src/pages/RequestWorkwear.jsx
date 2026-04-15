@@ -55,8 +55,8 @@ export default function RequestWorkwear() {
   const { data: handlers = [] } = useQuery({
     queryKey: ['handlers'],
     queryFn: async () => {
-      const allUsers = await base44.entities.User.list();
-      return allUsers.filter(u => u.role === 'lokalvårdare' || u.role === 'admin_lokalvård');
+      const allMembers = await base44.entities.TeamMember.list(null, 10000);
+      return allMembers.filter(m => m.role === 'lokalvårdare' || m.role === 'admin lokalvård');
     },
   });
 
@@ -74,7 +74,7 @@ export default function RequestWorkwear() {
 
   useEffect(() => {
     if (handlers.length > 0 && !selectedHandler) {
-      const adminHandler = handlers.find(h => h.role === 'admin lokalvård');
+      const adminHandler = handlers.find(h => h.role === 'admin lokalvård' || h.role === 'admin_lokalvård');
       if (adminHandler) {
         setSelectedHandler(adminHandler);
       }
@@ -214,7 +214,7 @@ export default function RequestWorkwear() {
                 variant="outline"
                 className="w-full justify-start text-left font-normal"
               >
-                {selectedHandler ? selectedHandler.full_name : "Sök och välj handläggare..."}
+                {selectedHandler ? selectedHandler.name : "Sök och välj handläggare..."}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0" align="start">
@@ -225,13 +225,13 @@ export default function RequestWorkwear() {
                   {handlers.map((handler) => (
                    <CommandItem
                      key={handler.id}
-                     value={`${handler.full_name} ${handler.email}`}
+                     value={`${handler.name} ${handler.email || ''}`}
                      onSelect={() => {
                        setSelectedHandler(handler);
                        setHandlerOpen(false);
                      }}
-                   >
-                     {handler.full_name} ({handler.email})
+                     >
+                     {handler.name}{handler.email ? ` (${handler.email})` : ''}
                    </CommandItem>
                   ))}
                 </CommandGroup>
