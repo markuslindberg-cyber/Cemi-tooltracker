@@ -99,6 +99,7 @@ export default function LokalvardLager() {
         total_antal_inkopta: 0,
         total_current_quantity: 0,
         all_artikel_ids: [],
+        huvudartikel_antal_inkopta: artikel.antal_inkopta,
       };
     }
 
@@ -435,7 +436,7 @@ export default function LokalvardLager() {
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{artikel.streckkod}</td>
                           <td className="px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                          <td className="px-3 py-2 text-right text-xs">{artikel.total_antal_inkopta}</td>
+                          <td className="px-3 py-2 text-right text-xs">{artikel.huvudartikel_antal_inkopta}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{calculateUttag(artikel)}</td>
                           <td className={`px-3 py-2 text-right text-xs ${saldoColor}`}>{saldo}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{artikel.lagertroskelvarde}</td>
