@@ -747,14 +747,31 @@ export default function LokalvardUttag() {
                          {row.artikel_namn || row.benamning}
                        </td>
                        <td className="px-4 py-3 text-center text-gray-900">
-                         {`${row.totalAntal} st`}
+                         {editingArticleId === `${row.id}-${firstIdx}` ? (
+                           <input 
+                             type="number" 
+                             value={editArticleForm.antal} 
+                             onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})}
+                             className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs text-center"
+                             placeholder="Antal"
+                             onClick={e => e.stopPropagation()}
+                           />
+                         ) : (
+                           `${row.totalAntal} st`
+                         )}
                        </td>
                        <td className="px-4 py-3 text-gray-500 text-xs">{row.ordernummer || '–'}</td>
                        <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                          {editingArticleId === `${row.id}-${firstIdx}` ? (
-                           <span className="text-blue-600">
-                             {((parseInt(editArticleForm.antal) || 0) * (parseFloat(editArticleForm.pris_per_enhet) || 0)).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
-                           </span>
+                           <input
+                             type="number"
+                             step="0.01"
+                             value={editArticleForm.pris_per_enhet}
+                             onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})}
+                             className="w-20 px-1 py-0.5 border border-gray-300 rounded text-xs text-right"
+                             placeholder="Pris"
+                             onClick={e => e.stopPropagation()}
+                           />
                          ) : (
                            row.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' kr'
                          )}
@@ -762,16 +779,12 @@ export default function LokalvardUttag() {
                        <td className="px-4 py-3 flex items-center gap-1">
                          {editingArticleId === `${row.id}-${firstIdx}` ? (
                            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                             <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Antal" />
-                             <input type="number" step="0.01" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Pris" />
                              <button onClick={() => handleSaveArticle(row.id, firstIdx)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
                              <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
                              <button onClick={() => handleDeleteUttag(row.id, row.isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
                            </div>
                          ) : (
-                           <>
-                             <button onClick={() => handleEditArticle(row.id, row.artikel, firstIdx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                           </>
+                           <button onClick={() => handleEditArticle(row.id, row.artikel, firstIdx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
                          )}
                        </td>
                      </tr>
