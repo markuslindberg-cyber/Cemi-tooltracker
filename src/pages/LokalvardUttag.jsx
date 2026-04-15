@@ -651,9 +651,9 @@ export default function LokalvardUttag() {
                    const datumStr = u.datum ? u.datum.split('T')[0] : '';
                    return (u.artiklar || []).map((artikel, idx) => (
                      <tr key={`${u.id}-${idx}`} className="border-b border-gray-100 hover:bg-gray-50">
-                       {idx === 0 && <td rowSpan={u.artiklar?.length || 1} className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>}
-                       {idx === 0 && <td rowSpan={u.artiklar?.length || 1} className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>}
-                       {idx === 0 && <td rowSpan={u.artiklar?.length || 1} className="px-4 py-3 text-gray-700">{u.personal_namn}</td>}
+                       <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
+                       <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
+                       <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
                        <td className="px-4 py-3 text-gray-900 cursor-pointer hover:opacity-70" onClick={() => {
                          const foundArtikel = artikelMap[artikel.artikel_id] || artikelMap[artikel.benamning];
                          if (foundArtikel?.artikelnummer) navigate(`/Lokalvard/Artikel/${foundArtikel.artikelnummer}`);
@@ -661,10 +661,10 @@ export default function LokalvardUttag() {
                          {artikel.artikel_namn || artikel.benamning}
                        </td>
                        <td className="px-4 py-3 text-center text-gray-900">{artikel.antal} st</td>
-                       {idx === 0 && <td rowSpan={u.artiklar?.length || 1} className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>}
-                       {idx === 0 && <td rowSpan={u.artiklar?.length || 1} className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
+                       <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
+                       <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                          {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
-                       </td>}
+                       </td>
                        <td className="px-4 py-3">
                          {editingArticleId === `${u.id}-${idx}` ? (
                            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
