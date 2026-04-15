@@ -81,14 +81,14 @@ export default function LokalvardUttag() {
     const checkoutAsUttag = uttagData.checkout?.map(co => {
       const dateStr = co.checked_out_date || new Date().toISOString();
       const artiklar = co.checked_out_items.map(item => {
-        const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
+        const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode] || artikelMap[item.name];
         const pris = foundArtikel?.pris || 0;
         const antal = item.scanned_quantity || item.quantity || 0;
         return {
-          artikel_id: item.item_id || '',
-          benamning: item.barcode,
-          streckkod: item.barcode,
-          artikel_namn: foundArtikel?.benamning,
+          artikel_id: foundArtikel?.id || item.item_id || '',
+          benamning: foundArtikel?.benamning || item.name || item.barcode,
+          streckkod: foundArtikel?.streckkod || item.barcode,
+          artikel_namn: foundArtikel?.benamning || item.name,
           isCheckout: true,
           antal: antal,
           pris_per_enhet: pris,
