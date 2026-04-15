@@ -61,6 +61,7 @@ export default function LokalvardUttag() {
       
       return [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
     },
+    refetchInterval: 3000,
   });
 
   const { data: artiklar = [] } = useQuery({
