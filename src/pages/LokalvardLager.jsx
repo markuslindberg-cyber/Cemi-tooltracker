@@ -158,8 +158,19 @@ export default function LokalvardLager() {
   });
 
   const sorted = filteredProcessedArtiklar.sort((a, b) => {
-    let aVal = a[sortBy];
-    let bVal = b[sortBy];
+    let aVal, bVal;
+    
+    // Hantera beräknade värden
+    if (sortBy === 'saldo') {
+      aVal = calculateSaldo(a);
+      bVal = calculateSaldo(b);
+    } else if (sortBy === 'uttag') {
+      aVal = calculateUttag(a);
+      bVal = calculateUttag(b);
+    } else {
+      aVal = a[sortBy];
+      bVal = b[sortBy];
+    }
     
     if (typeof aVal === 'string') {
       aVal = aVal.toLowerCase();
@@ -387,9 +398,11 @@ export default function LokalvardLager() {
                 <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('antal_inkopta')}>
                   <div className="flex items-center justify-end gap-1">Inköpt {sortBy === 'antal_inkopta' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">Uttag</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('current_quantity')}>
-                  <div className="flex items-center justify-end gap-1">Saldo {sortBy === 'current_quantity' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
+                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('uttag')}>
+                  <div className="flex items-center justify-end gap-1">Uttag {sortBy === 'uttag' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
+                </th>
+                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('saldo')}>
+                  <div className="flex items-center justify-end gap-1">Saldo {sortBy === 'saldo' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
                 <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('lagertroskelvarde')}>
                   <div className="flex items-center justify-end gap-1">Tröskel {sortBy === 'lagertroskelvarde' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
