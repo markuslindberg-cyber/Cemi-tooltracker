@@ -395,8 +395,8 @@ export default function LokalvardLager() {
                 <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('pris')}>
                   <div className="flex items-center justify-end gap-1">Pris {sortBy === 'pris' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('antal_inkopta')}>
-                  <div className="flex items-center justify-end gap-1">Inköpt {sortBy === 'antal_inkopta' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
+                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('total_antal_inkopta')}>
+                  <div className="flex items-center justify-end gap-1">Inköpt {sortBy === 'total_antal_inkopta' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
                 <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('uttag')}>
                   <div className="flex items-center justify-end gap-1">Uttag {sortBy === 'uttag' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
