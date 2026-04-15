@@ -6,6 +6,7 @@ import { Loader2, Calendar, ChevronDown, ChevronRight, X, Upload, FileDown, Down
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
 export default function LokalvardUttag() {
   const queryClient = useQueryClient();
@@ -584,7 +585,7 @@ export default function LokalvardUttag() {
                        const datumStr = u.datum ? u.datum.split('T')[0] : '';
                        const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
                        return (
-                         <>
+                         <React.Fragment key={u.id}>
                            <tr
                             key={u.id}
                             className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
@@ -631,7 +632,7 @@ export default function LokalvardUttag() {
                               </td>
                             </tr>
                           )}
-                          </>
+                         </React.Fragment>
                           );
                           })}
                           </tbody>
