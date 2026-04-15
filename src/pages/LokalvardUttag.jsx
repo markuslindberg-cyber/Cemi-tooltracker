@@ -532,106 +532,121 @@ export default function LokalvardUttag() {
               <Download className="w-4 h-4 mr-1" /> CSV
             </Button>
           )}
-          {unmatchedArticles.length > 0 && (
-            <Button size="sm" onClick={() => setShowUnmatched(!showUnmatched)} className={showUnmatched ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-600 hover:bg-gray-700"}>
+          {unmatchedArticles.length > 0 && !showUnmatched && (
+            <Button size="sm" onClick={() => setShowUnmatched(true)} className="bg-yellow-600 hover:bg-yellow-700">
               ⚠️ Omatchade ({unmatchedArticles.length})
             </Button>
           )}
         </div>
       </div>
 
-      {sorted.length > 0 ? (
+      {showUnmatched ? (
         <>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
-            <span className="text-sm text-blue-700 font-medium">Totalt {sorted.length} uttag</span>
-            <span className="text-xl font-bold text-blue-900">{total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
-          </div>
-
-          {/* Table */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="w-6"></th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('datum')}>
-                    Datum <SortIcon col="datum" />
-                  </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('kund_namn')}>
-                    Kund <SortIcon col="kund_namn" />
-                  </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('personal_namn')}>
-                    Personal <SortIcon col="personal_namn" />
-                  </th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Ordernummer</th>
-                  <th className="px-4 py-3 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('total_kostnad')}>
-                    Kostnad <SortIcon col="total_kostnad" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((u) => {
-                   const isExpanded = expandedRows[u.id];
-                   const datumStr = u.datum ? u.datum.split('T')[0] : '';
-                   const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
-                   return (
-                     <>
-                       <tr
-                        key={u.id}
-                        className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                        onClick={() => toggleRow(u.id)}
-                      >
-                        <td className="pl-3 py-3">
-                          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                        </td>
-                        <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
-                        <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
-                        <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                          {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr key={`${u.id}-detail`} className="bg-gray-50">
-                          <td colSpan={6} className="px-6 py-3">
-                            {(!u.artiklar || u.artiklar.length === 0) ? (
-                              <div className="text-sm text-gray-500">Inga artiklar</div>
-                            ) : (
-                              <div className="space-y-2">
-                                {groupArticles(u.artiklar).map((group) => (
-                                   <div key={`${group.name}-${group.barcode}`} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                     <div className="flex-1">
-                                       <div className="font-medium text-gray-900">{group.name}</div>
-                                       {group.barcode && <div className="text-xs text-gray-500">{group.barcode}</div>}
-                                     </div>
-                                    <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
-                                      <div className="text-right">
-                                        <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
-                                        <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
-                                      </div>
-                                      <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )}
-                      </>
-                      );
-                      })}
-                      </tbody>
-            </table>
-          </div>
+          <Button size="sm" onClick={() => setShowUnmatched(false)} variant="outline">
+            ← Tillbaka till uttag
+          </Button>
         </>
       ) : (
-        <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
+        <>
+          {sorted.length > 0 ? (
+            <>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
+                <span className="text-sm text-blue-700 font-medium">Totalt {sorted.length} uttag</span>
+                <span className="text-xl font-bold text-blue-900">{total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+              </div>
+
+              {/* Table */}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="w-6"></th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('datum')}>
+                        Datum <SortIcon col="datum" />
+                      </th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('kund_namn')}>
+                        Kund <SortIcon col="kund_namn" />
+                      </th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('personal_namn')}>
+                        Personal <SortIcon col="personal_namn" />
+                      </th>
+                      <th className="px-4 py-3 text-left font-semibold text-gray-600">Ordernummer</th>
+                      <th className="px-4 py-3 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('total_kostnad')}>
+                        Kostnad <SortIcon col="total_kostnad" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sorted.map((u) => {
+                       const isExpanded = expandedRows[u.id];
+                       const datumStr = u.datum ? u.datum.split('T')[0] : '';
+                       const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
+                       return (
+                         <>
+                           <tr
+                            key={u.id}
+                            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                            onClick={() => toggleRow(u.id)}
+                          >
+                            <td className="pl-3 py-3">
+                              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            </td>
+                            <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
+                            <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
+                            <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
+                            <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
+                            <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
+                              {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr key={`${u.id}-detail`} className="bg-gray-50">
+                              <td colSpan={6} className="px-6 py-3">
+                                {(!u.artiklar || u.artiklar.length === 0) ? (
+                                  <div className="text-sm text-gray-500">Inga artiklar</div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {groupArticles(u.artiklar).map((group) => (
+                                       <div key={`${group.name}-${group.barcode}`} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
+                                         <div className="flex-1">
+                                           <div className="font-medium text-gray-900">{group.name}</div>
+                                           {group.barcode && <div className="text-xs text-gray-500">{group.barcode}</div>}
+                                         </div>
+                                        <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                                          <div className="text-right">
+                                            <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
+                                            <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                                          </div>
+                                          <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                          </>
+                          );
+                          })}
+                          </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
+          )}
+        </>
       )}
 
       {unmatchedArticles.length > 0 && showUnmatched && (
-        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-yellow-900 mb-3">⚠️ Omatchade artiklar</h2>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-yellow-900">⚠️ Omatchade artiklar ({unmatchedArticles.length})</h2>
+            <Button size="sm" onClick={() => setShowUnmatched(false)} variant="outline">
+              Stäng
+            </Button>
+          </div>
           <p className="text-sm text-yellow-800 mb-3">Dessa streckkoder/artiklar från uttag matchar inte artiklar i lagerlistan:</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
