@@ -167,22 +167,22 @@ export default function LokalvardBegaranAttGodkanna() {
   const handleBarcodeInput = (barcode) => {
     const trimmed = barcode.trim();
     if (!trimmed) return;
-    
+
     console.log('🔍 Söker efter:', trimmed);
     console.log('📦 Totalt artiklar i lagret:', allItems.length);
     console.log('📋 Begärda artiklar:', selectedRequest?.requested_items.length);
-    
+
     // Sök i lagret - försök exakt match på streckkod/old_streckkod/artikelnummer, sedan namn
     let item = allItems.find(i => 
       i.streckkod === trimmed || 
       i.old_streckkod === trimmed || 
       i.artikelnummer === trimmed
     );
-    
+
     if (item) {
       console.log('✅ Hittad artikel:', item);
     }
-    
+
     if (!item) {
       item = allItems.find(i => (i.benamning || i.name || '').toLowerCase().includes(trimmed.toLowerCase()));
     }
@@ -192,8 +192,13 @@ export default function LokalvardBegaranAttGodkanna() {
       setTimeout(() => setError(''), 3000);
       return;
     }
-    // Validera att artikeln är på begäran
-    const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
+    // Validera att artikeln är på begäran - matcha på ID, namn eller både
+    const requestedItem = selectedRequest?.requested_items.find(ri => 
+      ri.id === item.id || 
+      ri.id === item.benamning ||
+      ri.name === item.benamning ||
+      ri.name === item.name
+    );
     if (!requestedItem) {
       setError(`${item.benamning || item.name} är inte på begäran`);
       setTimeout(() => setError(''), 3000);
@@ -238,7 +243,12 @@ export default function LokalvardBegaranAttGodkanna() {
   const handleManualAddItem = (item, quantity) => {
     if (!selectedRequest) return;
 
-    const requestedItem = selectedRequest.requested_items.find(ri => ri.id === item.id);
+    const requestedItem = selectedRequest.requested_items.find(ri => 
+      ri.id === item.id || 
+      ri.id === item.benamning ||
+      ri.name === item.benamning ||
+      ri.name === item.name
+    );
     if (!requestedItem) {
       setError(`${item.benamning || item.name} är inte på begäran`);
       setTimeout(() => setError(''), 3000);
