@@ -22,6 +22,8 @@ export default function LokalvardBegaranAttGodkanna() {
   const [rejectNotes, setRejectNotes] = useState('');
   const [user, setUser] = useState(null);
   const [expandedHistory, setExpandedHistory] = useState(null);
+  const [editingCheckout, setEditingCheckout] = useState(null);
+  const [editedItems, setEditedItems] = useState([]);
 
   // Steg 3: skanning
   const [scannedItems, setScannedItems] = useState([]);
@@ -136,6 +138,26 @@ export default function LokalvardBegaranAttGodkanna() {
     },
     onError: (err) => {
       setError(err.message || 'Fel vid registrering av uttag');
+    },
+  });
+
+  const updateCheckoutMutation = useMutation({
+    mutationFn: (data) =>
+      base44.entities.LokalvardCheckout.update(data.id, {
+        checked_out_items: data.checked_out_items,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['lokalvardCheckouts']);
+      queryClient.invalidateQueries(['uttag']);
+      setSuccess('Uttag uppdaterat!');
+      setTimeout(() => {
+        setSuccess('');
+        setEditingCheckout(null);
+        setEditedItems([]);
+      }, 2000);
+    },
+    onError: (err) => {
+      setError(err.message || 'Fel vid uppdatering av uttag');
     },
   });
 
@@ -285,7 +307,60 @@ export default function LokalvardBegaranAttGodkanna() {
         </div>
       )}
 
-      {step !== 1 && <StepIndicator />}
+      {/* REDIGERA TIDIGARE UTTAG */}
+      {step === 1.5 && editingCheckout && (
+        <Card className="p-6 space-y-6">
+          <div>
+            <button onClick={() => { setEditingCheckout(null); setEditedItems([]); setStep(1); }} className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka</button>
+            <h2 className="text-xl font-semibold mt-4">Redigera uttag</h2>
+            <p className="text-sm text-gray-600">Korrigera antal för {editingCheckout.customer_name}</p>
+          </div>
+
+          <div className="space-y-3">
+            {editedItems.map((item, idx) => (
+              <div key={idx} className="p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-xs text-gray-500">{item.barcode}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    value={item.scanned_quantity}
+                    onChange={(e) => {
+                      const newVal = parseInt(e.target.value, 10) || 0;
+                      setEditedItems(prev =>
+                        prev.map((it, i) => i === idx ? { ...it, scanned_quantity: newVal } : it)
+                      );
+                    }}
+                    className="w-16 text-sm"
+                  />
+                  <span className="text-sm text-gray-600">/ {item.quantity} st</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3 border-t pt-4">
+            <Button
+              onClick={() => updateCheckoutMutation.mutate({ id: editingCheckout.id, checked_out_items: editedItems })}
+              disabled={updateCheckoutMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {updateCheckoutMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
+              Spara ändringar
+            </Button>
+            <Button variant="outline" onClick={() => { setEditingCheckout(null); setEditedItems([]); setStep(1); }}>
+              Avbryt
+            </Button>
+          </div>
+          {error && <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">{error}</div>}
+          {success && <div className="p-3 bg-green-50 border border-green-200 rounded text-green-700 text-sm">{success}</div>}
+        </Card>
+      )}
+
+      {step !== 1 && step !== 1.5 && <StepIndicator />}
 
       {/* STEG 1: Lista */}
       {step === 1 && tab === 'pending' && (
@@ -399,6 +474,20 @@ export default function LokalvardBegaranAttGodkanna() {
                                   })}
                                 </div>
                               </div>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  const checkout = checkouts.find(c => c.request_id === request.id);
+                                  if (checkout) {
+                                    setEditingCheckout(checkout);
+                                    setEditedItems(JSON.parse(JSON.stringify(checkout.checked_out_items)));
+                                    setStep(1.5);
+                                  }
+                                }}
+                                className="mt-2 bg-blue-600 hover:bg-blue-700 text-xs"
+                              >
+                                ✏️ Redigera uttag
+                              </Button>
                             </div>
                           )}
                         </div>
