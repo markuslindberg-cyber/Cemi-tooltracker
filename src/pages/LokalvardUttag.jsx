@@ -238,23 +238,26 @@ export default function LokalvardUttag() {
       if (result.status === 'success' && Array.isArray(result.output)) {
         const valid = result.output.filter(r => r.datum && r.personal_namn && r.kund_namn && r.artikel_benamning && r.antal && r.pris_per_enhet);
         if (valid.length > 0) {
-          await base44.entities.Uttag.bulkCreate(valid.map(r => ({
-            datum: r.datum,
-            personal_id: personalNameToId[r.personal_namn] || '',
-            personal_namn: r.personal_namn,
-            kund_id: kundeNameToId[r.kund_namn] || '',
-            kund_namn: r.kund_namn,
-            ordernummer: r.ordernummer || null,
-            artiklar: [{
-              artikel_id: '',
-              benamning: r.artikel_benamning,
-              antal: r.antal,
-              pris_per_enhet: r.pris_per_enhet,
-              total_pris: r.antal * r.pris_per_enhet,
-            }],
-            total_kostnad: r.antal * r.pris_per_enhet,
-            manad: r.manad,
-          })));
+          await base44.entities.Uttag.bulkCreate(valid.map(r => {
+            const matchedArtikel = artiklar.find(a => a.benamning?.toLowerCase() === r.artikel_benamning?.toLowerCase());
+            return {
+              datum: r.datum,
+              personal_id: personalNameToId[r.personal_namn] || '',
+              personal_namn: r.personal_namn,
+              kund_id: kundeNameToId[r.kund_namn] || '',
+              kund_namn: r.kund_namn,
+              ordernummer: r.ordernummer || null,
+              artiklar: [{
+                artikel_id: matchedArtikel?.streckkod || matchedArtikel?.id || '',
+                benamning: r.artikel_benamning,
+                antal: r.antal,
+                pris_per_enhet: r.pris_per_enhet,
+                total_pris: r.antal * r.pris_per_enhet,
+              }],
+              total_kostnad: r.antal * r.pris_per_enhet,
+              manad: r.manad,
+            };
+          }));
           queryClient.invalidateQueries(['uttag']);
           alert(`${valid.length} uttag importerade!`);
         } else {
