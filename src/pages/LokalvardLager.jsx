@@ -32,9 +32,16 @@ export default function LokalvardLager() {
   });
 
   const calculateUttag = (aggregatedArtikel) => {
+    // Bygg upp en uppsättning av alla ID, streckkoder och benämningar för denna grupp
+    const artikelIds = new Set(aggregatedArtikel.all_artikel_ids);
+    const streckkod = aggregatedArtikel.streckkod;
+    const benamning = aggregatedArtikel.benamning?.toLowerCase();
+
     return uttag.reduce((sum, u) => {
-      const matchingWithdrawals = u.artiklar.filter(itemInWithdrawal =>
-        aggregatedArtikel.all_artikel_ids.includes(itemInWithdrawal.artikel_id)
+      const matchingWithdrawals = u.artiklar.filter(a =>
+        (a.artikel_id && artikelIds.has(a.artikel_id)) ||
+        (streckkod && a.artikel_id === streckkod) ||
+        (benamning && a.benamning?.toLowerCase() === benamning)
       );
       return sum + matchingWithdrawals.reduce((s, a) => s + (a.antal || 0), 0);
     }, 0);
