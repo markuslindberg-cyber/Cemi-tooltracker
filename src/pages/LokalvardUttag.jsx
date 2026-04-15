@@ -622,7 +622,16 @@ export default function LokalvardUttag() {
                                              <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
                                              <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
                                            </div>
-                                           <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                                           {editingArticleId === `${u.id}-${group.items[0].originalIndex}` ? (
+                                             <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                                               <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs" />
+                                               <input type="number" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs" />
+                                               <button onClick={() => handleSaveArticle(u.id, group.items[0].originalIndex)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
+                                               <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">Avbryt</button>
+                                             </div>
+                                           ) : (
+                                             <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                                           )}
                                          </div>
                                        </div>
                                      ))}
