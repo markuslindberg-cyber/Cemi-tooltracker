@@ -32,37 +32,44 @@ export default function LokalvardUttag() {
     queryKey: ['uttag', loadAllUttag],
     queryFn: async () => {
       const limit = loadAllUttag ? 100000 : 500;
-      const [uttagData, checkoutData] = await Promise.all([
-        base44.entities.Uttag.list('-datum', limit).catch(() => []),
-        base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => [])
-      ]);
-      
-      const checkoutAsUttag = checkoutData.map(co => {
-        const dateStr = co.checked_out_date || new Date().toISOString();
-        return {
-          id: co.id,
-          datum: dateStr,
-          personal_id: '',
-          personal_namn: co.checked_out_by_name,
-          kund_id: co.customer_id,
-          kund_namn: co.customer_name,
-          ordernummer: co.request_id,
-          artiklar: co.checked_out_items.map(item => ({
-            artikel_id: item.item_id,
-            benamning: item.name,
-            antal: item.scanned_quantity || item.quantity,
-            pris_per_enhet: 0,
-            total_pris: 0
-          })),
-          total_kostnad: 0,
-          manad: dateStr.substring(0, 7)
-        };
-      });
-      
-      const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
-      console.log('Uttag låsta:', { uttagData: uttagData.length, checkoutAsUttag: checkoutAsUttag.length, total: result.length });
-      console.log('LokalvardCheckout raw data:', checkoutData);
-      return result;
+      try {
+        const uttagData = await base44.entities.Uttag.list('-datum', limit).catch(() => []);
+        let checkoutData = [];
+        if (base44.entities.LokalvardCheckout?.list) {
+          checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
+        } else {
+          console.warn('LokalvardCheckout.list är inte tillgänglig');
+        }
+        
+        const checkoutAsUttag = checkoutData.map(co => {
+          const dateStr = co.checked_out_date || new Date().toISOString();
+          return {
+            id: co.id,
+            datum: dateStr,
+            personal_id: '',
+            personal_namn: co.checked_out_by_name,
+            kund_id: co.customer_id,
+            kund_namn: co.customer_name,
+            ordernummer: co.request_id,
+            artiklar: co.checked_out_items.map(item => ({
+              artikel_id: item.item_id,
+              benamning: item.name,
+              antal: item.scanned_quantity || item.quantity,
+              pris_per_enhet: 0,
+              total_pris: 0
+            })),
+            total_kostnad: 0,
+            manad: dateStr.substring(0, 7)
+          };
+        });
+        
+        const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+        console.log('Uttag låsta:', { uttagData: uttagData.length, checkoutData: checkoutData.length, checkoutAsUttag: checkoutAsUttag.length, total: result.length });
+        return result;
+      } catch (err) {
+        console.error('Fel vid hämtning av uttag:', err);
+        return [];
+      }
     },
   });
 
