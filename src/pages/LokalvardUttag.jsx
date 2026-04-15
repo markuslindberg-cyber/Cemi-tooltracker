@@ -299,9 +299,25 @@ export default function LokalvardUttag() {
     const grouped = {};
     artiklar.forEach((artikel, idx) => {
       let name = artikel.benamning;
-      if (!name) {
-        const lookupArtikel = artikelMap[artikel.artikel_id] || Object.values(artikelMap).find(a => a.streckkod === artikel.artikel_id);
-        name = lookupArtikel?.benamning || artikel.artikel_id || 'Okänd';
+      if (!name || name === artikel.artikel_id) {
+        // Sök i lagerlistan efter streckkod eller ID
+        const matchedArtikel = artiklar[idx].streckkod 
+          ? artikelMap[artiklar[idx].streckkod] 
+          : artikelMap[artikel.artikel_id];
+
+        // Om inte hittat, sök genom alla artiklar
+        if (!matchedArtikel && artiklar[idx].streckkod) {
+          for (const a of Object.values(artikelMap)) {
+            if (a && a.streckkod === artiklar[idx].streckkod) {
+              name = a.benamning;
+              break;
+            }
+          }
+        } else if (matchedArtikel) {
+          name = matchedArtikel.benamning;
+        }
+
+        if (!name) name = artikel.artikel_id || 'Okänd';
       }
       if (!grouped[name]) grouped[name] = [];
       grouped[name].push({ ...artikel, originalIndex: idx });
