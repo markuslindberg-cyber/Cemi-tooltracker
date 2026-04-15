@@ -19,7 +19,7 @@ export default function LokalvardLager() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [uploading, setUploading] = useState(false);
-  const [filterTyp, setFilterTyp] = useState('alla');
+  const [filterTyp, setFilterTyp] = useState('aktiva');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { data: artiklar = [], isLoading: artiklarLoading } = useQuery({
@@ -148,12 +148,12 @@ export default function LokalvardLager() {
     if (!matchSearch) return false;
     
     const saldoForGroup = calculateSaldo(a);
+    if (filterTyp === 'aktiva') return !a.utgaende || (a.utgaende && saldoForGroup > 0);
     if (filterTyp === 'lowStock') return saldoForGroup > 0 && saldoForGroup < (a.lagertroskelvarde || 10);
     if (filterTyp === 'empty') return saldoForGroup === 0;
     if (filterTyp === 'utgaende') return !!a.utgaende;
     if (filterTyp === 'utanPris') return !a.pris || a.pris < 1;
-    // 'alla' filter - visa aktiva artiklar eller utgående med saldo > 0
-    if (filterTyp === 'alla') return !a.utgaende || saldoForGroup > 0;
+    if (filterTyp === 'alla') return true;
     return true;
   });
 
@@ -314,6 +314,7 @@ export default function LokalvardLager() {
       {/* Filterflikar */}
        <div className="flex gap-1 flex-wrap items-center">
          {[
+           { key: 'aktiva', label: 'Aktiva & utgående m/ saldo' },
            { key: 'alla', label: 'Alla artiklar' },
            { key: 'empty', label: `Slut i lager (${tomma})` },
            { key: 'lowStock', label: `Lågt lager (${lågtSaldo})` },
@@ -332,11 +333,11 @@ export default function LokalvardLager() {
              {label}
            </button>
          ))}
-         {filterTyp !== 'alla' && (
+         {filterTyp !== 'aktiva' && (
            <Button 
              size="sm" 
              variant="outline" 
-             onClick={() => setFilterTyp('alla')}
+             onClick={() => setFilterTyp('aktiva')}
              className="gap-1 text-xs ml-auto"
            >
              <RotateCcw className="w-3 h-3" /> Rensa
