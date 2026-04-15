@@ -57,7 +57,9 @@ export default function LokalvardArtikelDetaljer() {
       );
       setTransaktioner(relateradeUttag.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       
-      const relateradeInköp = inköpData?.filter(i => i.artikel_id === fundArticle.id) || [];
+      // Hämta alla artiklar med samma streckkod för att visa alla relaterade inköp
+      const sammaStreckkod = artiklarData.filter(a => a.streckkod === fundArticle.streckkod).map(a => a.id);
+      const relateradeInköp = inköpData?.filter(i => sammaStreckkod.includes(i.artikel_id)) || [];
       setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       setArtikelData(artiklarData);
     } catch (error) {
