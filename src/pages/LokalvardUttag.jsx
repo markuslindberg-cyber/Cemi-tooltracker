@@ -65,6 +65,19 @@ export default function LokalvardUttag() {
   });
 
   const uttag = useMemo(() => {
+    const processedUttag = (uttagData.uttag || []).map(u => ({
+      ...u,
+      artiklar: u.artiklar?.map(a => {
+        const found = artikelMap[a.artikel_id] || artikelMap[a.benamning];
+        return {
+          ...a,
+          streckkod: found?.streckkod,
+          artikel_namn: found?.benamning,
+          isCheckout: false
+        };
+      })
+    }));
+
     const checkoutAsUttag = uttagData.checkout?.map(co => {
       const dateStr = co.checked_out_date || new Date().toISOString();
       return {
@@ -93,7 +106,7 @@ export default function LokalvardUttag() {
       };
     }) || [];
     
-    return [...(uttagData.uttag || []), ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+    return [...processedUttag, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
   }, [uttagData, artikelMap]);
 
   const { data: personal = [] } = useQuery({
