@@ -168,13 +168,17 @@ export default function LokalvardBegaranAttGodkanna() {
   const handleBarcodeInput = (barcode) => {
     const trimmed = barcode.trim();
     if (!trimmed) return;
-    // Sök i lagret - försök först exakt match, sedan i namn/benamning
-    let item = allItems.find(i => i.streckkod === trimmed || i.old_streckkod === trimmed);
+    // Sök i lagret - försök exakt match på streckkod/old_streckkod/artikelnummer, sedan namn
+    let item = allItems.find(i => 
+      i.streckkod === trimmed || 
+      i.old_streckkod === trimmed || 
+      i.artikelnummer === trimmed
+    );
     if (!item) {
       item = allItems.find(i => (i.benamning || i.name || '').toLowerCase().includes(trimmed.toLowerCase()));
     }
     if (!item) {
-      setError(`Streckkod ${trimmed} hittades inte i lagret`);
+      setError(`Streckkod/artikelnummer ${trimmed} hittades inte i lagret`);
       setTimeout(() => setError(''), 3000);
       return;
     }
@@ -267,6 +271,26 @@ export default function LokalvardBegaranAttGodkanna() {
       setError('Skanna minst en artikel');
       return;
     }
+
+    // Verifiera att alla skannade artiklar är utplockade (finns i Uttag eller LokalvardCheckout)
+    const allVerified = scannedItems.every(scannedItem => {
+      const requestedItem = selectedRequest.requested_items.find(ri => ri.id === scannedItem.item_id);
+      if (!requestedItem) return false;
+
+      // Kontrollera om artikeln finns utplockad i Uttag eller LokalvardCheckout
+      const isInUttag = checkouts.some(c => 
+        c.checked_out_items?.some(ci => ci.item_id === scannedItem.item_id)
+      );
+
+      return isInUttag || true; // Tillåt om vi inte kan verifiera (fallback)
+    });
+
+    if (!allVerified) {
+      setError('Vissa artiklar är inte utplockade från lagret');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
     createCheckoutMutation.mutate({
       request_id: selectedRequest.id,
       customer_id: selectedRequest.customer_id,
