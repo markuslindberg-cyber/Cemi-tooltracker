@@ -26,6 +26,14 @@ export default function LokalvardArtikelDetaljer() {
     loadData();
   }, [artikelnummer]);
 
+  useEffect(() => {
+    // Debug: logg all inköp data
+    if (artikel && inköp.length > 0) {
+      console.log('Inköp för artikel:', artikel.id);
+      console.log(inköp.map(i => ({ id: i.id, datum: i.datum, antal: i.antal, pris: i.pris })));
+    }
+  }, [inköp, artikel]);
+
   const loadData = async () => {
     try {
       const [artiklarData, uttagData, inköpData] = await Promise.all([
