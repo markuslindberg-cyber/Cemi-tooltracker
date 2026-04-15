@@ -120,7 +120,8 @@ export default function LokalvardLager() {
   let processedArtiklar = Object.values(groupedByStreckkod);
 
   const filteredProcessedArtiklar = processedArtiklar.filter(a => {
-    const matchSearch = a.benamning.toLowerCase().includes(search.toLowerCase()) || a.streckkod?.includes(search);
+    const searchLower = search.toLowerCase();
+    const matchSearch = a.benamning.toLowerCase().includes(searchLower) || a.streckkod?.includes(search) || a.old_streckkod?.includes(search);
     if (!matchSearch) return false;
     
     const saldoForGroup = calculateSaldo(a);
