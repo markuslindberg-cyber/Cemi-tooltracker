@@ -32,17 +32,6 @@ export default function LokalvardLager() {
   });
 
   const calculateUttag = (aggregatedArtikel) => {
-    // Antal gånger artikeln förekommer i uttag-listan (antal rader, inte antal enheter)
-    return uttag.reduce((count, u) => {
-      const hasMatch = u.artiklar.some(itemInWithdrawal =>
-        aggregatedArtikel.all_artikel_ids.includes(itemInWithdrawal.artikel_id)
-      );
-      return count + (hasMatch ? 1 : 0);
-    }, 0);
-  };
-
-  const calculateTotalUttagna = (aggregatedArtikel) => {
-    // Total antal uttagna enheter (används för saldoberäkning)
     return uttag.reduce((sum, u) => {
       const matchingWithdrawals = u.artiklar.filter(itemInWithdrawal =>
         aggregatedArtikel.all_artikel_ids.includes(itemInWithdrawal.artikel_id)
@@ -52,7 +41,7 @@ export default function LokalvardLager() {
   };
 
   const calculateSaldo = (aggregatedArtikel) => {
-    return aggregatedArtikel.total_antal_inkopta - calculateTotalUttagna(aggregatedArtikel);
+    return aggregatedArtikel.total_antal_inkopta - calculateUttag(aggregatedArtikel);
   };
 
   const updateMutation = useMutation({
