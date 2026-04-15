@@ -38,6 +38,7 @@ export default function LokalvardUttag() {
     artiklar.forEach(a => {
       map[a.id] = a;
       map[a.streckkod] = a;
+      map[a.artikelnummer] = a;
       if (a.old_streckkod) {
         map[a.old_streckkod] = a;
       }
