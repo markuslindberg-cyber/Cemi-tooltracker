@@ -45,6 +45,12 @@ export default function LokalvardBegaranAttGodkanna() {
     return map;
   }, [personal]);
 
+  const checkoutMap = useMemo(() => {
+    const map = {};
+    checkouts.forEach(c => { map[c.request_id] = c; });
+    return map;
+  }, [checkouts]);
+
   const { data: allRequests = [], isLoading } = useQuery({
     queryKey: ['workwearRequests'],
     queryFn: () => base44.entities.WorkwearRequest.list('-request_date', 10000),
@@ -358,9 +364,10 @@ export default function LokalvardBegaranAttGodkanna() {
                        <p className="text-sm font-medium text-gray-700 mb-2">Artiklar</p>
                        <div className="space-y-1">
                          {request.requested_items?.map((item, idx) => {
-                           const checkout = checkouts.find(c => c.request_id === request.id);
+                           const checkout = checkoutMap[request.id];
                            const checkedOutItem = checkout?.checked_out_items?.find(ci => ci.item_id === item.id || ci.name === item.name);
                            const isCheckedOut = !!checkedOutItem;
+                           console.log('Request:', request.id, 'Item:', item.name, 'Checkout:', checkout, 'CheckedOut:', isCheckedOut);
                            return (
                              <div key={idx} className="flex items-center justify-between text-sm p-2 bg-white rounded border border-gray-100">
                                <span>{item.name} <span className="text-gray-400">{item.subcategory}</span></span>
