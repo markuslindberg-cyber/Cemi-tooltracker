@@ -36,11 +36,21 @@ export default function LokalvardLager() {
   const calculateUttag = (aggregatedArtikel) => {
     const streckkod = aggregatedArtikel.streckkod;
     const oldStreckkod = aggregatedArtikel.old_streckkod;
-    const artikelIds = new Set(aggregatedArtikel.all_artikel_ids);
+    const allArtikelIds = new Set(aggregatedArtikel.all_artikel_ids);
 
     return uttag.reduce((sum, u) => {
-      const matchingWithdrawals = u.artiklar?.filter(a =>
-        (a.artikel_id && (artikelIds.has(a.artikel_id) || a.artikel_id === streckkod || a.artikel_id === oldStreckkod))
+      const matchingWithdrawals = u.artiklar?.filter(item => 
+        item.artikel_id === streckkod ||
+        item.artikel_id === oldStreckkod ||
+        artiklar.some(a => 
+          (a.streckkod === streckkod || 
+           a.old_streckkod === streckkod ||
+           a.streckkod === oldStreckkod ||
+           allArtikelIds.has(a.id)) && 
+          (a.id === item.artikel_id || 
+           a.streckkod === item.artikel_id || 
+           a.old_streckkod === item.artikel_id)
+        )
       ) || [];
       return sum + matchingWithdrawals.reduce((s, a) => s + (a.antal || 0), 0);
     }, 0);
