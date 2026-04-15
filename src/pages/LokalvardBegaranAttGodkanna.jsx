@@ -110,22 +110,28 @@ export default function LokalvardBegaranAttGodkanna() {
   });
 
   const handleBarcodeInput = (barcode) => {
-    const item = allItems.find(i => i.barcode === barcode);
+    const trimmed = barcode.trim();
+    if (!trimmed) return;
+    // LokalvardsArtikel använder fältet "streckkod"
+    const item = allItems.find(i => i.streckkod === trimmed);
     if (!item) {
-      setError(`Streckkod ${barcode} hittades inte i lagret`);
+      setError(`Streckkod ${trimmed} hittades inte i lagret`);
+      setBarcodeInput('');
       setTimeout(() => setError(''), 3000);
       return;
     }
     const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
     if (!requestedItem) {
-      setError(`${item.name} är inte på begäran`);
+      setError(`${item.benamning || item.name} är inte på begäran`);
+      setBarcodeInput('');
       setTimeout(() => setError(''), 3000);
       return;
     }
     const existingScanned = scannedItems.find(si => si.item_id === item.id);
     if (existingScanned) {
       if (existingScanned.scanned_quantity >= requestedItem.quantity) {
-        setError(`${item.name} är redan skannad i rätt mängd`);
+        setError(`${item.benamning || item.name} är redan skannad i rätt mängd`);
+        setBarcodeInput('');
         setTimeout(() => setError(''), 3000);
         return;
       }
@@ -138,8 +144,8 @@ export default function LokalvardBegaranAttGodkanna() {
     } else {
       setScannedItems(prev => [...prev, {
         item_id: item.id,
-        name: item.name,
-        barcode: item.barcode,
+        name: item.benamning || item.name,
+        barcode: item.streckkod,
         quantity: requestedItem.quantity,
         scanned_quantity: 1,
         replacement_items: [],
