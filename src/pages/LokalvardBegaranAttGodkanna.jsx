@@ -97,6 +97,7 @@ export default function LokalvardBegaranAttGodkanna() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['workwearRequests']);
+      queryClient.invalidateQueries(['uttag']);
       setSuccess('Uttag registrerat!');
       setTimeout(() => {
         setSuccess('');
