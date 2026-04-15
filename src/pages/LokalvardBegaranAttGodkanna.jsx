@@ -26,13 +26,14 @@ export default function LokalvardBegaranAttGodkanna() {
   const [editedItems, setEditedItems] = useState([]);
 
   // Steg 3: skanning
-   const [scannedItems, setScannedItems] = useState([]);
-   const [barcodeInput, setBarcodeInput] = useState('');
-   const [amountInput, setAmountInput] = useState('1');
-   const [error, setError] = useState('');
-   const [success, setSuccess] = useState('');
-   const [showReplacementUI, setShowReplacementUI] = useState(false);
-   const [currentItemForReplacement, setCurrentItemForReplacement] = useState(null);
+    const [scannedItems, setScannedItems] = useState([]);
+    const [barcodeInput, setBarcodeInput] = useState('');
+    const [amountInput, setAmountInput] = useState('1');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [showReplacementUI, setShowReplacementUI] = useState(false);
+    const [currentItemForReplacement, setCurrentItemForReplacement] = useState(null);
+    const [currentScannedItemId, setCurrentScannedItemId] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -185,6 +186,7 @@ export default function LokalvardBegaranAttGodkanna() {
     }
     // Fylla i artikelns namn i barcodeInput så användaren vet vilket som skannade
     setBarcodeInput(`${item.benamning || item.name} - Antal: `);
+    setCurrentScannedItemId(item.id); // Spara ID direkt
     setAmountInput('1');
     setError('');
   };
@@ -196,25 +198,18 @@ export default function LokalvardBegaranAttGodkanna() {
       setTimeout(() => setError(''), 3000);
       return;
     }
-    // Extrahera artikelnamn från input (format: "Namn - Antal: X")
-    const barcodeMatch = barcodeInput.match(/^([^-]+)/);
-    if (!barcodeMatch) {
+    if (!currentScannedItemId) {
       setError('Skanna en artikel först');
       return;
     }
-    const itemName = barcodeMatch[1].trim();
-    // Sök med samma logik som handleBarcodeInput
-    let item = allItems.find(i => (i.benamning || i.name || '') === itemName);
+    const item = allItems.find(i => i.id === currentScannedItemId);
     if (!item) {
-      item = allItems.find(i => (i.benamning || i.name || '').toLowerCase().includes(itemName.toLowerCase()));
-    }
-    if (!item) {
-      setError(`Kunde inte hitta artikeln "${itemName}"`);
+      setError('Kunde inte hitta artikeln');
       return;
     }
     const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
     if (!requestedItem) {
-      setError(`${itemName} är inte på begäran`);
+      setError(`${item.benamning || item.name} är inte på begäran`);
       return;
     }
     if (amount > requestedItem.quantity) {
@@ -245,6 +240,7 @@ export default function LokalvardBegaranAttGodkanna() {
       );
       setBarcodeInput('');
       setAmountInput('1');
+      setCurrentScannedItemId(null);
       setError('');
     } else {
       // Visa ersättningsUI innan artikel läggs till
@@ -252,6 +248,7 @@ export default function LokalvardBegaranAttGodkanna() {
       setShowReplacementUI(true);
       setBarcodeInput('');
       setAmountInput('1');
+      setCurrentScannedItemId(null);
       setError('');
     }
   };
