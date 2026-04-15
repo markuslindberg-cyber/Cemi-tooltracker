@@ -98,10 +98,13 @@ export default function LokalvardBegaranAttGodkanna() {
     mutationFn: async (data) => {
       const checkout = await base44.entities.LokalvardCheckout.create(data);
       await base44.entities.WorkwearRequest.update(selectedRequest.id, { status: 'completed' });
+      // Create corresponding Uttag record
+      await base44.functions.invoke('createUttagFromCheckout', { checkout });
       return checkout;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['workwearRequests']);
+      queryClient.invalidateQueries(['lokalvardCheckouts']);
       queryClient.invalidateQueries(['uttag']);
       setSuccess('Uttag registrerat!');
       setTimeout(() => {
