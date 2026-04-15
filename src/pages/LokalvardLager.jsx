@@ -435,7 +435,7 @@ export default function LokalvardLager() {
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{artikel.streckkod}</td>
                           <td className="px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                          <td className="px-3 py-2 text-right text-xs">{getInköptForArticle(artikel) || artikel.total_antal_inkopta}</td>
+                          <td className="px-3 py-2 text-right text-xs">{artikel.total_antal_inkopta}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{calculateUttag(artikel)}</td>
                           <td className={`px-3 py-2 text-right text-xs ${saldoColor}`}>{saldo}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{artikel.lagertroskelvarde}</td>
