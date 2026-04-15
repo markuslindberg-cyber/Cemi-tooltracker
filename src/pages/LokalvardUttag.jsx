@@ -315,10 +315,10 @@ export default function LokalvardUttag() {
   const groupArticles = (artiklar) => {
     const grouped = {};
     artiklar.forEach((artikel, idx) => {
-      let name = artikel.benamning;
+      let name = '';
       let barcode = '';
 
-      // Sök i lagerlistan efter artikel_id eller streckkod – prioritera artikel_id
+      // Försök först söka i lagerlistan med artikel_id
       if (artikel.artikel_id) {
         const found = artikelMap[artikel.artikel_id];
         if (found) {
@@ -327,7 +327,7 @@ export default function LokalvardUttag() {
         }
       }
 
-      // Om fortfarande ingen namn hittad, försök streckkod
+      // Försök sedan söka med streckkod
       if (!name && artikel.streckkod) {
         const foundByBarcode = artikelMap[artikel.streckkod];
         if (foundByBarcode) {
@@ -336,17 +336,18 @@ export default function LokalvardUttag() {
         }
       }
 
-      // Försök även söka direkt på artikel.artikel_id som streckkod
-      if (!name && artikel.artikel_id) {
-        const foundByBarcode = artikelMap[artikel.artikel_id];
+      // Försök söka med benamning som streckkod
+      if (!name && artikel.benamning) {
+        const foundByBarcode = artikelMap[artikel.benamning];
         if (foundByBarcode) {
           name = foundByBarcode.benamning;
           barcode = foundByBarcode.streckkod;
         }
       }
 
-      if (!name) name = 'Okänd artikel';
-      if (!barcode) barcode = artikel.artikel_id || artikel.streckkod || '';
+      // Om ännu ingen namn, använd benamning från artikel
+      if (!name) name = artikel.benamning || 'Okänd artikel';
+      if (!barcode) barcode = '';
 
       const key = `${name}|${barcode}`;
       if (!grouped[key]) grouped[key] = [];
