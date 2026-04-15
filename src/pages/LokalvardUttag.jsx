@@ -45,53 +45,54 @@ export default function LokalvardUttag() {
     return map;
   }, [artiklar]);
 
-  const { data: uttag = [], isLoading: uttagLoading, refetch } = useQuery({
+  const { data: uttagData = [], isLoading: uttagLoading, refetch } = useQuery({
     queryKey: ['uttag', loadAllUttag],
     queryFn: async () => {
       const limit = loadAllUttag ? 100000 : 500;
        try {
-         const uttagData = await base44.entities.Uttag.list('-datum', limit).catch(() => []);
+         const data = await base44.entities.Uttag.list('-datum', limit).catch(() => []);
          let checkoutData = [];
          if (base44.entities.LokalvardCheckout?.list) {
            checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
          }
-
-         const checkoutAsUttag = checkoutData.map(co => {
-           const dateStr = co.checked_out_date || new Date().toISOString();
-           return {
-             id: co.id,
-             datum: dateStr,
-             personal_id: '',
-             personal_namn: co.checked_out_by_name,
-             kund_id: co.customer_id,
-             kund_namn: co.customer_name,
-             ordernummer: co.request_id,
-             artiklar: co.checked_out_items.map(item => {
-               // Försök slå upp artikel för att få rätt namn
-               const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
-               const benamning = foundArtikel?.benamning || item.name || '';
-               return {
-                 artikel_id: item.item_id,
-                 benamning,
-                 antal: item.scanned_quantity || item.quantity,
-                 pris_per_enhet: 0,
-                 total_pris: 0
-               };
-             }),
-             total_kostnad: 0,
-             manad: dateStr.substring(0, 7)
-           };
-         });
-
-         const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
-        return result;
+         return { uttag: data, checkout: checkoutData };
       } catch (err) {
         console.error('Fel vid hämtning av uttag:', err);
-        return [];
+        return { uttag: [], checkout: [] };
       }
     },
     refetchInterval: 2000,
   });
+
+  const uttag = useMemo(() => {
+    const checkoutAsUttag = uttagData.checkout?.map(co => {
+      const dateStr = co.checked_out_date || new Date().toISOString();
+      return {
+        id: co.id,
+        datum: dateStr,
+        personal_id: '',
+        personal_namn: co.checked_out_by_name,
+        kund_id: co.customer_id,
+        kund_namn: co.customer_name,
+        ordernummer: co.request_id,
+        artiklar: co.checked_out_items.map(item => {
+          const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
+          const benamning = foundArtikel?.benamning || item.name || '';
+          return {
+            artikel_id: item.item_id,
+            benamning,
+            antal: item.scanned_quantity || item.quantity,
+            pris_per_enhet: 0,
+            total_pris: 0
+          };
+        }),
+        total_kostnad: 0,
+        manad: dateStr.substring(0, 7)
+      };
+    }) || [];
+    
+    return [...(uttagData.uttag || []), ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+  }, [uttagData, artikelMap]);
 
   const { data: personal = [] } = useQuery({
     queryKey: ['teamMembers'],
