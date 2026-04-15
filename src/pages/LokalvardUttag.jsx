@@ -127,6 +127,13 @@ export default function LokalvardUttag() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Uttag.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['uttag']);
+    },
+  });
+
   const handleSort = (column) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -429,6 +436,16 @@ export default function LokalvardUttag() {
     setEditingId(null);
   };
 
+  const handleDeleteUttag = (id, isCheckout) => {
+    if (window.confirm('Är du säker på att du vill ta bort detta uttag?')) {
+      if (isCheckout && base44.entities.LokalvardCheckout?.delete) {
+        base44.entities.LokalvardCheckout.delete(id);
+      } else {
+        deleteMutation.mutate(id);
+      }
+    }
+  };
+
   const handleExport = () => {
     const csv = [
       'Datum,Personal,Kund,Artikel,Antal,Pris,Ordernummer',
@@ -649,6 +666,7 @@ export default function LokalvardUttag() {
                <tbody>
                  {paginatedData.map((u) => {
                    const datumStr = u.datum ? u.datum.split('T')[0] : '';
+                   const isCheckout = u.artiklar?.[0]?.isCheckout;
                    return (u.artiklar || []).map((artikel, idx) => (
                      <tr key={`${u.id}-${idx}`} className="border-b border-gray-100 hover:bg-gray-50">
                        <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
@@ -660,12 +678,26 @@ export default function LokalvardUttag() {
                        }}>
                          {artikel.artikel_namn || artikel.benamning}
                        </td>
-                       <td className="px-4 py-3 text-center text-gray-900">{artikel.antal} st</td>
+                       <td className="px-4 py-3 text-center text-gray-900">
+                         {isCheckout && editingArticleId !== `${u.id}-${idx}` ? (
+                           <input 
+                             type="number" 
+                             value={artikel.antal} 
+                             onChange={(e) => {
+                               const newArtiklar = u.artiklar.map((a, i) => i === idx ? {...a, antal: parseInt(e.target.value) || 0} : a);
+                               updateMutation.mutate({id: u.id, data: {artiklar: newArtiklar}});
+                             }}
+                             className="w-16 px-2 py-1 border border-green-300 rounded text-xs bg-green-50 font-semibold"
+                           />
+                         ) : (
+                           `${artikel.antal} st`
+                         )}
+                       </td>
                        <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
                        <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
                          {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
                        </td>
-                       <td className="px-4 py-3">
+                       <td className="px-4 py-3 flex items-center gap-1">
                          {editingArticleId === `${u.id}-${idx}` ? (
                            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                              <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Antal" />
@@ -674,7 +706,12 @@ export default function LokalvardUttag() {
                              <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
                            </div>
                          ) : (
-                           <button onClick={() => handleEditArticle(u.id, artikel, idx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                           <>
+                             <button onClick={() => handleEditArticle(u.id, artikel, idx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                             {idx === 0 && (
+                               <button onClick={() => handleDeleteUttag(u.id, isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
+                             )}
+                           </>
                          )}
                        </td>
                      </tr>
