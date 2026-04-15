@@ -8,13 +8,6 @@ import { Card } from '@/components/ui/card';
 import { Loader2, Plus, X, Check } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -42,14 +35,15 @@ export default function RequestWorkwear() {
   const [handlerOpen, setHandlerOpen] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [artikelOpen, setArtikelOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
   const { data: items = [] } = useQuery({
-    queryKey: ['lokalvardLager'],
-    queryFn: () => base44.entities.Inventarier.list('-updated_date', 10000).catch(() => []),
+    queryKey: ['lokalvardsArtiklar'],
+    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).catch(() => []),
   });
 
   const { data: handlers = [] } = useQuery({
@@ -112,7 +106,7 @@ export default function RequestWorkwear() {
         ...prev,
         requested_items: [...prev.requested_items, {
           id: selectedItem.id,
-          name: selectedItem.name,
+          name: selectedItem.benamning || selectedItem.name,
           subcategory: selectedItem.subcategory,
           quantity: selectedQty,
         }]
@@ -246,22 +240,34 @@ export default function RequestWorkwear() {
           
           <div className="space-y-2">
             <Label>Välj artikel</Label>
-            <Select value={selectedItem?.id || ''} onValueChange={(id) => {
-              const item = items.find(i => i.id === id);
-              setSelectedItem(item);
-              setSelectedQty(1);
-            }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sök och välj artikel..." />
-              </SelectTrigger>
-              <SelectContent>
-                {items.map(item => (
-                  <SelectItem key={item.id} value={item.id}>
-                    {item.name} {item.subcategory && `- ${item.subcategory}`} (Tillgängligt: {item.quantity || 0})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={artikelOpen} onOpenChange={setArtikelOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  {selectedItem ? selectedItem.benamning : "Sök och välj artikel..."}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Sök artikel..." />
+                  <CommandEmpty>Ingen artikel hittad.</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-y-auto">
+                    {items.map(item => (
+                      <CommandItem
+                        key={item.id}
+                        value={`${item.benamning} ${item.streckkod || ''} ${item.subcategory || ''}`}
+                        onSelect={() => {
+                          setSelectedItem(item);
+                          setSelectedQty(1);
+                          setArtikelOpen(false);
+                        }}
+                      >
+                        {item.benamning}{item.subcategory ? ` – ${item.subcategory}` : ''}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {selectedItem && (
