@@ -298,7 +298,11 @@ export default function LokalvardUttag() {
   const groupArticles = (artiklar) => {
     const grouped = {};
     artiklar.forEach((artikel, idx) => {
-      const name = artikel.benamning || artikelMap[artikel.artikel_id]?.benamning || artikel.artikel_id || 'Okänd';
+      let name = artikel.benamning;
+      if (!name) {
+        const lookupArtikel = artikelMap[artikel.artikel_id] || Object.values(artikelMap).find(a => a.streckkod === artikel.artikel_id);
+        name = lookupArtikel?.benamning || artikel.artikel_id || 'Okänd';
+      }
       if (!grouped[name]) grouped[name] = [];
       grouped[name].push({ ...artikel, originalIndex: idx });
     });
