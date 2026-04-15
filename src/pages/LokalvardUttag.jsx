@@ -25,14 +25,16 @@ export default function LokalvardUttag() {
   const [searchBarcode, setSearchBarcode] = useState('');
   const [showUnmatched, setShowUnmatched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadAllUttag, setLoadAllUttag] = useState(false);
   const itemsPerPage = 50;
 
   const { data: uttag = [], isLoading: uttagLoading, refetch } = useQuery({
-    queryKey: ['uttag'],
+    queryKey: ['uttag', loadAllUttag],
     queryFn: async () => {
+      const limit = loadAllUttag ? 100000 : 500;
       const [uttagData, checkoutData] = await Promise.all([
-        base44.entities.Uttag.list('-datum', 10000).catch(() => []),
-        base44.entities.LokalvardCheckout.list('-checked_out_date', 10000).catch(() => [])
+        base44.entities.Uttag.list('-datum', limit).catch(() => []),
+        base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => [])
       ]);
       
       const checkoutAsUttag = checkoutData.map(co => {
@@ -248,35 +250,35 @@ export default function LokalvardUttag() {
         }
       });
       if (result.status === 'success' && Array.isArray(result.output)) {
-        const valid = result.output.filter(r => r.datum && r.personal_namn && r.kund_namn && r.artikel_benamning && r.antal && r.pris_per_enhet);
-        if (valid.length > 0) {
-          await base44.entities.Uttag.bulkCreate(valid.map(r => {
-            const matchedArtikel = artiklar.find(a => a.benamning?.toLowerCase() === r.artikel_benamning?.toLowerCase());
-            return {
-              datum: r.datum,
-              personal_id: personalNameToId[r.personal_namn] || '',
-              personal_namn: r.personal_namn,
-              kund_id: kundeNameToId[r.kund_namn] || '',
-              kund_namn: r.kund_namn,
-              ordernummer: r.ordernummer || null,
-              artiklar: [{
-                artikel_id: matchedArtikel?.streckkod || matchedArtikel?.id || '',
-                benamning: r.artikel_benamning,
-                antal: r.antal,
-                pris_per_enhet: r.pris_per_enhet,
-                total_pris: r.antal * r.pris_per_enhet,
-              }],
-              total_kostnad: r.antal * r.pris_per_enhet,
-              manad: r.manad,
-            };
-          }));
-          queryClient.invalidateQueries(['uttag']);
-          alert(`${valid.length} uttag importerade!`);
-        } else {
-          alert('Inga giltiga rader hittades.');
-        }
+      const valid = result.output.filter(r => r.datum && r.personal_namn && r.kund_namn && r.artikel_benamning && r.antal && r.pris_per_enhet);
+      if (valid.length > 0) {
+        await base44.entities.Uttag.bulkCreate(valid.map(r => {
+          const matchedArtikel = artiklar.find(a => a.benamning?.toLowerCase() === r.artikel_benamning?.toLowerCase());
+          return {
+            datum: r.datum,
+            personal_id: personalNameToId[r.personal_namn] || '',
+            personal_namn: r.personal_namn,
+            kund_id: kundeNameToId[r.kund_namn] || '',
+            kund_namn: r.kund_namn,
+            ordernummer: r.ordernummer || null,
+            artiklar: [{
+              artikel_id: matchedArtikel?.streckkod || matchedArtikel?.id || '',
+              benamning: r.artikel_benamning,
+              antal: r.antal,
+              pris_per_enhet: r.pris_per_enhet,
+              total_pris: r.antal * r.pris_per_enhet,
+            }],
+            total_kostnad: r.antal * r.pris_per_enhet,
+            manad: r.manad,
+          };
+        }));
+        setLoadAllUttag(true);
+        alert(`${valid.length} uttag importerade! Laddar alla uttag...`);
       } else {
-        alert('Importfel: ' + (result.details || 'Okänt fel'));
+        alert('Inga giltiga rader hittades.');
+      }
+      } else {
+      alert('Importfel: ' + (result.details || 'Okänt fel'));
       }
     } catch (err) {
       alert('Importfel: ' + (err.message || 'Okänt fel'));
@@ -441,7 +443,12 @@ export default function LokalvardUttag() {
     <div className="max-w-7xl mx-auto p-4 space-y-4">
       {/* Header */}
        <div className="flex items-center justify-between flex-wrap gap-3">
-         <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
+         <div className="flex items-center gap-3">
+           <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
+           {loadAllUttag && (
+             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Alla uttag laddat ({uttag.length})</span>
+           )}
+         </div>
          <div className="flex items-center gap-2 flex-wrap">
            <input
              type="text"
