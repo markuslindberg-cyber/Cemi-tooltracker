@@ -80,6 +80,7 @@ export default function LokalvardUttag() {
           const benamning = foundArtikel?.benamning || item.name || '';
           return {
             artikel_id: item.item_id || '',
+            streckkod: item.barcode,
             benamning: benamning,
             antal: item.scanned_quantity || item.quantity || 0,
             pris_per_enhet: 0,
