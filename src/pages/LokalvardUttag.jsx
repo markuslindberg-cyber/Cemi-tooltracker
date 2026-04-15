@@ -80,6 +80,22 @@ export default function LokalvardUttag() {
 
     const checkoutAsUttag = uttagData.checkout?.map(co => {
       const dateStr = co.checked_out_date || new Date().toISOString();
+      const artiklar = co.checked_out_items.map(item => {
+        const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
+        const pris = foundArtikel?.pris || 0;
+        const antal = item.scanned_quantity || item.quantity || 0;
+        return {
+          artikel_id: item.item_id || '',
+          benamning: item.barcode,
+          streckkod: item.barcode,
+          artikel_namn: foundArtikel?.benamning,
+          isCheckout: true,
+          antal: antal,
+          pris_per_enhet: pris,
+          total_pris: antal * pris
+        };
+      });
+      const total_kostnad = artiklar.reduce((sum, a) => sum + a.total_pris, 0);
       return {
         id: co.id,
         datum: dateStr,
@@ -88,20 +104,8 @@ export default function LokalvardUttag() {
         kund_id: co.customer_id,
         kund_namn: co.customer_name,
         ordernummer: co.request_id,
-        artiklar: co.checked_out_items.map(item => {
-          const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
-          return {
-            artikel_id: item.item_id || '',
-            benamning: item.barcode,
-            streckkod: item.barcode,
-            artikel_namn: foundArtikel?.benamning,
-            isCheckout: true,
-            antal: item.scanned_quantity || item.quantity || 0,
-            pris_per_enhet: 0,
-            total_pris: 0
-          };
-        }),
-        total_kostnad: 0,
+        artiklar: artiklar,
+        total_kostnad: total_kostnad,
         manad: dateStr.substring(0, 7)
       };
     }) || [];
