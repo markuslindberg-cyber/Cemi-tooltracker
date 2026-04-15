@@ -359,7 +359,7 @@ export default function LokalvardBegaranAttGodkanna() {
                        <div className="space-y-1">
                          {request.requested_items?.map((item, idx) => {
                            const checkout = checkouts.find(c => c.request_id === request.id);
-                           const checkedOutItem = checkout?.checked_out_items?.find(ci => ci.item_id === item.id);
+                           const checkedOutItem = checkout?.checked_out_items?.find(ci => ci.item_id === item.id || ci.name === item.name);
                            const isCheckedOut = !!checkedOutItem;
                            return (
                              <div key={idx} className="flex items-center justify-between text-sm p-2 bg-white rounded border border-gray-100">
