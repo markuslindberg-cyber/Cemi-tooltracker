@@ -223,16 +223,16 @@ export default function RequestWorkwear() {
                 <CommandEmpty>Ingen handläggare hittad.</CommandEmpty>
                 <CommandGroup>
                   {handlers.map((handler) => (
-                    <CommandItem
-                      key={handler.id}
-                      value={handler.id}
-                      onSelect={() => {
-                        setSelectedHandler(handler);
-                        setHandlerOpen(false);
-                      }}
-                    >
-                      {handler.full_name} ({handler.email})
-                    </CommandItem>
+                   <CommandItem
+                     key={handler.id}
+                     value={`${handler.full_name} ${handler.email}`}
+                     onSelect={() => {
+                       setSelectedHandler(handler);
+                       setHandlerOpen(false);
+                     }}
+                   >
+                     {handler.full_name} ({handler.email})
+                   </CommandItem>
                   ))}
                 </CommandGroup>
               </Command>
