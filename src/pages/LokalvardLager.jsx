@@ -44,13 +44,14 @@ export default function LokalvardLager() {
     return calculateUttagMatching(uttag, artiklar, aggregatedArtikel.streckkod, aggregatedArtikel.old_streckkod);
   };
 
-  const getInköptForArticle = (artikelId) => {
-    const matchingInköp = inköp.filter(i => i.artikel_id === artikelId);
+  const getInköptForArticle = (artikelIds) => {
+    const ids = Array.isArray(artikelIds) ? artikelIds : [artikelIds];
+    const matchingInköp = inköp.filter(i => ids.includes(i.artikel_id));
     return matchingInköp.reduce((sum, i) => sum + i.antal, 0);
   };
 
   const calculateSaldo = (aggregatedArtikel) => {
-    const totalInköpt = getInköptForArticle(aggregatedArtikel.id);
+    const totalInköpt = getInköptForArticle(aggregatedArtikel.all_artikel_ids);
     const inköptToUse = totalInköpt > 0 ? totalInköpt : aggregatedArtikel.total_antal_inkopta;
     return inköptToUse - calculateUttag(aggregatedArtikel);
   };
@@ -434,7 +435,7 @@ export default function LokalvardLager() {
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{artikel.streckkod}</td>
                           <td className="px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                          <td className="px-3 py-2 text-right text-xs">{getInköptForArticle(artikel.id) || artikel.total_antal_inkopta}</td>
+                          <td className="px-3 py-2 text-right text-xs">{getInköptForArticle(artikel.all_artikel_ids) || artikel.total_antal_inkopta}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{calculateUttag(artikel)}</td>
                           <td className={`px-3 py-2 text-right text-xs ${saldoColor}`}>{saldo}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{artikel.lagertroskelvarde}</td>
