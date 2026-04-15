@@ -70,7 +70,11 @@ export default function LokalvardArtikelDetaljer() {
         a.streckkod === fundArticle.old_streckkod ||
         a.id === fundArticle.id
       ).map(a => a.id);
-      const relateradeInköp = inköpData?.filter(i => sammaStreckkod.includes(i.artikel_id)) || [];
+      const relateradeInköp = inköpData?.filter(i => 
+        sammaStreckkod.includes(i.artikel_id) || 
+        i.artikel_id === fundArticle.streckkod || 
+        i.artikel_id === fundArticle.old_streckkod
+      ) || [];
       setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       setArtikelData(artiklarData);
     } catch (error) {
