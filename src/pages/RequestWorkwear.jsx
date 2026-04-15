@@ -207,7 +207,7 @@ export default function RequestWorkwear() {
 
         {/* Handler Selection */}
         <div className="space-y-2">
-          <Label>Välj handläggare (Lokalvårdare eller Admin lokalvård)</Label>
+          <Label>Välj uttagare</Label>
           <Popover open={handlerOpen} onOpenChange={setHandlerOpen}>
             <PopoverTrigger asChild>
               <Button
