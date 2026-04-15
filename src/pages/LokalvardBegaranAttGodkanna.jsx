@@ -184,8 +184,8 @@ export default function LokalvardBegaranAttGodkanna() {
       setTimeout(() => setError(''), 3000);
       return;
     }
-    // Fylla i artikelns namn i barcodeInput så användaren vet vilket som skannade
-    setBarcodeInput(`${item.benamning || item.name} - Antal: `);
+    // Visa bara streckkoden
+    setBarcodeInput(item.streckkod);
     setCurrentScannedItemId(item.id); // Spara ID direkt
     setAmountInput('1');
     setError('');
