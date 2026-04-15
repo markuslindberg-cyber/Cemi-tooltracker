@@ -166,12 +166,17 @@ export default function LokalvardBegaranAttGodkanna() {
   const handleBarcodeInput = (barcode) => {
     const trimmed = barcode.trim();
     if (!trimmed) return;
-    const item = allItems.find(i => i.streckkod === trimmed);
+    // Sök i lagret - försök först exakt match, sedan i namn/benamning
+    let item = allItems.find(i => i.streckkod === trimmed || i.old_streckkod === trimmed);
+    if (!item) {
+      item = allItems.find(i => (i.benamning || i.name || '').toLowerCase().includes(trimmed.toLowerCase()));
+    }
     if (!item) {
       setError(`Streckkod ${trimmed} hittades inte i lagret`);
       setTimeout(() => setError(''), 3000);
       return;
     }
+    // Bara validera att artikeln är på begäran, inte att den finns i lager
     const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
     if (!requestedItem) {
       setError(`${item.benamning || item.name} är inte på begäran`);
