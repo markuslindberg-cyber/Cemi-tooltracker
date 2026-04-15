@@ -46,14 +46,13 @@ export default function LokalvardUttag() {
   }, [artiklar]);
 
   const { data: uttagData = [], isLoading: uttagLoading, refetch } = useQuery({
-    queryKey: ['uttag', loadAllUttag],
+    queryKey: ['uttag'],
     queryFn: async () => {
-      const limit = loadAllUttag ? 100000 : 500;
        try {
-         const data = await base44.entities.Uttag.list('-datum', limit).catch(() => []);
+         const data = await base44.entities.Uttag.list('-datum', 100000).catch(() => []);
          let checkoutData = [];
          if (base44.entities.LokalvardCheckout?.list) {
-           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
+           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', 100000).catch(() => []);
          }
          return { uttag: data, checkout: checkoutData };
       } catch (err) {
