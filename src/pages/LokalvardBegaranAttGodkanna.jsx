@@ -777,26 +777,6 @@ export default function LokalvardBegaranAttGodkanna() {
                     autoFocus
                     className="text-lg flex-1"
                   />
-               {barcodeInput.trim() && !barcodeInput.includes('Antal:') && (
-                 <>
-                   <Input
-                     type="number"
-                     min="1"
-                     value={amountInput}
-                     onChange={(e) => setAmountInput(e.target.value)}
-                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddScannedItem(); }}
-                     className="w-20 text-lg"
-                     placeholder="Antal"
-                     autoFocus
-                   />
-                   <Button
-                     onClick={handleAddScannedItem}
-                     className="bg-blue-600 hover:bg-blue-700"
-                   >
-                     Lägg till
-                   </Button>
-                 </>
-               )}
              </div>
            </div>
 
