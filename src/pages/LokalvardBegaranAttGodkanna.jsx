@@ -196,15 +196,20 @@ export default function LokalvardBegaranAttGodkanna() {
       setTimeout(() => setError(''), 3000);
       return;
     }
+    // Extrahera artikelnamn från input (format: "Namn - Antal: X")
     const barcodeMatch = barcodeInput.match(/^([^-]+)/);
     if (!barcodeMatch) {
       setError('Skanna en artikel först');
       return;
     }
     const itemName = barcodeMatch[1].trim();
-    const item = allItems.find(i => (i.benamning || i.name) === itemName);
+    // Sök med samma logik som handleBarcodeInput
+    let item = allItems.find(i => (i.benamning || i.name || '') === itemName);
     if (!item) {
-      setError('Kunde inte hitta artikeln');
+      item = allItems.find(i => (i.benamning || i.name || '').toLowerCase().includes(itemName.toLowerCase()));
+    }
+    if (!item) {
+      setError(`Kunde inte hitta artikeln "${itemName}"`);
       return;
     }
     const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
