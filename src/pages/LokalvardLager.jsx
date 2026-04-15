@@ -384,8 +384,8 @@ export default function LokalvardLager() {
         </div>
       )}
 
-      {/* Tabell */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* Tabell - Desktop */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hidden lg:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
@@ -500,6 +500,61 @@ export default function LokalvardLager() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobil kort-vy */}
+      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {sorted.map((artikel) => {
+          const saldo = calculateSaldo(artikel);
+          let saldoColor = 'text-gray-900';
+          let saldoBg = 'bg-white';
+          if (saldo === 0) {
+            saldoColor = 'text-red-600';
+            saldoBg = 'bg-red-50';
+          } else if (saldo < (artikel.lagertroskelvarde || 10)) {
+            saldoColor = 'text-yellow-600';
+            saldoBg = 'bg-yellow-50';
+          }
+
+          return (
+            <div key={artikel.id} className={`${saldoBg} border border-gray-200 rounded-lg p-4`}>
+              <button 
+                onClick={() => {
+                  const targetArtikel = artiklar.find(a => a.id === artikel.id);
+                  const navigatePath = targetArtikel?.artikelnummer || targetArtikel?.streckkod || targetArtikel?.id;
+                  if (navigatePath) {
+                    navigate(`/Lokalvard/Artikel/${navigatePath}`);
+                  }
+                }}
+                className="font-semibold text-blue-600 hover:underline text-left text-sm mb-2 block w-full"
+              >
+                {artikel.benamning}
+              </button>
+              {artikel.subcategory && <p className="text-xs text-gray-500 mb-2">{artikel.subcategory}</p>}
+              <div className={`text-2xl font-bold ${saldoColor} mb-2`}>
+                {saldo} st
+              </div>
+              <div className="text-xs text-gray-600 space-y-1">
+                <div className="flex justify-between">
+                  <span>Pris:</span>
+                  <span className="font-medium">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tröskel:</span>
+                  <span className="font-medium">{artikel.lagertroskelvarde}</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <button 
+                  onClick={() => handleEditClick(artikel)} 
+                  className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs font-medium w-full"
+                >
+                  Redigera
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Dialog för att lägga till ny artikel */}
