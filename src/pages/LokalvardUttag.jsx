@@ -683,19 +683,7 @@ export default function LokalvardUttag() {
                          {artikel.artikel_namn || artikel.benamning}
                        </td>
                        <td className="px-4 py-3 text-center text-gray-900">
-                         {isCheckout && editingArticleId !== `${u.id}-${idx}` ? (
-                           <input 
-                             type="number" 
-                             value={artikel.antal} 
-                             onChange={(e) => {
-                               const newArtiklar = u.artiklar.map((a, i) => i === idx ? {...a, antal: parseInt(e.target.value) || 0} : a);
-                               updateMutation.mutate({id: u.id, data: {artiklar: newArtiklar}});
-                             }}
-                             className="w-16 px-2 py-1 border border-green-300 rounded text-xs bg-green-50 font-semibold"
-                           />
-                         ) : (
-                           `${artikel.antal} st`
-                         )}
+                         {`${artikel.antal} st`}
                        </td>
                        <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
                        <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
