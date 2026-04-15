@@ -57,6 +57,7 @@ const navigation = [
     icon: SprayCan,
     children: [
       { name: 'Lager', path: '/Lokalvard/Lager' },
+      { name: 'Importera inköp', path: '/Lokalvard/InköpImport' },
       { name: 'Uttag', path: '/Lokalvard/Uttag' },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },

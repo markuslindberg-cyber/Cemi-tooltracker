@@ -19,6 +19,7 @@ import LokalvardKostnadPerKund from './pages/LokalvardKostnadPerKund';
 import LokalvardKunder from './pages/LokalvardKunder';
 import LokalvardLager from './pages/LokalvardLager';
 import LokalvardArtikelDetaljer from './pages/LokalvardArtikelDetaljer';
+import LokalvardInköpImport from './pages/LokalvardInköpImport';
 import LocationDetails from './pages/LocationDetails';
 import InventoryReports from './pages/InventoryReports';
 import CheckoutReports from './pages/CheckoutReports';
@@ -91,6 +92,7 @@ const AuthenticatedApp = () => {
       <Route path="/Lokalvard/Kunder" element={<LayoutWrapper currentPageName="LokalvardKunder"><LokalvardKunder /></LayoutWrapper>} />
       <Route path="/Lokalvard/NyttUttag" element={<LayoutWrapper currentPageName="LokalvardNyttUttag"><LokalvardNyttUttag /></LayoutWrapper>} />
       <Route path="/Lokalvard/Lager" element={<LayoutWrapper currentPageName="LokalvardLager"><LokalvardLager /></LayoutWrapper>} />
+      <Route path="/Lokalvard/InköpImport" element={<LayoutWrapper currentPageName="LokalvardInköpImport"><LokalvardInköpImport /></LayoutWrapper>} />
       <Route path="/Lokalvard/Artikel/:artikelnummer" element={<LayoutWrapper currentPageName="ArtikelDetaljer"><LokalvardArtikelDetaljer /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
