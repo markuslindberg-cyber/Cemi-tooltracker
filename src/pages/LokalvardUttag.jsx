@@ -615,7 +615,6 @@ export default function LokalvardUttag() {
                                             if (artikel) navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`);
                                           }}>
                                             <div className="font-medium text-gray-900">{group.name}</div>
-                                            {group.barcode && <div className="text-xs text-gray-500">{group.barcode}</div>}
                                           </div>
                                          <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
                                            <div className="text-right">
