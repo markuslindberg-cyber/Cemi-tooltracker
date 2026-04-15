@@ -160,7 +160,11 @@ export default function LokalvardUttag() {
       artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode) ||
       artikelMap[a.artikel_id]?.benamning?.toLowerCase().includes(searchLower)
     );
-    return monthMatch && customerMatch && personalMatch && searchMatch;
+    const passes = monthMatch && customerMatch && personalMatch && searchMatch;
+    if (!passes && uttag.length > 0) {
+      console.log('Uttag filtreras bort:', u, {monthMatch, customerMatch, personalMatch, searchMatch, selectedMonths, selectedCustomers, selectedPersonal});
+    }
+    return passes;
   });
 
   const sortField = (item) => {
