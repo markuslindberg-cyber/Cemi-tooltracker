@@ -61,6 +61,7 @@ export default function LokalvardUttag() {
       
       const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
       console.log('Uttag låsta:', { uttagData: uttagData.length, checkoutAsUttag: checkoutAsUttag.length, total: result.length });
+      console.log('LokalvardCheckout raw data:', checkoutData);
       return result;
     },
   });
