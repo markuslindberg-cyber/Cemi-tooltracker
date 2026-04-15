@@ -76,12 +76,14 @@ export default function LokalvardUttag() {
         kund_namn: co.customer_name,
         ordernummer: co.request_id,
         artiklar: co.checked_out_items.map(item => {
+          // Slå upp i artikelMap med item_id eller barcode
           const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
+          // Använd alltid artikelns namn från lagerlistan om den finns, annars item.name
           const benamning = foundArtikel?.benamning || item.name || '';
           return {
-            artikel_id: item.item_id,
-            benamning,
-            antal: item.scanned_quantity || item.quantity,
+            artikel_id: item.item_id || '',
+            benamning: benamning,
+            antal: item.scanned_quantity || item.quantity || 0,
             pris_per_enhet: 0,
             total_pris: 0
           };
