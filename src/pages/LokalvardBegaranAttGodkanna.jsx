@@ -763,9 +763,13 @@ export default function LokalvardBegaranAttGodkanna() {
             <h3 className="font-semibold mb-3">Begärda artiklar</h3>
             <div className="space-y-2">
               {selectedRequest.requested_items?.map((item) => {
-                const scanned = scannedItems.find(si => si.item_id === item.id);
-                const isComplete = scanned && scanned.scanned_quantity >= item.quantity;
-                return (
+                 const scanned = scannedItems.find(si => 
+                   si.item_id === item.id || 
+                   si.name === item.name || 
+                   si.name === item.id
+                 );
+                 const isComplete = scanned && scanned.scanned_quantity >= item.quantity;
+                 return (
                   <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border ${
                     isComplete ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
                   }`}>
