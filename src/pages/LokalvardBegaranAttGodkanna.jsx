@@ -35,6 +35,7 @@ export default function LokalvardBegaranAttGodkanna() {
     const [currentItemForReplacement, setCurrentItemForReplacement] = useState(null);
     const [currentScannedItemId, setCurrentScannedItemId] = useState(null);
     const [showManualInputDialog, setShowManualInputDialog] = useState(false);
+    const [extraArticlesAwaitingApproval, setExtraArticlesAwaitingApproval] = useState([]);
     const barcodeInputRef = useRef(null);
 
   useEffect(() => {
@@ -249,12 +250,30 @@ export default function LokalvardBegaranAttGodkanna() {
       ri.name === item.benamning ||
       ri.name === item.name
     );
+
+    // Om artikeln inte är på begäran, lägg till i "avvaktar godkännande"-lista
     if (!requestedItem) {
-      setError(`${item.benamning || item.name} är inte på begäran`);
-      setTimeout(() => setError(''), 3000);
+      const existingExtra = extraArticlesAwaitingApproval.find(ea => ea.item_id === item.id);
+      if (existingExtra) {
+        setExtraArticlesAwaitingApproval(prev =>
+          prev.map(ea => ea.item_id === item.id ? { ...ea, quantity: ea.quantity + quantity } : ea)
+        );
+      } else {
+        setExtraArticlesAwaitingApproval(prev => [...prev, {
+          item_id: item.id,
+          name: item.benamning || item.name,
+          barcode: item.streckkod,
+          quantity: quantity,
+          approved: false,
+        }]);
+      }
+      setSuccess(`${item.benamning || item.name} väntar på godkännande (extra artikel)`);
+      setTimeout(() => setSuccess(''), 3000);
+      setShowManualInputDialog(false);
       return;
     }
 
+    // Artikel är på begäran - lägg till normalt
     const existingScanned = scannedItems.find(si => si.item_id === item.id);
     if (existingScanned) {
       if (existingScanned.scanned_quantity + quantity > requestedItem.quantity) {
@@ -849,6 +868,58 @@ export default function LokalvardBegaranAttGodkanna() {
               >
                 Hoppa över - Lägg till utan ersättning
               </Button>
+            </div>
+          )}
+
+          {/* Extra artiklar som väntar på godkännande */}
+          {extraArticlesAwaitingApproval.length > 0 && (
+            <div className="border-t pt-4 space-y-3 bg-yellow-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-yellow-900">⚠️ Artiklar väntar på godkännande</h4>
+              <p className="text-sm text-yellow-800">Dessa artiklar var inte på originalförfrågan. Godkänn eller avvisa varje artikel:</p>
+              <div className="space-y-2">
+                {extraArticlesAwaitingApproval.map((extraItem) => (
+                  <div key={extraItem.item_id} className="bg-white p-3 rounded-lg border border-yellow-200 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{extraItem.name}</p>
+                      <p className="text-xs text-gray-500">{extraItem.barcode} • {extraItem.quantity} st</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setScannedItems(prev => [...prev, {
+                            item_id: extraItem.item_id,
+                            name: extraItem.name,
+                            barcode: extraItem.barcode,
+                            quantity: extraItem.quantity,
+                            scanned_quantity: extraItem.quantity,
+                            replacement_items: [],
+                            is_extra: true,
+                          }]);
+                          setExtraArticlesAwaitingApproval(prev => prev.filter(ea => ea.item_id !== extraItem.item_id));
+                          setSuccess(`${extraItem.name} godkänd och tillagd`);
+                          setTimeout(() => setSuccess(''), 2000);
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        ✓ Godkänn
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setExtraArticlesAwaitingApproval(prev => prev.filter(ea => ea.item_id !== extraItem.item_id));
+                          setError(`${extraItem.name} avvisad`);
+                          setTimeout(() => setError(''), 2000);
+                        }}
+                        className="text-red-600"
+                      >
+                        ✕ Avvisa
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
