@@ -490,10 +490,7 @@ export default function LokalvardUttag() {
                         <td className="pl-3 py-3">
                           <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         </td>
-                        <td className="px-4 py-3 text-gray-900 whitespace-nowrap">
-                          {datumStr}
-                          {tidStr && <span className="text-gray-400 ml-1 text-xs">{tidStr}</span>}
-                        </td>
+                        <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
                         <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
                         <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
                         <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
