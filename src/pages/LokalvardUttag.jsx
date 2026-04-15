@@ -5,9 +5,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Loader2, Calendar, ChevronDown, ChevronRight, X, Upload, FileDown, Download, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function LokalvardUttag() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [sortBy, setSortBy] = useState('datum');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -608,7 +610,10 @@ export default function LokalvardUttag() {
                                   <div className="space-y-2">
                                     {groupArticles(u.artiklar).map((group) => (
                                        <div key={`${group.name}-${group.barcode}`} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                         <div className="flex-1">
+                                         <div className="flex-1 cursor-pointer hover:opacity-70" onClick={() => {
+                                           const artikel = artikelMap[group.barcode] || artikelMap[u.artiklar.find(a => a.benamning === group.name)?.artikel_id];
+                                           if (artikel) navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`);
+                                         }}>
                                            <div className="font-medium text-gray-900">{group.name}</div>
                                            {group.barcode && <div className="text-xs text-gray-500">{group.barcode}</div>}
                                          </div>
