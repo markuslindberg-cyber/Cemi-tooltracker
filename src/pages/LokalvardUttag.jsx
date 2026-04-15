@@ -37,8 +37,6 @@ export default function LokalvardUttag() {
         let checkoutData = [];
         if (base44.entities.LokalvardCheckout?.list) {
           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
-        } else {
-          console.warn('LokalvardCheckout.list är inte tillgänglig');
         }
         
         const checkoutAsUttag = checkoutData.map(co => {
@@ -64,13 +62,13 @@ export default function LokalvardUttag() {
         });
         
         const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
-        console.log('Uttag låsta:', { uttagData: uttagData.length, checkoutData: checkoutData.length, checkoutAsUttag: checkoutAsUttag.length, total: result.length });
         return result;
       } catch (err) {
         console.error('Fel vid hämtning av uttag:', err);
         return [];
       }
     },
+    refetchInterval: 2000,
   });
 
   const { data: artiklar = [] } = useQuery({
