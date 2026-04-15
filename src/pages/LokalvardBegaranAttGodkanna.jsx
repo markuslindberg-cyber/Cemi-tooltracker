@@ -741,14 +741,14 @@ export default function LokalvardBegaranAttGodkanna() {
              </Label>
              <div className="flex gap-2">
                <Input
-                 type="text"
-                 placeholder="Scanna streckkod här..."
-                 value={barcodeInput}
-                 onChange={(e) => setBarcodeInput(e.target.value)}
-                 onKeyDown={(e) => { if (e.key === 'Enter' && barcodeInput.trim()) handleBarcodeInput(barcodeInput); }}
-                 autoFocus
-                 className="text-lg flex-1"
-               />
+                   type="text"
+                   placeholder="Scanna streckkod här..."
+                   value={barcodeInput}
+                   onChange={(e) => setBarcodeInput(e.target.value)}
+                   onKeyDown={(e) => { if (e.key === 'Enter' && barcodeInput.trim() && !barcodeInput.includes('Antal:')) handleBarcodeInput(barcodeInput); }}
+                   autoFocus
+                   className="text-lg flex-1"
+                 />
                {barcodeInput.trim() && !barcodeInput.includes('Antal:') && (
                  <>
                    <Input
