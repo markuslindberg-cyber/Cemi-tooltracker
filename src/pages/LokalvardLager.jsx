@@ -29,6 +29,7 @@ export default function LokalvardLager() {
   const { data: uttag = [], isLoading: uttagLoading } = useQuery({
     queryKey: ['uttag'],
     queryFn: () => base44.entities.Uttag.list(null, 10000).catch(() => []),
+    refetchInterval: 5000,
   });
 
   const calculateUttag = (aggregatedArtikel) => {
