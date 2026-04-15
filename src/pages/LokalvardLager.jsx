@@ -151,7 +151,7 @@ export default function LokalvardLager() {
     if (filterTyp === 'lowStock') return saldoForGroup > 0 && saldoForGroup < (a.lagertroskelvarde || 10);
     if (filterTyp === 'empty') return saldoForGroup === 0;
     if (filterTyp === 'utgaende') return !!a.utgaende;
-    if (filterTyp === 'utanPris') return !a.pris || a.pris === 0;
+    if (filterTyp === 'utanPris') return !a.pris || a.pris < 1;
     return true;
   });
 
@@ -271,7 +271,7 @@ export default function LokalvardLager() {
     const saldo = calculateSaldo(a);
     return saldo > 0 && saldo < (a.lagertroskelvarde || 10);
   }).length;
-  const utanPris = processedArtiklar.filter(a => !a.pris || a.pris === 0).length;
+  const utanPris = processedArtiklar.filter(a => !a.pris || a.pris < 1).length;
   const totaltVärde = processedArtiklar.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
   const filteredTotal = sorted.reduce((sum, a) => sum + (calculateSaldo(a) * a.pris), 0);
 
