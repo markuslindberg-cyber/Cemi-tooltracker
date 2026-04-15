@@ -30,7 +30,7 @@ export default function LokalvardUttag() {
     return unsubscribe;
   }, [queryClient]);
 
-  const { data: uttag = [], isLoading: uttagLoading } = useQuery({
+  const { data: uttag = [], isLoading: uttagLoading, refetch } = useQuery({
     queryKey: ['uttag'],
     queryFn: async () => {
       const [uttagData, checkoutData] = await Promise.all([
@@ -59,6 +59,7 @@ export default function LokalvardUttag() {
       
       return [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
     },
+    refetchInterval: 3000,
   });
 
   const { data: artiklar = [] } = useQuery({
