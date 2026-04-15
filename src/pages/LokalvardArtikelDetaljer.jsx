@@ -79,7 +79,13 @@ export default function LokalvardArtikelDetaljer() {
         i.artikel_id === fundArticle.streckkod || 
         i.artikel_id === fundArticle.old_streckkod
       ) || [];
-      setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
+      
+      // Ta bort dubletter (samma artikel_id, datum, antal och pris)
+      const uniqueInköp = Array.from(new Map(
+        relateradeInköp.map(i => [`${i.artikel_id}|${i.datum}|${i.antal}|${i.pris}`, i])
+      ).values());
+      
+      setInköp(uniqueInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       setArtikelData(artiklarData);
     } catch (error) {
       toast.error('Kunde inte ladda data');
