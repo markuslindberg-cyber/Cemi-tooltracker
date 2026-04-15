@@ -36,7 +36,11 @@ export default function LokalvardArtikelDetaljer() {
       
       window.artiklarData = artiklarData;
 
-      const fundArticle = artiklarData.find(a => a.artikelnummer === artikelnummer);
+      const fundArticle = artiklarData.find(a => 
+        a.artikelnummer === artikelnummer || 
+        a.streckkod === artikelnummer || 
+        a.old_streckkod === artikelnummer
+      );
       if (!fundArticle) {
         navigate('/Lokalvard/Lager');
         return;
