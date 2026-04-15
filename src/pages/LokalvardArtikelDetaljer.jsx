@@ -47,6 +47,7 @@ export default function LokalvardArtikelDetaljer() {
         benamning: fundArticle.benamning,
         artikelnummer: fundArticle.artikelnummer || '',
         streckkod: fundArticle.streckkod || '',
+        old_streckkod: fundArticle.old_streckkod || '',
         pris: fundArticle.pris,
         inkopsdatum: fundArticle.inkopsdatum,
         antal_inkopta: fundArticle.antal_inkopta,
@@ -80,6 +81,7 @@ export default function LokalvardArtikelDetaljer() {
         benamning: form.benamning,
         artikelnummer: form.artikelnummer || null,
         streckkod: form.streckkod || null,
+        old_streckkod: form.old_streckkod || null,
         pris: parseFloat(form.pris),
         inkopsdatum: form.inkopsdatum,
         antal_inkopta: parseInt(form.antal_inkopta),
@@ -260,6 +262,15 @@ export default function LokalvardArtikelDetaljer() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2">Tidigare streckkod</label>
+              <input
+                type="text"
+                value={form.old_streckkod}
+                onChange={(e) => setForm({ ...form, old_streckkod: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Pris</label>

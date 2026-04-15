@@ -14,6 +14,11 @@
       "type": "string",
       "description": "Unik streckkod"
     },
+    "old_streckkod": {
+      "type": "string",
+      "description": "Tidigare streckkod f\u00f6r uppslagning av gamla uttag",
+      "nullable": true
+    },
     "pris": {
       "type": "number",
       "description": "Pris per enhet"
@@ -55,5 +60,23 @@
     "inkopsdatum",
     "antal_inkopta",
     "lagertroskelvarde"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin_lokalv\u00e5rd"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin_lokalv\u00e5rd"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin_lokalv\u00e5rd"
+      }
+    }
+  }
 }
