@@ -40,28 +40,32 @@ export default function LokalvardUttag() {
         }
         
         const checkoutAsUttag = checkoutData.map(co => {
-          const dateStr = co.checked_out_date || new Date().toISOString();
-          return {
-            id: co.id,
-            datum: dateStr,
-            personal_id: '',
-            personal_namn: co.checked_out_by_name,
-            kund_id: co.customer_id,
-            kund_namn: co.customer_name,
-            ordernummer: co.request_id,
-            artiklar: co.checked_out_items.map(item => ({
-              artikel_id: item.item_id,
-              benamning: item.name,
-              antal: item.scanned_quantity || item.quantity,
-              pris_per_enhet: 0,
-              total_pris: 0
-            })),
-            total_kostnad: 0,
-            manad: dateStr.substring(0, 7)
-          };
-        });
-        
-        const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+           const dateStr = co.checked_out_date || new Date().toISOString();
+           return {
+             id: co.id,
+             datum: dateStr,
+             personal_id: '',
+             personal_namn: co.checked_out_by_name,
+             kund_id: co.customer_id,
+             kund_namn: co.customer_name,
+             ordernummer: co.request_id,
+             artiklar: co.checked_out_items.map(item => ({
+               artikel_id: item.item_id,
+               benamning: item.name,
+               antal: item.scanned_quantity || item.quantity,
+               pris_per_enhet: 0,
+               total_pris: 0
+             })),
+             total_kostnad: 0,
+             manad: dateStr.substring(0, 7)
+           };
+         });
+
+         // Deduplicate: om checkout redan finns som Uttag (samma ordernummer), ta bara Uttag
+         const requestIds = new Set(uttagData.map(u => u.ordernummer).filter(Boolean));
+         const filteredCheckouts = checkoutAsUttag.filter(co => !requestIds.has(co.ordernummer));
+
+         const result = [...uttagData, ...filteredCheckouts].sort((a, b) => new Date(b.datum) - new Date(a.datum));
         return result;
       } catch (err) {
         console.error('Fel vid hämtning av uttag:', err);
