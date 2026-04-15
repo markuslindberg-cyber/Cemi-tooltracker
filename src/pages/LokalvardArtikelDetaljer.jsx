@@ -98,7 +98,13 @@ export default function LokalvardArtikelDetaljer() {
           manad: dateStr.substring(0, 7)
         };
       }).filter(co => 
-        co.artiklar?.some(a => a.artikel_id === streckkod || a.artikel_id === oldStreckkod || a.benamning?.toLowerCase() === fundArticle.benamning?.toLowerCase())
+        co.artiklar?.some(a => 
+          a.artikel_id === streckkod || 
+          a.artikel_id === oldStreckkod || 
+          a.artikel_id === fundArticle.artikelnummer ||
+          a.benamning?.toLowerCase() === fundArticle.benamning?.toLowerCase() ||
+          artikelIds.has(a.artikel_id)
+        )
       );
 
       const allTransactions = [...relateradeUttag, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
