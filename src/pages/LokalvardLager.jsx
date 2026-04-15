@@ -367,20 +367,19 @@ export default function LokalvardLager() {
             </thead>
             <tbody className="divide-y">
                 {sorted.map((artikel) => {
-                  const saldo = calculateSaldo(artikel);
-                  let saldoColor = 'text-gray-900';
-                  let saldoBg = '';
-                  if (saldo === 0) {
-                    saldoColor = 'text-red-600 font-semibold';
-                    saldoBg = 'bg-red-50';
-                  } else if (saldo < (artikel.lagertroskelvarde || 10)) {
-                    saldoColor = 'text-yellow-600 font-semibold';
-                    saldoBg = 'bg-yellow-50';
-                  }
+                   const saldo = calculateSaldo(artikel);
+                   let saldoColor = 'text-gray-900';
+                   let saldoBg = '';
+                   if (saldo === 0) {
+                     saldoColor = 'text-red-600 font-semibold';
+                     saldoBg = 'bg-red-50';
+                   } else if (saldo < (artikel.lagertroskelvarde || 10)) {
+                     saldoColor = 'text-yellow-600 font-semibold';
+                     saldoBg = 'bg-yellow-50';
+                   }
 
-                  return (
-                     <React.Fragment key={artikel.id}>
-                       <tr className={`${saldoBg} transition-colors`}>
+                   return (
+                      <tr key={artikel.id} className={`${saldoBg} transition-colors`}>
                       {editingId === artikel.id ? (
                        <>
                          <td className="px-3 py-2">
@@ -440,7 +439,6 @@ export default function LokalvardLager() {
                        </>
                        )}
                        </tr>
-                       </React.Fragment>
                        );
                        })}
             </tbody>
