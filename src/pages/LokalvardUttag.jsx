@@ -705,11 +705,13 @@ export default function LokalvardUttag() {
                              <input type="number" step="0.01" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Pris" />
                              <button onClick={() => handleSaveArticle(u.id, idx)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
                              <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
+                             {idx === 0 && (
+                               <button onClick={() => handleDeleteUttag(u.id, isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
+                             )}
                            </div>
                          ) : (
                            <>
                              <button onClick={() => handleEditArticle(u.id, artikel, idx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                             <button onClick={() => handleDeleteUttag(u.id, isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
                            </>
                          )}
                        </td>
