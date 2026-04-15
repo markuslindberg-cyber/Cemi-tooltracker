@@ -12,10 +12,10 @@ Deno.serve(async (req) => {
     // Hämta alla inköp
     const allInkop = await base44.entities.LokalvardInköp.list(null, 10000);
     
-    // Gruppera efter artikel_id + datum + antal
+    // Gruppera efter artikel_id + datum + antal + pris
     const grouped = {};
     allInkop.forEach(inkop => {
-      const key = `${inkop.artikel_id}|${inkop.datum}|${inkop.antal}`;
+      const key = `${inkop.artikel_id}|${inkop.datum}|${inkop.antal}|${inkop.pris}`;
       if (!grouped[key]) {
         grouped[key] = [];
       }
