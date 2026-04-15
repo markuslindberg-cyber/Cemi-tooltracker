@@ -20,6 +20,7 @@ export default function LokalvardUttag() {
   const [uploading, setUploading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
   const [searchBarcode, setSearchBarcode] = useState('');
+  const [showUnmatched, setShowUnmatched] = useState(false);
 
   const { data: uttag = [], isLoading: uttagLoading, refetch } = useQuery({
     queryKey: ['uttag'],
@@ -531,6 +532,11 @@ export default function LokalvardUttag() {
               <Download className="w-4 h-4 mr-1" /> CSV
             </Button>
           )}
+          {unmatchedArticles.length > 0 && (
+            <Button size="sm" onClick={() => setShowUnmatched(!showUnmatched)} className={showUnmatched ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-600 hover:bg-gray-700"}>
+              ⚠️ Omatchade ({unmatchedArticles.length})
+            </Button>
+          )}
         </div>
       </div>
 
@@ -623,7 +629,7 @@ export default function LokalvardUttag() {
         <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
       )}
 
-      {unmatchedArticles.length > 0 && (
+      {unmatchedArticles.length > 0 && showUnmatched && (
         <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <h2 className="text-lg font-semibold text-yellow-900 mb-3">⚠️ Omatchade artiklar</h2>
           <p className="text-sm text-yellow-800 mb-3">Dessa streckkoder/artiklar från uttag matchar inte artiklar i lagerlistan:</p>
