@@ -71,10 +71,14 @@ export default function LokalvardArtikelDetaljer() {
 
       const streckkod = fundArticle.streckkod;
       const oldStreckkod = fundArticle.old_streckkod;
-      const artikelIds = new Set(artiklarData.filter(a => a.streckkod === streckkod || a.old_streckkod === streckkod || a.streckkod === oldStreckkod || a.id === fundArticle.id).map(a => a.id));
 
       const relateradeUttag = uttagData.filter(u => 
-        u.artiklar?.some(a => a.artikel_id === streckkod || a.artikel_id === oldStreckkod || artikelIds.has(a.artikel_id))
+        u.artiklar?.some(a => 
+          a.benamning === streckkod || 
+          a.benamning === oldStreckkod ||
+          a.artikel_id === streckkod || 
+          a.artikel_id === oldStreckkod
+        )
       );
 
       const checkoutAsUttag = (checkoutData || []).map(co => {
@@ -101,9 +105,8 @@ export default function LokalvardArtikelDetaljer() {
         co.artiklar?.some(a => 
           a.artikel_id === streckkod || 
           a.artikel_id === oldStreckkod || 
-          a.artikel_id === fundArticle.artikelnummer ||
-          a.benamning?.toLowerCase() === fundArticle.benamning?.toLowerCase() ||
-          artikelIds.has(a.artikel_id)
+          a.benamning === streckkod ||
+          a.benamning === oldStreckkod
         )
       );
 
@@ -411,19 +414,12 @@ export default function LokalvardArtikelDetaljer() {
           <div className="space-y-1">
             {transaktioner.map(uttag => {
                const matchingItems = uttag.artiklar.filter(item => 
-                 item.artikel_id === artikel.streckkod ||
-                 item.artikel_id === artikel.old_streckkod ||
-                 artikelData.some(a => 
-                   (a.streckkod === artikel.streckkod || 
-                    a.old_streckkod === artikel.streckkod ||
-                    a.streckkod === artikel.old_streckkod ||
-                    a.id === artikel.id) && 
-                   (a.id === item.artikel_id || 
-                    a.streckkod === item.artikel_id || 
-                    a.old_streckkod === item.artikel_id)
-                 )
-               );
-               const totalUttagForArticle = calculateUttagMatching(transaktioner, artikelData, artikel.streckkod, artikel.old_streckkod);
+                  item.benamning === artikel.streckkod ||
+                  item.benamning === artikel.old_streckkod ||
+                  item.artikel_id === artikel.streckkod ||
+                  item.artikel_id === artikel.old_streckkod
+                );
+               const totalUttagForArticle = calculateUttagMatching(transaktioner, artikelData, artikel.streckkod, artikel.old_streckkod || '');
               const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
               const totalPris = matchingItems.reduce((s, i) => s + (i.antal * i.pris_per_enhet || 0), 0);
               const datum = uttag.datum ? uttag.datum.split('T')[0] : '-';

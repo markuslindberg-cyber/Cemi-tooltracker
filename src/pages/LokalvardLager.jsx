@@ -43,7 +43,7 @@ export default function LokalvardLager() {
   });
 
   const calculateUttag = (aggregatedArtikel) => {
-    return calculateUttagMatching(uttag, artiklar, aggregatedArtikel.streckkod, aggregatedArtikel.old_streckkod);
+    return calculateUttagMatching(uttag, artiklar, aggregatedArtikel.streckkod, aggregatedArtikel.old_streckkod || '');
   };
 
   const getInköptForArticle = (aggregatedArtikel) => {
