@@ -649,17 +649,22 @@ export default function LokalvardUttag() {
                 <tr className="bg-yellow-100 border-b">
                   <th className="px-4 py-2 text-left font-semibold text-yellow-900">Streckkod/ID</th>
                   <th className="px-4 py-2 text-left font-semibold text-yellow-900">Namn från fil</th>
+                  <th className="px-4 py-2 text-left font-semibold text-yellow-900">Namn från lager</th>
                   <th className="px-4 py-2 text-right font-semibold text-yellow-900">Antal gånger använd</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {unmatchedArticles.map((artikel) => (
-                  <tr key={`${artikel.artikel_id}-${artikel.benamning}`} className="hover:bg-yellow-100">
-                    <td className="px-4 py-2 font-mono text-yellow-900">{artikel.artikel_id}</td>
-                    <td className="px-4 py-2 text-yellow-900">{artikel.benamning || '–'}</td>
-                    <td className="px-4 py-2 text-right text-yellow-900 font-semibold">{artikel.count}</td>
-                  </tr>
-                ))}
+                {unmatchedArticles.map((artikel) => {
+                  const lagerNamn = artikelMap[artikel.artikel_id]?.benamning || '';
+                  return (
+                    <tr key={`${artikel.artikel_id}-${artikel.benamning}`} className="hover:bg-yellow-100">
+                      <td className="px-4 py-2 font-mono text-yellow-900">{artikel.artikel_id}</td>
+                      <td className="px-4 py-2 text-yellow-900">{artikel.benamning || '–'}</td>
+                      <td className="px-4 py-2 text-yellow-900">{lagerNamn || '–'}</td>
+                      <td className="px-4 py-2 text-right text-yellow-900 font-semibold">{artikel.count}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
