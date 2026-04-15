@@ -709,9 +709,7 @@ export default function LokalvardUttag() {
                          ) : (
                            <>
                              <button onClick={() => handleEditArticle(u.id, artikel, idx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                             {idx === 0 && (
-                               <button onClick={() => handleDeleteUttag(u.id, isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
-                             )}
+                             <button onClick={() => handleDeleteUttag(u.id, isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
                            </>
                          )}
                        </td>
