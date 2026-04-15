@@ -577,6 +577,16 @@ export default function LokalvardBegaranAttGodkanna() {
                           <p className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100">{request.notes}</p>
                         </div>
                        )}
+
+                       {request.status === 'approved' && (
+                         <Button
+                           size="sm"
+                           onClick={() => setStep(3) || setSelectedRequest(request)}
+                           className="mt-3 w-full bg-blue-600 hover:bg-blue-700"
+                         >
+                           → Gå till uttag
+                         </Button>
+                       )}
                        </div>
                        )}
                        </div>
