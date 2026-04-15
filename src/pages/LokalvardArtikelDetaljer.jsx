@@ -37,12 +37,13 @@ export default function LokalvardArtikelDetaljer() {
 
   const loadData = async () => {
     try {
-      const [artiklarData, uttagData, inköpData] = await Promise.all([
+      const [artiklarData, uttagData, checkoutData, inköpData] = await Promise.all([
         base44.entities.LokalvardsArtikel.list(null, 10000),
         base44.entities.Uttag.list(null, 100000),
+        base44.entities.LokalvardCheckout?.list ? base44.entities.LokalvardCheckout.list(null, 100000) : Promise.resolve([]),
         base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([])
       ]);
-      
+
       window.artiklarData = artiklarData;
 
       const fundArticle = artiklarData.find(a => 
@@ -71,10 +72,37 @@ export default function LokalvardArtikelDetaljer() {
       const streckkod = fundArticle.streckkod;
       const oldStreckkod = fundArticle.old_streckkod;
       const artikelIds = new Set(artiklarData.filter(a => a.streckkod === streckkod || a.old_streckkod === streckkod || a.streckkod === oldStreckkod || a.id === fundArticle.id).map(a => a.id));
+
       const relateradeUttag = uttagData.filter(u => 
         u.artiklar?.some(a => a.artikel_id === streckkod || a.artikel_id === oldStreckkod || artikelIds.has(a.artikel_id))
       );
-      setTransaktioner(relateradeUttag.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
+
+      const checkoutAsUttag = (checkoutData || []).map(co => {
+        const dateStr = co.checked_out_date || new Date().toISOString();
+        return {
+          id: co.id,
+          datum: dateStr,
+          personal_id: '',
+          personal_namn: co.checked_out_by_name,
+          kund_id: co.customer_id,
+          kund_namn: co.customer_name,
+          ordernummer: co.request_id,
+          artiklar: co.checked_out_items.map(item => ({
+            artikel_id: item.item_id,
+            benamning: item.name,
+            antal: item.scanned_quantity || item.quantity,
+            pris_per_enhet: 0,
+            total_pris: 0
+          })),
+          total_kostnad: 0,
+          manad: dateStr.substring(0, 7)
+        };
+      }).filter(co => 
+        co.artiklar?.some(a => a.artikel_id === streckkod || a.artikel_id === oldStreckkod || a.benamning?.toLowerCase() === fundArticle.benamning?.toLowerCase())
+      );
+
+      const allTransactions = [...relateradeUttag, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+      setTransaktioner(allTransactions);
       
       // Hämta alla artiklar med samma streckkod eller old_streckkod för att visa alla relaterade inköp
       const sammaStreckkod = artiklarData.filter(a => 
