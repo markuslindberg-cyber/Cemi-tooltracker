@@ -816,37 +816,35 @@ export default function LokalvardUttag() {
                   </Button>
                 </div>
               )}
-            </div>
+              </div>
 
-            {/* Mobile view */}
-            <div className="lg:hidden space-y-2">
-                {paginatedData.map((u) => (
-                  <div key={`${u.id}-${u.datum}`} className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900">{u.kund_namn}</p>
-                        <p className="text-xs text-gray-500">{u.datum?.split('T')[0]}</p>
-                      </div>
-                      <p className="text-lg font-bold text-gray-900">{u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</p>
+              {/* Mobile view */}
+              <div className="lg:hidden space-y-2">
+              {paginatedData.map((u) => (
+                <div key={`${u.id}-${u.datum}`} className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900">{u.kund_namn}</p>
+                      <p className="text-xs text-gray-500">{u.datum?.split('T')[0]}</p>
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{u.personal_namn}</p>
-                    <div className="text-xs text-gray-700 mb-2">
-                      {u.artiklar?.map((a, idx) => (
-                        <div key={idx}>{a.benamning} ({a.antal} st)</div>
-                      ))}
-                    </div>
-                    {u.ordernummer && <p className="text-xs text-gray-500">Ordernummer: {u.ordernummer}</p>}
+                    <p className="text-lg font-bold text-gray-900">{u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</p>
                   </div>
-                ))}
-            </div>
+                  <p className="text-xs text-gray-600 mb-2">{u.personal_namn}</p>
+                  <div className="text-xs text-gray-700 mb-2">
+                    {u.artiklar?.map((a, idx) => (
+                      <div key={idx}>{a.benamning} ({a.antal} st)</div>
+                    ))}
+                  </div>
+                  {u.ordernummer && <p className="text-xs text-gray-500">Ordernummer: {u.ordernummer}</p>}
+                </div>
+              ))}
+              </div>
 
-            {sorted.length === 0 && (
+              {sorted.length === 0 && (
               <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
-            )}
-          </>
-          ) : (
-          <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
-          )}
+              )}
+              </>
+              )}
         </div>
         )}
 
