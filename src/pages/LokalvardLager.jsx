@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Plus, Edit2, Upload, FileDown, ArrowUp, ArrowDown, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AddArtikelDialog from '@/components/dialogs/AddArtikelDialog';
+import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
 
 export default function LokalvardLager() {
   const navigate = useNavigate();
@@ -34,26 +35,7 @@ export default function LokalvardLager() {
   });
 
   const calculateUttag = (aggregatedArtikel) => {
-    const streckkod = aggregatedArtikel.streckkod;
-    const oldStreckkod = aggregatedArtikel.old_streckkod;
-    const allArtikelIds = new Set(aggregatedArtikel.all_artikel_ids);
-
-    return uttag.reduce((sum, u) => {
-      const matchingWithdrawals = u.artiklar?.filter(item => 
-        item.artikel_id === streckkod ||
-        item.artikel_id === oldStreckkod ||
-        artiklar.some(a => 
-          (a.streckkod === streckkod || 
-           a.old_streckkod === streckkod ||
-           a.streckkod === oldStreckkod ||
-           allArtikelIds.has(a.id)) && 
-          (a.id === item.artikel_id || 
-           a.streckkod === item.artikel_id || 
-           a.old_streckkod === item.artikel_id)
-        )
-      ) || [];
-      return sum + matchingWithdrawals.reduce((s, a) => s + (a.antal || 0), 0);
-    }, 0);
+    return calculateUttagMatching(uttag, artiklar, aggregatedArtikel.streckkod, aggregatedArtikel.old_streckkod);
   };
 
   const calculateSaldo = (aggregatedArtikel) => {

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
 
 export default function LokalvardArtikelDetaljer() {
   const { artikelnummer } = useParams();
@@ -388,6 +389,7 @@ export default function LokalvardArtikelDetaljer() {
                     a.old_streckkod === item.artikel_id)
                  )
                );
+               const totalUttagForArticle = calculateUttagMatching(transaktioner, artikelData, artikel.streckkod, artikel.old_streckkod);
               const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
               const totalPris = matchingItems.reduce((s, i) => s + (i.antal * i.pris_per_enhet || 0), 0);
               const datum = uttag.datum ? uttag.datum.split('T')[0] : '-';
