@@ -570,90 +570,62 @@ export default function LokalvardUttag() {
 
               {/* Table */}
               <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="w-6"></th>
-                      <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('datum')}>
-                        Datum <SortIcon col="datum" />
-                      </th>
-                      <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('kund_namn')}>
-                        Kund <SortIcon col="kund_namn" />
-                      </th>
-                      <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('personal_namn')}>
-                        Personal <SortIcon col="personal_namn" />
-                      </th>
-                      <th className="px-4 py-3 text-left font-semibold text-gray-600">Ordernummer</th>
-                      <th className="px-4 py-3 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('total_kostnad')}>
-                        Kostnad <SortIcon col="total_kostnad" />
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sorted.map((u) => {
-                       const isExpanded = expandedRows[u.id];
-                       const datumStr = u.datum ? u.datum.split('T')[0] : '';
-                       const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
-                       return [
-                             <tr
-                              key={u.id}
-                              className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                              onClick={() => toggleRow(u.id)}
-                            >
-                             <td className="pl-3 py-3">
-                               <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                             </td>
-                             <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
-                             <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
-                             <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
-                             <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
-                             <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                               {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
-                             </td>
-                           </tr>,
-                           isExpanded && (
-                             <tr key={`${u.id}-detail`} className="bg-gray-50">
-                               <td colSpan={6} className="px-6 py-3">
-                                 {(!u.artiklar || u.artiklar.length === 0) ? (
-                                   <div className="text-sm text-gray-500">Inga artiklar</div>
-                                 ) : (
-                                   <div className="space-y-2">
-                                     {groupArticles(u.artiklar).map((group) => (
-                                        <div key={`${group.name}-${group.barcode}`} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                          <div className="flex-1 cursor-pointer hover:opacity-70" onClick={() => {
-                                            const artikel = artikelMap[group.barcode] || artikelMap[u.artiklar.find(a => a.benamning === group.name)?.artikel_id];
-                                            if (artikel) navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`);
-                                          }}>
-                                            <div className="font-medium text-gray-900">{group.name}</div>
-                                          </div>
-                                         <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
-                                           <div className="text-right">
-                                             <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
-                                             <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
-                                           </div>
-                                           {editingArticleId === `${u.id}-${group.items[0].originalIndex}` ? (
-                                             <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                               <span className="text-xs text-gray-700">{group.name}</span>
-                                               <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs" />
-                                               <input type="number" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs" />
-                                               <button onClick={() => handleSaveArticle(u.id, group.items[0].originalIndex)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
-                                               <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">Avbryt</button>
-                                             </div>
-                                           ) : (
-                                             <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                                           )}
-                                         </div>
-                                       </div>
-                                     ))}
-                                   </div>
-                                 )}
-                               </td>
-                             </tr>
-                           )
-                        ].filter(Boolean);
-                       })}
-                          </tbody>
-                </table>
+              <table className="w-full text-sm">
+               <thead>
+                 <tr className="bg-gray-50 border-b border-gray-200">
+                   <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('datum')}>
+                     Datum <SortIcon col="datum" />
+                   </th>
+                   <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('kund_namn')}>
+                     Kund <SortIcon col="kund_namn" />
+                   </th>
+                   <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('personal_namn')}>
+                     Personal <SortIcon col="personal_namn" />
+                   </th>
+                   <th className="px-4 py-3 text-left font-semibold text-gray-600">Artikel</th>
+                   <th className="px-4 py-3 text-center font-semibold text-gray-600">Antal</th>
+                   <th className="px-4 py-3 text-left font-semibold text-gray-600">Ordernummer</th>
+                   <th className="px-4 py-3 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('total_kostnad')}>
+                     Kostnad <SortIcon col="total_kostnad" />
+                   </th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {sorted.map((u) => {
+                   const datumStr = u.datum ? u.datum.split('T')[0] : '';
+                   const articles = groupArticles(u.artiklar || []);
+                   return articles.map((group, idx) => (
+                     <tr key={`${u.id}-${idx}`} className="border-b border-gray-100 hover:bg-gray-50">
+                       {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>}
+                       {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>}
+                       {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-gray-700">{u.personal_namn}</td>}
+                       <td className="px-4 py-3 text-gray-900 cursor-pointer hover:opacity-70" onClick={() => {
+                         const artikel = artikelMap[group.barcode];
+                         if (artikel) navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`);
+                       }}>
+                         {group.name}
+                       </td>
+                       <td className="px-4 py-3 text-center text-gray-900">{group.totalAntal} st</td>
+                       {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>}
+                       {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
+                         {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
+                       </td>}
+                       <td className="px-4 py-3">
+                         {editingArticleId === `${u.id}-${group.items[0].originalIndex}` ? (
+                           <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                             <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-10 px-1 py-0.5 border border-gray-300 rounded text-xs" />
+                             <button onClick={() => handleSaveArticle(u.id, group.items[0].originalIndex)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
+                             <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
+                           </div>
+                         ) : (
+                           <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                         )}
+                       </td>
+                     </tr>
+                   ));
+                 })}
+               </tbody>
+              </table>
               </div>
               </div>
               ) : (
