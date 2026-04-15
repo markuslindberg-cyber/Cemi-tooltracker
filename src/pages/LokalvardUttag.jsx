@@ -38,7 +38,6 @@ export default function LokalvardUttag() {
     artiklar.forEach(a => {
       map[a.id] = a;
       map[a.streckkod] = a;
-      map[a.artikelnummer] = a;
       if (a.old_streckkod) {
         map[a.old_streckkod] = a;
       }
@@ -77,11 +76,7 @@ export default function LokalvardUttag() {
         kund_namn: co.customer_name,
         ordernummer: co.request_id,
         artiklar: co.checked_out_items.map(item => {
-          console.log('Checkout item:', item, 'artikelMap keys:', Object.keys(artikelMap).slice(0, 5));
-          // Slå upp i artikelMap med item_id eller barcode
           const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
-          console.log('Found artikel:', foundArtikel);
-          // Använd alltid artikelns namn från lagerlistan om den finns, annars item.name
           const benamning = foundArtikel?.benamning || item.name || '';
           return {
             artikel_id: item.item_id || '',
