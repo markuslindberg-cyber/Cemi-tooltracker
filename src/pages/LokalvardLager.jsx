@@ -43,7 +43,19 @@ export default function LokalvardLager() {
   });
 
   const calculateUttag = (aggregatedArtikel) => {
-    return calculateUttagMatching(uttag, artiklar, aggregatedArtikel.streckkod, aggregatedArtikel.old_streckkod || '');
+    // Räkna uttag direkt för denna grupp
+    return uttag.reduce((sum, u) => {
+      const matchingItems = u.artiklar?.filter(item => {
+        // Match om benamning är streckkoden
+        if (item.benamning === aggregatedArtikel.streckkod || item.benamning === aggregatedArtikel.old_streckkod) return true;
+        // Match om artikel_id är någon av artikel-IDs i gruppen
+        if (aggregatedArtikel.all_artikel_ids.includes(item.artikel_id)) return true;
+        // Match om artikel_id är streckkoden
+        if (item.artikel_id === aggregatedArtikel.streckkod || item.artikel_id === aggregatedArtikel.old_streckkod) return true;
+        return false;
+      }) || [];
+      return sum + matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
+    }, 0);
   };
 
   const getInköptForArticle = (aggregatedArtikel) => {
