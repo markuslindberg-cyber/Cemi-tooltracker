@@ -28,6 +28,23 @@ export default function LokalvardUttag() {
   const [loadAllUttag, setLoadAllUttag] = useState(false);
   const itemsPerPage = 50;
 
+  const { data: artiklar = [] } = useQuery({
+    queryKey: ['lokalvardsArtiklar'],
+    queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
+  });
+
+  const artikelMap = useMemo(() => {
+    const map = {};
+    artiklar.forEach(a => {
+      map[a.id] = a;
+      map[a.streckkod] = a;
+      if (a.old_streckkod) {
+        map[a.old_streckkod] = a;
+      }
+    });
+    return map;
+  }, [artiklar]);
+
   const { data: uttag = [], isLoading: uttagLoading, refetch } = useQuery({
     queryKey: ['uttag', loadAllUttag],
     queryFn: async () => {
@@ -75,23 +92,6 @@ export default function LokalvardUttag() {
     },
     refetchInterval: 2000,
   });
-
-  const { data: artiklar = [] } = useQuery({
-    queryKey: ['lokalvardsArtiklar'],
-    queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
-  });
-
-  const artikelMap = useMemo(() => {
-    const map = {};
-    artiklar.forEach(a => {
-      map[a.id] = a;
-      map[a.streckkod] = a;
-      if (a.old_streckkod) {
-        map[a.old_streckkod] = a;
-      }
-    });
-    return map;
-  }, [artiklar]);
 
   const { data: personal = [] } = useQuery({
     queryKey: ['teamMembers'],
