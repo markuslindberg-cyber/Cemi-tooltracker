@@ -7,9 +7,11 @@ import { Loader2, Check, X, AlertCircle } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 export default function LokalvardBegaranAttGodkanna() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectNotes, setRejectNotes] = useState('');
   const [user, setUser] = useState(null);
@@ -50,10 +52,10 @@ export default function LokalvardBegaranAttGodkanna() {
         approved_by_name: personalMap[user?.id] || user?.full_name,
         approved_date: new Date().toISOString(),
       }),
-    onSuccess: () => {
+    onSuccess: (_, requestId) => {
       queryClient.invalidateQueries(['pendingWorkwearRequests']);
-      setSelectedRequest(null);
       setRejectNotes('');
+      navigate(`/Lokalvard/NyttUttag?requestId=${requestId}`);
     },
   });
 

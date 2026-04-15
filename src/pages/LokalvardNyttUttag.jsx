@@ -30,8 +30,8 @@ export default function LokalvardNyttUttag() {
   const { data: approvedRequests = [], isLoading: loadingRequests } = useQuery({
     queryKey: ['approvedRequests'],
     queryFn: async () => {
-      const requests = await base44.entities.WorkwearRequest.filter({ status: 'approved' });
-      return requests;
+      const requests = await base44.entities.WorkwearRequest.list('-request_date', 10000);
+      return requests.filter(r => r.status === 'approved');
     },
   });
 
@@ -52,6 +52,15 @@ export default function LokalvardNyttUttag() {
     });
     return map;
   }, [personal]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestId = urlParams.get('requestId');
+    if (requestId && approvedRequests.length > 0) {
+      const req = approvedRequests.find(r => r.id === requestId);
+      if (req) setSelectedRequest(req);
+    }
+  }, [approvedRequests]);
 
   const createCheckoutMutation = useMutation({
     mutationFn: async (data) => {
