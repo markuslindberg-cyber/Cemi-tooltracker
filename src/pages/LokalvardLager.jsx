@@ -341,12 +341,7 @@ export default function LokalvardLager() {
                     {sortBy === 'streckkod' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('inkopsdatum')}>
-                  <div className="flex items-center gap-1">
-                    Inköpsdatum
-                    {sortBy === 'inkopsdatum' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
-                  </div>
-                </th>
+
                 <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('pris')}>
                   <div className="flex items-center justify-end gap-1">
                     Pris
@@ -402,14 +397,7 @@ export default function LokalvardLager() {
                            />
                          </td>
                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
-                         <td className="px-4 py-3">
-                           <input
-                             type="date"
-                             value={editForm.inkopsdatum}
-                             onChange={(e) => setEditForm({ ...editForm, inkopsdatum: e.target.value })}
-                             className="px-2 py-1 border border-gray-300 rounded w-full"
-                           />
-                         </td>
+
                          <td className="px-4 py-3">
                            <input
                              type="number"
@@ -475,7 +463,7 @@ export default function LokalvardLager() {
                             </button>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.inkopsdatum}</td>
+
                           <td className="px-4 py-3 text-right">
                             <span className="font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
                           </td>
