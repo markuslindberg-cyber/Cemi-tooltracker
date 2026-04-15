@@ -26,7 +26,7 @@ export default function LokalvardUttag() {
   const [showUnmatched, setShowUnmatched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [loadAllUttag, setLoadAllUttag] = useState(false);
-  const itemsPerPage = 50;
+  const itemsPerPage = 500;
 
   const { data: artiklar = [] } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
