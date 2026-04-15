@@ -341,9 +341,17 @@ export default function LokalvardUttag() {
 
   const handleEditArticle = (uttagId, artikel, articleIndex) => {
     setEditingArticleId(`${uttagId}-${articleIndex}`);
+    let pris = artikel.pris_per_enhet;
+    
+    // Om pris är 0, försök hämta från artikellistan
+    if (pris === 0 || pris === undefined) {
+      const foundArtikel = artikelMap[artikel.artikel_id] || artikelMap[artikel.benamning];
+      pris = foundArtikel?.pris || 0;
+    }
+    
     setEditArticleForm({
       antal: artikel.antal,
-      pris_per_enhet: artikel.pris_per_enhet
+      pris_per_enhet: pris
     });
   };
 
