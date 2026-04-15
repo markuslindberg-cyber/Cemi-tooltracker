@@ -91,13 +91,17 @@ export default function LokalvardArtikelDetaljer() {
           kund_id: co.customer_id,
           kund_namn: co.customer_name,
           ordernummer: co.request_id,
-          artiklar: co.checked_out_items.map(item => ({
-            artikel_id: item.item_id,
-            benamning: item.name,
-            antal: item.scanned_quantity || item.quantity,
-            pris_per_enhet: 0,
-            total_pris: 0
-          })),
+          artiklar: co.checked_out_items.map(item => {
+            // Försök matcha item_id med artikel ID
+            let matchedArtikel = artiklarData.find(a => a.id === item.item_id);
+            return {
+              artikel_id: matchedArtikel?.streckkod || matchedArtikel?.id || item.item_id,
+              benamning: matchedArtikel?.benamning || item.name,
+              antal: item.scanned_quantity || item.quantity,
+              pris_per_enhet: matchedArtikel?.pris || 0,
+              total_pris: (item.scanned_quantity || item.quantity) * (matchedArtikel?.pris || 0)
+            };
+          }),
           total_kostnad: 0,
           manad: dateStr.substring(0, 7)
         };
@@ -106,7 +110,8 @@ export default function LokalvardArtikelDetaljer() {
           a.artikel_id === streckkod || 
           a.artikel_id === oldStreckkod || 
           a.benamning === streckkod ||
-          a.benamning === oldStreckkod
+          a.benamning === oldStreckkod ||
+          a.benamning === fundArticle.benamning
         )
       );
 
