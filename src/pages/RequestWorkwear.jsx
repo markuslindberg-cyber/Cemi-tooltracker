@@ -41,10 +41,21 @@ export default function RequestWorkwear() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  const { data: items = [] } = useQuery({
+  const { data: rawItems = [] } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
     queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).catch(() => []),
   });
+
+  // En post per streckkod (senast inköpt)
+  const items = Object.values(
+    rawItems.reduce((acc, item) => {
+      const key = item.streckkod || item.id;
+      if (!acc[key] || new Date(item.inkopsdatum) > new Date(acc[key].inkopsdatum)) {
+        acc[key] = item;
+      }
+      return acc;
+    }, {})
+  );
 
   const { data: handlers = [] } = useQuery({
     queryKey: ['handlers'],
