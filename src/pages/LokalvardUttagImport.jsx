@@ -9,10 +9,10 @@ export default function LokalvardUttagImport() {
   const [result, setResult] = useState(null);
 
   const handleDownloadTemplate = () => {
-    const headers = ['datum', 'personal_namn', 'kund_namn', 'ordernummer', 'artikel_namn', 'antal', 'total_kostnad', 'streckkod'];
+    const headers = ['datum', 'personal', 'kund', 'ordernummer', 'streckkod', 'antal', 'pris', 'månad'];
     const rows = [
       headers,
-      ['2026-01-15', 'Anna Andersson', 'Företag AB', 'ORD-001', 'Rengöringsduk', '5', '249.95', '71617'],
+      ['2026-01-15', 'Anna Andersson', 'Företag AB', 'ORD-001', '71617', '5', '49.99', '2026-01'],
     ];
     const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
@@ -40,13 +40,13 @@ export default function LokalvardUttagImport() {
           type: 'object',
           properties: {
             datum: { type: 'string' },
-            personal_namn: { type: 'string' },
-            kund_namn: { type: 'string' },
+            personal: { type: 'string' },
+            kund: { type: 'string' },
             ordernummer: { type: 'string' },
-            artikel_namn: { type: 'string' },
+            streckkod: { type: 'string' },
             antal: { type: 'number' },
-            total_kostnad: { type: 'number' },
-            streckkod: { type: 'string' }
+            pris: { type: 'number' },
+            månad: { type: 'string' }
           }
         }
       });
@@ -57,7 +57,7 @@ export default function LokalvardUttagImport() {
         return;
       }
 
-      const valid = extracted.output.filter(r => r.datum && r.personal_namn && r.kund_namn && r.artikel_namn);
+      const valid = extracted.output.filter(r => r.datum && r.personal && r.kund && r.streckkod);
       if (valid.length === 0) {
         setResult({ success: false, error: 'No valid rows found' });
         setUploading(false);

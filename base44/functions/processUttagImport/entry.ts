@@ -40,28 +40,29 @@ Deno.serve(async (req) => {
     });
 
     const processedRecords = uttagRecords.map(record => {
-      const artikel = artikelMap[record.streckkod] || artikelMap[record.artikel_namn];
+      const artikel = artikelMap[record.streckkod];
       const artikelId = artikel?.id || '';
-      const pricePerUnit = artikel?.pris || parseFloat(record.pris_per_enhet || 0);
+      const artikelNamn = artikel?.benamning || '';
       const quantity = parseFloat(record.antal) || 0;
+      const pricePerUnit = parseFloat(record.pris) || 0;
       const totalPrice = quantity * pricePerUnit;
 
       return {
         datum: record.datum,
-        personal_id: personalMap[record.personal_namn] || '',
-        personal_namn: record.personal_namn,
-        kund_id: kundeMap[record.kund_namn] || '',
-        kund_namn: record.kund_namn,
+        personal_id: personalMap[record.personal] || '',
+        personal_namn: record.personal,
+        kund_id: kundeMap[record.kund] || '',
+        kund_namn: record.kund,
         ordernummer: record.ordernummer || null,
         artiklar: [{
           artikel_id: artikelId,
-          benamning: record.artikel_namn,
+          benamning: artikelNamn,
           antal: quantity,
           pris_per_enhet: pricePerUnit,
           total_pris: totalPrice
         }],
-        total_kostnad: parseFloat(record.total_kostnad) || totalPrice,
-        manad: record.datum.substring(0, 7)
+        total_kostnad: totalPrice,
+        manad: record.månad
       };
     });
 
