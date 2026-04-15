@@ -56,9 +56,10 @@ export default function LokalvardArtikelDetaljer() {
       });
 
       const streckkod = fundArticle.streckkod;
-      const artikelIds = new Set(artiklarData.filter(a => a.streckkod === streckkod).map(a => a.id));
+      const oldStreckkod = fundArticle.old_streckkod;
+      const artikelIds = new Set(artiklarData.filter(a => a.streckkod === streckkod || a.old_streckkod === streckkod || a.streckkod === oldStreckkod || a.id === fundArticle.id).map(a => a.id));
       const relateradeUttag = uttagData.filter(u => 
-        u.artiklar?.some(a => a.artikel_id === streckkod || artikelIds.has(a.artikel_id))
+        u.artiklar?.some(a => a.artikel_id === streckkod || a.artikel_id === oldStreckkod || artikelIds.has(a.artikel_id))
       );
       setTransaktioner(relateradeUttag.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       
