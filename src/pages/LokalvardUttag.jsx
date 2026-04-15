@@ -336,7 +336,16 @@ export default function LokalvardUttag() {
         }
       }
 
-      if (!name) name = artikel.artikel_id || artikel.streckkod || 'Okänd';
+      // Försök även söka direkt på artikel.artikel_id som streckkod
+      if (!name && artikel.artikel_id) {
+        const foundByBarcode = artikelMap[artikel.artikel_id];
+        if (foundByBarcode) {
+          name = foundByBarcode.benamning;
+          barcode = foundByBarcode.streckkod;
+        }
+      }
+
+      if (!name) name = 'Okänd artikel';
       if (!barcode) barcode = artikel.artikel_id || artikel.streckkod || '';
 
       const key = `${name}|${barcode}`;
