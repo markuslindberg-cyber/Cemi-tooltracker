@@ -53,8 +53,8 @@ export default function LokalvardBegaranAttGodkanna() {
   const historyRequests = allRequests.filter(r => ['approved', 'rejected', 'completed'].includes(r.status));
 
   const { data: allItems = [] } = useQuery({
-    queryKey: ['lokalvardLager'],
-    queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
+    queryKey: ['lokalvardArtiklar'],
+    queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
   });
 
   const approveMutation = useMutation({
