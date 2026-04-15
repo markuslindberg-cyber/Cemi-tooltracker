@@ -11,17 +11,22 @@ export default function LokalvardInköpImport() {
   const [results, setResults] = useState(null);
   const [importProgress, setImportProgress] = useState(null);
   const [importLogs, setImportLogs] = useState([]);
+  const [logHistory, setLogHistory] = useState([]);
 
   // Hämta status från localStorage vid sidladdning och polling
   useEffect(() => {
     const checkImportStatus = () => {
       const savedProgress = localStorage.getItem('importProgress');
       const savedLogs = localStorage.getItem('importLogs');
+      const savedHistory = localStorage.getItem('importLogHistory');
       if (savedProgress) {
         setImportProgress(JSON.parse(savedProgress));
       }
       if (savedLogs) {
         setImportLogs(JSON.parse(savedLogs));
+      }
+      if (savedHistory) {
+        setLogHistory(JSON.parse(savedHistory));
       }
     };
 
@@ -109,6 +114,20 @@ export default function LokalvardInköpImport() {
           setImportLogs(finalLogs);
           localStorage.setItem('importLogs', JSON.stringify(finalLogs));
           
+          // Spara i historik
+          const timestamp = new Date().toLocaleString('sv-SE');
+          const historyEntry = {
+            timestamp,
+            successCount,
+            skippedCount,
+            errorCount,
+            totalRows: result.output.length
+          };
+          const currentHistory = JSON.parse(localStorage.getItem('importLogHistory') || '[]');
+          currentHistory.unshift(historyEntry);
+          localStorage.setItem('importLogHistory', JSON.stringify(currentHistory.slice(0, 50))); // Behål bara de senaste 50
+          setLogHistory(currentHistory.slice(0, 50));
+          
           setTimeout(() => {
             localStorage.removeItem('importLogs');
             setImportLogs([]);
@@ -190,9 +209,30 @@ export default function LokalvardInköpImport() {
         </div>
       )}
 
+      {logHistory.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+          <h2 className="text-xl font-semibold">Importhistorik</h2>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {logHistory.map((entry, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200 text-sm">
+                <div className="flex-1">
+                  <div className="font-mono text-gray-600">{entry.timestamp}</div>
+                  <div className="text-gray-700 mt-1">
+                    <span className="text-green-600 font-semibold">{entry.successCount}</span> tillagda, 
+                    <span className="text-yellow-600 font-semibold ml-1">{entry.skippedCount}</span> hoppade över, 
+                    <span className="text-red-600 font-semibold ml-1">{entry.errorCount}</span> fel 
+                    <span className="text-gray-500">({entry.totalRows} rader)</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {results && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Importresultat</h2>
+           <h2 className="text-xl font-semibold">Senaste importresultat</h2>
           
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-green-50 p-3 rounded-lg border border-green-200">
