@@ -292,6 +292,21 @@ export default function LokalvardUttag() {
     setEditingArticleId(null);
   };
 
+  const groupArticles = (artiklar) => {
+    const grouped = {};
+    artiklar.forEach((artikel, idx) => {
+      const name = artikelMap[artikel.artikel_id]?.benamning || artikel.benamning || artikel.artikel_id;
+      if (!grouped[name]) grouped[name] = [];
+      grouped[name].push({ ...artikel, originalIndex: idx });
+    });
+    return Object.entries(grouped).map(([name, items]) => ({
+      name,
+      items,
+      totalAntal: items.reduce((sum, item) => sum + item.antal, 0),
+      totalPrice: items.reduce((sum, item) => sum + item.total_pris, 0)
+    }));
+  };
+
   const handleSaveEdit = () => {
     const editingItem = uttag.find(u => u.id === editingId);
     updateMutation.mutate({
@@ -503,34 +518,18 @@ export default function LokalvardUttag() {
                         <tr key={`${u.id}-detail`} className="bg-gray-50">
                           <td colSpan={6} className="px-6 py-3">
                             <div className="space-y-2">
-                              {u.artiklar.map((artikel, articleIndex) => {
-                                const isEditing = editingArticleId === `${u.id}-${articleIndex}`;
-                                return (
-                                  <div key={articleIndex} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                    <div className="flex-1 font-medium text-gray-900">
-                                      {artikelMap[artikel.artikel_id]?.benamning || artikel.benamning || artikel.artikel_id}
+                              {groupArticles(u.artiklar).map((group) => (
+                                <div key={group.name} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
+                                  <div className="flex-1 font-medium text-gray-900">{group.name}</div>
+                                  <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                                    <div className="text-right">
+                                      <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
+                                      <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
                                     </div>
-                                    {isEditing ? (
-                                      <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                                        <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({ ...editArticleForm, antal: e.target.value })} className="w-16 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Antal" />
-                                        <span className="text-gray-400">st @</span>
-                                        <input type="number" step="0.01" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({ ...editArticleForm, pris_per_enhet: e.target.value })} className="w-20 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="Pris" />
-                                        <span className="text-gray-400">kr</span>
-                                        <button onClick={(e) => { e.stopPropagation(); handleSaveArticle(u.id, articleIndex); }} className="px-2 py-1 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">✓</button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleCancelArticleEdit(); }} className="px-2 py-1 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">✕</button>
-                                      </div>
-                                    ) : (
-                                      <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
-                                        <div className="text-right">
-                                          <div className="text-sm font-medium text-gray-900">{artikel.antal} st @ {artikel.pris_per_enhet.toFixed(2)} kr</div>
-                                          <div className="text-xs text-gray-500">{artikel.total_pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
-                                        </div>
-                                        <button onClick={() => handleEditArticle(u.id, artikel, articleIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                                      </div>
-                                    )}
+                                    <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
                                   </div>
-                                );
-                              })}
+                                </div>
+                              ))}
                             </div>
                           </td>
                         </tr>
