@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,6 +19,16 @@ export default function LokalvardUttag() {
   const [editArticleForm, setEditArticleForm] = useState({});
   const [uploading, setUploading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
+
+  // Prenumeration på LokalvardCheckout-uppdateringar
+  useEffect(() => {
+    const unsubscribe = base44.entities.LokalvardCheckout.subscribe((event) => {
+      if (event.type === 'create') {
+        queryClient.invalidateQueries(['uttag']);
+      }
+    });
+    return unsubscribe;
+  }, [queryClient]);
 
   const { data: uttag = [], isLoading: uttagLoading } = useQuery({
     queryKey: ['uttag'],
