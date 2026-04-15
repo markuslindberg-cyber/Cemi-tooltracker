@@ -71,8 +71,9 @@ export default function LokalvardUttag() {
         const found = artikelMap[a.artikel_id] || artikelMap[a.benamning];
         return {
           ...a,
-          streckkod: found?.streckkod,
-          artikel_namn: found?.benamning,
+          streckkod: found?.streckkod || a.streckkod,
+          artikel_namn: found?.benamning || a.benamning,
+          pris_per_enhet: a.pris_per_enhet || found?.pris || 0,
           isCheckout: false
         };
       })
