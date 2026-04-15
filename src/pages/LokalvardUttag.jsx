@@ -19,6 +19,7 @@ export default function LokalvardUttag() {
   const [editArticleForm, setEditArticleForm] = useState({});
   const [uploading, setUploading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
+  const [searchBarcode, setSearchBarcode] = useState('');
 
   const { data: uttag = [], isLoading: uttagLoading, refetch } = useQuery({
     queryKey: ['uttag'],
@@ -143,11 +144,17 @@ export default function LokalvardUttag() {
 
   const [selectedPersonal, setSelectedPersonal] = useState([]);
 
-  const filtered = uttag.filter(u => 
-    (selectedMonths.length === 0 || selectedMonths.includes(u.manad)) &&
-    (selectedCustomers.length === 0 || selectedCustomers.includes(u.kund_id)) &&
-    (selectedPersonal.length === 0 || selectedPersonal.includes(u.personal_id))
-  );
+  const filtered = uttag.filter(u => {
+    const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(u.manad);
+    const customerMatch = selectedCustomers.length === 0 || selectedCustomers.includes(u.kund_id);
+    const personalMatch = selectedPersonal.length === 0 || selectedPersonal.includes(u.personal_id);
+    const barcodeMatch = searchBarcode === '' || u.artiklar?.some(a => 
+      a.artikel_id?.includes(searchBarcode) || 
+      artikelMap[a.artikel_id]?.streckkod?.includes(searchBarcode) ||
+      artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode)
+    );
+    return monthMatch && customerMatch && personalMatch && barcodeMatch;
+  });
 
   const sortField = (item) => {
     if (sortBy === 'personal_namn') return item.personal_namn;
@@ -375,11 +382,18 @@ export default function LokalvardUttag() {
        <div className="flex items-center justify-between flex-wrap gap-3">
          <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
          <div className="flex items-center gap-2 flex-wrap">
-           {(selectedMonths.length > 0 || selectedCustomers.length > 0 || selectedPersonal.length > 0) && (
+           <input
+             type="text"
+             placeholder="Sök streckkod..."
+             value={searchBarcode}
+             onChange={(e) => setSearchBarcode(e.target.value)}
+             className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
+           />
+           {(selectedMonths.length > 0 || selectedCustomers.length > 0 || selectedPersonal.length > 0 || searchBarcode !== '') && (
                <Button 
                  size="sm" 
                  variant="outline" 
-                 onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); setSelectedPersonal([]); }}
+                 onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); setSelectedPersonal([]); setSearchBarcode(''); }}
                  className="gap-1 text-xs"
                >
                  <RotateCcw className="w-3 h-3" /> Rensa alla
