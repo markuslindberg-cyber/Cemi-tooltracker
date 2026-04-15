@@ -24,6 +24,8 @@ export default function LokalvardUttag() {
   const [expandedRows, setExpandedRows] = useState({});
   const [searchBarcode, setSearchBarcode] = useState('');
   const [showUnmatched, setShowUnmatched] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   const { data: uttag = [], isLoading: uttagLoading, refetch } = useQuery({
     queryKey: ['uttag'],
@@ -173,19 +175,24 @@ export default function LokalvardUttag() {
     return item.datum;
   };
 
-  const sorted = [...filtered].sort((a, b) => {
-    let aVal = sortField(a);
-    let bVal = sortField(b);
-    if (typeof aVal === 'string') {
-      aVal = aVal.toLowerCase();
-      bVal = bVal.toLowerCase();
-    }
-    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-  
-  console.log('Filtered uttag:', filtered.length, 'Sorted uttag:', sorted.length);
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      let aVal = sortField(a);
+      let bVal = sortField(b);
+      if (typeof aVal === 'string') {
+        aVal = aVal.toLowerCase();
+        bVal = bVal.toLowerCase();
+      }
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [filtered, sortBy, sortOrder]);
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return sorted.slice(start, start + itemsPerPage);
+  }, [sorted, currentPage]);
 
   const toggleRow = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
@@ -576,6 +583,11 @@ export default function LokalvardUttag() {
                 <span className="text-xl font-bold text-blue-900">{total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
               </div>
 
+              {/* Pagination info */}
+              <div className="text-xs text-gray-500 mb-2">
+                Visar {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, sorted.length)} av {sorted.length}
+              </div>
+
               {/* Table */}
               <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <table className="w-full text-sm">
@@ -599,7 +611,7 @@ export default function LokalvardUttag() {
                  </tr>
                </thead>
                <tbody>
-                 {sorted.map((u) => {
+                 {paginatedData.map((u) => {
                    const datumStr = u.datum ? u.datum.split('T')[0] : '';
                    const articles = groupArticles(u.artiklar || []);
                    return articles.map((group, idx) => (
@@ -635,6 +647,29 @@ export default function LokalvardUttag() {
                </tbody>
               </table>
               </div>
+
+              {/* Pagination */}
+              {sorted.length > itemsPerPage && (
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    ← Förra
+                  </Button>
+                  <span className="text-sm text-gray-600">Sida {currentPage} av {Math.ceil(sorted.length / itemsPerPage)}</span>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(sorted.length / itemsPerPage), p + 1))}
+                    disabled={currentPage >= Math.ceil(sorted.length / itemsPerPage)}
+                  >
+                    Nästa →
+                  </Button>
+                </div>
+              )}
               </div>
               ) : (
               <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
