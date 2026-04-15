@@ -34,12 +34,32 @@ export default function LokalvardLager() {
     refetchInterval: 5000,
   });
 
+  const { data: inköp = [] } = useQuery({
+    queryKey: ['lokalvardInkop'],
+    queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
+    refetchInterval: 5000,
+  });
+
   const calculateUttag = (aggregatedArtikel) => {
     return calculateUttagMatching(uttag, artiklar, aggregatedArtikel.streckkod, aggregatedArtikel.old_streckkod);
   };
 
+  const getInköptForArticle = (streckkod, old_streckkod) => {
+    const matchingInköp = inköp.filter(i => 
+      i.artikel_id === streckkod || 
+      i.artikel_id === old_streckkod ||
+      artiklar.some(a => 
+        (a.streckkod === streckkod || a.old_streckkod === streckkod || a.streckkod === old_streckkod) && 
+        (a.id === i.artikel_id || a.streckkod === i.artikel_id || a.old_streckkod === i.artikel_id)
+      )
+    );
+    return matchingInköp.reduce((sum, i) => sum + i.antal, 0);
+  };
+
   const calculateSaldo = (aggregatedArtikel) => {
-    return aggregatedArtikel.total_antal_inkopta - calculateUttag(aggregatedArtikel);
+    const totalInköpt = getInköptForArticle(aggregatedArtikel.streckkod, aggregatedArtikel.old_streckkod);
+    const inköptToUse = totalInköpt > 0 ? totalInköpt : aggregatedArtikel.total_antal_inkopta;
+    return inköptToUse - calculateUttag(aggregatedArtikel);
   };
 
   const updateMutation = useMutation({
@@ -421,7 +441,7 @@ export default function LokalvardLager() {
                           </td>
                           <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{artikel.streckkod}</td>
                           <td className="px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                          <td className="px-3 py-2 text-right text-xs">{artikel.total_antal_inkopta}</td>
+                          <td className="px-3 py-2 text-right text-xs">{getInköptForArticle(artikel.streckkod, artikel.old_streckkod) || artikel.total_antal_inkopta}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{calculateUttag(artikel)}</td>
                           <td className={`px-3 py-2 text-right text-xs ${saldoColor}`}>{saldo}</td>
                           <td className="px-3 py-2 text-right text-xs text-gray-600">{artikel.lagertroskelvarde}</td>
