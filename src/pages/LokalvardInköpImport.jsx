@@ -11,13 +11,19 @@ export default function LokalvardInköpImport() {
   const [results, setResults] = useState(null);
   const [importProgress, setImportProgress] = useState(null);
 
-  // Hämta status från sessionStorage vid sidladdning
+  // Hämta status från localStorage vid sidladdning och polling
   useEffect(() => {
-    const savedProgress = sessionStorage.getItem('importProgress');
-    if (savedProgress) {
-      setImportProgress(JSON.parse(savedProgress));
-      sessionStorage.removeItem('importProgress');
-    }
+    const checkImportStatus = () => {
+      const savedProgress = localStorage.getItem('importProgress');
+      if (savedProgress) {
+        setImportProgress(JSON.parse(savedProgress));
+      }
+    };
+
+    checkImportStatus();
+    const interval = setInterval(checkImportStatus, 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const { data: artiklar = [] } = useQuery({
@@ -70,7 +76,7 @@ export default function LokalvardInköpImport() {
         // Spara progress och kör import i bakgrunden
         const progress = { status: 'running', file_url: file_url, rows: result.output };
         setImportProgress(progress);
-        sessionStorage.setItem('importProgress', JSON.stringify(progress));
+        localStorage.setItem('importProgress', JSON.stringify(progress));
 
         // Kör import asynkront
         base44.functions.invoke('processLokalvardInkopImport', {
@@ -80,7 +86,7 @@ export default function LokalvardInköpImport() {
           const { results: processedResults, summary } = res.data;
           setResults(processedResults);
           setImportProgress(null);
-          sessionStorage.removeItem('importProgress');
+          localStorage.removeItem('importProgress');
           
           const { successCount, skippedCount, errorCount } = summary;
           if (successCount > 0) {
@@ -93,7 +99,7 @@ export default function LokalvardInköpImport() {
         }).catch(err => {
           toast.error('Importfel: ' + (err.message || 'Okänt fel'));
           setImportProgress(null);
-          sessionStorage.removeItem('importProgress');
+          localStorage.removeItem('importProgress');
         });
       } else {
         toast.error('Importfel: ' + (result.details || 'Okänt fel'));
