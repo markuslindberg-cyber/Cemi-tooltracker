@@ -300,18 +300,19 @@ export default function LokalvardUttag() {
     artiklar.forEach((artikel, idx) => {
       let name = artikel.benamning;
 
-      // Om benamning är tom, sök i lagerlistan efter artikel_id eller streckkod
-      if (!name) {
-        // Sök först på artikel_id
+      // Sök i lagerlistan efter artikel_id eller streckkod – prioritera artikel_id
+      if (artikel.artikel_id) {
         const found = artikelMap[artikel.artikel_id];
         if (found) {
           name = found.benamning;
-        } else if (artikel.streckkod) {
-          // Annars sök på streckkod
-          const foundByBarcode = artikelMap[artikel.streckkod];
-          if (foundByBarcode) {
-            name = foundByBarcode.benamning;
-          }
+        }
+      }
+
+      // Om fortfarande ingen namn hittad, försök streckkod
+      if (!name && artikel.streckkod) {
+        const foundByBarcode = artikelMap[artikel.streckkod];
+        if (foundByBarcode) {
+          name = foundByBarcode.benamning;
         }
       }
 
