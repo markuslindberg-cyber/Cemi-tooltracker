@@ -751,7 +751,13 @@ export default function LokalvardUttag() {
                        </td>
                        <td className="px-4 py-3 text-gray-500 text-xs">{row.ordernummer || '–'}</td>
                        <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                         {row.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
+                         {editingArticleId === `${row.id}-${firstIdx}` ? (
+                           <span className="text-blue-600">
+                             {((parseInt(editArticleForm.antal) || 0) * (parseFloat(editArticleForm.pris_per_enhet) || 0)).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
+                           </span>
+                         ) : (
+                           row.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' kr'
+                         )}
                        </td>
                        <td className="px-4 py-3 flex items-center gap-1">
                          {editingArticleId === `${row.id}-${firstIdx}` ? (
