@@ -33,12 +33,13 @@ export default function LokalvardUttag() {
     queryFn: async () => {
       const limit = loadAllUttag ? 100000 : 500;
        try {
+         const uttagData = await base44.entities.Uttag.list('-datum', limit).catch(() => []);
          let checkoutData = [];
          if (base44.entities.LokalvardCheckout?.list) {
-           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', 100000).catch(() => []);
+           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
          }
 
-         const result = checkoutData.map(co => {
+         const checkoutAsUttag = checkoutData.map(co => {
            const dateStr = co.checked_out_date || new Date().toISOString();
            return {
              id: co.id,
@@ -58,7 +59,9 @@ export default function LokalvardUttag() {
              total_kostnad: 0,
              manad: dateStr.substring(0, 7)
            };
-         }).sort((a, b) => new Date(b.datum) - new Date(a.datum));
+         });
+
+         const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
         return result;
       } catch (err) {
         console.error('Fel vid hämtning av uttag:', err);
