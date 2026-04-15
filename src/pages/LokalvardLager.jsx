@@ -109,7 +109,10 @@ export default function LokalvardLager() {
         lagertroskelvarde: artikel.lagertroskelvarde,
         utgaende: artikel.utgaende,
         subcategory: artikel.subcategory,
+        old_streckkod: artikel.old_streckkod,
       });
+    } else if (!currentGroup.old_streckkod && artikel.old_streckkod) {
+      currentGroup.old_streckkod = artikel.old_streckkod;
     }
 
     currentGroup.total_antal_inkopta += artikel.antal_inkopta;
