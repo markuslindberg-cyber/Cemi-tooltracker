@@ -49,13 +49,18 @@ export default function LokalvardUttag() {
              kund_id: co.customer_id,
              kund_namn: co.customer_name,
              ordernummer: co.request_id,
-             artiklar: co.checked_out_items.map(item => ({
-               artikel_id: item.item_id,
-               benamning: item.name,
-               antal: item.scanned_quantity || item.quantity,
-               pris_per_enhet: 0,
-               total_pris: 0
-             })),
+             artiklar: co.checked_out_items.map(item => {
+               // Försök slå upp artikel för att få rätt namn
+               const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
+               const benamning = foundArtikel?.benamning || item.name || '';
+               return {
+                 artikel_id: item.item_id,
+                 benamning,
+                 antal: item.scanned_quantity || item.quantity,
+                 pris_per_enhet: 0,
+                 total_pris: 0
+               };
+             }),
              total_kostnad: 0,
              manad: dateStr.substring(0, 7)
            };
