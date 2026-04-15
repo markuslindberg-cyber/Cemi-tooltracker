@@ -58,11 +58,10 @@ const navigation = [
     children: [
       { name: 'Lager', path: '/Lokalvard/Lager' },
       { name: 'Uttag', path: '/Lokalvard/Uttag' },
-      { name: 'Begäran att godkänna', path: '/Lokalvard/BegaranAttGodkanna' },
+      { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
       { name: 'Kunder', path: '/Lokalvard/Kunder' },
       { name: 'Begäran om uttag av lokalvårdsartiklar', path: '/RequestWorkwear' },
-      { name: 'Nytt uttag', path: '/Lokalvard/NyttUttag' },
     ]
   },
   {
