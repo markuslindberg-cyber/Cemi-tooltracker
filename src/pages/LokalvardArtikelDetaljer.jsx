@@ -512,11 +512,19 @@ export default function LokalvardArtikelDetaljer() {
         ) : (
           <div className="space-y-1">
             {transaktioner.map(uttag => {
-              const matchingItems = uttag.artiklar.filter(item => 
-                item.artikel_id === artikel.streckkod ||
-                item.artikel_id === artikel.old_streckkod ||
-                artikelData.some(a => (a.streckkod === artikel.streckkod || a.old_streckkod === artikel.streckkod) && a.id === item.artikel_id)
-              );
+               const matchingItems = uttag.artiklar.filter(item => 
+                 item.artikel_id === artikel.streckkod ||
+                 item.artikel_id === artikel.old_streckkod ||
+                 artikelData.some(a => 
+                   (a.streckkod === artikel.streckkod || 
+                    a.old_streckkod === artikel.streckkod ||
+                    a.streckkod === artikel.old_streckkod ||
+                    a.id === artikel.id) && 
+                   (a.id === item.artikel_id || 
+                    a.streckkod === item.artikel_id || 
+                    a.old_streckkod === item.artikel_id)
+                 )
+               );
               const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
               const totalPris = matchingItems.reduce((s, i) => s + (i.antal * i.pris_per_enhet || 0), 0);
               const datum = uttag.datum ? uttag.datum.split('T')[0] : '-';
