@@ -28,13 +28,16 @@ export default function LokalvardLager() {
     refetchInterval: 5000,
   });
 
-  const { data: uttag = [], isLoading: uttagLoading } = useQuery({
+  const { data: uttag = [] } = useQuery({
     queryKey: ['uttag'],
     queryFn: async () => {
       const data = await base44.entities.Uttag.list(null, 100000).catch(() => []);
-      return data;
+      return Array.isArray(data) ? data : [];
     },
+    staleTime: 60000,
   });
+
+  const uttagLoading = false;
 
   const { data: inköp = [] } = useQuery({
     queryKey: ['lokalvardInkop'],
