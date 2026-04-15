@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Upload, FileDown, Loader2, AlertCircle, CheckCircle2, X } from 'lucide-react';
@@ -9,6 +9,16 @@ export default function LokalvardInköpImport() {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [results, setResults] = useState(null);
+  const [importProgress, setImportProgress] = useState(null);
+
+  // Hämta status från sessionStorage vid sidladdning
+  useEffect(() => {
+    const savedProgress = sessionStorage.getItem('importProgress');
+    if (savedProgress) {
+      setImportProgress(JSON.parse(savedProgress));
+      sessionStorage.removeItem('importProgress');
+    }
+  }, []);
 
   const { data: artiklar = [] } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
@@ -57,86 +67,34 @@ export default function LokalvardInköpImport() {
       });
 
       if (result.status === 'success' && Array.isArray(result.output)) {
-        const processedResults = [];
+        // Spara progress och kör import i bakgrunden
+        const progress = { status: 'running', file_url: file_url, rows: result.output };
+        setImportProgress(progress);
+        sessionStorage.setItem('importProgress', JSON.stringify(progress));
 
-        for (const row of result.output) {
-          if (!row.streckkod || !row.datum || row.antal === undefined || row.pris === undefined) {
-            processedResults.push({
-              ...row,
-              status: 'error',
-              message: 'Saknade obligatoriska fält'
-            });
-            continue;
+        // Kör import asynkront
+        base44.functions.invoke('processLokalvardInkopImport', {
+          rows: result.output,
+          fileUrl: file_url
+        }).then(res => {
+          const { results: processedResults, summary } = res.data;
+          setResults(processedResults);
+          setImportProgress(null);
+          sessionStorage.removeItem('importProgress');
+          
+          const { successCount, skippedCount, errorCount } = summary;
+          if (successCount > 0) {
+            toast.success(`${successCount} inköp tillagda${skippedCount > 0 ? `, ${skippedCount} hoppades över` : ''}${errorCount > 0 ? `, ${errorCount} fel` : ''}`);
+          } else if (skippedCount > 0) {
+            toast.info(`Alla inköp fanns redan (${skippedCount})`);
+          } else {
+            toast.error(`Ingen inköp importerades (${errorCount} fel)`);
           }
-
-          // Hitta artikeln baserat på streckkod (nya eller gamla)
-          const artikel = artiklar.find(a => 
-            a.streckkod === row.streckkod || a.old_streckkod === row.streckkod
-          );
-
-          if (!artikel) {
-            processedResults.push({
-              ...row,
-              status: 'error',
-              message: `Artikel med streckkod ${row.streckkod} hittades inte`
-            });
-            continue;
-          }
-
-          // Kontrollera om detta inköp redan finns
-          const befintligt = befintligaInköp.find(i => {
-            const artikelMatch = i.artikel_id === artikel.id;
-            const datumMatch = i.datum === row.datum;
-            const antalMatch = i.antal === row.antal;
-            return artikelMatch && datumMatch && antalMatch;
-          });
-
-          if (befintligt) {
-            processedResults.push({
-              ...row,
-              artikelNamn: artikel.benamning,
-              status: 'skipped',
-              message: 'Inköp med samma datum och antal existerar redan'
-            });
-            continue;
-          }
-
-          // Skapa det nya inköpet
-          try {
-            await base44.entities.LokalvardInköp.create({
-              artikel_id: artikel.id,
-              datum: row.datum,
-              antal: parseInt(row.antal),
-              pris: parseFloat(row.pris)
-            });
-            processedResults.push({
-              ...row,
-              artikelNamn: artikel.benamning,
-              status: 'success',
-              message: 'Inköp tillagt'
-            });
-          } catch (err) {
-            processedResults.push({
-              ...row,
-              artikelNamn: artikel.benamning,
-              status: 'error',
-              message: `Kunde inte spara inköp: ${err.message}`
-            });
-          }
-        }
-
-        setResults(processedResults);
-        const successCount = processedResults.filter(r => r.status === 'success').length;
-        const skippedCount = processedResults.filter(r => r.status === 'skipped').length;
-        const errorCount = processedResults.filter(r => r.status === 'error').length;
-        
-        if (successCount > 0) {
-          toast.success(`${successCount} inköp tillagda${skippedCount > 0 ? `, ${skippedCount} hoppades över` : ''}${errorCount > 0 ? `, ${errorCount} fel` : ''}`);
-        } else if (skippedCount > 0) {
-          toast.info(`Alla inköp fanns redan (${skippedCount})`);
-        } else {
-          toast.error(`Ingen inköp importerades (${errorCount} fel)`);
-        }
+        }).catch(err => {
+          toast.error('Importfel: ' + (err.message || 'Okänt fel'));
+          setImportProgress(null);
+          sessionStorage.removeItem('importProgress');
+        });
       } else {
         toast.error('Importfel: ' + (result.details || 'Okänt fel'));
       }
@@ -182,6 +140,18 @@ export default function LokalvardInköpImport() {
            </div>
          )}
        </div>
+
+      {importProgress && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+            <div>
+              <p className="font-semibold text-blue-900">Import pågår i bakgrunden</p>
+              <p className="text-sm text-blue-700">Du kan navigera vidare – importen fortsätter arbeta</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {results && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
