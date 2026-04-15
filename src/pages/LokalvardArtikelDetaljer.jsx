@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LokalvardArtikelDetaljer() {
@@ -20,6 +20,7 @@ export default function LokalvardArtikelDetaljer() {
   const [inköpForm, setInköpForm] = useState({});
   const [showAddInköp, setShowAddInköp] = useState(false);
   const [newInköpForm, setNewInköpForm] = useState({ datum: new Date().toISOString().split('T')[0], antal: '', pris: '' });
+  const [expandedUttag, setExpandedUttag] = useState({});
 
   useEffect(() => {
     loadData();
@@ -477,41 +478,54 @@ export default function LokalvardArtikelDetaljer() {
         {!transaktioner || transaktioner.length === 0 ? (
           <p className="text-gray-600">Inga uttag registrerade</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Datum</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Personal</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Kund</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold">Antal</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold">Pris per enhet</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold">Totalt</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {transaktioner.map(uttag => {
-                  const matchingItems = uttag.artiklar.filter(item => 
-                    item.artikel_id === artikel.streckkod || 
-                    artikelData.some(a => a.streckkod === artikel.streckkod && a.id === item.artikel_id)
-                  );
-                  return matchingItems.map((item, idx) => (
-                    <tr key={`${uttag.id}-${idx}`} className={idx === 0 ? '' : 'bg-gray-50'}>
-                      {idx === 0 && (
-                        <>
-                          <td className="px-4 py-3 text-sm" rowSpan={matchingItems.length}>{uttag.datum}</td>
-                          <td className="px-4 py-3 text-sm" rowSpan={matchingItems.length}>{uttag.personal_namn}</td>
-                          <td className="px-4 py-3 text-sm" rowSpan={matchingItems.length}>{uttag.kund_namn}</td>
-                        </>
-                      )}
-                      <td className="px-4 py-3 text-right text-sm">{item.antal}</td>
-                      <td className="px-4 py-3 text-right text-sm">{item.pris_per_enhet.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                      <td className="px-4 py-3 text-right text-sm font-semibold">{(item.antal * item.pris_per_enhet).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
-                    </tr>
-                  ));
-                })}
-              </tbody>
-            </table>
+          <div className="space-y-1">
+            {transaktioner.map(uttag => {
+              const matchingItems = uttag.artiklar.filter(item => 
+                item.artikel_id === artikel.streckkod || 
+                artikelData.some(a => a.streckkod === artikel.streckkod && a.id === item.artikel_id)
+              );
+              const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
+              const totalPris = matchingItems.reduce((s, i) => s + (i.antal * i.pris_per_enhet || 0), 0);
+              const datum = uttag.datum ? uttag.datum.split('T')[0] : '-';
+              const isExpanded = !!expandedUttag[uttag.id];
+              return (
+                <div key={uttag.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setExpandedUttag(prev => ({ ...prev, [uttag.id]: !prev[uttag.id] }))}
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 text-left"
+                  >
+                    {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" /> : <ChevronRight className="w-4 h-4 text-gray-500 shrink-0" />}
+                    <span className="text-sm font-medium w-28 shrink-0">{datum}</span>
+                    <span className="text-sm text-gray-700 flex-1">{uttag.kund_namn}</span>
+                    <span className="text-sm text-gray-500 mr-4">{uttag.personal_namn}</span>
+                    <span className="text-sm font-semibold w-16 text-right shrink-0">{totalAntal} st</span>
+                    <span className="text-sm font-semibold w-24 text-right shrink-0">{totalPris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
+                  </button>
+                  {isExpanded && (
+                    <table className="w-full">
+                      <thead className="bg-white border-t border-b">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">Artikel</th>
+                          <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500">Antal</th>
+                          <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500">Pris/enhet</th>
+                          <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500">Totalt</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {matchingItems.map((item, idx) => (
+                          <tr key={idx} className="bg-white">
+                            <td className="px-4 py-2 text-sm text-gray-700">{item.benamning || item.artikel_id}</td>
+                            <td className="px-4 py-2 text-right text-sm">{item.antal}</td>
+                            <td className="px-4 py-2 text-right text-sm">{item.pris_per_enhet?.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                            <td className="px-4 py-2 text-right text-sm font-semibold">{(item.antal * item.pris_per_enhet)?.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
