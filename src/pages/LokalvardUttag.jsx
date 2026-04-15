@@ -647,7 +647,8 @@ export default function LokalvardUttag() {
                        <td className="px-4 py-3">
                          {editingArticleId === `${u.id}-${idx}` ? (
                            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                             <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-10 px-1 py-0.5 border border-gray-300 rounded text-xs" />
+                             <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Antal" />
+                             <input type="number" step="0.01" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Pris" />
                              <button onClick={() => handleSaveArticle(u.id, idx)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
                              <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
                            </div>
