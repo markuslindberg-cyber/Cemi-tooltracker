@@ -584,56 +584,55 @@ export default function LokalvardUttag() {
                        const isExpanded = expandedRows[u.id];
                        const datumStr = u.datum ? u.datum.split('T')[0] : '';
                        const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
-                       return (
-                          <React.Fragment key={u.id}>
-                            <tr
-                             className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                             onClick={() => toggleRow(u.id)}
-                           >
-                            <td className="pl-3 py-3">
-                              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                            </td>
-                            <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
-                            <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
-                            <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
-                            <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
-                            <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                              {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
-                            </td>
-                          </tr>
-                          {isExpanded && (
-                            <tr key={`${u.id}-detail`} className="bg-gray-50">
-                              <td colSpan={6} className="px-6 py-3">
-                                {(!u.artiklar || u.artiklar.length === 0) ? (
-                                  <div className="text-sm text-gray-500">Inga artiklar</div>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {groupArticles(u.artiklar).map((group) => (
-                                       <div key={`${group.name}-${group.barcode}`} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                         <div className="flex-1 cursor-pointer hover:opacity-70" onClick={() => {
-                                           const artikel = artikelMap[group.barcode] || artikelMap[u.artiklar.find(a => a.benamning === group.name)?.artikel_id];
-                                           if (artikel) navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`);
-                                         }}>
-                                           <div className="font-medium text-gray-900">{group.name}</div>
-                                           {group.barcode && <div className="text-xs text-gray-500">{group.barcode}</div>}
-                                         </div>
-                                        <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
-                                          <div className="text-right">
-                                            <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
-                                            <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                       return [
+                             <tr
+                              key={u.id}
+                              className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => toggleRow(u.id)}
+                            >
+                             <td className="pl-3 py-3">
+                               <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                             </td>
+                             <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
+                             <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
+                             <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
+                             <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
+                             <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
+                               {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
+                             </td>
+                           </tr>,
+                           isExpanded && (
+                             <tr key={`${u.id}-detail`} className="bg-gray-50">
+                               <td colSpan={6} className="px-6 py-3">
+                                 {(!u.artiklar || u.artiklar.length === 0) ? (
+                                   <div className="text-sm text-gray-500">Inga artiklar</div>
+                                 ) : (
+                                   <div className="space-y-2">
+                                     {groupArticles(u.artiklar).map((group) => (
+                                        <div key={`${group.name}-${group.barcode}`} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
+                                          <div className="flex-1 cursor-pointer hover:opacity-70" onClick={() => {
+                                            const artikel = artikelMap[group.barcode] || artikelMap[u.artiklar.find(a => a.benamning === group.name)?.artikel_id];
+                                            if (artikel) navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`);
+                                          }}>
+                                            <div className="font-medium text-gray-900">{group.name}</div>
+                                            {group.barcode && <div className="text-xs text-gray-500">{group.barcode}</div>}
                                           </div>
-                                          <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                          )}
-                         </React.Fragment>
-                          );
-                          })}
+                                         <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                                           <div className="text-right">
+                                             <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
+                                             <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                                           </div>
+                                           <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                                         </div>
+                                       </div>
+                                     ))}
+                                   </div>
+                                 )}
+                               </td>
+                             </tr>
+                           )
+                        ].filter(Boolean);
+                       })}
                           </tbody>
                 </table>
               </div>
