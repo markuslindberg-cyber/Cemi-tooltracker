@@ -34,6 +34,26 @@ export default function LokalvardBegaranAttGodkanna() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
+  // Ladda sparade scannedItems från localStorage när en begäran väljs
+  useEffect(() => {
+    if (selectedRequest && step === 3) {
+      const saved = localStorage.getItem(`scanned_${selectedRequest.id}`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setScannedItems(parsed);
+        } catch (e) {}
+      }
+    }
+  }, [selectedRequest, step]);
+
+  // Spara scannedItems till localStorage när de ändras
+  useEffect(() => {
+    if (selectedRequest && step === 3 && scannedItems.length > 0) {
+      localStorage.setItem(`scanned_${selectedRequest.id}`, JSON.stringify(scannedItems));
+    }
+  }, [scannedItems, selectedRequest, step]);
+
   const { data: personal = [] } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
@@ -281,24 +301,30 @@ export default function LokalvardBegaranAttGodkanna() {
             </Card>
           ) : (
             <div className="space-y-2">
-              {pendingRequests.map((request) => (
-                <button
-                  key={request.id}
-                  onClick={() => { setSelectedRequest(request); setRejectNotes(''); setStep(2); }}
-                  className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white transition-all flex items-center justify-between"
-                >
-                  <div>
-                    <p className="font-semibold text-gray-900">{request.customer_name}</p>
-                    <p className="text-sm text-gray-600 mt-0.5">
-                      {request.requested_items?.length} artikel(r) • Begärd av: {request.requested_by_name || request.requested_by_email}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {format(new Date(request.request_date), 'dd MMM HH:mm', { locale: sv })}
-                    </p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-              ))}
+              {pendingRequests.map((request) => {
+                const hasSavedScan = localStorage.getItem(`scanned_${request.id}`);
+                return (
+                  <button
+                    key={request.id}
+                    onClick={() => { setSelectedRequest(request); setRejectNotes(''); setStep(2); }}
+                    className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white transition-all flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold text-gray-900">{request.customer_name}</p>
+                      <p className="text-sm text-gray-600 mt-0.5">
+                        {request.requested_items?.length} artikel(r) • Begärd av: {request.requested_by_name || request.requested_by_email}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {format(new Date(request.request_date), 'dd MMM HH:mm', { locale: sv })}
+                      </p>
+                      {hasSavedScan && (
+                        <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">✓ Sparad skanning</span>
+                      )}
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </button>
+                );
+              })}
             </div>
           )}
         </>
@@ -657,8 +683,28 @@ export default function LokalvardBegaranAttGodkanna() {
               {createCheckoutMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
               Registrera uttag
             </Button>
-            <Button variant="outline" onClick={() => { setSelectedRequest(null); setScannedItems([]); setStep(1); }}>
-              Avbryt
+            <Button 
+              variant="outline" 
+              onClick={() => { 
+                localStorage.setItem(`scanned_${selectedRequest.id}`, JSON.stringify(scannedItems));
+                setSelectedRequest(null); 
+                setScannedItems([]); 
+                setStep(1);
+              }}
+              className="bg-blue-50 hover:bg-blue-100 text-blue-700"
+            >
+              Pausa (sparad)
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => { 
+                localStorage.removeItem(`scanned_${selectedRequest.id}`);
+                setSelectedRequest(null); 
+                setScannedItems([]); 
+                setStep(1); 
+              }}
+            >
+              Avbryt & rensa
             </Button>
           </div>
         </Card>
