@@ -248,6 +248,34 @@ export default function LokalvardUttag() {
     return sorted.slice(start, start + itemsPerPage);
   }, [sorted, currentPage]);
 
+  // Group articles by artikel_id, datum and kund_id
+  const groupedRows = useMemo(() => {
+    const grouped = {};
+    paginatedData.forEach(u => {
+      (u.artiklar || []).forEach((artikel, idx) => {
+        const key = `${artikel.artikel_id}-${u.datum}-${u.kund_id}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            ...u,
+            artikel: artikel,
+            artikel_id: artikel.artikel_id,
+            benamning: artikel.benamning,
+            artikel_namn: artikel.artikel_namn,
+            streckkod: artikel.streckkod,
+            totalAntal: 0,
+            totalPrice: 0,
+            isCheckout: artikel.isCheckout,
+            indices: []
+          };
+        }
+        grouped[key].totalAntal += artikel.antal;
+        grouped[key].totalPrice += artikel.total_pris;
+        grouped[key].indices.push(idx);
+      });
+    });
+    return Object.values(grouped);
+  }, [paginatedData]);
+
   const toggleRow = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -688,46 +716,44 @@ export default function LokalvardUttag() {
                  </tr>
                </thead>
                <tbody>
-                 {paginatedData.map((u) => {
-                   const datumStr = u.datum ? u.datum.split('T')[0] : '';
-                   const isCheckout = u.artiklar?.[0]?.isCheckout;
-                   return (u.artiklar || []).map((artikel, idx) => (
-                     <tr key={`${u.id}-${idx}`} className="border-b border-gray-100 hover:bg-gray-50">
+                 {groupedRows.map((row) => {
+                   const datumStr = row.datum ? row.datum.split('T')[0] : '';
+                   const firstIdx = row.indices[0];
+                   return (
+                     <tr key={`${row.artikel_id}-${row.datum}-${row.kund_id}`} className="border-b border-gray-100 hover:bg-gray-50">
                        <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
-                       <td className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>
-                       <td className="px-4 py-3 text-gray-700">{u.personal_namn}</td>
+                       <td className="px-4 py-3 text-gray-900 font-medium">{row.kund_namn}</td>
+                       <td className="px-4 py-3 text-gray-700">{row.personal_namn}</td>
                        <td className="px-4 py-3 text-gray-900 cursor-pointer hover:opacity-70" onClick={() => {
-                         const foundArtikel = artikelMap[artikel.artikel_id] || artikelMap[artikel.benamning];
+                         const foundArtikel = artikelMap[row.artikel_id] || artikelMap[row.benamning];
                          if (foundArtikel?.artikelnummer) navigate(`/Lokalvard/Artikel/${foundArtikel.artikelnummer}`);
                        }}>
-                         {artikel.artikel_namn || artikel.benamning}
+                         {row.artikel_namn || row.benamning}
                        </td>
                        <td className="px-4 py-3 text-center text-gray-900">
-                         {`${artikel.antal} st`}
+                         {`${row.totalAntal} st`}
                        </td>
-                       <td className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>
+                       <td className="px-4 py-3 text-gray-500 text-xs">{row.ordernummer || '–'}</td>
                        <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                         {u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
+                         {row.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
                        </td>
                        <td className="px-4 py-3 flex items-center gap-1">
-                         {editingArticleId === `${u.id}-${idx}` ? (
+                         {editingArticleId === `${row.id}-${firstIdx}` ? (
                            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                              <input type="number" value={editArticleForm.antal} onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})} className="w-12 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Antal" />
                              <input type="number" step="0.01" value={editArticleForm.pris_per_enhet} onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})} className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs" placeholder="Pris" />
-                             <button onClick={() => handleSaveArticle(u.id, idx)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
+                             <button onClick={() => handleSaveArticle(row.id, firstIdx)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
                              <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
-                             {idx === 0 && (
-                               <button onClick={() => handleDeleteUttag(u.id, isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
-                             )}
+                             <button onClick={() => handleDeleteUttag(row.id, row.isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
                            </div>
                          ) : (
                            <>
-                             <button onClick={() => handleEditArticle(u.id, artikel, idx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                             <button onClick={() => handleEditArticle(row.id, row.artikel, firstIdx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
                            </>
                          )}
                        </td>
                      </tr>
-                   ));
+                   );
                  })}
                </tbody>
               </table>
