@@ -59,9 +59,10 @@ export default function LokalvardUttag() {
         };
       });
       
-      return [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+      const result = [...uttagData, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+      console.log('Uttag låsta:', { uttagData: uttagData.length, checkoutAsUttag: checkoutAsUttag.length, total: result.length });
+      return result;
     },
-    refetchInterval: 3000,
   });
 
   const { data: artiklar = [] } = useQuery({
