@@ -26,6 +26,7 @@ export default function LokalvardBegaranAttGodkanna() {
   // Steg 3: skanning
   const [scannedItems, setScannedItems] = useState([]);
   const [barcodeInput, setBarcodeInput] = useState('');
+  const [amountInput, setAmountInput] = useState('1');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -112,32 +113,62 @@ export default function LokalvardBegaranAttGodkanna() {
   const handleBarcodeInput = (barcode) => {
     const trimmed = barcode.trim();
     if (!trimmed) return;
-    // LokalvardsArtikel använder fältet "streckkod"
     const item = allItems.find(i => i.streckkod === trimmed);
     if (!item) {
       setError(`Streckkod ${trimmed} hittades inte i lagret`);
-      setBarcodeInput('');
       setTimeout(() => setError(''), 3000);
       return;
     }
     const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
     if (!requestedItem) {
       setError(`${item.benamning || item.name} är inte på begäran`);
-      setBarcodeInput('');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+    // Fylla i artikelns namn i barcodeInput så användaren vet vilket som skannade
+    setBarcodeInput(`${item.benamning || item.name} - Antal: `);
+    setAmountInput('1');
+    setError('');
+  };
+
+  const handleAddScannedItem = () => {
+    const amount = parseInt(amountInput, 10) || 0;
+    if (amount <= 0) {
+      setError('Ange ett giltigt antal');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+    const barcodeMatch = barcodeInput.match(/^([^-]+)/);
+    if (!barcodeMatch) {
+      setError('Skanna en artikel först');
+      return;
+    }
+    const itemName = barcodeMatch[1].trim();
+    const item = allItems.find(i => (i.benamning || i.name) === itemName);
+    if (!item) {
+      setError('Kunde inte hitta artikeln');
+      return;
+    }
+    const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
+    if (!requestedItem) {
+      setError(`${itemName} är inte på begäran`);
+      return;
+    }
+    if (amount > requestedItem.quantity) {
+      setError(`Kan inte ta ut mer än ${requestedItem.quantity} st`);
       setTimeout(() => setError(''), 3000);
       return;
     }
     const existingScanned = scannedItems.find(si => si.item_id === item.id);
     if (existingScanned) {
-      if (existingScanned.scanned_quantity >= requestedItem.quantity) {
-        setError(`${item.benamning || item.name} är redan skannad i rätt mängd`);
-        setBarcodeInput('');
+      if (existingScanned.scanned_quantity + amount > requestedItem.quantity) {
+        setError(`Totalt får inte överstiga ${requestedItem.quantity} st`);
         setTimeout(() => setError(''), 3000);
         return;
       }
       setScannedItems(prev =>
         prev.map(si => si.item_id === item.id
-          ? { ...si, scanned_quantity: si.scanned_quantity + 1 }
+          ? { ...si, scanned_quantity: si.scanned_quantity + amount }
           : si
         )
       );
@@ -147,11 +178,12 @@ export default function LokalvardBegaranAttGodkanna() {
         name: item.benamning || item.name,
         barcode: item.streckkod,
         quantity: requestedItem.quantity,
-        scanned_quantity: 1,
+        scanned_quantity: amount,
         replacement_items: [],
       }]);
     }
     setBarcodeInput('');
+    setAmountInput('1');
     setError('');
   };
 
@@ -463,15 +495,36 @@ export default function LokalvardBegaranAttGodkanna() {
               <Barcode className="w-4 h-4" />
               Skanna streckkod
             </Label>
-            <Input
-              type="text"
-              placeholder="Scanna streckkod här..."
-              value={barcodeInput}
-              onChange={(e) => setBarcodeInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleBarcodeInput(barcodeInput); }}
-              autoFocus
-              className="text-lg"
-            />
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Scanna streckkod här..."
+                value={barcodeInput}
+                onChange={(e) => setBarcodeInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !barcodeInput.includes('Antal:')) handleBarcodeInput(barcodeInput); }}
+                autoFocus
+                className="text-lg flex-1"
+              />
+              {barcodeInput.includes('Antal:') && (
+                <>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={amountInput}
+                    onChange={(e) => setAmountInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddScannedItem(); }}
+                    className="w-20 text-lg"
+                    placeholder="Antal"
+                  />
+                  <Button
+                    onClick={handleAddScannedItem}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Lägg till
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Skannade artiklar */}
