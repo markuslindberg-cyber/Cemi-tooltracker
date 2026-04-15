@@ -76,9 +76,13 @@ export default function LokalvardUttag() {
         kund_namn: co.customer_name,
         ordernummer: co.request_id,
         artiklar: co.checked_out_items.map(item => {
+          const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode];
           return {
             artikel_id: item.item_id || '',
             benamning: item.barcode,
+            streckkod: item.barcode,
+            artikel_namn: foundArtikel?.benamning,
+            isCheckout: true,
             antal: item.scanned_quantity || item.quantity || 0,
             pris_per_enhet: 0,
             total_pris: 0
