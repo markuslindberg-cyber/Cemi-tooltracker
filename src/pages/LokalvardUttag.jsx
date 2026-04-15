@@ -658,7 +658,7 @@ export default function LokalvardUttag() {
                          const foundArtikel = artikelMap[artikel.artikel_id] || artikelMap[artikel.benamning];
                          if (foundArtikel?.artikelnummer) navigate(`/Lokalvard/Artikel/${foundArtikel.artikelnummer}`);
                        }}>
-                         {artikel.benamning}
+                         {artikel.artikel_namn || artikel.benamning}
                        </td>
                        <td className="px-4 py-3 text-center text-gray-900">{artikel.antal} st</td>
                        {idx === 0 && <td rowSpan={u.artiklar?.length || 1} className="px-4 py-3 text-gray-500 text-xs">{u.ordernummer || '–'}</td>}
