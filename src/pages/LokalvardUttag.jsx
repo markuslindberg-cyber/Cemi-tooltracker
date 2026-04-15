@@ -300,18 +300,12 @@ export default function LokalvardUttag() {
     artiklar.forEach((artikel, idx) => {
       let name = artikel.benamning;
 
-      // Om benamning är tom, sök i lagerlistan
+      // Om benamning är tom, sök i lagerlistan efter artikel_id eller streckkod
       if (!name) {
-        // Först: sök efter artikel_id
-        const byId = artikelMap[artikel.artikel_id];
-        if (byId) {
-          name = byId.benamning;
-        } else {
-          // Annars: sök genom alla artiklar för att hitta matchning
-          const foundArtikel = Object.values(artikelMap).find(a => a && a.id === artikel.artikel_id);
-          if (foundArtikel) {
-            name = foundArtikel.benamning;
-          }
+        // artikelMap har både id och streckkod som keys
+        const found = artikelMap[artikel.artikel_id];
+        if (found) {
+          name = found.benamning;
         }
       }
 
