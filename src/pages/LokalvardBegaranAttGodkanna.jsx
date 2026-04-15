@@ -295,25 +295,6 @@ export default function LokalvardBegaranAttGodkanna() {
       return;
     }
 
-    // Verifiera att alla skannade artiklar är utplockade (finns i Uttag eller LokalvardCheckout)
-    const allVerified = scannedItems.every(scannedItem => {
-      const requestedItem = selectedRequest.requested_items.find(ri => ri.id === scannedItem.item_id);
-      if (!requestedItem) return false;
-
-      // Kontrollera om artikeln finns utplockad i Uttag eller LokalvardCheckout
-      const isInUttag = checkouts.some(c => 
-        c.checked_out_items?.some(ci => ci.item_id === scannedItem.item_id)
-      );
-
-      return isInUttag || true; // Tillåt om vi inte kan verifiera (fallback)
-    });
-
-    if (!allVerified) {
-      setError('Vissa artiklar är inte utplockade från lagret');
-      setTimeout(() => setError(''), 3000);
-      return;
-    }
-
     createCheckoutMutation.mutate({
       request_id: selectedRequest.id,
       customer_id: selectedRequest.customer_id,
