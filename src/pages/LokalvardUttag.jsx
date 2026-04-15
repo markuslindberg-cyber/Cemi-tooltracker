@@ -585,11 +585,12 @@ export default function LokalvardUttag() {
                        const datumStr = u.datum ? u.datum.split('T')[0] : '';
                        const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
                        return (
-                          <React.Fragment key={u.id}>
+                          <>
                             <tr
-                            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                            onClick={() => toggleRow(u.id)}
-                          >
+                             key={u.id}
+                             className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                             onClick={() => toggleRow(u.id)}
+                           >
                             <td className="pl-3 py-3">
                               <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                             </td>
@@ -631,7 +632,7 @@ export default function LokalvardUttag() {
                               </td>
                             </tr>
                           )}
-                         </React.Fragment>
+                         </>
                           );
                           })}
                           </tbody>
