@@ -34,17 +34,14 @@ export default function LokalvardLager() {
   });
 
   const calculateUttag = (aggregatedArtikel) => {
-    // Bygg upp en uppsättning av alla ID, streckkoder och benämningar för denna grupp
-    const artikelIds = new Set(aggregatedArtikel.all_artikel_ids);
     const streckkod = aggregatedArtikel.streckkod;
-    const benamning = aggregatedArtikel.benamning?.toLowerCase();
+    const oldStreckkod = aggregatedArtikel.old_streckkod;
+    const artikelIds = new Set(aggregatedArtikel.all_artikel_ids);
 
     return uttag.reduce((sum, u) => {
-      const matchingWithdrawals = u.artiklar.filter(a =>
-        (a.artikel_id && artikelIds.has(a.artikel_id)) ||
-        (streckkod && a.artikel_id === streckkod) ||
-        (benamning && a.benamning?.toLowerCase() === benamning)
-      );
+      const matchingWithdrawals = u.artiklar?.filter(a =>
+        (a.artikel_id && (artikelIds.has(a.artikel_id) || a.artikel_id === streckkod || a.artikel_id === oldStreckkod))
+      ) || [];
       return sum + matchingWithdrawals.reduce((s, a) => s + (a.antal || 0), 0);
     }, 0);
   };
