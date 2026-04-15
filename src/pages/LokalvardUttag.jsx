@@ -302,14 +302,20 @@ export default function LokalvardUttag() {
 
       // Om benamning är tom, sök i lagerlistan efter artikel_id eller streckkod
       if (!name) {
-        // artikelMap har både id och streckkod som keys
+        // Sök först på artikel_id
         const found = artikelMap[artikel.artikel_id];
         if (found) {
           name = found.benamning;
+        } else if (artikel.streckkod) {
+          // Annars sök på streckkod
+          const foundByBarcode = artikelMap[artikel.streckkod];
+          if (foundByBarcode) {
+            name = foundByBarcode.benamning;
+          }
         }
       }
 
-      if (!name) name = artikel.artikel_id || 'Okänd';
+      if (!name) name = artikel.artikel_id || artikel.streckkod || 'Okänd';
 
       if (!grouped[name]) grouped[name] = [];
       grouped[name].push({ ...artikel, originalIndex: idx });
