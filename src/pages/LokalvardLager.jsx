@@ -343,7 +343,7 @@ export default function LokalvardLager() {
        </div>
 
       {/* Status badges */}
-      {(tomma > 0 || lågtSaldo > 0) && (
+      {(tomma > 0 || lågtSaldo > 0 || utanPris > 0) && (
         <div className="flex gap-2 flex-wrap">
           {tomma > 0 && (
             <div className="flex items-center gap-1.5 bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 text-sm">
@@ -355,6 +355,12 @@ export default function LokalvardLager() {
             <div className="flex items-center gap-1.5 bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-lg border border-yellow-200 text-sm">
               <AlertTriangle className="w-4 h-4" />
               <span>{lågtSaldo} lågt lager</span>
+            </div>
+          )}
+          {utanPris > 0 && (
+            <div className="flex items-center gap-1.5 bg-orange-50 text-orange-700 px-3 py-1.5 rounded-lg border border-orange-200 text-sm">
+              <AlertCircle className="w-4 h-4" />
+              <span>{utanPris} utan pris</span>
             </div>
           )}
         </div>
