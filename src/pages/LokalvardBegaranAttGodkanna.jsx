@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight } from 'lucide-react';
+import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight, ChevronDown, Clock, Ban } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -16,10 +16,12 @@ import { sv } from 'date-fns/locale';
 
 export default function LokalvardBegaranAttGodkanna() {
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState('pending'); // 'pending' | 'history'
   const [step, setStep] = useState(1); // 1=lista, 2=granska, 3=skanna
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectNotes, setRejectNotes] = useState('');
   const [user, setUser] = useState(null);
+  const [expandedHistory, setExpandedHistory] = useState(null);
 
   // Steg 3: skanning
   const [scannedItems, setScannedItems] = useState([]);
@@ -48,6 +50,7 @@ export default function LokalvardBegaranAttGodkanna() {
   });
 
   const pendingRequests = allRequests.filter(r => r.status === 'pending');
+  const historyRequests = allRequests.filter(r => ['approved', 'rejected', 'completed'].includes(r.status));
 
   const { data: allItems = [] } = useQuery({
     queryKey: ['lokalvardLager'],
@@ -179,6 +182,17 @@ export default function LokalvardBegaranAttGodkanna() {
     </div>
   );
 
+  const statusBadge = (status) => {
+    const map = {
+      pending:   { label: 'Väntande',   cls: 'bg-yellow-100 text-yellow-800' },
+      approved:  { label: 'Godkänd',    cls: 'bg-blue-100 text-blue-800' },
+      rejected:  { label: 'Nekad',      cls: 'bg-red-100 text-red-700' },
+      completed: { label: 'Utförd',     cls: 'bg-green-100 text-green-700' },
+    };
+    const s = map[status] || { label: status, cls: 'bg-gray-100 text-gray-600' };
+    return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
+  };
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div>
@@ -186,10 +200,28 @@ export default function LokalvardBegaranAttGodkanna() {
         <p className="text-gray-600 mt-1">Granska, godkänn och registrera uttag</p>
       </div>
 
-      <StepIndicator />
+      {/* Flikar – visas bara när man är på steg 1 */}
+      {step === 1 && (
+        <div className="flex gap-1 border-b">
+          <button
+            onClick={() => setTab('pending')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'pending' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Väntande {pendingRequests.length > 0 && <span className="ml-1 bg-[#8B1E1E] text-white text-xs rounded-full px-1.5">{pendingRequests.length}</span>}
+          </button>
+          <button
+            onClick={() => setTab('history')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'history' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Historik
+          </button>
+        </div>
+      )}
+
+      {step !== 1 && <StepIndicator />}
 
       {/* STEG 1: Lista */}
-      {step === 1 && (
+      {step === 1 && tab === 'pending' && (
         <>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -219,6 +251,86 @@ export default function LokalvardBegaranAttGodkanna() {
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400" />
                 </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Historik */}
+      {step === 1 && tab === 'history' && (
+        <>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+            </div>
+          ) : historyRequests.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg font-medium">Ingen historik ännu</p>
+            </Card>
+          ) : (
+            <div className="space-y-2">
+              {historyRequests.map((request) => (
+                <div key={request.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                  <button
+                    onClick={() => setExpandedHistory(expandedHistory === request.id ? null : request.id)}
+                    className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      {statusBadge(request.status)}
+                      <div>
+                        <p className="font-semibold text-gray-900">{request.customer_name}</p>
+                        <p className="text-sm text-gray-500">
+                          {request.requested_items?.length} artikel(r) • {format(new Date(request.request_date), 'dd MMM yyyy', { locale: sv })}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedHistory === request.id ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {expandedHistory === request.id && (
+                    <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-4">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-gray-500">Begärd av</p>
+                          <p className="font-medium">{request.requested_by_name || request.requested_by_email}</p>
+                        </div>
+                        {request.approved_by_name && (
+                          <div>
+                            <p className="text-gray-500">Godkänd av</p>
+                            <p className="font-medium">{request.approved_by_name}</p>
+                          </div>
+                        )}
+                        {request.approved_date && (
+                          <div>
+                            <p className="text-gray-500">Datum godkänd</p>
+                            <p className="font-medium">{format(new Date(request.approved_date), 'dd MMM yyyy HH:mm', { locale: sv })}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Artiklar</p>
+                        <div className="space-y-1">
+                          {request.requested_items?.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-sm p-2 bg-white rounded border border-gray-100">
+                              <span>{item.name} <span className="text-gray-400">{item.subcategory}</span></span>
+                              <span className="font-medium">{item.quantity} st</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {request.notes && (
+                        <div>
+                          <p className="text-sm text-gray-500 mb-1">Anteckningar</p>
+                          <p className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100">{request.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
