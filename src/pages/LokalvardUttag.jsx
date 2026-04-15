@@ -655,7 +655,8 @@ export default function LokalvardUttag() {
               </thead>
               <tbody className="divide-y">
                 {unmatchedArticles.map((artikel) => {
-                  const lagerNamn = artikelMap[artikel.artikel_id]?.benamning || '';
+                  const lagernummer = artikelMap[artikel.artikel_id];
+                  const lagerNamn = lagernummer?.benamning || artikelMap[artikel.benamning]?.benamning || '';
                   return (
                     <tr key={`${artikel.artikel_id}-${artikel.benamning}`} className="hover:bg-yellow-100">
                       <td className="px-4 py-2 font-mono text-yellow-900">{artikel.artikel_id}</td>
