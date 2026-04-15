@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,7 @@ export default function LokalvardBegaranAttGodkanna() {
     const [showReplacementUI, setShowReplacementUI] = useState(false);
     const [currentItemForReplacement, setCurrentItemForReplacement] = useState(null);
     const [currentScannedItemId, setCurrentScannedItemId] = useState(null);
+    const barcodeInputRef = useRef(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -242,6 +243,7 @@ export default function LokalvardBegaranAttGodkanna() {
       setAmountInput('1');
       setCurrentScannedItemId(null);
       setError('');
+      setTimeout(() => barcodeInputRef.current?.focus(), 0);
     } else {
       // Visa ersättningsUI innan artikel läggs till
       setCurrentItemForReplacement(newScannedItem);
@@ -250,6 +252,7 @@ export default function LokalvardBegaranAttGodkanna() {
       setAmountInput('1');
       setCurrentScannedItemId(null);
       setError('');
+      setTimeout(() => barcodeInputRef.current?.focus(), 0);
     }
   };
 
@@ -741,14 +744,15 @@ export default function LokalvardBegaranAttGodkanna() {
              </Label>
              <div className="flex gap-2">
                <Input
-                   type="text"
-                   placeholder="Scanna streckkod här..."
-                   value={barcodeInput}
-                   onChange={(e) => setBarcodeInput(e.target.value)}
-                   onKeyDown={(e) => { if (e.key === 'Enter' && barcodeInput.trim() && !barcodeInput.includes('Antal:')) handleBarcodeInput(barcodeInput); }}
-                   autoFocus
-                   className="text-lg flex-1"
-                 />
+                    ref={barcodeInputRef}
+                    type="text"
+                    placeholder="Scanna streckkod här..."
+                    value={barcodeInput}
+                    onChange={(e) => setBarcodeInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && barcodeInput.trim() && !barcodeInput.includes('Antal:')) handleBarcodeInput(barcodeInput); }}
+                    autoFocus
+                    className="text-lg flex-1"
+                  />
                {barcodeInput.trim() && !barcodeInput.includes('Antal:') && (
                  <>
                    <Input
