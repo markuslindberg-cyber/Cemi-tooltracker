@@ -65,7 +65,7 @@ export default function LokalvardInköpImport() {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -84,8 +84,8 @@ export default function LokalvardInköpImport() {
 
       if (result.status === 'success' && Array.isArray(result.output)) {
         // Spara progress och kör import i bakgrunden
-        const progress = { status: 'running', file_url: file_url, rows: result.output };
-        const initialLogs = [`Startar import av ${result.output.length} rader...`];
+        const progress = { status: 'running', file_url: file_url, rows: result.output, fileName: file.name };
+        const initialLogs = [`Startar import av ${result.output.length} rader från ${file.name}...`];
         setImportProgress(progress);
         setImportLogs(initialLogs);
         localStorage.setItem('importProgress', JSON.stringify(progress));
@@ -100,11 +100,11 @@ export default function LokalvardInköpImport() {
           setResults(processedResults);
           setImportProgress(null);
           localStorage.removeItem('importProgress');
-          
+
           const successCount = processedResults.filter(r => r.status === 'success').length;
           const skippedCount = processedResults.filter(r => r.status === 'skipped').length;
           const errorCount = processedResults.filter(r => r.status === 'error').length;
-          
+
           const finalLogs = [
             `Import slutförd!`,
             `✓ ${successCount} inköp tillagda`,
@@ -113,11 +113,12 @@ export default function LokalvardInköpImport() {
           ];
           setImportLogs(finalLogs);
           localStorage.setItem('importLogs', JSON.stringify(finalLogs));
-          
+
           // Spara i historik
           const timestamp = new Date().toLocaleString('sv-SE');
           const historyEntry = {
             timestamp,
+            fileName: file.name,
             successCount,
             skippedCount,
             errorCount,
@@ -125,13 +126,8 @@ export default function LokalvardInköpImport() {
           };
           const currentHistory = JSON.parse(localStorage.getItem('importLogHistory') || '[]');
           currentHistory.unshift(historyEntry);
-          localStorage.setItem('importLogHistory', JSON.stringify(currentHistory.slice(0, 50))); // Behål bara de senaste 50
+          localStorage.setItem('importLogHistory', JSON.stringify(currentHistory.slice(0, 50)));
           setLogHistory(currentHistory.slice(0, 50));
-          
-          setTimeout(() => {
-            localStorage.removeItem('importLogs');
-            setImportLogs([]);
-          }, 5000);
         }).catch(err => {
           const errorLogs = [`Import avbruten: ${err.message || 'Okänt fel'}`];
           setImportLogs(errorLogs);
@@ -212,20 +208,31 @@ export default function LokalvardInköpImport() {
       {logHistory.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <h2 className="text-xl font-semibold">Importhistorik</h2>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {logHistory.map((entry, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200 text-sm">
-                <div className="flex-1">
-                  <div className="font-mono text-gray-600">{entry.timestamp}</div>
-                  <div className="text-gray-700 mt-1">
-                    <span className="text-green-600 font-semibold">{entry.successCount}</span> tillagda, 
-                    <span className="text-yellow-600 font-semibold ml-1">{entry.skippedCount}</span> hoppade över, 
-                    <span className="text-red-600 font-semibold ml-1">{entry.errorCount}</span> fel 
-                    <span className="text-gray-500">({entry.totalRows} rader)</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-4 py-2 text-left font-semibold">Datum & tid</th>
+                  <th className="px-4 py-2 text-left font-semibold">Filnamn</th>
+                  <th className="px-4 py-2 text-right font-semibold">Totalt rader</th>
+                  <th className="px-4 py-2 text-right font-semibold">Tillagda</th>
+                  <th className="px-4 py-2 text-right font-semibold">Hoppade över</th>
+                  <th className="px-4 py-2 text-right font-semibold">Fel</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {logHistory.map((entry, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 font-mono text-xs text-gray-600">{entry.timestamp}</td>
+                    <td className="px-4 py-2 text-gray-900">{entry.fileName}</td>
+                    <td className="px-4 py-2 text-right text-gray-700">{entry.totalRows}</td>
+                    <td className="px-4 py-2 text-right"><span className="text-green-600 font-semibold">{entry.successCount}</span></td>
+                    <td className="px-4 py-2 text-right"><span className="text-yellow-600 font-semibold">{entry.skippedCount}</span></td>
+                    <td className="px-4 py-2 text-right"><span className="text-red-600 font-semibold">{entry.errorCount}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
