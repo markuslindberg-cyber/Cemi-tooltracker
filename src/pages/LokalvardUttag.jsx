@@ -544,15 +544,15 @@ export default function LokalvardUttag() {
       </div>
 
       {showUnmatched ? (
-        <>
+        <div>
           <Button size="sm" onClick={() => setShowUnmatched(false)} variant="outline">
             ← Tillbaka till uttag
           </Button>
-        </>
+        </div>
       ) : (
-        <>
+        <div>
           {sorted.length > 0 ? (
-            <>
+            <div>
               <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
                 <span className="text-sm text-blue-700 font-medium">Totalt {sorted.length} uttag</span>
                 <span className="text-xl font-bold text-blue-900">{total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
@@ -637,12 +637,12 @@ export default function LokalvardUttag() {
                           </tbody>
                 </table>
               </div>
-            </>
-          ) : (
-            <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
-          )}
-        </>
-      )}
+              </div>
+              ) : (
+              <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
+              )}
+              </div>
+              )}
 
       {unmatchedArticles.length > 0 && showUnmatched && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
