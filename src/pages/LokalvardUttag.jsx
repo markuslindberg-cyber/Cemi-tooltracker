@@ -148,12 +148,15 @@ export default function LokalvardUttag() {
     const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(u.manad);
     const customerMatch = selectedCustomers.length === 0 || selectedCustomers.includes(u.kund_id);
     const personalMatch = selectedPersonal.length === 0 || selectedPersonal.includes(u.personal_id);
-    const barcodeMatch = searchBarcode === '' || u.artiklar?.some(a => 
-      a.artikel_id?.includes(searchBarcode) || 
+    const searchLower = searchBarcode.toLowerCase();
+    const searchMatch = searchBarcode === '' || u.artiklar?.some(a => 
+      a.benamning?.toLowerCase().includes(searchLower) ||
+      a.artikel_id?.toLowerCase().includes(searchLower) || 
       artikelMap[a.artikel_id]?.streckkod?.includes(searchBarcode) ||
-      artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode)
+      artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode) ||
+      artikelMap[a.artikel_id]?.benamning?.toLowerCase().includes(searchLower)
     );
-    return monthMatch && customerMatch && personalMatch && barcodeMatch;
+    return monthMatch && customerMatch && personalMatch && searchMatch;
   });
 
   const sortField = (item) => {
@@ -384,7 +387,7 @@ export default function LokalvardUttag() {
          <div className="flex items-center gap-2 flex-wrap">
            <input
              type="text"
-             placeholder="Sök streckkod..."
+             placeholder="Sök streckkod eller namn..."
              value={searchBarcode}
              onChange={(e) => setSearchBarcode(e.target.value)}
              className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
