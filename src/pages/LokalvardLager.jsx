@@ -417,7 +417,12 @@ export default function LokalvardLager() {
                       ) : (
                         <>
                           <td className="px-3 py-2">
-                            <button onClick={() => navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)} className="font-medium text-blue-600 hover:underline text-left text-xs">
+                            <button onClick={() => {
+                              const targetArtikel = artiklar.find(a => a.id === artikel.id);
+                              if (targetArtikel?.artikelnummer) {
+                                navigate(`/Lokalvard/Artikel/${targetArtikel.artikelnummer}`);
+                              }
+                            }} className="font-medium text-blue-600 hover:underline text-left text-xs">
                               <span>{artikel.benamning}</span>
                               {artikel.subcategory && <span className="text-gray-500"> — {artikel.subcategory}</span>}
                             </button>
