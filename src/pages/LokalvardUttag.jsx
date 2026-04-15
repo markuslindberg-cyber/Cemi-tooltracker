@@ -35,7 +35,7 @@ export default function LokalvardUttag() {
        try {
          let checkoutData = [];
          if (base44.entities.LokalvardCheckout?.list) {
-           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
+           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', 100000).catch(() => []);
          }
 
          const result = checkoutData.map(co => {
