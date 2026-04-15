@@ -585,9 +585,8 @@ export default function LokalvardUttag() {
                        const datumStr = u.datum ? u.datum.split('T')[0] : '';
                        const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
                        return (
-                         <React.Fragment key={u.id}>
-                           <tr
-                            key={u.id}
+                          <React.Fragment key={u.id}>
+                            <tr
                             className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                             onClick={() => toggleRow(u.id)}
                           >
