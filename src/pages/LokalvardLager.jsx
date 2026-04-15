@@ -339,46 +339,27 @@ export default function LokalvardLager() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('benamning')}>
-                  <div className="flex items-center gap-2">
-                    Artikel
-                    {sortBy === 'benamning' && (sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />)}
-                  </div>
+                <th className="px-3 py-2 text-left text-xs font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('benamning')}>
+                  <div className="flex items-center gap-1">Artikel {sortBy === 'benamning' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('streckkod')}>
-                  <div className="flex items-center gap-1">
-                    Streckkod
-                    {sortBy === 'streckkod' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
-                  </div>
+                <th className="px-3 py-2 text-left text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('streckkod')}>
+                  <div className="flex items-center gap-1">Streckkod {sortBy === 'streckkod' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-
-                <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('pris')}>
-                  <div className="flex items-center justify-end gap-1">
-                    Pris
-                    {sortBy === 'pris' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
-                  </div>
+                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('pris')}>
+                  <div className="flex items-center justify-end gap-1">Pris {sortBy === 'pris' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('antal_inkopta')}>
-                  <div className="flex items-center justify-end gap-1">
-                    Inköpt
-                    {sortBy === 'antal_inkopta' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
-                  </div>
+                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('antal_inkopta')}>
+                  <div className="flex items-center justify-end gap-1">Inköpt {sortBy === 'antal_inkopta' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold">Uttag</th>
-                <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('current_quantity')}>
-                  <div className="flex items-center justify-end gap-1">
-                    Saldo
-                    {sortBy === 'current_quantity' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
-                  </div>
+                <th className="px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">Uttag</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('current_quantity')}>
+                  <div className="flex items-center justify-end gap-1">Saldo {sortBy === 'current_quantity' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('lagertroskelvarde')}>
-                  <div className="flex items-center justify-end gap-1">
-                    Tröskelvärde
-                    {sortBy === 'lagertroskelvarde' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
-                  </div>
+                <th className="px-3 py-2 text-right text-xs font-semibold cursor-pointer hover:bg-gray-100 whitespace-nowrap" onClick={() => handleSort('lagertroskelvarde')}>
+                  <div className="flex items-center justify-end gap-1">Tröskel {sortBy === 'lagertroskelvarde' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}</div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold">Åtgärd</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold whitespace-nowrap">Status</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold"></th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -399,104 +380,58 @@ export default function LokalvardLager() {
                        <tr className={`${saldoBg} transition-colors`}>
                       {editingId === artikel.id ? (
                        <>
-                         <td className="px-4 py-3">
-                           <input
-                             type="text"
-                             value={editForm.benamning}
-                             onChange={(e) => setEditForm({ ...editForm, benamning: e.target.value })}
-                             className="px-2 py-1 border border-gray-300 rounded w-full"
-                           />
+                         <td className="px-3 py-2">
+                           <input type="text" value={editForm.benamning} onChange={(e) => setEditForm({ ...editForm, benamning: e.target.value })} className="px-2 py-1 border border-gray-300 rounded w-full text-xs" />
                          </td>
-                         <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
-
-                         <td className="px-4 py-3">
-                           <input
-                             type="number"
-                             step="0.01"
-                             value={editForm.pris}
-                             onChange={(e) => setEditForm({ ...editForm, pris: e.target.value })}
-                             className="px-2 py-1 border border-gray-300 rounded w-full text-right"
-                           />
+                         <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{artikel.streckkod}</td>
+                         <td className="px-3 py-2">
+                           <input type="number" step="0.01" value={editForm.pris} onChange={(e) => setEditForm({ ...editForm, pris: e.target.value })} className="px-2 py-1 border border-gray-300 rounded w-20 text-right text-xs" />
                          </td>
-                         <td className="px-4 py-3 text-right">{artikel.total_antal_inkopta}</td>
-                         <td className="px-4 py-3 text-right text-sm text-gray-600">{calculateUttag(artikel)}</td>
-                         <td className="px-4 py-3">
-                           <input
-                             type="number"
-                             value={editForm.current_quantity}
-                             onChange={(e) => setEditForm({ ...editForm, current_quantity: e.target.value })}
-                             className="px-2 py-1 border border-gray-300 rounded w-full text-right"
-                           />
+                         <td className="px-3 py-2 text-right text-xs">{artikel.total_antal_inkopta}</td>
+                         <td className="px-3 py-2 text-right text-xs text-gray-600">{calculateUttag(artikel)}</td>
+                         <td className="px-3 py-2">
+                           <input type="number" value={editForm.current_quantity} onChange={(e) => setEditForm({ ...editForm, current_quantity: e.target.value })} className="px-2 py-1 border border-gray-300 rounded w-16 text-right text-xs" />
                          </td>
-                         <td className="px-4 py-3">
-                            <input
-                              type="number"
-                              value={editForm.lagertroskelvarde}
-                              onChange={(e) => setEditForm({ ...editForm, lagertroskelvarde: e.target.value })}
-                              className="px-2 py-1 border border-gray-300 rounded w-full text-right"
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <Checkbox checked={editForm.utgaende} onCheckedChange={(checked) => setEditForm({ ...editForm, utgaende: !!checked })} />
-                              <span className="text-xs text-gray-600">Utgående</span>
-                            </label>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={handleSaveEdit}
-                                className="text-green-600 hover:bg-green-50 p-1 rounded font-semibold"
-                                title="Spara"
-                              >
-                                ✓
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="text-red-600 hover:bg-red-50 p-1 rounded font-semibold"
-                                title="Avbryt"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </td>
+                         <td className="px-3 py-2">
+                           <input type="number" value={editForm.lagertroskelvarde} onChange={(e) => setEditForm({ ...editForm, lagertroskelvarde: e.target.value })} className="px-2 py-1 border border-gray-300 rounded w-16 text-right text-xs" />
+                         </td>
+                         <td className="px-3 py-2">
+                           <label className="flex items-center gap-1 cursor-pointer">
+                             <Checkbox checked={editForm.utgaende} onCheckedChange={(checked) => setEditForm({ ...editForm, utgaende: !!checked })} />
+                             <span className="text-xs text-gray-600">Utgående</span>
+                           </label>
+                         </td>
+                         <td className="px-3 py-2">
+                           <div className="flex items-center gap-1">
+                             <button onClick={handleSaveEdit} className="text-green-600 hover:bg-green-50 p-1 rounded font-semibold text-xs">✓</button>
+                             <button onClick={handleCancelEdit} className="text-red-600 hover:bg-red-50 p-1 rounded font-semibold text-xs">✕</button>
+                           </div>
+                         </td>
                        </>
-                     ) : (
+                      ) : (
                         <>
-                          <td className="px-4 py-3">
-                            <button
-                              onClick={() => navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)}
-                              className="font-medium text-blue-600 hover:underline text-left"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span>{artikel.benamning}</span>
-                                {artikel.subcategory && <span className="text-sm text-gray-500">— {artikel.subcategory}</span>}
-                              </div>
+                          <td className="px-3 py-2">
+                            <button onClick={() => navigate(`/Lokalvard/Artikel/${artikel.artikelnummer}`)} className="font-medium text-blue-600 hover:underline text-left text-xs">
+                              <span>{artikel.benamning}</span>
+                              {artikel.subcategory && <span className="text-gray-500"> — {artikel.subcategory}</span>}
                             </button>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{artikel.streckkod}</td>
-
-                          <td className="px-4 py-3 text-right">
-                            <span className="font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
-                          </td>
-                          <td className="px-4 py-3 text-right">{artikel.total_antal_inkopta}</td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-600">{calculateUttag(artikel)}</td>
-                          <td className={`px-4 py-3 text-right ${saldoColor}`}>{saldo}</td>
-                          <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{artikel.streckkod}</td>
+                          <td className="px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</td>
+                          <td className="px-3 py-2 text-right text-xs">{artikel.total_antal_inkopta}</td>
+                          <td className="px-3 py-2 text-right text-xs text-gray-600">{calculateUttag(artikel)}</td>
+                          <td className={`px-3 py-2 text-right text-xs ${saldoColor}`}>{saldo}</td>
+                          <td className="px-3 py-2 text-right text-xs text-gray-600">{artikel.lagertroskelvarde}</td>
+                          <td className="px-3 py-2">
                             {artikel.utgaende ? (
-                              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Utgående</span>
+                              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded whitespace-nowrap">Utgående</span>
                             ) : (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Aktiv</span>
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Aktiv</span>
                             )}
                           </td>
-                          <td className="px-4 py-3">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleEditClick(artikel); }}
-                              className="text-blue-600 hover:bg-blue-50 p-1 rounded"
-                              title="Redigera"
-                            >
-                              <Edit2 className="w-4 h-4" />
+                          <td className="px-3 py-2">
+                            <button onClick={(e) => { e.stopPropagation(); handleEditClick(artikel); }} className="text-blue-600 hover:bg-blue-50 p-1 rounded" title="Redigera">
+                              <Edit2 className="w-3 h-3" />
                             </button>
                           </td>
                        </>
