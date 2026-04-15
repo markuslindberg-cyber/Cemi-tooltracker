@@ -62,8 +62,13 @@ export default function LokalvardArtikelDetaljer() {
       );
       setTransaktioner(relateradeUttag.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       
-      // Hämta alla artiklar med samma streckkod för att visa alla relaterade inköp
-      const sammaStreckkod = artiklarData.filter(a => a.streckkod === fundArticle.streckkod).map(a => a.id);
+      // Hämta alla artiklar med samma streckkod eller old_streckkod för att visa alla relaterade inköp
+      const sammaStreckkod = artiklarData.filter(a => 
+        a.streckkod === fundArticle.streckkod || 
+        a.old_streckkod === fundArticle.streckkod ||
+        a.streckkod === fundArticle.old_streckkod ||
+        a.id === fundArticle.id
+      ).map(a => a.id);
       const relateradeInköp = inköpData?.filter(i => sammaStreckkod.includes(i.artikel_id)) || [];
       setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       setArtikelData(artiklarData);
@@ -503,8 +508,9 @@ export default function LokalvardArtikelDetaljer() {
           <div className="space-y-1">
             {transaktioner.map(uttag => {
               const matchingItems = uttag.artiklar.filter(item => 
-                item.artikel_id === artikel.streckkod || 
-                artikelData.some(a => a.streckkod === artikel.streckkod && a.id === item.artikel_id)
+                item.artikel_id === artikel.streckkod ||
+                item.artikel_id === artikel.old_streckkod ||
+                artikelData.some(a => (a.streckkod === artikel.streckkod || a.old_streckkod === artikel.streckkod) && a.id === item.artikel_id)
               );
               const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
               const totalPris = matchingItems.reduce((s, i) => s + (i.antal * i.pris_per_enhet || 0), 0);

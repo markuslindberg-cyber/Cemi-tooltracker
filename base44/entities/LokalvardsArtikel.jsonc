@@ -60,23 +60,5 @@
     "inkopsdatum",
     "antal_inkopta",
     "lagertroskelvarde"
-  ],
-  "rls": {
-    "create": {
-      "user_condition": {
-        "role": "admin_lokalv\u00e5rd"
-      }
-    },
-    "read": {},
-    "update": {
-      "user_condition": {
-        "role": "admin_lokalv\u00e5rd"
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": "admin_lokalv\u00e5rd"
-      }
-    }
-  }
+  ]
 }
