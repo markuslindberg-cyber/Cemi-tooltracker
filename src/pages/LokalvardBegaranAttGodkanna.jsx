@@ -317,8 +317,77 @@ export default function LokalvardBegaranAttGodkanna() {
               <p className="text-gray-500 text-lg font-medium">Ingen historik ännu</p>
             </Card>
           ) : (
-            <div className="space-y-2">
-              {historyRequests.map((request) => (
+            <div className="space-y-6">
+              {/* Senast registrerade uttag */}
+              {historyRequests.filter(r => r.status === 'completed').length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600 mb-3 px-1">Senast registrerade uttag</h3>
+                  <div className="space-y-2">
+                    {historyRequests
+                      .filter(r => r.status === 'completed')
+                      .sort((a, b) => new Date(b.updated_date || b.request_date) - new Date(a.updated_date || a.request_date))
+                      .map((request) => (
+                        <div key={request.id} className="rounded-lg border border-green-200 bg-green-50 overflow-hidden">
+                          <button
+                            onClick={() => setExpandedHistory(expandedHistory === request.id ? null : request.id)}
+                            className="w-full text-left p-3 flex items-center justify-between hover:bg-green-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              {statusBadge(request.status)}
+                              <div>
+                                <p className="font-semibold text-gray-900">{request.customer_name}</p>
+                                <p className="text-xs text-gray-600">
+                                  {format(new Date(request.updated_date || request.request_date), 'dd MMM HH:mm', { locale: sv })}
+                                </p>
+                              </div>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedHistory === request.id ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {expandedHistory === request.id && (
+                            <div className="border-t border-green-200 p-3 bg-white space-y-3 text-sm">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <p className="text-gray-500 text-xs">Begärd av</p>
+                                  <p className="font-medium">{request.requested_by_name || request.requested_by_email}</p>
+                                </div>
+                                {request.approved_by_name && (
+                                  <div>
+                                    <p className="text-gray-500 text-xs">Godkänd av</p>
+                                    <p className="font-medium">{request.approved_by_name}</p>
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-gray-600 font-medium mb-1">Artiklar</p>
+                                <div className="space-y-0.5">
+                                  {request.requested_items?.map((item, idx) => {
+                                    const checkout = checkouts.find(c => c.request_id === request.id);
+                                    const checkedOutItem = checkout?.checked_out_items?.find(ci => ci.item_id === item.id || ci.name === item.name);
+                                    return (
+                                      <div key={idx} className="flex justify-between text-xs">
+                                        <span className="text-gray-700">{item.name}</span>
+                                        <span className="font-medium text-green-700">{checkedOutItem?.scanned_quantity || item.quantity} st</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Övrig historik */}
+              <div>
+                {historyRequests.filter(r => r.status !== 'completed').length > 0 && (
+                  <h3 className="text-sm font-semibold text-gray-600 mb-3 px-1">Övrig historik</h3>
+                )}
+                <div className="space-y-2">
+              {historyRequests.filter(r => r.status !== 'completed').map((request) => (
                 <div key={request.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
                   <button
                     onClick={() => setExpandedHistory(expandedHistory === request.id ? null : request.id)}
@@ -379,22 +448,24 @@ export default function LokalvardBegaranAttGodkanna() {
                            );
                          })}
                        </div>
-                      </div>
+                       </div>
 
-                      {request.notes && (
+                       {request.notes && (
                         <div>
                           <p className="text-sm text-gray-500 mb-1">Anteckningar</p>
                           <p className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100">{request.notes}</p>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+                       )}
+                       </div>
+                       )}
+                       </div>
+                       ))}
+                       </div>
+                       </div>
+                       </div>
+                       )}
+                       </>
+                       )}
 
       {/* STEG 2: Granska */}
       {step === 2 && selectedRequest && (
