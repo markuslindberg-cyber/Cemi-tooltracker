@@ -10,18 +10,23 @@ export default function LokalvardInköpImport() {
   const [uploading, setUploading] = useState(false);
   const [results, setResults] = useState(null);
   const [importProgress, setImportProgress] = useState(null);
+  const [importLogs, setImportLogs] = useState([]);
 
   // Hämta status från localStorage vid sidladdning och polling
   useEffect(() => {
     const checkImportStatus = () => {
       const savedProgress = localStorage.getItem('importProgress');
+      const savedLogs = localStorage.getItem('importLogs');
       if (savedProgress) {
         setImportProgress(JSON.parse(savedProgress));
+      }
+      if (savedLogs) {
+        setImportLogs(JSON.parse(savedLogs));
       }
     };
 
     checkImportStatus();
-    const interval = setInterval(checkImportStatus, 1000);
+    const interval = setInterval(checkImportStatus, 500);
     
     return () => clearInterval(interval);
   }, []);
@@ -75,8 +80,11 @@ export default function LokalvardInköpImport() {
       if (result.status === 'success' && Array.isArray(result.output)) {
         // Spara progress och kör import i bakgrunden
         const progress = { status: 'running', file_url: file_url, rows: result.output };
+        const initialLogs = [`Startar import av ${result.output.length} rader...`];
         setImportProgress(progress);
+        setImportLogs(initialLogs);
         localStorage.setItem('importProgress', JSON.stringify(progress));
+        localStorage.setItem('importLogs', JSON.stringify(initialLogs));
 
         // Kör import asynkront
         base44.functions.invoke('processLokalvardInkopImport', {
@@ -88,16 +96,27 @@ export default function LokalvardInköpImport() {
           setImportProgress(null);
           localStorage.removeItem('importProgress');
           
-          const { successCount, skippedCount, errorCount } = summary;
-          if (successCount > 0) {
-            toast.success(`${successCount} inköp tillagda${skippedCount > 0 ? `, ${skippedCount} hoppades över` : ''}${errorCount > 0 ? `, ${errorCount} fel` : ''}`);
-          } else if (skippedCount > 0) {
-            toast.info(`Alla inköp fanns redan (${skippedCount})`);
-          } else {
-            toast.error(`Ingen inköp importerades (${errorCount} fel)`);
-          }
+          const successCount = processedResults.filter(r => r.status === 'success').length;
+          const skippedCount = processedResults.filter(r => r.status === 'skipped').length;
+          const errorCount = processedResults.filter(r => r.status === 'error').length;
+          
+          const finalLogs = [
+            `Import slutförd!`,
+            `✓ ${successCount} inköp tillagda`,
+            `⊘ ${skippedCount} hoppade över`,
+            `✕ ${errorCount} fel`
+          ];
+          setImportLogs(finalLogs);
+          localStorage.setItem('importLogs', JSON.stringify(finalLogs));
+          
+          setTimeout(() => {
+            localStorage.removeItem('importLogs');
+            setImportLogs([]);
+          }, 5000);
         }).catch(err => {
-          toast.error('Importfel: ' + (err.message || 'Okänt fel'));
+          const errorLogs = [`Import avbruten: ${err.message || 'Okänt fel'}`];
+          setImportLogs(errorLogs);
+          localStorage.setItem('importLogs', JSON.stringify(errorLogs));
           setImportProgress(null);
           localStorage.removeItem('importProgress');
         });
@@ -147,15 +166,27 @@ export default function LokalvardInköpImport() {
          )}
        </div>
 
-      {importProgress && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-            <div>
-              <p className="font-semibold text-blue-900">Import pågår i bakgrunden</p>
-              <p className="text-sm text-blue-700">Du kan navigera vidare – importen fortsätter arbeta</p>
+      {(importProgress || importLogs.length > 0) && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+          {importProgress && (
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+              <div>
+                <p className="font-semibold text-blue-900">Import pågår i bakgrunden</p>
+                <p className="text-sm text-blue-700">Du kan navigera vidare – importen fortsätter arbeta</p>
+              </div>
             </div>
-          </div>
+          )}
+          
+          {importLogs.length > 0 && (
+            <div className="bg-white rounded p-3 font-mono text-sm space-y-1 max-h-40 overflow-y-auto">
+              {importLogs.map((log, idx) => (
+                <div key={idx} className="text-gray-700">
+                  {log}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
