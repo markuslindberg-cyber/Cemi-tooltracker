@@ -82,8 +82,19 @@ export default function LokalvardUttag() {
     const checkoutAsUttag = uttagData.checkout?.map(co => {
       const dateStr = co.checked_out_date || new Date().toISOString();
       const artiklar = co.checked_out_items.map(item => {
-        const foundArtikel = artikelMap[item.item_id] || artikelMap[item.barcode] || artikelMap[item.name];
-        const pris = foundArtikel?.pris || 0;
+        // Try multiple lookup strategies
+        let foundArtikel = artikelMap[item.item_id];
+        if (!foundArtikel && item.barcode) foundArtikel = artikelMap[item.barcode];
+        if (!foundArtikel && item.name) {
+          // Try searching by benamning (name)
+          const nameKey = Object.keys(artikelMap).find(key => {
+            const a = artikelMap[key];
+            return a && a.benamning?.toLowerCase() === item.name?.toLowerCase();
+          });
+          if (nameKey) foundArtikel = artikelMap[nameKey];
+        }
+        
+        const pris = foundArtikel?.pris || item.price || 0;
         const antal = item.scanned_quantity || item.quantity || 0;
         return {
           artikel_id: foundArtikel?.id || item.item_id || '',
