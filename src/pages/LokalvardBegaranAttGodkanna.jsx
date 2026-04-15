@@ -713,42 +713,43 @@ export default function LokalvardBegaranAttGodkanna() {
           </div>
 
           {/* Streckkodsskanner */}
-          <div className="border-t pt-4 space-y-3">
-            <Label className="flex items-center gap-2">
-              <Barcode className="w-4 h-4" />
-              Skanna streckkod
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Scanna streckkod här..."
-                value={barcodeInput}
-                onChange={(e) => setBarcodeInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !barcodeInput.includes('Antal:')) handleBarcodeInput(barcodeInput); }}
-                autoFocus
-                className="text-lg flex-1"
-              />
-              {barcodeInput.includes('Antal:') && (
-                <>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={amountInput}
-                    onChange={(e) => setAmountInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddScannedItem(); }}
-                    className="w-20 text-lg"
-                    placeholder="Antal"
-                  />
-                  <Button
-                    onClick={handleAddScannedItem}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    Lägg till
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
+           <div className="border-t pt-4 space-y-3">
+             <Label className="flex items-center gap-2">
+               <Barcode className="w-4 h-4" />
+               Skanna streckkod
+             </Label>
+             <div className="flex gap-2">
+               <Input
+                 type="text"
+                 placeholder="Scanna streckkod här..."
+                 value={barcodeInput}
+                 onChange={(e) => setBarcodeInput(e.target.value)}
+                 onKeyDown={(e) => { if (e.key === 'Enter' && barcodeInput.trim()) handleBarcodeInput(barcodeInput); }}
+                 autoFocus
+                 className="text-lg flex-1"
+               />
+               {barcodeInput.trim() && !barcodeInput.includes('Antal:') && (
+                 <>
+                   <Input
+                     type="number"
+                     min="1"
+                     value={amountInput}
+                     onChange={(e) => setAmountInput(e.target.value)}
+                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddScannedItem(); }}
+                     className="w-20 text-lg"
+                     placeholder="Antal"
+                     autoFocus
+                   />
+                   <Button
+                     onClick={handleAddScannedItem}
+                     className="bg-blue-600 hover:bg-blue-700"
+                   >
+                     Lägg till
+                   </Button>
+                 </>
+               )}
+             </div>
+           </div>
 
           {/* Skannade artiklar */}
           {scannedItems.length > 0 && (
