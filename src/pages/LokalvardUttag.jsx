@@ -181,6 +181,8 @@ export default function LokalvardUttag() {
     if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
     return 0;
   });
+  
+  console.log('Filtered uttag:', filtered.length, 'Sorted uttag:', sorted.length);
 
   const toggleRow = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
