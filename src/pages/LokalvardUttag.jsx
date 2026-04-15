@@ -386,6 +386,26 @@ export default function LokalvardUttag() {
   const total = sorted.reduce((sum, u) => sum + u.total_kostnad, 0);
   const customers = [...new Set(uttag.map(u => u.kund_id).filter(Boolean))];
 
+  const unmatchedArticles = useMemo(() => {
+    const unmatched = [];
+    uttag.forEach(u => {
+      u.artiklar?.forEach(artikel => {
+        const found = artikelMap[artikel.artikel_id];
+        if (!found) {
+          const key = `${artikel.artikel_id}-${artikel.benamning}`;
+          if (!unmatched.find(a => `${a.artikel_id}-${a.benamning}` === key)) {
+            unmatched.push({
+              artikel_id: artikel.artikel_id,
+              benamning: artikel.benamning,
+              count: uttag.reduce((sum, ut) => sum + (ut.artiklar?.filter(a => a.artikel_id === artikel.artikel_id).length || 0), 0)
+            });
+          }
+        }
+      });
+    });
+    return unmatched.sort((a, b) => b.count - a.count);
+  }, [uttag, artikelMap]);
+
   if (uttagLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
   return (
@@ -601,6 +621,33 @@ export default function LokalvardUttag() {
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
+      )}
+
+      {unmatchedArticles.length > 0 && (
+        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h2 className="text-lg font-semibold text-yellow-900 mb-3">⚠️ Omatchade artiklar</h2>
+          <p className="text-sm text-yellow-800 mb-3">Dessa streckkoder/artiklar från uttag matchar inte artiklar i lagerlistan:</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-yellow-100 border-b">
+                  <th className="px-4 py-2 text-left font-semibold text-yellow-900">Streckkod/ID</th>
+                  <th className="px-4 py-2 text-left font-semibold text-yellow-900">Namn</th>
+                  <th className="px-4 py-2 text-right font-semibold text-yellow-900">Antal gånger använd</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {unmatchedArticles.map((artikel) => (
+                  <tr key={`${artikel.artikel_id}-${artikel.benamning}`} className="hover:bg-yellow-100">
+                    <td className="px-4 py-2 font-mono text-yellow-900">{artikel.artikel_id}</td>
+                    <td className="px-4 py-2 text-yellow-900">{artikel.benamning || '–'}</td>
+                    <td className="px-4 py-2 text-right text-yellow-900 font-semibold">{artikel.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );
