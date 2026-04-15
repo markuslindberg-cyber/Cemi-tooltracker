@@ -225,7 +225,18 @@ export default function LokalvardArtikelDetaljer() {
   if (!artikel) return null;
 
   const totalInköpt = totalFromInköp > 0 ? totalFromInköp : artikel.antal_inkopta;
-  const totalUttag = calculateUttagMatching(transaktioner, artikelData, artikel.streckkod, artikel.old_streckkod);
+
+  // Räkna uttag för denna specifika artikel
+  const totalUttag = transaktioner.reduce((sum, uttag) => {
+    const matchingItems = uttag.artiklar.filter(item => 
+      item.benamning === artikel.streckkod ||
+      item.benamning === artikel.old_streckkod ||
+      item.artikel_id === artikel.streckkod ||
+      item.artikel_id === artikel.old_streckkod
+    );
+    return sum + matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
+  }, 0);
+
   const saldo = totalInköpt - totalUttag;
 
   return (
@@ -419,8 +430,7 @@ export default function LokalvardArtikelDetaljer() {
                   item.artikel_id === artikel.streckkod ||
                   item.artikel_id === artikel.old_streckkod
                 );
-               const totalUttagForArticle = calculateUttagMatching(transaktioner, artikelData, artikel.streckkod, artikel.old_streckkod || '');
-              const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
+               const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
               const totalPris = matchingItems.reduce((s, i) => s + (i.antal * i.pris_per_enhet || 0), 0);
               const datum = uttag.datum ? uttag.datum.split('T')[0] : '-';
               const isExpanded = !!expandedUttag[uttag.id];
