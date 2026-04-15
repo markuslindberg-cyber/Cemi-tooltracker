@@ -143,12 +143,13 @@ export default function RequestWorkwear() {
    const teamMember = teamMembers.find(tm => tm.id === user?.id);
 
    const submitData = {
-     ...formData,
      customer_id: selectedCustomer.id,
      customer_name: selectedCustomer.namn,
+     requested_items: formData.requested_items,
+     notes: formData.notes,
      request_date: new Date().toISOString(),
      requested_by_email: user?.email || '',
-     requested_by_name: teamMember?.name || user?.full_name || '',
+     requested_by_name: selectedHandler?.name || user?.full_name || '',
      status: 'pending',
    };
 
