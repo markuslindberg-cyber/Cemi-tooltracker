@@ -312,12 +312,14 @@ export default function LokalvardUttag() {
     const grouped = {};
     artiklar.forEach((artikel, idx) => {
       let name = artikel.benamning;
+      let barcode = '';
 
       // Sök i lagerlistan efter artikel_id eller streckkod – prioritera artikel_id
       if (artikel.artikel_id) {
         const found = artikelMap[artikel.artikel_id];
         if (found) {
           name = found.benamning;
+          barcode = found.streckkod;
         }
       }
 
@@ -326,20 +328,27 @@ export default function LokalvardUttag() {
         const foundByBarcode = artikelMap[artikel.streckkod];
         if (foundByBarcode) {
           name = foundByBarcode.benamning;
+          barcode = foundByBarcode.streckkod;
         }
       }
 
       if (!name) name = artikel.artikel_id || artikel.streckkod || 'Okänd';
+      if (!barcode) barcode = artikel.artikel_id || artikel.streckkod || '';
 
-      if (!grouped[name]) grouped[name] = [];
-      grouped[name].push({ ...artikel, originalIndex: idx });
+      const key = `${name}|${barcode}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push({ ...artikel, originalIndex: idx });
     });
-    return Object.entries(grouped).map(([name, items]) => ({
-      name,
-      items,
-      totalAntal: items.reduce((sum, item) => sum + item.antal, 0),
-      totalPrice: items.reduce((sum, item) => sum + item.total_pris, 0)
-    }));
+    return Object.entries(grouped).map(([key, items]) => {
+      const [name, barcode] = key.split('|');
+      return {
+        name,
+        barcode,
+        items,
+        totalAntal: items.reduce((sum, item) => sum + item.antal, 0),
+        totalPrice: items.reduce((sum, item) => sum + item.total_pris, 0)
+      };
+    });
   };
 
   const handleSaveEdit = () => {
@@ -564,8 +573,11 @@ export default function LokalvardUttag() {
                             ) : (
                               <div className="space-y-2">
                                 {groupArticles(u.artiklar).map((group) => (
-                                  <div key={group.name} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                    <div className="flex-1 font-medium text-gray-900">{group.name}</div>
+                                   <div key={`${group.name}-${group.barcode}`} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
+                                     <div className="flex-1">
+                                       <div className="font-medium text-gray-900">{group.name}</div>
+                                       {group.barcode && <div className="text-xs text-gray-500">{group.barcode}</div>}
+                                     </div>
                                     <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
                                       <div className="text-right">
                                         <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
