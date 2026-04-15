@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     const uttagRecord = {
       datum: datumStr,
       personal_id: '',
-      personal_namn: checkout.checked_out_by_name,
+      personal_namn: checkout.requested_by_name || checkout.checked_out_by_name,
       kund_id: checkout.customer_id,
       kund_namn: checkout.customer_name,
       ordernummer: checkout.request_id || null,

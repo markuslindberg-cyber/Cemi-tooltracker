@@ -147,6 +147,7 @@ export default function LokalvardNyttUttag() {
       checked_out_date: new Date().toISOString(),
       checked_out_by_email: user?.email || '',
       checked_out_by_name: personalMap[user?.id] || user?.full_name || '',
+      requested_by_name: selectedRequest.requested_by_name || '',
     };
 
     createCheckoutMutation.mutate(submitData);
