@@ -233,15 +233,23 @@ export default function LokalvardBegaranAttGodkanna() {
           : si
         )
       );
+      setBarcodeInput('');
+      setAmountInput('1');
+      setError('');
     } else {
-      setScannedItems(prev => [...prev, newScannedItem]);
+      // Visa ersättningsUI innan artikel läggs till
+      setCurrentItemForReplacement(newScannedItem);
+      setShowReplacementUI(true);
+      setBarcodeInput('');
+      setAmountInput('1');
+      setError('');
     }
-    // Visa ersättningsUI
-    setCurrentItemForReplacement(newScannedItem);
-    setShowReplacementUI(true);
-    setBarcodeInput('');
-    setAmountInput('1');
-    setError('');
+  };
+
+  const handleConfirmItemWithReplacements = (replacements) => {
+    setScannedItems(prev => [...prev, { ...currentItemForReplacement, replacement_items: replacements }]);
+    setShowReplacementUI(false);
+    setCurrentItemForReplacement(null);
   };
 
   const handleCheckoutSubmit = () => {
@@ -780,15 +788,6 @@ export default function LokalvardBegaranAttGodkanna() {
                       ))}
                     </div>
                   )}
-                  <button
-                    onClick={() => {
-                      setCurrentItemForReplacement(item);
-                      setShowReplacementUI(true);
-                    }}
-                    className="text-xs mt-2 text-blue-600 hover:text-blue-800 underline"
-                  >
-                    + Lägg till ersättningsvara
-                  </button>
                 </div>
               ))}
             </div>
@@ -798,43 +797,33 @@ export default function LokalvardBegaranAttGodkanna() {
           {showReplacementUI && currentItemForReplacement && (
             <div className="border-t pt-4 space-y-3 bg-amber-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-amber-900">Lägg till ersättningsvara för {currentItemForReplacement.name}</h4>
+                <h4 className="font-semibold text-amber-900">Lägg till ersättningsvara för {currentItemForReplacement.name}?</h4>
                 <button onClick={() => { setShowReplacementUI(false); setCurrentItemForReplacement(null); }} className="text-amber-600 hover:text-amber-800">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-sm text-amber-800">Välj en ersättningsvara och antal:</p>
-              <div className="space-y-2">
+              <p className="text-sm text-amber-800">Välj ersättningsvara från listan eller hoppa över:</p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {allItems
                   .filter(i => i.id !== currentItemForReplacement.item_id && selectedRequest?.requested_items.some(ri => ri.id === i.id))
                   .map(item => (
                     <button
                       key={item.id}
                       onClick={() => {
-                        setScannedItems(prev =>
-                          prev.map(si =>
-                            si.item_id === currentItemForReplacement.item_id
-                              ? {
-                                  ...si,
-                                  replacement_items: [...(si.replacement_items || []), { item_id: item.id, name: item.benamning || item.name, quantity: 1 }]
-                                }
-                              : si
-                          )
-                        );
-                        setCurrentItemForReplacement(scannedItems.find(si => si.item_id === currentItemForReplacement.item_id) || null);
+                        handleConfirmItemWithReplacements([{ item_id: item.id, name: item.benamning || item.name, quantity: 1 }]);
                       }}
-                      className="w-full text-left p-2 bg-white border border-amber-200 rounded hover:bg-amber-100 text-sm"
+                      className="w-full text-left p-2 bg-white border border-amber-200 rounded hover:bg-amber-100 text-sm font-medium"
                     >
                       {item.benamning || item.name}
                     </button>
                   ))}
               </div>
               <Button
-                onClick={() => { setShowReplacementUI(false); setCurrentItemForReplacement(null); }}
+                onClick={() => handleConfirmItemWithReplacements([])}
                 variant="outline"
                 className="w-full text-sm"
               >
-                Klar
+                Hoppa över - Lägg till utan ersättning
               </Button>
             </div>
           )}
