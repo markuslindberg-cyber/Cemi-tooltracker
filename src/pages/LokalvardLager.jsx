@@ -31,14 +31,17 @@ export default function LokalvardLager() {
     queryFn: () => base44.entities.Uttag.list(null, 10000).catch(() => []),
   });
 
-  const calculateSaldo = (aggregatedArtikel) => {
-    const totalUttaget = uttag.reduce((sum, u) => {
+  const calculateUttag = (aggregatedArtikel) => {
+    return uttag.reduce((sum, u) => {
       const matchingWithdrawals = u.artiklar.filter(itemInWithdrawal =>
         aggregatedArtikel.all_artikel_ids.includes(itemInWithdrawal.artikel_id)
       );
       return sum + matchingWithdrawals.reduce((s, a) => s + (a.antal || 0), 0);
     }, 0);
-    return aggregatedArtikel.total_antal_inkopta - totalUttaget;
+  };
+
+  const calculateSaldo = (aggregatedArtikel) => {
+    return aggregatedArtikel.total_antal_inkopta - calculateUttag(aggregatedArtikel);
   };
 
   const updateMutation = useMutation({
@@ -354,6 +357,7 @@ export default function LokalvardLager() {
                     {sortBy === 'antal_inkopta' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                   </div>
                 </th>
+                <th className="px-4 py-3 text-right text-sm font-semibold">Uttag</th>
                 <th className="px-4 py-3 text-right text-sm font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('current_quantity')}>
                   <div className="flex items-center justify-end gap-1">
                     Saldo
@@ -408,6 +412,7 @@ export default function LokalvardLager() {
                            />
                          </td>
                          <td className="px-4 py-3 text-right">{artikel.total_antal_inkopta}</td>
+                         <td className="px-4 py-3 text-right text-sm text-gray-600">{calculateUttag(artikel)}</td>
                          <td className="px-4 py-3">
                            <input
                              type="number"
@@ -468,6 +473,7 @@ export default function LokalvardLager() {
                             <span className="font-semibold">{artikel.pris.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</span>
                           </td>
                           <td className="px-4 py-3 text-right">{artikel.total_antal_inkopta}</td>
+                          <td className="px-4 py-3 text-right text-sm text-gray-600">{calculateUttag(artikel)}</td>
                           <td className={`px-4 py-3 text-right ${saldoColor}`}>{saldo}</td>
                           <td className="px-4 py-3 text-right text-sm text-gray-600">{artikel.lagertroskelvarde}</td>
                           <td className="px-4 py-3">
