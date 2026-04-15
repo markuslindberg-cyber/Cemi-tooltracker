@@ -187,8 +187,8 @@ export default function LokalvardArtikelDetaljer() {
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   if (!artikel) return null;
 
-  const totalInköpt = artikel.antal_inkopta;
-  const totalUttag = transaktioner.reduce((sum, t) => sum + (t.artiklar?.[0]?.antal || 0), 0);
+  const totalInköpt = totalFromInköp > 0 ? totalFromInköp : artikel.antal_inkopta;
+  const totalUttag = calculateUttagMatching(transaktioner, artikelData, artikel.streckkod, artikel.old_streckkod);
   const saldo = totalInköpt - totalUttag;
 
   return (
@@ -238,7 +238,7 @@ export default function LokalvardArtikelDetaljer() {
             </div>
             <div>
               <p className="text-sm text-gray-600">Antal inköpt</p>
-              <p className="text-lg font-semibold">{totalFromInköp > 0 ? totalFromInköp : totalInköpt}</p>
+              <p className="text-lg font-semibold">{totalInköpt}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Lagertröskelvärde</p>
