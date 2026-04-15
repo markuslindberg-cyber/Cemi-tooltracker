@@ -63,9 +63,14 @@ export default function LokalvardInköpImport() {
   };
 
   const handleFileUpload = async (e) => {
+    console.log('handleFileUpload triggered', e.target.files);
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
 
+    console.log('File selected:', file.name, file.size);
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
