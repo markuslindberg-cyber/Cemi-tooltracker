@@ -52,8 +52,9 @@ export default function LokalvardArtikelDetaljer() {
         utgaende: fundArticle.utgaende || false
       });
 
+      const sammaStreckkodIds = artiklarData.filter(a => a.streckkod === fundArticle.streckkod).map(a => a.id);
       const relateradeUttag = uttagData.filter(u => 
-        u.artiklar?.some(a => a.artikel_id === fundArticle.id)
+        u.artiklar?.some(a => sammaStreckkodIds.includes(a.artikel_id))
       );
       setTransaktioner(relateradeUttag.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       
@@ -489,7 +490,8 @@ export default function LokalvardArtikelDetaljer() {
               </thead>
               <tbody className="divide-y">
                 {transaktioner.map(uttag => {
-                  const matchingItems = uttag.artiklar.filter(item => item.artikel_id === artikel.id);
+                  const sammaIds = artikelData.filter(a => a.streckkod === artikel.streckkod).map(a => a.id);
+                  const matchingItems = uttag.artiklar.filter(item => sammaIds.includes(item.artikel_id));
                   return matchingItems.map((item, idx) => (
                     <tr key={`${uttag.id}-${idx}`} className={idx === 0 ? '' : 'bg-gray-50'}>
                       {idx === 0 && (
