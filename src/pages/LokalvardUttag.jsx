@@ -411,7 +411,7 @@ export default function LokalvardUttag() {
             unmatched.push({
               artikel_id: artikel.artikel_id || artikel.benamning,
               benamning: artikel.benamning,
-              count: uttag.reduce((sum, ut) => sum + (ut.artiklar?.filter(a => a.artikel_id === artikel.artikel_id || a.benamning === artikel.benamning).length || 0), 0)
+              count: uttag.reduce((sum, ut) => sum + (ut.artiklar?.filter(a => a.artikel_id === artikel.artikel_id || a.benamning === artikel.benamning).reduce((s, x) => s + x.antal, 0) || 0), 0)
             });
           }
         }
