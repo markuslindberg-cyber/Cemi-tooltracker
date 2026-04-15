@@ -47,6 +47,7 @@ export default function LokalvardLager() {
 
   const calculateUttag = (aggregatedArtikel) => {
     // Räkna uttag direkt för denna grupp
+    if (!Array.isArray(uttag)) return 0;
     return uttag.reduce((sum, u) => {
       const matchingItems = u.artiklar?.filter(item => {
         // Match om benamning är streckkoden
