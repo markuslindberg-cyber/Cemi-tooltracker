@@ -182,12 +182,10 @@ export default function LokalvardArtikelDetaljer() {
     }
   };
 
-  const totalFromInköp = inköp.reduce((sum, i) => sum + i.antal, 0);
-
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   if (!artikel) return null;
 
-  const totalInköpt = totalFromInköp > 0 ? totalFromInköp : artikel.antal_inkopta;
+  const totalInköpt = artikel.antal_inkopta;
   const totalUttag = calculateUttagMatching(transaktioner, artikelData, artikel.streckkod, artikel.old_streckkod);
   const saldo = totalInköpt - totalUttag;
 
