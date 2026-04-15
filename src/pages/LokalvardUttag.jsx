@@ -498,6 +498,25 @@ export default function LokalvardUttag() {
     }
   };
 
+  // Calculate total from all grouped rows (all filtered pages)
+  const allGroupedRows = useMemo(() => {
+    const grouped = {};
+    sorted.forEach(u => {
+      (u.artiklar || []).forEach((artikel) => {
+        const key = `${artikel.artikel_id}-${u.datum}-${u.kund_id}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            totalPrice: 0
+          };
+        }
+        grouped[key].totalPrice += artikel.total_pris;
+      });
+    });
+    return Object.values(grouped);
+  }, [sorted]);
+
+  const total = allGroupedRows.reduce((sum, row) => sum + row.totalPrice, 0);
+
   const handleExport = () => {
     const csv = [
       'Datum,Personal,Kund,Artikel,Antal,Pris,Ordernummer',
@@ -511,8 +530,6 @@ export default function LokalvardUttag() {
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  const total = sorted.reduce((sum, u) => sum + u.total_kostnad, 0);
   const customers = [...new Set(uttag.map(u => u.kund_id).filter(Boolean))];
 
   const unmatchedArticles = useMemo(() => {
