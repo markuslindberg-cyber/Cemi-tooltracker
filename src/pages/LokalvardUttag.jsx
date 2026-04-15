@@ -32,14 +32,13 @@ export default function LokalvardUttag() {
     queryKey: ['uttag', loadAllUttag],
     queryFn: async () => {
       const limit = loadAllUttag ? 100000 : 500;
-      try {
-        const uttagData = await base44.entities.Uttag.list('-datum', limit).catch(() => []);
-        let checkoutData = [];
-        if (base44.entities.LokalvardCheckout?.list) {
-          checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
-        }
-        
-        const checkoutAsUttag = checkoutData.map(co => {
+       try {
+         let checkoutData = [];
+         if (base44.entities.LokalvardCheckout?.list) {
+           checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', limit).catch(() => []);
+         }
+
+         const checkoutAsUttag = checkoutData.map(co => {
            const dateStr = co.checked_out_date || new Date().toISOString();
            return {
              id: co.id,
@@ -61,11 +60,11 @@ export default function LokalvardUttag() {
            };
          });
 
-         // Deduplicate: om checkout redan finns som Uttag (samma ordernummer), ta bara Uttag
-         const requestIds = new Set(uttagData.map(u => u.ordernummer).filter(Boolean));
-         const filteredCheckouts = checkoutAsUttag.filter(co => !requestIds.has(co.ordernummer));
+         // Hämta gamla Uttag som inte är från begäran (ordernummer är tom)
+         const uttagData = await base44.entities.Uttag.list('-datum', limit).catch(() => []);
+         const legacyUttag = uttagData.filter(u => !u.ordernummer);
 
-         const result = [...uttagData, ...filteredCheckouts].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+         const result = [...checkoutAsUttag, ...legacyUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
         return result;
       } catch (err) {
         console.error('Fel vid hämtning av uttag:', err);
