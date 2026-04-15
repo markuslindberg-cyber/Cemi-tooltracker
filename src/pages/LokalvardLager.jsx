@@ -152,6 +152,8 @@ export default function LokalvardLager() {
     if (filterTyp === 'empty') return saldoForGroup === 0;
     if (filterTyp === 'utgaende') return !!a.utgaende;
     if (filterTyp === 'utanPris') return !a.pris || a.pris < 1;
+    // 'alla' filter - visa aktiva artiklar eller utgående med saldo > 0
+    if (filterTyp === 'alla') return !a.utgaende || saldoForGroup > 0;
     return true;
   });
 
