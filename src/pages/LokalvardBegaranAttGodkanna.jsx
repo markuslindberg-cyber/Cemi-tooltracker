@@ -26,11 +26,13 @@ export default function LokalvardBegaranAttGodkanna() {
   const [editedItems, setEditedItems] = useState([]);
 
   // Steg 3: skanning
-  const [scannedItems, setScannedItems] = useState([]);
-  const [barcodeInput, setBarcodeInput] = useState('');
-  const [amountInput, setAmountInput] = useState('1');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+   const [scannedItems, setScannedItems] = useState([]);
+   const [barcodeInput, setBarcodeInput] = useState('');
+   const [amountInput, setAmountInput] = useState('1');
+   const [error, setError] = useState('');
+   const [success, setSuccess] = useState('');
+   const [showReplacementUI, setShowReplacementUI] = useState(false);
+   const [currentItemForReplacement, setCurrentItemForReplacement] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -210,6 +212,14 @@ export default function LokalvardBegaranAttGodkanna() {
       setTimeout(() => setError(''), 3000);
       return;
     }
+    const newScannedItem = {
+      item_id: item.id,
+      name: item.benamning || item.name,
+      barcode: item.streckkod,
+      quantity: requestedItem.quantity,
+      scanned_quantity: amount,
+      replacement_items: [],
+    };
     const existingScanned = scannedItems.find(si => si.item_id === item.id);
     if (existingScanned) {
       if (existingScanned.scanned_quantity + amount > requestedItem.quantity) {
@@ -224,15 +234,11 @@ export default function LokalvardBegaranAttGodkanna() {
         )
       );
     } else {
-      setScannedItems(prev => [...prev, {
-        item_id: item.id,
-        name: item.benamning || item.name,
-        barcode: item.streckkod,
-        quantity: requestedItem.quantity,
-        scanned_quantity: amount,
-        replacement_items: [],
-      }]);
+      setScannedItems(prev => [...prev, newScannedItem]);
     }
+    // Visa ersättningsUI
+    setCurrentItemForReplacement(newScannedItem);
+    setShowReplacementUI(true);
     setBarcodeInput('');
     setAmountInput('1');
     setError('');
@@ -756,16 +762,80 @@ export default function LokalvardBegaranAttGodkanna() {
             <div className="space-y-2">
               <h4 className="font-semibold">Skannade artiklar</h4>
               {scannedItems.map(item => (
-                <div key={item.item_id} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
-                  <div>
-                    <p className="font-medium text-blue-900">{item.name}</p>
-                    <p className="text-sm text-blue-700">Streckkod: {item.barcode} • Antal: {item.scanned_quantity}/{item.quantity}</p>
+                <div key={item.item_id} className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="font-medium text-blue-900">{item.name}</p>
+                      <p className="text-sm text-blue-700">Streckkod: {item.barcode} • Antal: {item.scanned_quantity}/{item.quantity}</p>
+                    </div>
+                    <button onClick={() => setScannedItems(prev => prev.filter(si => si.item_id !== item.item_id))} className="text-red-500 hover:text-red-700">
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
-                  <button onClick={() => setScannedItems(prev => prev.filter(si => si.item_id !== item.item_id))} className="text-red-500 hover:text-red-700">
-                    <X className="w-5 h-5" />
+                  {item.replacement_items && item.replacement_items.length > 0 && (
+                    <div className="text-xs text-blue-700 bg-white p-2 rounded mt-2">
+                      <p className="font-medium mb-1">Ersättningsvara:</p>
+                      {item.replacement_items.map((ri, idx) => (
+                        <p key={idx}>{ri.name} ({ri.quantity} st)</p>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => {
+                      setCurrentItemForReplacement(item);
+                      setShowReplacementUI(true);
+                    }}
+                    className="text-xs mt-2 text-blue-600 hover:text-blue-800 underline"
+                  >
+                    + Lägg till ersättningsvara
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Ersättningsvara UI */}
+          {showReplacementUI && currentItemForReplacement && (
+            <div className="border-t pt-4 space-y-3 bg-amber-50 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-amber-900">Lägg till ersättningsvara för {currentItemForReplacement.name}</h4>
+                <button onClick={() => { setShowReplacementUI(false); setCurrentItemForReplacement(null); }} className="text-amber-600 hover:text-amber-800">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-sm text-amber-800">Välj en ersättningsvara och antal:</p>
+              <div className="space-y-2">
+                {allItems
+                  .filter(i => i.id !== currentItemForReplacement.item_id && selectedRequest?.requested_items.some(ri => ri.id === i.id))
+                  .map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setScannedItems(prev =>
+                          prev.map(si =>
+                            si.item_id === currentItemForReplacement.item_id
+                              ? {
+                                  ...si,
+                                  replacement_items: [...(si.replacement_items || []), { item_id: item.id, name: item.benamning || item.name, quantity: 1 }]
+                                }
+                              : si
+                          )
+                        );
+                        setCurrentItemForReplacement(scannedItems.find(si => si.item_id === currentItemForReplacement.item_id) || null);
+                      }}
+                      className="w-full text-left p-2 bg-white border border-amber-200 rounded hover:bg-amber-100 text-sm"
+                    >
+                      {item.benamning || item.name}
+                    </button>
+                  ))}
+              </div>
+              <Button
+                onClick={() => { setShowReplacementUI(false); setCurrentItemForReplacement(null); }}
+                variant="outline"
+                className="w-full text-sm"
+              >
+                Klar
+              </Button>
             </div>
           )}
 
