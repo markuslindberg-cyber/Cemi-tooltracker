@@ -433,14 +433,20 @@ export default function LokalvardBegaranAttGodkanna() {
                             onClick={() => setExpandedHistory(expandedHistory === request.id ? null : request.id)}
                             className="w-full text-left p-3 flex items-center justify-between hover:bg-green-100 transition-colors"
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-1">
                               {statusBadge(request.status)}
-                              <div>
+                              <div className="flex-1">
                                 <p className="font-semibold text-gray-900">{request.customer_name}</p>
                                 <p className="text-xs text-gray-600">
                                   {format(new Date(request.updated_date || request.request_date), 'dd MMM HH:mm', { locale: sv })}
                                 </p>
                               </div>
+                              {request.status === 'completed' && (
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">✓ Uttaget</span>
+                              )}
+                              {request.status === 'approved' && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">Väntande uttag</span>
+                              )}
                             </div>
                             <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedHistory === request.id ? 'rotate-180' : ''}`} />
                           </button>
@@ -484,9 +490,9 @@ export default function LokalvardBegaranAttGodkanna() {
                                     setStep(1.5);
                                   }
                                 }}
-                                className="mt-2 bg-blue-600 hover:bg-blue-700 text-xs"
+                                className="mt-3 w-full bg-blue-600 hover:bg-blue-700"
                               >
-                                ✏️ Redigera uttag
+                                ✏️ Redigera antal
                               </Button>
                             </div>
                           )}
