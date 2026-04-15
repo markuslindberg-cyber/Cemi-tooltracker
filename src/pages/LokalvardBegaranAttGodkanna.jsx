@@ -37,8 +37,8 @@ export default function LokalvardBegaranAttGodkanna() {
   const { data: pendingRequests = [], isLoading } = useQuery({
     queryKey: ['pendingWorkwearRequests'],
     queryFn: async () => {
-      const requests = await base44.entities.WorkwearRequest.filter({ status: 'pending' });
-      return requests.sort((a, b) => new Date(b.request_date) - new Date(a.request_date));
+      const requests = await base44.entities.WorkwearRequest.list('-request_date', 10000);
+      return requests.filter(r => r.status === 'pending');
     },
   });
 

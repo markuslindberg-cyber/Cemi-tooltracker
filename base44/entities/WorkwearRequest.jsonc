@@ -79,5 +79,37 @@
     "requested_items",
     "request_date",
     "requested_by_email"
-  ]
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "requested_by_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "requested_by_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin_lokalv\u00e5rd"
+      }
+    }
+  }
 }
