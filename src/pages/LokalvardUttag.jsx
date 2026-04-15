@@ -404,14 +404,14 @@ export default function LokalvardUttag() {
     const unmatched = [];
     uttag.forEach(u => {
       u.artiklar?.forEach(artikel => {
-        const found = artikelMap[artikel.artikel_id];
+        const found = artikelMap[artikel.artikel_id] || artikelMap[artikel.benamning];
         if (!found) {
           const key = `${artikel.artikel_id}-${artikel.benamning}`;
           if (!unmatched.find(a => `${a.artikel_id}-${a.benamning}` === key)) {
             unmatched.push({
-              artikel_id: artikel.artikel_id,
+              artikel_id: artikel.artikel_id || artikel.benamning,
               benamning: artikel.benamning,
-              count: uttag.reduce((sum, ut) => sum + (ut.artiklar?.filter(a => a.artikel_id === artikel.artikel_id).length || 0), 0)
+              count: uttag.reduce((sum, ut) => sum + (ut.artiklar?.filter(a => a.artikel_id === artikel.artikel_id || a.benamning === artikel.benamning).length || 0), 0)
             });
           }
         }
@@ -642,13 +642,13 @@ export default function LokalvardUttag() {
               Stäng
             </Button>
           </div>
-          <p className="text-sm text-yellow-800 mb-3">Dessa streckkoder/artiklar från uttag matchar inte artiklar i lagerlistan:</p>
+          <p className="text-sm text-yellow-800 mb-3">Dessa streckkoder/artiklar från uttag matchar inte artiklar i lagerlistan. Lägg till dem i lagerlistan eller korrigera streckkoden:</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-yellow-100 border-b">
                   <th className="px-4 py-2 text-left font-semibold text-yellow-900">Streckkod/ID</th>
-                  <th className="px-4 py-2 text-left font-semibold text-yellow-900">Namn</th>
+                  <th className="px-4 py-2 text-left font-semibold text-yellow-900">Namn från fil</th>
                   <th className="px-4 py-2 text-right font-semibold text-yellow-900">Antal gånger använd</th>
                 </tr>
               </thead>
