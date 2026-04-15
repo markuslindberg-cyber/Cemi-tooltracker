@@ -843,9 +843,13 @@ export default function LokalvardUttag() {
                 <div className="text-center py-8 text-gray-500">Inget uttag för denna period</div>
               )}
             </div>
-            )}
+          ) : (
+            <div className="text-center py-8 text-gray-500">Ingen data att visa</div>
+          )}
+          </div>
+          )}
 
-      {unmatchedArticles.length > 0 && showUnmatched && (
+          {unmatchedArticles.length > 0 && showUnmatched && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-yellow-900">⚠️ Omatchade artiklar ({unmatchedArticles.length})</h2>
