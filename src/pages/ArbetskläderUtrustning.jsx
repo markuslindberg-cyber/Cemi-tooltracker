@@ -10,11 +10,15 @@ import {
   Trash2,
   Edit2,
   ScanLine,
+  Download,
+  Upload,
+  Loader2,
 } from 'lucide-react';
 import ArbetskläderUtrustningFormModal from '@/components/modals/ArbetskläderUtrustningFormModal';
 import ArbetskläderScanModal from '@/components/modals/ArbetskläderScanModal';
 import CheckoutModal from '@/components/modals/CheckoutModal';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
+import { useRef } from 'react';
 
 const statusMap = {
   i_lager: { label: 'I lager', class: 'bg-green-100 text-green-800' },
@@ -43,6 +47,8 @@ export default function ArbetskläderUtrustning() {
   const [editingItem, setEditingItem] = useState(null);
   const [showScanModal, setShowScanModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ['arbetskläder'],
@@ -122,6 +128,84 @@ export default function ArbetskläderUtrustning() {
     refetch();
   };
 
+  const handleDownloadTemplate = () => {
+    const headers = ['namn', 'kategori', 'underkategori', 'storlek', 'tillverkare', 'antal', 'status', 'skick', 'plats', 'anteckningar'];
+    const exampleRow = ['Arbetsjacka', 'Arbetskläder', 'Jackor', 'M', 'Nike', '5', 'i_lager', 'bra', 'Lager 1', 'Ny'];
+    const csv = [
+      headers.join(','),
+      exampleRow.join(','),
+      ...Array(19).fill(headers.map(() => '').join(','))
+    ].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'arbetsklder_mall.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: {
+          type: 'object',
+          properties: {
+            namn: { type: 'string' },
+            kategori: { type: 'string' },
+            underkategori: { type: 'string' },
+            storlek: { type: 'string' },
+            tillverkare: { type: 'string' },
+            antal: { type: 'number' },
+            status: { type: 'string' },
+            skick: { type: 'string' },
+            plats: { type: 'string' },
+            anteckningar: { type: 'string' }
+          }
+        }
+      });
+
+      if (result.status === 'success' && Array.isArray(result.output)) {
+        const valid = result.output.filter(r => r.namn && r.kategori);
+        if (valid.length > 0) {
+          await base44.entities.ArbetskläderUtrustning.bulkCreate(
+            valid.map(r => ({
+              name: r.namn,
+              category: r.kategori,
+              subcategory: r.underkategori || '',
+              size: r.storlek || '',
+              manufacturer: r.tillverkare || '',
+              quantity: r.antal || 1,
+              status: r.status || 'i_lager',
+              condition: r.skick || 'bra',
+              location_name: r.plats || '',
+              notes: r.anteckningar || ''
+            }))
+          );
+          refetch();
+          alert(`${valid.length} arbetskläder importerade!`);
+        } else {
+          alert('Inga giltiga rader hittades.');
+        }
+      } else {
+        alert('Importfel: ' + (result.details || 'Okänt fel'));
+      }
+    } catch (err) {
+      alert('Importfel: ' + (err.message || 'Okänt fel'));
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -139,7 +223,40 @@ export default function ArbetskläderUtrustning() {
             <h1 className="text-3xl font-bold text-gray-900">Arbetskläder & Utrustning</h1>
             <p className="text-gray-500 mt-1">{groupedItems.length} artiklar</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              onClick={handleDownloadTemplate}
+              variant="outline"
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Ladda ner mall
+            </Button>
+            <Button
+              onClick={handleImportClick}
+              disabled={uploading}
+              variant="outline"
+              className="gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Laddar...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  Importera Excel
+                </>
+              )}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
             <Button
               onClick={() => setShowCheckoutModal(true)}
               variant="outline"
