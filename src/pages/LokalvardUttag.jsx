@@ -598,7 +598,7 @@ export default function LokalvardUttag() {
                    const datumStr = u.datum ? u.datum.split('T')[0] : '';
                    const articles = groupArticles(u.artiklar || []);
                    return articles.map((group, idx) => (
-                     <tr key={`${u.id}-${idx}`} className="border-b border-gray-100 hover:bg-gray-50">
+                     <tr key={`${u.id}-${group.name}-${idx}`} className="border-b border-gray-100 hover:bg-gray-50">
                        {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>}
                        {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-gray-900 font-medium">{u.kund_namn}</td>}
                        {idx === 0 && <td rowSpan={articles.length} className="px-4 py-3 text-gray-700">{u.personal_namn}</td>}
