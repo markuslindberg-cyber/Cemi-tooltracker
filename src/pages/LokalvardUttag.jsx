@@ -1,10 +1,10 @@
-import React, { useState, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Loader2, Calendar, ChevronDown, ChevronRight, X, Upload, FileDown, Download, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useRef, useMemo } from 'react';
 
 export default function LokalvardUttag() {
   const queryClient = useQueryClient();
@@ -496,12 +496,12 @@ export default function LokalvardUttag() {
               </thead>
               <tbody>
                 {sorted.map((u) => {
-                  const isExpanded = expandedRows[u.id];
-                  const datumStr = u.datum ? u.datum.split('T')[0] : '';
-                  const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
-                  return (
-                    <>
-                      <tr
+                   const isExpanded = expandedRows[u.id];
+                   const datumStr = u.datum ? u.datum.split('T')[0] : '';
+                   const tidStr = u.datum?.split('T')[1]?.slice(0, 5) || '';
+                   return (
+                     <>
+                       <tr
                         key={u.id}
                         className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
                         onClick={() => toggleRow(u.id)}
@@ -520,27 +520,31 @@ export default function LokalvardUttag() {
                       {isExpanded && (
                         <tr key={`${u.id}-detail`} className="bg-gray-50">
                           <td colSpan={6} className="px-6 py-3">
-                            <div className="space-y-2">
-                              {groupArticles(u.artiklar).map((group) => (
-                                <div key={group.name} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
-                                  <div className="flex-1 font-medium text-gray-900">{group.name}</div>
-                                  <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
-                                    <div className="text-right">
-                                      <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
-                                      <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                            {(!u.artiklar || u.artiklar.length === 0) ? (
+                              <div className="text-sm text-gray-500">Inga artiklar</div>
+                            ) : (
+                              <div className="space-y-2">
+                                {groupArticles(u.artiklar).map((group) => (
+                                  <div key={group.name} className="bg-white p-3 rounded border border-gray-200 flex items-center justify-between gap-3">
+                                    <div className="flex-1 font-medium text-gray-900">{group.name}</div>
+                                    <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                                      <div className="text-right">
+                                        <div className="text-sm font-medium text-gray-900">{group.totalAntal} st</div>
+                                        <div className="text-xs text-gray-500">{group.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</div>
+                                      </div>
+                                      <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
                                     </div>
-                                    <button onClick={() => handleEditArticle(u.id, group.items[0], group.items[0].originalIndex)} className="px-2 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       )}
-                    </>
-                  );
-                })}
-              </tbody>
+                      </>
+                      );
+                      })}
+                      </tbody>
             </table>
           </div>
         </>
