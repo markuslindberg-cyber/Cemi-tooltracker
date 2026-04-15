@@ -58,6 +58,11 @@ export default function LokalvardBegaranAttGodkanna() {
     queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
   });
 
+  const { data: checkouts = [] } = useQuery({
+    queryKey: ['lokalvardCheckouts'],
+    queryFn: () => base44.entities.LokalvardCheckout.list(null, 10000).catch(() => []),
+  });
+
   const approveMutation = useMutation({
     mutationFn: (requestId) =>
       base44.entities.WorkwearRequest.update(requestId, {
@@ -352,15 +357,24 @@ export default function LokalvardBegaranAttGodkanna() {
                       <div>
                        <p className="text-sm font-medium text-gray-700 mb-2">Artiklar</p>
                        <div className="space-y-1">
-                         {request.requested_items?.map((item, idx) => (
-                           <div key={idx} className="flex items-center justify-between text-sm p-2 bg-white rounded border border-gray-100">
-                             <span>{item.name} <span className="text-gray-400">{item.subcategory}</span></span>
-                             <div className="flex items-center gap-2">
-                               <span className="font-medium">{item.quantity} st</span>
-                               <div className="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">✓</div>
+                         {request.requested_items?.map((item, idx) => {
+                           const checkout = checkouts.find(c => c.request_id === request.id);
+                           const checkedOutItem = checkout?.checked_out_items?.find(ci => ci.item_id === item.id);
+                           const isCheckedOut = !!checkedOutItem;
+                           return (
+                             <div key={idx} className="flex items-center justify-between text-sm p-2 bg-white rounded border border-gray-100">
+                               <span>{item.name} <span className="text-gray-400">{item.subcategory}</span></span>
+                               <div className="flex items-center gap-2">
+                                 <span className="font-medium">{item.quantity} st</span>
+                                 {isCheckedOut ? (
+                                   <div className="w-5 h-5 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs font-bold">✓</div>
+                                 ) : (
+                                   <div className="w-5 h-5 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs">−</div>
+                                 )}
+                               </div>
                              </div>
-                           </div>
-                         ))}
+                           );
+                         })}
                        </div>
                       </div>
 
