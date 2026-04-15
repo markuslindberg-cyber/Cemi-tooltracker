@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight, ChevronDown, Clock, Ban } from 'lucide-react';
+import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight, ChevronDown, Clock, Ban, Plus } from 'lucide-react';
+import ManualScanDialog from '@/components/ManualScanDialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -28,12 +29,12 @@ export default function LokalvardBegaranAttGodkanna() {
   // Steg 3: skanning
     const [scannedItems, setScannedItems] = useState([]);
     const [barcodeInput, setBarcodeInput] = useState('');
-    const [amountInput, setAmountInput] = useState('1');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [showReplacementUI, setShowReplacementUI] = useState(false);
     const [currentItemForReplacement, setCurrentItemForReplacement] = useState(null);
     const [currentScannedItemId, setCurrentScannedItemId] = useState(null);
+    const [showManualInputDialog, setShowManualInputDialog] = useState(false);
     const barcodeInputRef = useRef(null);
 
   useEffect(() => {
@@ -235,6 +236,44 @@ export default function LokalvardBegaranAttGodkanna() {
   };
 
 
+
+  const handleManualAddItem = (item, quantity) => {
+    if (!selectedRequest) return;
+
+    const requestedItem = selectedRequest.requested_items.find(ri => ri.id === item.id);
+    if (!requestedItem) {
+      setError(`${item.benamning || item.name} är inte på begäran`);
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
+    const existingScanned = scannedItems.find(si => si.item_id === item.id);
+    if (existingScanned) {
+      if (existingScanned.scanned_quantity + quantity > requestedItem.quantity) {
+        setError(`Kan inte ta ut mer än ${requestedItem.quantity} st`);
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+      setScannedItems(prev =>
+        prev.map(si => si.item_id === item.id
+          ? { ...si, scanned_quantity: si.scanned_quantity + quantity }
+          : si
+        )
+      );
+    } else {
+      setScannedItems(prev => [...prev, {
+        item_id: item.id,
+        name: item.benamning || item.name,
+        barcode: item.streckkod,
+        quantity: requestedItem.quantity,
+        scanned_quantity: quantity,
+        replacement_items: [],
+      }]);
+    }
+    setSuccess(`Lade till ${quantity} st av ${item.benamning || item.name} manuellt.`);
+    setTimeout(() => setSuccess(''), 3000);
+    setShowManualInputDialog(false);
+  };
 
   const handleConfirmItemWithReplacements = (replacements) => {
     setScannedItems(prev => [...prev, { ...currentItemForReplacement, replacement_items: replacements }]);
@@ -751,10 +790,13 @@ export default function LokalvardBegaranAttGodkanna() {
              onKeyDown={(e) => { if (e.key === 'Enter' && barcodeInput.trim()) handleBarcodeInput(barcodeInput); }}
              autoFocus
              className="text-lg"
-           />
-          </div>
+             />
+             <Button variant="outline" onClick={() => setShowManualInputDialog(true)} className="w-full mt-2">
+              <Plus className="w-4 h-4 mr-2" /> Manuell inmatning
+             </Button>
+             </div>
 
-          {/* Skannade artiklar */}
+             {/* Skannade artiklar */}
           {scannedItems.length > 0 && (
             <div className="space-y-2">
               <h4 className="font-semibold">Skannade artiklar</h4>
@@ -862,6 +904,15 @@ export default function LokalvardBegaranAttGodkanna() {
             </Button>
           </div>
         </Card>
+      )}
+
+      {selectedRequest && (
+        <ManualScanDialog
+          isOpen={showManualInputDialog}
+          onClose={() => setShowManualInputDialog(false)}
+          allItems={allItems}
+          onManualAdd={handleManualAddItem}
+        />
       )}
     </div>
   );
