@@ -21,7 +21,8 @@
         "maintenance",
         "inspection",
         "calibration",
-        "replacement_parts"
+        "replacement_parts",
+        "annual_service"
       ],
       "description": "Typ av service"
     },

@@ -17,6 +17,7 @@ const SERVICE_TYPE_LABELS = {
   inspection: 'Inspektion',
   calibration: 'Kalibrering',
   replacement_parts: 'Reservdelar',
+  annual_service: 'Årlig service',
 };
 
 const SERVICE_TYPE_COLORS = {
@@ -25,6 +26,7 @@ const SERVICE_TYPE_COLORS = {
   inspection: 'bg-purple-100 text-purple-700',
   calibration: 'bg-yellow-100 text-yellow-700',
   replacement_parts: 'bg-green-100 text-green-700',
+  annual_service: 'bg-orange-100 text-orange-700',
 };
 
 const EMPTY_TEMPLATE = {
