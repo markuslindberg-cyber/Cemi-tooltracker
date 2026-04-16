@@ -48,6 +48,9 @@ const defaultTool = {
   barcode: '',
   image_url: '',
   suggested_image_url: '',
+  parent_tool_id: '',
+  parent_tool_name: '',
+  compatible_with: '',
 };
 
 export default function ToolFormModal({
@@ -144,6 +147,11 @@ export default function ToolFormModal({
     // Reset subcategory when category changes
     if (field === 'category') {
       setFormData(prev => ({ ...prev, [field]: value, subcategory: '' }));
+    }
+    // Auto-fill parent tool name when parent_tool_id changes
+    if (field === 'parent_tool_id') {
+      const parentTool = allTools.find(t => t.id === value);
+      setFormData(prev => ({ ...prev, [field]: value, parent_tool_name: parentTool?.name || '' }));
     }
   };
 
@@ -625,8 +633,9 @@ export default function ToolFormModal({
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="space-y-2">
-                  <Label>Underkategori</Label>
+                {formData.category !== 'Redskap' && (
+                  <div className="space-y-2">
+                    <Label>Underkategori</Label>
                   {!showCustomSubcategory ? (
                     <Popover>
                       <PopoverTrigger asChild>
@@ -702,10 +711,62 @@ export default function ToolFormModal({
                       </Button>
                     </div>
                   )}
-                </div>
-              </div>
+                  </div>
+                  )}
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {formData.category === 'Redskap' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Tillhör Huvudmaskin</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between"
+                        >
+                          {formData.parent_tool_name || "Välj huvudmaskin..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Sök huvudmaskin..." />
+                          <CommandEmpty>Ingen maskin hittades.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {allTools.filter(t => t.category !== 'Redskap').map((tool) => (
+                              <CommandItem
+                                key={tool.id}
+                                value={tool.name}
+                                onSelect={() => handleChange('parent_tool_id', tool.id)}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.parent_tool_id === tool.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {tool.name} {tool.model_number ? `- ${tool.model_number}` : ''}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Passar till</Label>
+                    <Input
+                      value={formData.compatible_with}
+                      onChange={(e) => handleChange('compatible_with', e.target.value)}
+                      placeholder="t.ex. Modell X, Y, Z"
+                    />
+                  </div>
+                  </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Status</Label>
                   <Select value={formData.status} onValueChange={(v) => handleChange('status', v)}>
