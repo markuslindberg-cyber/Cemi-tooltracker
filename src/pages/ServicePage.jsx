@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import {
   Search, Wrench, ClipboardList, Plus, Calendar, User, DollarSign,
-  CheckCircle2, ChevronRight, Package, ArrowLeft, Camera
+  CheckCircle2, ChevronRight, Package, ArrowLeft, Camera, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -68,6 +68,8 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
         description: '',
         performed_by: '',
         notes: '',
+        _parts_used: [],
+        _newPart: '',
       });
     }
   }, [open, prefillTemplate]);
@@ -97,7 +99,7 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
       cost: form.cost === '' ? 0 : Number(form.cost),
       description: form.description,
       performed_by: form.performed_by,
-      notes: form.notes + (form._template_name ? `\n[Från mall: ${form._template_name}]` : ''),
+      notes: (form.notes || '') + (form._template_name ? `\n[Från mall: ${form._template_name}]` : '') + (form._parts_used?.length > 0 ? `\nDelar: ${form._parts_used.map(p => `${p.part_name} ×${p.quantity}`).join(', ')}` : ''),
     });
   };
 
@@ -143,18 +145,54 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
             <Label>Beskrivning / vad som utförts</Label>
             <Textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Beskriv serviceåtgärden..." />
           </div>
-          {form._parts_used?.length > 0 && (
-            <div className="space-y-1">
-              <Label>Delar (från mall)</Label>
-              <div className="flex flex-wrap gap-1">
-                {form._parts_used.map((p, i) => (
-                  <span key={i} className="text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">
-                    {p.part_name} × {p.quantity}
-                  </span>
-                ))}
+          <div className="space-y-2">
+            <Label>Delar/komponenter</Label>
+            {(form._parts_used || []).map((p, i) => (
+              <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                <Package className="w-4 h-4 text-gray-400" />
+                <span className="flex-1 text-sm">{p.part_name}</span>
+                <Input
+                  type="number"
+                  min="1"
+                  value={p.quantity}
+                  onChange={e => setForm(f => ({
+                    ...f,
+                    _parts_used: f._parts_used.map((x, j) => j === i ? { ...x, quantity: Number(e.target.value) } : x)
+                  }))}
+                  className="w-16 h-7 text-sm"
+                />
+                <button
+                  onClick={() => setForm(f => ({ ...f, _parts_used: f._parts_used.filter((_, j) => j !== i) }))}
+                  className="text-red-400 hover:text-red-600"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
+            ))}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ny del..."
+                value={form._newPart || ''}
+                onChange={e => setForm(f => ({ ...f, _newPart: e.target.value }))}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && form._newPart?.trim()) {
+                    setForm(f => ({ ...f, _parts_used: [...(f._parts_used || []), { part_name: f._newPart.trim(), quantity: 1 }], _newPart: '' }));
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (!form._newPart?.trim()) return;
+                  setForm(f => ({ ...f, _parts_used: [...(f._parts_used || []), { part_name: f._newPart.trim(), quantity: 1 }], _newPart: '' }));
+                }}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
             </div>
-          )}
+          </div>
           <div className="space-y-1">
             <Label>Anteckningar</Label>
             <Textarea rows={2} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Eventuella anteckningar..." />
