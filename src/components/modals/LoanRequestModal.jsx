@@ -26,6 +26,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const [scanMode, setScanMode] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState('');
   const [itemType, setItemType] = useState('tools');
+  const [itemQuantities, setItemQuantities] = useState({});
 
   const { data: tools } = useQuery({
     queryKey: ['tools'],
@@ -80,7 +81,10 @@ export default function LoanRequestModal({ isOpen, onClose }) {
       return base44.functions.invoke('createLoanRequest', {
         tool_ids: selectedTools.map(t => t.id),
         tool_names: selectedTools.map(t => t.name),
-        tool_details: toolDetails,
+        tool_details: toolDetails.map(td => ({
+          ...td,
+          quantity: itemType === 'handtools' ? (itemQuantities[td.tool_id] || 1) : 1
+        })),
         assigned_to_email: assignedTo.email,
         assigned_to_name: assignedTo.full_name,
         destination_location_id: destinationLocation.id,
@@ -103,6 +107,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
       setUseIndividualDates(false);
       setIndividualDates({});
       setItemType('tools');
+      setItemQuantities({});
       onClose();
     }
   });
@@ -110,6 +115,10 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const handleAddTool = (tool) => {
     if (!selectedTools.find(t => t.id === tool.id)) {
       setSelectedTools([...selectedTools, tool]);
+      // För handredskap, initiera antal till 1
+      if (itemType === 'handtools') {
+        setItemQuantities(prev => ({ ...prev, [tool.id]: 1 }));
+      }
     }
     setSearchOpen(false);
   };
@@ -119,6 +128,9 @@ export default function LoanRequestModal({ isOpen, onClose }) {
     const newIndividualDates = { ...individualDates };
     delete newIndividualDates[toolId];
     setIndividualDates(newIndividualDates);
+    const newQuantities = { ...itemQuantities };
+    delete newQuantities[toolId];
+    setItemQuantities(newQuantities);
   };
 
   const handleBarcodeScan = (e) => {
@@ -211,14 +223,28 @@ export default function LoanRequestModal({ isOpen, onClose }) {
               )}
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 space-y-2">
               {selectedTools.map(tool => (
-                <Badge key={tool.id} variant="secondary" className="flex items-center gap-1">
-                  {tool.name}
-                  <button onClick={() => handleRemoveTool(tool.id)} className="ml-1">
-                    <X className="w-3 h-3" />
+                <div key={tool.id} className={`flex items-center gap-2 p-2 rounded border ${itemType === 'handtools' ? 'bg-gray-50' : 'bg-blue-50'}`}>
+                  <div className="flex-1">
+                    <Badge variant="secondary">{tool.name}</Badge>
+                  </div>
+                  {itemType === 'handtools' && (
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm text-gray-600">Antal:</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={itemQuantities[tool.id] || 1}
+                        onChange={(e) => setItemQuantities(prev => ({ ...prev, [tool.id]: parseInt(e.target.value) || 1 }))}
+                        className="w-16 text-sm"
+                      />
+                    </div>
+                  )}
+                  <button onClick={() => handleRemoveTool(tool.id)} className="text-red-500 hover:text-red-700">
+                    <X className="w-4 h-4" />
                   </button>
-                </Badge>
+                </div>
               ))}
             </div>
           </div>
