@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Edit2, Trash2, ChevronDown, X } from 'lucide-react';
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
