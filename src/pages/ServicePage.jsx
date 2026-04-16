@@ -45,6 +45,8 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
     description: '',
     performed_by: '',
     notes: '',
+    invoice_number: '',
+    supplier: '',
   });
 
   useEffect(() => {
@@ -68,6 +70,8 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
         description: '',
         performed_by: '',
         notes: '',
+        invoice_number: '',
+        supplier: '',
         _parts_used: [],
         _newPart: '',
       });
@@ -99,6 +103,8 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
       cost: form.cost === '' ? 0 : Number(form.cost),
       description: form.description,
       performed_by: form.performed_by,
+      invoice_number: form.invoice_number || null,
+      supplier: form.supplier || null,
       notes: (form.notes || '') + (form._template_name ? `\n[Från mall: ${form._template_name}]` : '') + (form._parts_used?.length > 0 ? `\nDelar: ${form._parts_used.map(p => `${p.part_name} ×${p.quantity}`).join(', ')}` : ''),
     });
   };
@@ -137,13 +143,43 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
             <Label>Utförd av</Label>
             <Input value={form.performed_by} onChange={e => setForm(f => ({ ...f, performed_by: e.target.value }))} placeholder="Namn..." />
           </div>
-          <div className="space-y-1">
-            <Label>Kostnad (kr)</Label>
-            <Input type="number" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="0" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label>Kostnad (kr)</Label>
+              <Input type="number" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="0" />
+            </div>
+            <div className="space-y-1">
+              <Label>Fakturanummer</Label>
+              <Input value={form.invoice_number} onChange={e => setForm(f => ({ ...f, invoice_number: e.target.value }))} placeholder="Valfritt..." />
+            </div>
           </div>
           <div className="space-y-1">
             <Label>Beskrivning / vad som utförts</Label>
             <Textarea rows={3} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Beskriv serviceåtgärden..." />
+          </div>
+          <div className="space-y-1">
+            <Label>Leverantör / tekniker</Label>
+            <div className="relative">
+              <Input
+                value={form.supplier}
+                onChange={e => setForm(f => ({ ...f, supplier: e.target.value }))}
+                placeholder="Namn på leverantör..."
+                className="w-full"
+              />
+              {form.supplier && suppliers.filter(s => s.toLowerCase().includes(form.supplier.toLowerCase())).length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-input rounded-md shadow-md max-h-48 overflow-y-auto">
+                  {suppliers.filter(s => s.toLowerCase().includes(form.supplier.toLowerCase())).map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setForm(f => ({ ...f, supplier: s }))}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Delar/komponenter</Label>
@@ -223,6 +259,15 @@ function ToolServiceHistory({ tool, onBack }) {
   const { data: templates = [] } = useQuery({
     queryKey: ['serviceTemplates'],
     queryFn: () => base44.entities.ServiceTemplate.list('name'),
+  });
+
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['serviceSuppliers'],
+    queryFn: async () => {
+      const records = await base44.entities.ServiceRecord.list('-updated_date', 500);
+      const unique = [...new Set(records.filter(r => r.supplier).map(r => r.supplier))].sort();
+      return unique;
+    },
   });
 
   const openManual = () => { setSelectedTemplate(null); setAddOpen(true); };
