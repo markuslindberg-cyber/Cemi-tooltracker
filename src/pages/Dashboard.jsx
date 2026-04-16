@@ -6,6 +6,7 @@ import { createPageUrl } from '@/utils';
 import StatsCard from '@/components/ui/StatsCard';
 import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
+import LoanRequestModal from '@/components/modals/LoanRequestModal';
 import { Button } from '@/components/ui/button';
 import {
   Wrench,
@@ -18,6 +19,7 @@ import {
   TrendingUp,
   ChevronRight,
   Package,
+  RotateCw,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -25,6 +27,7 @@ export default function Dashboard() {
   const [transferTool, setTransferTool] = useState(null);
   const [editTool, setEditTool] = useState(null);
   const [showAddTool, setShowAddTool] = useState(false);
+  const [showLoanRequest, setShowLoanRequest] = useState(false);
 
   const { data: tools = [], refetch: refetchTools } = useQuery({
     queryKey: ['tools'],
@@ -119,15 +122,26 @@ export default function Dashboard() {
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-500 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
           </div>
-          <Button
-            onClick={() => setShowAddTool(true)}
-            size="sm"
-            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 shrink-0"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">Lägg till verktyg</span>
-            <span className="sm:hidden">Lägg till</span>
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              onClick={() => setShowLoanRequest(true)}
+              size="sm"
+              variant="outline"
+              className="hidden sm:flex"
+            >
+              <RotateCw className="w-4 h-4 mr-1" />
+              Skicka låneförfrågan
+            </Button>
+            <Button
+              onClick={() => setShowAddTool(true)}
+              size="sm"
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">Lägg till verktyg</span>
+              <span className="sm:hidden">Lägg till</span>
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -391,6 +405,11 @@ export default function Dashboard() {
         locations={locations}
         teamMembers={teamMembers}
         onSubmit={handleSaveTool}
+      />
+
+      <LoanRequestModal
+        isOpen={showLoanRequest}
+        onClose={() => setShowLoanRequest(false)}
       />
     </div>
   );
