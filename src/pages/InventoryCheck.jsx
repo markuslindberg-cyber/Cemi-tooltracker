@@ -12,8 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   Camera, CheckCircle2, Loader2, Search, Package, MapPin,
   AlertTriangle, ArrowLeft, Download, ClipboardList, Globe,
-  Pause, Play, PencilLine,
+  Pause, Play, PencilLine, Plus, AlertCircle,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -194,40 +195,93 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
   );
 }
 
-// ─── Manual count dialog (for lokalvård-style items) ─────────────────────────────
-function ManualCountPanel({ item, onConfirm, onCancel }) {
-  const [antal, setAntal] = useState('');
+// ─── Manual count dialog ─────────────────────────────────────────────────────────
+function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm }) {
+  const [query, setQuery] = useState('');
+  const [antal, setAntal] = useState('1');
+  const [foundItem, setFoundItem] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) { setQuery(''); setAntal('1'); setFoundItem(null); setError(''); }
+  }, [isOpen]);
+
+  const handleSearch = () => {
+    setError('');
+    setFoundItem(null);
+    const trimmed = query.trim();
+    if (!trimmed) { setError('Ange streckkod eller namn.'); return; }
+    let item = scopedItems.find(i =>
+      (i.barcode || i.streckkod) === trimmed || (i.artikelnummer) === trimmed
+    );
+    if (!item) {
+      item = scopedItems.find(i => (i.name || i.benamning || '').toLowerCase().includes(trimmed.toLowerCase()));
+    }
+    if (!item) { setError(`Artikel '${trimmed}' hittades inte.`); return; }
+    setFoundItem(item);
+  };
+
+  const handleAdd = () => {
+    const q = parseInt(antal, 10);
+    if (isNaN(q) || q < 0) { setError('Antal måste vara ett positivt nummer.'); return; }
+    onConfirm(foundItem, q);
+    onClose();
+  };
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-        <PencilLine className="w-5 h-5 text-[#8B1E1E]" />
-        <div>
-          <p className="font-semibold text-gray-900">{item.name || item.benamning}</p>
-          <p className="text-xs text-gray-500">Manuell inmatning av antal</p>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Manuell inmatning</DialogTitle>
+          <DialogDescription>Sök på streckkod, artikelnummer eller namn och ange antal i lager.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label>Streckkod / Artikelnummer / Namn</Label>
+            <div className="flex gap-2">
+              <Input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+                placeholder="Sök artikel..."
+                autoFocus
+              />
+              <Button onClick={handleSearch}><Search className="w-4 h-4" /></Button>
+            </div>
+          </div>
+          {foundItem && (
+            <div className="p-3 border rounded-md bg-green-50 text-green-800">
+              <p className="font-medium">{foundItem.name || foundItem.benamning}</p>
+              <p className="text-sm text-green-600">{foundItem.barcode || foundItem.streckkod || ''}</p>
+            </div>
+          )}
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <AlertCircle className="w-4 h-4" />{error}
+            </div>
+          )}
+          <div className="grid gap-2">
+            <Label>Antal i lager</Label>
+            <Input
+              type="number"
+              min="0"
+              value={antal}
+              onChange={e => setAntal(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Antal i lager</Label>
-        <Input
-          type="number"
-          min="0"
-          placeholder="Ange antal..."
-          value={antal}
-          onChange={e => setAntal(e.target.value)}
-          autoFocus
-        />
-      </div>
-      <div className="flex gap-3">
-        <Button variant="outline" className="flex-1" onClick={onCancel}>Avbryt</Button>
-        <Button
-          className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]"
-          disabled={antal === ''}
-          onClick={() => onConfirm(item, Number(antal))}
-        >
-          <CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta antal
-        </Button>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Avbryt</Button>
+          <Button
+            onClick={handleAdd}
+            disabled={!foundItem || antal === ''}
+            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+          >
+            <Plus className="w-4 h-4 mr-2" />Lägg till
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -236,7 +290,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const queryClient = useQueryClient();
   const [scannerActive, setScannerActive] = useState(false);
   const [scannedItem, setScannedItem] = useState(null);
-  const [manualEntry, setManualEntry] = useState(null); // item for manual count
+  const [showManualDialog, setShowManualDialog] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
   const [checkedItems, setCheckedItems] = useState(new Set(sessionConfig._resumedChecked || []));
   const [manualCounts, setManualCounts] = useState(sessionConfig._resumedManualCounts || {});
@@ -332,28 +386,12 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   };
 
   const handleManualSearch = (barcode) => {
-    const item = scopedItems.find(t => (t.barcode || t.streckkod) === barcode);
-    if (!item && sessionConfig.mode === 'open') {
-      const all = [
-        ...tools.map(t => ({ ...t, _type: 'tool' })),
-        ...handTools.map(t => ({ ...t, _type: 'handtool' })),
-        ...arbetskläderData.map(a => ({ ...a, _type: 'arbetskläder' })),
-        ...lokalvardsData.map(l => ({ ...l, _type: 'lokalvards', name: l.benamning })),
-      ];
-      const found = all.find(t => (t.barcode || t.streckkod) === barcode);
-      if (found) { handleScan(barcode); return; }
-    }
-    if (item) {
-      handleScan(barcode);
-    } else {
-      alert(`Inget föremål hittades med streckkod: ${barcode}`);
-    }
+    handleScan(barcode);
   };
 
   const handleManualCountConfirm = (item, antal) => {
     setManualCounts(prev => ({ ...prev, [item.id]: antal }));
     setCheckedItems(prev => new Set([...prev, item.id]));
-    setManualEntry(null);
   };
 
   const handleConfirm = async () => {
@@ -431,64 +469,47 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
           </div>
         )}
 
-        {/* Manual count panel (for lokalvård / arbetskläder) */}
-        {manualEntry && (
-          <ManualCountPanel
-            item={manualEntry}
-            onConfirm={handleManualCountConfirm}
-            onCancel={() => setManualEntry(null)}
-          />
-        )}
-
         {/* Scanner */}
-        {!manualEntry && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Skanna streckkod</h2>
-            {!scannerActive ? (
-              <div className="space-y-4">
-                <Button onClick={() => setScannerActive(true)} className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-14" size="lg">
-                  <Camera className="w-5 h-5 mr-2" />Starta kameraskanner
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-4">Skanna streckkod</h2>
+          {!scannerActive ? (
+            <div className="space-y-4">
+              <Button onClick={() => setScannerActive(true)} className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-14" size="lg">
+                <Camera className="w-5 h-5 mr-2" />Starta kameraskanner
+              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+                <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER</span></div>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Ange streckkod manuellt"
+                  value={manualBarcode}
+                  onChange={e => setManualBarcode(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && manualBarcode) { handleManualSearch(manualBarcode); setManualBarcode(''); } }}
+                />
+                <Button onClick={() => { handleManualSearch(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode}>
+                  <Search className="w-4 h-4" />
                 </Button>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-                  <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER</span></div>
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Ange streckkod manuellt"
-                    value={manualBarcode}
-                    onChange={e => setManualBarcode(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && manualBarcode) { handleManualSearch(manualBarcode); setManualBarcode(''); } }}
-                  />
-                  <Button onClick={() => { handleManualSearch(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode}>
-                    <Search className="w-4 h-4" />
-                  </Button>
-                </div>
+              </div>
+              <Button variant="outline" onClick={() => setShowManualDialog(true)} className="w-full">
+                <Plus className="w-4 h-4 mr-2" />Manuell inmatning
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div id="barcode-scanner" className="rounded-xl overflow-hidden" />
+              <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt skanning</Button>
+            </div>
+          )}
+        </div>
 
-                {/* Manual item entry from list */}
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-                  <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER SÖK I LISTA</span></div>
-                </div>
-                <ManualItemSearch scopedItems={scopedItems} checkedItems={checkedItems} onSelect={(item) => {
-                  if (usesManualCount(item)) {
-                    setManualEntry(item);
-                  } else {
-                    setScannedItem(item);
-                    setTempStatus(item.status || '');
-                    setTempCondition(item.condition || '');
-                    setCheckedItems(prev => new Set([...prev, item.id]));
-                  }
-                }} />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div id="barcode-scanner" className="rounded-xl overflow-hidden" />
-                <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt skanning</Button>
-              </div>
-            )}
-          </div>
-        )}
+        <ManualCountDialog
+          isOpen={showManualDialog}
+          onClose={() => setShowManualDialog(false)}
+          scopedItems={scopedItems}
+          onConfirm={handleManualCountConfirm}
+        />
 
         {/* Scanned item confirm */}
         {scannedItem && (
@@ -607,45 +628,6 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   );
 }
 
-// ─── Manual item search from list ─────────────────────────────────────────────────
-function ManualItemSearch({ scopedItems, checkedItems, onSelect }) {
-  const [query, setQuery] = useState('');
-  const filtered = query.length < 2 ? [] : scopedItems.filter(i => {
-    const name = (i.name || i.benamning || '').toLowerCase();
-    const bc = (i.barcode || i.streckkod || '').toLowerCase();
-    return name.includes(query.toLowerCase()) || bc.includes(query.toLowerCase());
-  }).slice(0, 8);
-
-  return (
-    <div className="space-y-2">
-      <Input
-        placeholder="Sök artikel att bekräfta manuellt..."
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-      />
-      {filtered.length > 0 && (
-        <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
-          {filtered.map(item => (
-            <button
-              key={item.id}
-              onClick={() => { onSelect(item); setQuery(''); }}
-              className={cn(
-                "w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-gray-50 transition-colors",
-                checkedItems.has(item.id) ? "opacity-50" : ""
-              )}
-            >
-              <span className="font-medium text-gray-900">{item.name || item.benamning}</span>
-              <div className="flex items-center gap-2">
-                {checkedItems.has(item.id) && <Badge className="bg-green-100 text-green-700 text-xs">✓</Badge>}
-                <Badge variant="outline" className="text-xs">{item._type === 'handtool' ? 'Handredskap' : item._type === 'arbetskläder' ? 'Arbetskläder' : item._type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}</Badge>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Summary Step ────────────────────────────────────────────────────────────────
 function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNew }) {
