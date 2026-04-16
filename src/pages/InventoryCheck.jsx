@@ -163,12 +163,12 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
             )}
             <div className="space-y-2">
               <Label>Vad ska inventeras? <span className="text-xs text-gray-400">(välj en eller flera)</span></Label>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {typeOptions.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => toggleType(opt.value)}
-                    className={cn("py-2 px-3 rounded-xl border text-sm font-medium transition-all",
+                    className={cn("py-3 px-3 rounded-xl border text-sm font-medium transition-all text-center leading-tight",
                       selectedTypes.includes(opt.value)
                         ? "border-[#8B1E1E] bg-[#8B1E1E] text-white"
                         : "border-gray-200 text-gray-700 hover:border-gray-300")}
