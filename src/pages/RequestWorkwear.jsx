@@ -5,7 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Loader2, Plus, X, Check } from 'lucide-react';
+import { Loader2, Plus, X, Check, Copy } from 'lucide-react';
+import { format } from 'date-fns';
+import { sv } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Command,
@@ -36,6 +38,7 @@ export default function RequestWorkwear() {
   const [customerOpen, setCustomerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [artikelOpen, setArtikelOpen] = useState(false);
+  const [showCopyModal, setShowCopyModal] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -73,6 +76,11 @@ export default function RequestWorkwear() {
   const { data: teamMembers = [] } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
+  });
+
+  const { data: previousRequests = [] } = useQuery({
+    queryKey: ['previousWorkwearRequests'],
+    queryFn: () => base44.entities.WorkwearRequest.list('-request_date', 200).catch(() => []),
   });
 
   const customers = allCustomers.filter(k => k.typ !== 'Internt');
@@ -127,6 +135,14 @@ export default function RequestWorkwear() {
     setSelectedQty(1);
   };
 
+  const handleCopyRequest = (request) => {
+    setFormData(prev => ({
+      ...prev,
+      requested_items: request.requested_items || [],
+    }));
+    setShowCopyModal(false);
+  };
+
   const removeItem = (id) => {
     setFormData(prev => ({
       ...prev,
@@ -162,6 +178,39 @@ export default function RequestWorkwear() {
         <h1 className="text-3xl font-bold">Begäran om uttag av lokalvårdsartiklar</h1>
         <p className="text-gray-600 mt-2">Fyll i formuläret för att göra en begäran</p>
       </div>
+
+      {/* Kopiera modal */}
+      {showCopyModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Kopiera från tidigare begäran</h2>
+              <button onClick={() => setShowCopyModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-4 space-y-2">
+              {previousRequests.filter(r => r.requested_items?.length > 0).length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-8">Inga tidigare begäranden hittades</p>
+              ) : (
+                previousRequests.filter(r => r.requested_items?.length > 0).map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => handleCopyRequest(r)}
+                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 transition-all"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-semibold text-sm text-gray-900">{r.customer_name}</p>
+                      <span className="text-xs text-gray-400">{format(new Date(r.request_date), 'dd MMM yyyy', { locale: sv })}</span>
+                    </div>
+                    <p className="text-xs text-gray-500">{r.requested_items?.length} artikel(r): {r.requested_items?.map(i => `${i.name} (${i.quantity}st)`).join(', ')}</p>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Card className="p-6 space-y-6">
          {/* Requester Info */}
@@ -248,7 +297,12 @@ export default function RequestWorkwear() {
 
         {/* Item Selection */}
         <div className="border-t pt-6 space-y-4">
-          <h3 className="font-semibold text-lg">Artiklar</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-lg">Artiklar</h3>
+            <Button variant="outline" size="sm" onClick={() => setShowCopyModal(true)} className="gap-1.5 text-xs">
+              <Copy className="w-3.5 h-3.5" /> Kopiera från tidigare
+            </Button>
+          </div>
           
           <div className="space-y-2">
             <Label>Välj artikel</Label>
