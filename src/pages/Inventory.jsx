@@ -66,6 +66,7 @@ const statusConfig = {
 
 const categoryLabels = {
   power_tools: "Power Tools",
+  Pover_tools: "Power Tools",
   hand_tools: "Hand Tools",
   measuring: "Measuring",
   safety: "Safety",
@@ -301,7 +302,7 @@ export default function Inventory() {
     const headers = ['name', 'manufacturer', 'model_number', 'category', 'subcategory', 'status', 'condition', 'barcode', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'location_name', 'assigned_to_name', 'notes'];
 
     // Add example row and empty rows
-    const exampleRow = ['Impact Driver', 'DeWalt', 'DCF887B', 'power_tools', 'Impact Drivers', 'available', 'good', '', '2026-01-01', '199.99', 'Home Depot', 'INV-001', 'Main Warehouse', 'John Smith', 'Example tool'];
+    const exampleRow = ['Impact Driver', 'DeWalt', 'DCF887B', 'Power Tools', 'Impact Drivers', 'available', 'good', '', '2026-01-01', '199.99', 'Home Depot', 'INV-001', 'Main Warehouse', 'John Smith', 'Example tool'];
     const emptyRows = Array(19).fill(Array(15).fill(''));
 
     const csvContent = [
