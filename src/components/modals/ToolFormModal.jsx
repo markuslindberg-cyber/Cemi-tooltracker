@@ -79,7 +79,11 @@ export default function ToolFormModal({
   });
 
   const availableCategories = useMemo(() => {
-    return [...new Set(allTools.map(t => t.category).filter(Boolean))].sort();
+    const categories = [...new Set(allTools.map(t => t.category).filter(Boolean))];
+    if (!categories.includes('Redskap')) {
+      categories.push('Redskap');
+    }
+    return categories.sort();
   }, [allTools]);
 
   const availableSubcategories = useMemo(() => {
