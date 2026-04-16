@@ -112,6 +112,9 @@ export default function Dashboard() {
   const requestsToApprove = user ? loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending').length : 0;
   const myLoans = user ? loanRequests.filter(r => r.assigned_to_email === user.email && r.status === 'approved').reduce((sum, r) => sum + r.tool_ids.length, 0) : 0;
   const borrowedTools = user ? loanRequests.filter(r => r.destination_location_manager_email === user.email && r.status === 'approved').reduce((sum, r) => sum + r.tool_ids.length, 0) : 0;
+  const activeLoans = loanRequests.filter(r => r.status === 'approved').length;
+  const pendingRequests = loanRequests.filter(r => r.status === 'pending').length;
+  const rejectedRequests = loanRequests.filter(r => r.status === 'rejected').length;
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 lg:p-8">
@@ -292,31 +295,47 @@ export default function Dashboard() {
           {/* Sidebar */}
           <div className="space-y-4">
            {/* Loan Summary */}
-           {user && (myLoans > 0 || borrowedTools > 0) && (
-             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-               <h3 className="font-semibold text-gray-900 mb-4">Låneöversikt</h3>
-               <div className="space-y-3">
-                 {myLoans > 0 && (
-                   <div className="flex justify-between items-center">
-                     <span className="text-sm text-gray-500">Maskiner jag har lånat</span>
-                     <span className="font-medium text-gray-900">{myLoans}</span>
-                   </div>
-                 )}
-                 {borrowedTools > 0 && (
-                   <div className="flex justify-between items-center">
-                     <span className="text-sm text-gray-500">Maskiner lånade från andra</span>
-                     <span className="font-medium text-gray-900">{borrowedTools}</span>
-                   </div>
-                 )}
-               </div>
-               <Link to="/Transfers" className="mt-4 block">
-                 <Button variant="outline" size="sm" className="w-full">
-                   Hantera lån
-                   <ArrowRight className="w-3 h-3 ml-1" />
-                 </Button>
-               </Link>
-             </div>
-           )}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h3 className="font-semibold text-gray-900 mb-4">Låneöversikt</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Aktiva lån</span>
+                  <span className="font-medium text-gray-900">{activeLoans}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Väntande förfrågningar</span>
+                  <span className="font-medium text-amber-600">{pendingRequests}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Nekade förfrågningar</span>
+                  <span className="font-medium text-red-600">{rejectedRequests}</span>
+                </div>
+                {(myLoans > 0 || borrowedTools > 0) && (
+                  <>
+                    <div className="pt-3 border-t border-gray-100 space-y-3">
+                      {myLoans > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Maskiner jag lånat</span>
+                          <span className="font-medium text-gray-900">{myLoans}</span>
+                        </div>
+                      )}
+                      {borrowedTools > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">Från andra platser</span>
+                          <span className="font-medium text-gray-900">{borrowedTools}</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+              <Link to="/Transfers" className="mt-4 block">
+                <Button variant="outline" size="sm" className="w-full">
+                  Hantera lån
+                  <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
+              </Link>
+            </div>
 
            {/* Inventory value */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
