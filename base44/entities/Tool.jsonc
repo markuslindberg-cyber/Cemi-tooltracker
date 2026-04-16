@@ -82,6 +82,30 @@
     "assigned_to_name": {
       "type": "string"
     },
+    "main_machine_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "ID f\u00f6r huvudmaskinen som detta redskap tillh\u00f6r"
+    },
+    "main_machine_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Namnet p\u00e5 huvudmaskinen som detta redskap tillh\u00f6r"
+    },
+    "compatible_with_main_machine_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista med ID f\u00f6r huvudmaskiner som detta redskap \u00e4r kompatibelt med"
+    },
+    "compatible_with_main_machine_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista med namn p\u00e5 huvudmaskiner som detta redskap \u00e4r kompatibelt med"
+    },
     "notes": {
       "type": "string"
     },
@@ -96,5 +120,18 @@
   "required": [
     "name",
     "category"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "verktygsf\u00f6rvaltare"
+      }
+    },
+    "read": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

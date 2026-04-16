@@ -36,6 +36,7 @@ const navigation = [
     icon: Package,
     children: [
       { name: 'Översikt', path: '/Inventory' },
+      { name: 'Huvudmaskiner', path: '/Huvudmaskiner' },
       { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
       { name: 'Förflyttningar', path: '/Transfers' },
       { name: 'Service', path: '/Service' },

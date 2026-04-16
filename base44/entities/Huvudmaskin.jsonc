@@ -1,0 +1,35 @@
+{
+  "name": "Huvudmaskin",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Projektnamn/nummer"
+    },
+    "manufacturer": {
+      "type": "string",
+      "description": "Tillverkare"
+    },
+    "model": {
+      "type": "string",
+      "description": "Modell"
+    },
+    "year_model": {
+      "type": "number",
+      "description": "\u00c5rsmodell"
+    },
+    "location_id": {
+      "type": "string",
+      "description": "Referens till Location-entiteten"
+    },
+    "location_name": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
