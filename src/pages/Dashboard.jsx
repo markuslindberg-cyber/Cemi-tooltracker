@@ -73,6 +73,7 @@ export default function Dashboard() {
 
   const soldTools = tools.filter(t => t.status === 'såld').length;
   const retiredTools = tools.filter(t => t.status === 'retired').length;
+  const iLagerTools = tools.filter(t => t.status === 'i_lager').length;
 
   // Only count active tools in inventory value
   const activeTools = tools.filter(t => !['såld', 'retired', 'missing'].includes(t.status));
@@ -312,6 +313,7 @@ export default function Dashboard() {
                  {[
                    { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
                    { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
+                   { label: 'I lager', count: iLagerTools, color: 'bg-cyan-500' },
                    { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
                     { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
                     { label: 'Sålda', count: tools?.filter(t => t.status === 'sålda').length || 0, color: 'bg-gray-400' },
