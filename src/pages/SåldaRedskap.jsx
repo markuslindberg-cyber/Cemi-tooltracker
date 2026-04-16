@@ -97,7 +97,7 @@ export default function SåldaRedskap() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Sålda & Kasserade</h1>
         <p className="text-gray-500 mt-1">Maskiner som är sålda, kasserade eller saknas</p>
@@ -114,7 +114,7 @@ export default function SåldaRedskap() {
           <button
             key={key}
             onClick={() => setActiveFilter(key)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium border transition-colors ${
               activeFilter === key
                 ? 'bg-[#8B1E1E] text-white border-[#8B1E1E]'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
@@ -129,14 +129,14 @@ export default function SåldaRedskap() {
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input
-          className="pl-9"
+          className="pl-9 text-sm"
           placeholder="Sök på namn, märke eller modell..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
       </div>
 
-      {/* Table */}
+      {/* Table / Cards */}
       {isLoading ? (
         <div className="flex justify-center py-20">
           <div className="w-8 h-8 border-4 border-slate-200 border-t-[#8B1E1E] rounded-full animate-spin" />
@@ -147,45 +147,82 @@ export default function SåldaRedskap() {
           <p>Inga objekt hittades</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('name')}>Namn {sortField === 'name' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('manufacturer')}>Märke {sortField === 'manufacturer' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('model_number')}>Modell {sortField === 'model_number' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>Status {sortField === 'status' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('location_name')}>Plats {sortField === 'location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('barcode')}>Streckkod {sortField === 'barcode' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((tool, i) => {
-                const cfg = statusConfig[tool.status] || { label: tool.status, color: 'bg-gray-100 text-gray-700' };
-                return (
-                  <tr key={tool.id} onClick={() => setEditTool(tool)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                    <td className="px-4 py-3 font-medium text-gray-900">{tool.name}</td>
-                    <td className="px-4 py-3 text-gray-600">{tool.manufacturer || '—'}</td>
-                    <td className="px-4 py-3 text-gray-600">{tool.model_number || '—'}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.color}`}>
-                        {cfg.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{tool.location_name || '—'}</td>
-                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{tool.barcode || '—'}</td>
-                    <td className="px-4 py-3 text-right">
-                      <Button size="sm" variant="ghost" onClick={(e) => handleDelete(e, tool.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('name')}>Namn {sortField === 'name' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('manufacturer')}>Märke {sortField === 'manufacturer' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('model_number')}>Modell {sortField === 'model_number' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>Status {sortField === 'status' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('location_name')}>Plats {sortField === 'location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('barcode')}>Streckkod {sortField === 'barcode' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((tool, i) => {
+                  const cfg = statusConfig[tool.status] || { label: tool.status, color: 'bg-gray-100 text-gray-700' };
+                  return (
+                    <tr key={tool.id} onClick={() => setEditTool(tool)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <td className="px-4 py-3 font-medium text-gray-900">{tool.name}</td>
+                      <td className="px-4 py-3 text-gray-600">{tool.manufacturer || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600">{tool.model_number || '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.color}`}>
+                          {cfg.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{tool.location_name || '—'}</td>
+                      <td className="px-4 py-3 text-gray-500 font-mono text-xs">{tool.barcode || '—'}</td>
+                      <td className="px-4 py-3 text-right">
+                        <Button size="sm" variant="ghost" onClick={(e) => handleDelete(e, tool.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {filtered.map((tool) => {
+              const cfg = statusConfig[tool.status] || { label: tool.status, color: 'bg-gray-100 text-gray-700' };
+              return (
+                <div
+                  key={tool.id}
+                  onClick={() => setEditTool(tool)}
+                  className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">{tool.name}</p>
+                      <p className="text-sm text-gray-500">{tool.manufacturer || '—'}</p>
+                    </div>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${cfg.color}`}>
+                      {cfg.label}
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-sm mb-3">
+                    {tool.model_number && <p className="text-gray-600"><span className="text-gray-500">Modell:</span> {tool.model_number}</p>}
+                    {tool.location_name && <p className="text-gray-600"><span className="text-gray-500">Plats:</span> {tool.location_name}</p>}
+                    {tool.barcode && <p className="text-gray-600 font-mono text-xs"><span className="text-gray-500">Kod:</span> {tool.barcode}</p>}
+                  </div>
+                  <div className="flex justify-end">
+                    <Button size="sm" variant="ghost" onClick={(e) => handleDelete(e, tool.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       <ToolFormModal
