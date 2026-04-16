@@ -400,6 +400,7 @@ export default function ServicePage() {
   const [selectedTool, setSelectedTool] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [scannerActive, setScannerActive] = useState(false);
+  const [activeTab, setActiveTab] = useState('service');
   const inputRef = useRef(null);
 
   const { data: tools = [] } = useQuery({
@@ -446,7 +447,7 @@ export default function ServicePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
           <Wrench className="w-7 h-7 text-[#8B1E1E]" /> Service
@@ -454,6 +455,13 @@ export default function ServicePage() {
         <p className="text-gray-500 text-sm mt-1">Skanna eller sök maskin för att se och registrera service</p>
       </div>
 
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="service">Registrera service</TabsTrigger>
+          <TabsTrigger value="templates">Service mallar</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="service" className="space-y-6 mt-6">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
         <Label className="text-sm text-gray-600 flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -519,6 +527,184 @@ export default function ServicePage() {
           </div>
         </div>
       )}
+        </TabsContent>
+
+        <TabsContent value="templates" className="mt-6">
+          <ServiceMallarsTab />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// ─── Service Templates Tab ──────────────────────────────────────────────────
+function ServiceMallarsTab() {
+  const queryClient = useQueryClient();
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
+  const [templateForm, setTemplateForm] = useState({
+    name: '',
+    description: '',
+    cost: '',
+    service_type: 'maintenance',
+    parts_used: [],
+  });
+
+  const { data: templates = [] } = useQuery({
+    queryKey: ['serviceTemplates'],
+    queryFn: () => base44.entities.ServiceTemplate.list('-updated_date', 100),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (data) => {
+      if (editingTemplate) {
+        return base44.entities.ServiceTemplate.update(editingTemplate.id, data);
+      }
+      return base44.entities.ServiceTemplate.create(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['serviceTemplates'] });
+      setIsAddOpen(false);
+      setEditingTemplate(null);
+      resetForm();
+      toast.success(editingTemplate ? 'Mall uppdaterad' : 'Mall skapad');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.ServiceTemplate.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['serviceTemplates'] });
+      toast.success('Mall borttagen');
+    },
+  });
+
+  const resetForm = () => {
+    setTemplateForm({
+      name: '',
+      description: '',
+      cost: '',
+      service_type: 'maintenance',
+      parts_used: [],
+    });
+  };
+
+  const handleSave = () => {
+    if (!templateForm.name.trim()) {
+      toast.error('Namn är obligatoriskt');
+      return;
+    }
+    saveMutation.mutate({
+      name: templateForm.name,
+      description: templateForm.description,
+      cost: templateForm.cost === '' ? 0 : Number(templateForm.cost),
+      service_type: templateForm.service_type,
+      parts_used: templateForm.parts_used,
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <Button onClick={() => { setEditingTemplate(null); resetForm(); setIsAddOpen(true); }} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+        <Plus className="w-4 h-4 mr-2" /> Ny mall
+      </Button>
+
+      <div className="grid gap-4">
+        {templates.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
+            <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">Inga mallar skapade ännu.</p>
+          </div>
+        ) : (
+          templates.map(t => (
+            <div key={t.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{t.name}</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">{SERVICE_TYPE_LABELS[t.service_type]}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => { setEditingTemplate(t); setTemplateForm(t); setIsAddOpen(true); }}>
+                    Redigera
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => deleteMutation.mutate(t.id)}>
+                    Ta bort
+                  </Button>
+                </div>
+              </div>
+              {t.description && <p className="text-sm text-gray-600 mb-2">{t.description}</p>}
+              {t.cost != null && t.cost > 0 && <p className="text-sm font-medium text-gray-900">Kostnad: {Number(t.cost).toLocaleString('sv-SE')} kr</p>}
+              {t.parts_used?.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {t.parts_used.map((p, i) => (
+                    <span key={i} className="text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">{p.part_name} ×{p.quantity}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingTemplate ? 'Redigera mall' : 'Ny servicemall'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1">
+              <Label>Mallnamn</Label>
+              <Input value={templateForm.name} onChange={e => setTemplateForm(f => ({ ...f, name: e.target.value }))} placeholder="T.ex. Årlig service" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Servicetype</Label>
+                <Select value={templateForm.service_type} onValueChange={v => setTemplateForm(f => ({ ...f, service_type: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SERVICE_TYPE_LABELS).map(([val, label]) => (
+                      <SelectItem key={val} value={val}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label>Kostnad (kr)</Label>
+                <Input type="number" value={templateForm.cost} onChange={e => setTemplateForm(f => ({ ...f, cost: e.target.value }))} placeholder="0" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>Beskrivning</Label>
+              <Textarea rows={3} value={templateForm.description} onChange={e => setTemplateForm(f => ({ ...f, description: e.target.value }))} placeholder="Vad ingår i servicen..." />
+            </div>
+            <div className="space-y-2">
+              <Label>Delar/komponenter</Label>
+              {(templateForm.parts_used || []).map((p, i) => (
+                <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                  <Package className="w-4 h-4 text-gray-400" />
+                  <span className="flex-1 text-sm">{p.part_name}</span>
+                  <Input type="number" min="1" value={p.quantity} onChange={e => setTemplateForm(f => ({ ...f, parts_used: f.parts_used.map((x, j) => j === i ? { ...x, quantity: Number(e.target.value) } : x) }))} className="w-16 h-7 text-sm" />
+                  <button onClick={() => setTemplateForm(f => ({ ...f, parts_used: f.parts_used.filter((_, j) => j !== i) }))} className="text-red-400 hover:text-red-600">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <Input placeholder="Ny del..." value={templateForm._newPart || ''} onChange={e => setTemplateForm(f => ({ ...f, _newPart: e.target.value }))} className="flex-1" />
+                <Button type="button" variant="outline" onClick={() => { if (templateForm._newPart?.trim()) { setTemplateForm(f => ({ ...f, parts_used: [...f.parts_used, { part_name: f._newPart.trim(), quantity: 1 }], _newPart: '' })); } }}>
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddOpen(false)}>Avbryt</Button>
+            <Button onClick={handleSave} disabled={saveMutation.isPending} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+              {saveMutation.isPending ? 'Sparar...' : 'Spara mall'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
