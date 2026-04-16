@@ -373,7 +373,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     const item = searchList.find(t => (t.barcode || t.streckkod) === barcode);
     if (item) {
       if (usesManualCount(item)) {
-        setManualEntry(item);
+        setShowManualDialog(true);
       } else {
         setScannedItem(item);
         setTempStatus(item.status || '');
