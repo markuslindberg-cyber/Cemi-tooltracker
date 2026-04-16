@@ -51,6 +51,16 @@ export default function Dashboard() {
     queryFn: () => base44.entities.HandTool.list('-updated_date', 500),
   });
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: loanRequests = [] } = useQuery({
+    queryKey: ['loanRequests'],
+    queryFn: () => base44.entities.LoanRequest.list(),
+  });
+
   // Stats calculations
   const totalTools = tools.length;
   const availableTools = tools.filter(t => t.status === 'available').length;
@@ -94,6 +104,11 @@ export default function Dashboard() {
   };
 
   const recentlyUsedTools = tools.filter(t => !['såld','retired','missing'].includes(t.status)).slice(0, 6);
+
+  // Loan statistics
+  const requestsToApprove = user ? loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending').length : 0;
+  const myLoans = user ? loanRequests.filter(r => r.assigned_to_email === user.email && r.status === 'approved').reduce((sum, r) => sum + r.tool_ids.length, 0) : 0;
+  const borrowedTools = user ? loanRequests.filter(r => r.destination_location_manager_email === user.email && r.status === 'approved').reduce((sum, r) => sum + r.tool_ids.length, 0) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 lg:p-8">
@@ -156,6 +171,29 @@ export default function Dashboard() {
             />
           )}
         </div>
+
+        {/* Loan Requests Alert */}
+        {requestsToApprove > 0 && (
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 text-white shadow-lg shadow-blue-600/25">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-xl shrink-0">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm sm:text-base">{requestsToApprove} låneförfrågan behöver godkännas</h3>
+                  <p className="text-white/80 text-xs sm:text-sm hidden sm:block">Granska och godkänn eller neka förfrågningar</p>
+                </div>
+              </div>
+              <Link to="/Transfers" className="shrink-0">
+                <Button variant="secondary" size="sm" className="bg-white text-blue-600 hover:bg-gray-50">
+                  Visa alla
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Missing Tools Alert */}
         {missingTools > 0 && (
@@ -239,7 +277,34 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <div className="space-y-4">
-            {/* Inventory value */}
+           {/* Loan Summary */}
+           {user && (myLoans > 0 || borrowedTools > 0) && (
+             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+               <h3 className="font-semibold text-gray-900 mb-4">Låneöversikt</h3>
+               <div className="space-y-3">
+                 {myLoans > 0 && (
+                   <div className="flex justify-between items-center">
+                     <span className="text-sm text-gray-500">Maskiner jag har lånat</span>
+                     <span className="font-medium text-gray-900">{myLoans}</span>
+                   </div>
+                 )}
+                 {borrowedTools > 0 && (
+                   <div className="flex justify-between items-center">
+                     <span className="text-sm text-gray-500">Maskiner lånade från andra</span>
+                     <span className="font-medium text-gray-900">{borrowedTools}</span>
+                   </div>
+                 )}
+               </div>
+               <Link to="/Transfers" className="mt-4 block">
+                 <Button variant="outline" size="sm" className="w-full">
+                   Hantera lån
+                   <ArrowRight className="w-3 h-3 ml-1" />
+                 </Button>
+               </Link>
+             </div>
+           )}
+
+           {/* Inventory value */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
               <div className="space-y-3">
