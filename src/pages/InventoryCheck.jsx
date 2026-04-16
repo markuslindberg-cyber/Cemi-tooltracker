@@ -385,17 +385,12 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     }
     const item = searchList.find(t => (t.barcode || t.streckkod) === barcode);
     if (item) {
-      if (usesManualCount(item)) {
-        setManualDialogPreselected(item);
-        setShowManualDialog(true);
-      } else {
-        // Auto-register without manual confirmation — update last_seen_date in background
-        setCheckedItems(prev => new Set([...prev, item.id]));
-        setLastScanFeedback({ name: item.name || item.benamning, found: true });
-        setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date() }, ...prev]);
-        updateToolMutation.mutate({ id: item.id, data: { last_seen_date: new Date().toISOString() }, type: item._type });
-        setTimeout(() => externalScanInputRef.current?.focus(), 50);
-      }
+      // Always auto-register — no manual dialog on scan
+      setCheckedItems(prev => new Set([...prev, item.id]));
+      setLastScanFeedback({ name: item.name || item.benamning, found: true });
+      setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date() }, ...prev]);
+      updateToolMutation.mutate({ id: item.id, data: { last_seen_date: new Date().toISOString() }, type: item._type });
+      setTimeout(() => externalScanInputRef.current?.focus(), 50);
     } else {
       setLastScanFeedback({ name: barcode, found: false });
     }
