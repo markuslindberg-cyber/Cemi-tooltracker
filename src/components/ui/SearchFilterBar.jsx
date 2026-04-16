@@ -148,7 +148,7 @@ export default function SearchFilterBar({
                       onManufacturerChange('all');
                       onConditionChange('all');
                       onLocationChange('all');
-                      onAssignedToChange('all');
+                      if (onAssignedToChange) onAssignedToChange('all');
                       setOpen(false);
                     }}
                     className="text-xs text-[#8B1E1E] hover:underline flex items-center gap-1"
