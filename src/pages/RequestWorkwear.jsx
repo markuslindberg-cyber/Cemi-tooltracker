@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Loader2, Plus, X, Check, Copy } from 'lucide-react';
+import { Loader2, Plus, X, Check, Copy, Clock, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -39,6 +39,8 @@ export default function RequestWorkwear() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [artikelOpen, setArtikelOpen] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
+  const [expandedRequest, setExpandedRequest] = useState(null);
+  const [activeTab, setActiveTab] = useState('form'); // 'form' | 'history'
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -78,10 +80,12 @@ export default function RequestWorkwear() {
     queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
   });
 
-  const { data: previousRequests = [] } = useQuery({
+  const { data: previousRequests = [], isLoading: loadingHistory } = useQuery({
     queryKey: ['previousWorkwearRequests'],
     queryFn: () => base44.entities.WorkwearRequest.list('-request_date', 200).catch(() => []),
   });
+
+  const myRequests = previousRequests.filter(r => r.requested_by_email === user?.email);
 
   const customers = allCustomers.filter(k => k.typ !== 'Internt');
 
@@ -179,6 +183,22 @@ export default function RequestWorkwear() {
         <p className="text-gray-600 mt-2">Fyll i formuläret för att göra en begäran</p>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 border-b">
+        <button
+          onClick={() => setActiveTab('form')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'form' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Ny begäran
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'history' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Mina begäranden {myRequests.length > 0 && <span className="ml-1 bg-gray-200 text-gray-700 text-xs rounded-full px-1.5">{myRequests.length}</span>}
+        </button>
+      </div>
+
       {/* Kopiera modal */}
       {showCopyModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -212,7 +232,73 @@ export default function RequestWorkwear() {
         </div>
       )}
 
-      <Card className="p-6 space-y-6">
+      {/* History tab */}
+      {activeTab === 'history' && (
+        <div className="space-y-3">
+          {loadingHistory ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+          ) : myRequests.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg font-medium">Inga begäranden ännu</p>
+            </Card>
+          ) : (
+            myRequests.map(r => {
+              const statusMap = {
+                pending:   { label: 'Väntande',  cls: 'bg-yellow-100 text-yellow-800' },
+                approved:  { label: 'Godkänd',   cls: 'bg-blue-100 text-blue-800' },
+                rejected:  { label: 'Nekad',     cls: 'bg-red-100 text-red-700' },
+                completed: { label: 'Utförd',    cls: 'bg-green-100 text-green-700' },
+              };
+              const s = statusMap[r.status] || { label: r.status, cls: 'bg-gray-100 text-gray-600' };
+              const isExpanded = expandedRequest === r.id;
+              return (
+                <div key={r.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => setExpandedRequest(isExpanded ? null : r.id)}
+                    className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900">{r.customer_name}</p>
+                        <p className="text-xs text-gray-500">{format(new Date(r.request_date), 'dd MMM yyyy HH:mm', { locale: sv })} • {r.requested_items?.length} artikel(r)</p>
+                      </div>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-3 text-sm">
+                      <div className="space-y-1">
+                        {r.requested_items?.map((item, idx) => (
+                          <div key={idx} className="flex justify-between p-2 bg-white rounded border border-gray-100">
+                            <span className="text-gray-800">{item.name}{item.subcategory ? ` – ${item.subcategory}` : ''}</span>
+                            <span className="font-medium">{item.quantity} st</span>
+                          </div>
+                        ))}
+                      </div>
+                      {r.notes && (
+                        <div className="p-2 bg-white rounded border border-gray-100">
+                          <p className="text-xs text-gray-500 mb-0.5">Anteckningar</p>
+                          <p className="text-gray-700">{r.notes}</p>
+                        </div>
+                      )}
+                      {r.status === 'rejected' && r.notes && (
+                        <div className="p-2 bg-red-50 rounded border border-red-200">
+                          <p className="text-xs text-red-500 mb-0.5">Anledning till avslag</p>
+                          <p className="text-red-700">{r.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {activeTab === 'form' && <Card className="p-6 space-y-6">
          {/* Requester Info */}
          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
            <p className="text-sm text-gray-600">Begäran från</p>
@@ -412,7 +498,7 @@ export default function RequestWorkwear() {
             )}
           </Button>
         </div>
-      </Card>
+      </Card>}
     </div>
   );
 }
