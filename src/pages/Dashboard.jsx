@@ -115,6 +115,11 @@ export default function Dashboard() {
   const activeLoans = loanRequests.filter(r => r.status === 'approved').length;
   const pendingRequests = loanRequests.filter(r => r.status === 'pending').length;
   const rejectedRequests = loanRequests.filter(r => r.status === 'rejected').length;
+  
+  const loansByLocation = locations.map(location => ({
+    ...location,
+    activeLoans: loanRequests.filter(r => r.destination_location_id === location.id && r.status === 'approved').length
+  })).filter(l => l.activeLoans > 0);
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 lg:p-8">
@@ -374,11 +379,33 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Active Loans by Location */}
+             {loansByLocation.length > 0 && (
+               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                 <div className="px-5 py-4 border-b border-gray-100">
+                   <h3 className="font-semibold text-gray-900">Platser med aktiva lån</h3>
+                 </div>
+                 <div className="divide-y divide-gray-100">
+                   {loansByLocation.map(location => (
+                     <Link key={location.id} to={`/locations/${location.id}`} className="block">
+                       <div className="px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
+                         <p className="font-medium text-gray-900 text-sm truncate">{location.name}</p>
+                         <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                           <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+                           {location.activeLoans} aktiva lån
+                         </p>
+                       </div>
+                     </Link>
+                   ))}
+                 </div>
+               </div>
+             )}
+
             {/* Recent Activity */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100">
-                <h3 className="font-semibold text-gray-900">Senaste förflyttningar</h3>
-              </div>
+             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+               <div className="px-5 py-4 border-b border-gray-100">
+                 <h3 className="font-semibold text-gray-900">Senaste förflyttningar</h3>
+               </div>
               {recentTransfers.length > 0 ? (
                 <div className="divide-y divide-gray-100">
                   {recentTransfers.map((transfer) => (
