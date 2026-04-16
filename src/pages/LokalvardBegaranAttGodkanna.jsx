@@ -36,6 +36,7 @@ export default function LokalvardBegaranAttGodkanna() {
     const [currentScannedItemId, setCurrentScannedItemId] = useState(null);
     const [showManualInputDialog, setShowManualInputDialog] = useState(false);
     const [extraArticlesAwaitingApproval, setExtraArticlesAwaitingApproval] = useState([]);
+    const [overscannedDialog, setOverscannedDialog] = useState(null); // { item, requestedItem, newQty }
     const barcodeInputRef = useRef(null);
 
   useEffect(() => {
@@ -218,14 +219,16 @@ export default function LokalvardBegaranAttGodkanna() {
     
     const existingScanned = scannedItems.find(si => si.item_id === item.id);
     if (existingScanned) {
-      if (existingScanned.scanned_quantity + 1 > requestedItem.quantity) {
-        setError(`Kan inte ta ut mer än ${requestedItem.quantity} st`);
-        setTimeout(() => setError(''), 3000);
+      const newQty = existingScanned.scanned_quantity + 1;
+      if (newQty > requestedItem.quantity) {
+        // Visa dialog — låt användaren välja vad som ska hända
+        setOverscannedDialog({ item, requestedItem, newQty });
+        setBarcodeInput('');
         return;
       }
       setScannedItems(prev =>
         prev.map(si => si.item_id === item.id
-          ? { ...si, scanned_quantity: si.scanned_quantity + 1 }
+          ? { ...si, scanned_quantity: newQty }
           : si
         )
       );
@@ -980,6 +983,62 @@ export default function LokalvardBegaranAttGodkanna() {
           allItems={allItems}
           onManualAdd={handleManualAddItem}
         />
+      )}
+
+      {/* Dialog: för mycket skannat */}
+      {overscannedDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Fler än begärt</h3>
+                <p className="text-sm text-gray-500">{overscannedDialog.item.benamning || overscannedDialog.item.name}</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-700">
+              Du har skannat <strong>{overscannedDialog.newQty} st</strong> men begäran anger <strong>{overscannedDialog.requestedItem.quantity} st</strong>.
+            </p>
+            <p className="text-sm text-gray-600">Vad vill du göra?</p>
+            <div className="space-y-2">
+              <Button
+                className="w-full bg-[#8B1E1E] hover:bg-[#6B1515]"
+                onClick={() => {
+                  // Lägg till som extra uttag utöver begäran
+                  setScannedItems(prev =>
+                    prev.map(si => si.item_id === overscannedDialog.item.id
+                      ? { ...si, scanned_quantity: overscannedDialog.newQty }
+                      : si
+                    )
+                  );
+                  setOverscannedDialog(null);
+                  setTimeout(() => barcodeInputRef.current?.focus(), 50);
+                }}
+              >
+                Lägg till som extra ({overscannedDialog.newQty} st totalt)
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  // Återställ till begärt antal
+                  setScannedItems(prev =>
+                    prev.map(si => si.item_id === overscannedDialog.item.id
+                      ? { ...si, scanned_quantity: overscannedDialog.requestedItem.quantity }
+                      : si
+                    )
+                  );
+                  setOverscannedDialog(null);
+                  setTimeout(() => barcodeInputRef.current?.focus(), 50);
+                }}
+              >
+                Återställ till begärt antal ({overscannedDialog.requestedItem.quantity} st)
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
