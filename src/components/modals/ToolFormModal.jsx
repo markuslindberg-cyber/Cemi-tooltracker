@@ -638,8 +638,7 @@ export default function ToolFormModal({
                     </PopoverContent>
                   </Popover>
                 </div>
-                {formData.category !== 'Redskap' && (
-                  <div className="space-y-2">
+                <div className="space-y-2">
                     <Label>Underkategori</Label>
                   {!showCustomSubcategory ? (
                     <Popover>
@@ -717,7 +716,6 @@ export default function ToolFormModal({
                     </div>
                   )}
                   </div>
-                  )}
                   </div>
 
                   {formData.category === 'Redskap' && (
