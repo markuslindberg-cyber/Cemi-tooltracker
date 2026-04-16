@@ -70,9 +70,14 @@ export default function Locations() {
   });
 
   const filteredLocations = locations.filter(location =>
-    location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    location.address?.toLowerCase().includes(searchQuery.toLowerCase())
+    (location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    location.address?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+    !location.parent_location_id // Only show main locations, not sub-locations
   );
+
+  const getSubLocations = (locationId) => {
+    return locations.filter(l => l.parent_location_id === locationId);
+  };
 
   const getToolCount = (locationId) => {
     return tools.filter(t => t.location_id === locationId).length;
@@ -190,50 +195,75 @@ export default function Locations() {
               const type = typeConfig[location.type] || typeConfig.other;
               const Icon = type.icon;
               const toolCount = getToolCount(location.id);
+              const subLocations = getSubLocations(location.id);
 
               return (
-                <div
-                  key={location.id}
-                  onClick={() => navigate(`/locations/${location.id}`)}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
-                >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`p-3 rounded-xl ${type.color.split(' ')[0]}`}>
-                        <Icon className={`w-6 h-6 ${type.color.split(' ')[1]}`} />
+                <div key={location.id}>
+                  <div
+                    onClick={() => navigate(`/locations/${location.id}`)}
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
+                  >
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`p-3 rounded-xl ${type.color.split(' ')[0]}`}>
+                          <Icon className={`w-6 h-6 ${type.color.split(' ')[1]}`} />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!location.is_active && (
+                            <Badge variant="secondary" className="bg-gray-100 text-gray-500">Inaktiv</Badge>
+                          )}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem onClick={() => setEditLocation(location)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleDeleteLocation(location)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {!location.is_active && (
-                          <Badge variant="secondary" className="bg-gray-100 text-gray-500">Inaktiv</Badge>
-                        )}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem onClick={() => setEditLocation(location)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDeleteLocation(location)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      <h3 className="font-semibold text-gray-900 text-lg mb-1">{location.name}</h3>
+                      <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
+                      {location.address && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>}
+                      <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-gray-500"><Package className="w-4 h-4" /><span>Maskiner</span></div>
+                          <span className="font-medium text-gray-900">{toolCount}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-gray-500"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
+                          <span className="font-medium text-gray-900">{getHandToolCount(location.id)}</span>
+                        </div>
+                        {location.contact_person && <div className="flex items-center gap-2 text-sm text-gray-500"><User className="w-4 h-4" /><span>{location.contact_person}</span></div>}
+                        {location.contact_phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{location.contact_phone}</span></div>}
                       </div>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 text-lg mb-1">{location.name}</h3>
-                    <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
-                    {location.address && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>}
-                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                             <div className="flex items-center justify-between text-sm">
-                               <div className="flex items-center gap-2 text-gray-500"><Package className="w-4 h-4" /><span>Maskiner</span></div>
-                               <span className="font-medium text-gray-900">{toolCount}</span>
-                             </div>
-                             <div className="flex items-center justify-between text-sm">
-                               <div className="flex items-center gap-2 text-gray-500"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
-                               <span className="font-medium text-gray-900">{getHandToolCount(location.id)}</span>
-                             </div>
-                      {location.contact_person && <div className="flex items-center gap-2 text-sm text-gray-500"><User className="w-4 h-4" /><span>{location.contact_person}</span></div>}
-                      {location.contact_phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{location.contact_phone}</span></div>}
                     </div>
                   </div>
+                  {subLocations.length > 0 && (
+                    <div className="mt-3 space-y-2 ml-4">
+                      {subLocations.map((subLoc) => {
+                        const subType = typeConfig[subLoc.type] || typeConfig.other;
+                        const SubIcon = subType.icon;
+                        return (
+                          <div
+                            key={subLoc.id}
+                            onClick={() => navigate(`/locations/${subLoc.id}`)}
+                            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all cursor-pointer flex items-start gap-3"
+                          >
+                            <div className={`p-2 rounded-lg ${subType.color.split(' ')[0]} flex-shrink-0`}>
+                              <SubIcon className={`w-4 h-4 ${subType.color.split(' ')[1]}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-900 text-sm">{subLoc.name}</p>
+                              <p className="text-xs text-gray-500">{getToolCount(subLoc.id)} maskiner</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}

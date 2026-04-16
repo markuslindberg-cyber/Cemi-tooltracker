@@ -18,7 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronsUpDown, Check } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const defaultLocation = {
   name: '',
@@ -26,6 +31,8 @@ const defaultLocation = {
   address: '',
   contact_person: '',
   contact_phone: '',
+  parent_location_id: '',
+  parent_location_name: '',
   is_active: true,
   notes: '',
 };
@@ -39,6 +46,12 @@ export default function LocationFormModal({
 }) {
   const [formData, setFormData] = useState(defaultLocation);
 
+  const { data: allLocations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
+    enabled: isOpen,
+  });
+
   useEffect(() => {
     if (location) {
       setFormData({ ...defaultLocation, ...location });
@@ -48,7 +61,19 @@ export default function LocationFormModal({
   }, [location, isOpen]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'parent_location_id') {
+      const parentLoc = allLocations.find(l => l.id === value);
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        parent_location_name: parentLoc?.name || '',
+        // Auto-fill contact info from parent
+        contact_person: parentLoc?.contact_person || prev.contact_person,
+        contact_phone: parentLoc?.contact_phone || prev.contact_phone,
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleSubmit = () => {
@@ -95,6 +120,57 @@ export default function LocationFormModal({
                 <SelectItem value="other">Övrigt</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Huvudplats (för fordon/satelliter)</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {formData.parent_location_name || "Ingen huvudplats"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Sök plats..." />
+                  <CommandEmpty>Ingen plats hittades.</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-auto">
+                    <CommandItem
+                      value="none"
+                      onSelect={() => handleChange('parent_location_id', '')}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          !formData.parent_location_id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      Ingen huvudplats
+                    </CommandItem>
+                    {allLocations.filter(l => l.id !== location?.id).map((loc) => (
+                      <CommandItem
+                        key={loc.id}
+                        value={loc.name}
+                        onSelect={() => handleChange('parent_location_id', loc.id)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            formData.parent_location_id === loc.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {loc.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">

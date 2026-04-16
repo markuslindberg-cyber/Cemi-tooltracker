@@ -1,0 +1,69 @@
+{
+  "name": "Location",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Location name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "jobsite",
+        "warehouse",
+        "office",
+        "vehicle",
+        "other"
+      ],
+      "description": "Type of location"
+    },
+    "address": {
+      "type": "string"
+    },
+    "contact_person": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "parent_location_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "ID of parent location (for sub-locations like vehicles)"
+    },
+    "parent_location_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Name of parent location"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
