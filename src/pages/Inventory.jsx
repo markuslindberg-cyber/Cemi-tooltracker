@@ -79,13 +79,9 @@ const categoryLabels = {
 
 export default function Inventory() {
   const queryClient = useQueryClient();
-  
-  // Get initial status from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const initialStatus = urlParams.get('status') || 'all';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState(initialStatus);
+  const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [manufacturerFilter, setManufacturerFilter] = useState('all');
