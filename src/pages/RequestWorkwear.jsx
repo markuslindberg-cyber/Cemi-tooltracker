@@ -449,14 +449,32 @@ export default function RequestWorkwear() {
               <Label>Valda artiklar</Label>
               <div className="space-y-2">
                 {formData.requested_items.map(item => (
-                  <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                    <div>
+                  <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg gap-3">
+                    <div className="flex-1 min-w-0">
                       <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">{item.subcategory} • Antal: {item.quantity}</p>
+                      {item.subcategory && <p className="text-sm text-gray-500">{item.subcategory}</p>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => {
+                          const qty = Math.max(1, parseInt(e.target.value) || 1);
+                          setFormData(prev => ({
+                            ...prev,
+                            requested_items: prev.requested_items.map(i =>
+                              i.id === item.id ? { ...i, quantity: qty } : i
+                            )
+                          }));
+                        }}
+                        className="w-16 text-sm text-center"
+                      />
+                      <span className="text-sm text-gray-500 whitespace-nowrap">st</span>
                     </div>
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 shrink-0"
                     >
                       <X className="w-5 h-5" />
                     </button>
