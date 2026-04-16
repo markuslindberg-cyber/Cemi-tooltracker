@@ -58,8 +58,13 @@ export default function SåldaRedskap() {
   const handleDelete = async (e, toolId) => {
     e.stopPropagation();
     if (!confirm('Är du säker på att du vill radera denna maskin permanent?')) return;
-    await base44.entities.Tool.delete(toolId);
-    queryClient.invalidateQueries(['inactive-tools']);
+    try {
+      await base44.entities.Tool.delete(toolId);
+      queryClient.invalidateQueries(['inactive-tools']);
+    } catch (error) {
+      // Verktyget finns inte längre eller är redan borttaget - uppdatera listan
+      queryClient.invalidateQueries(['inactive-tools']);
+    }
   };
 
   const inactiveTools = tools.filter(t => INACTIVE_STATUSES.includes(t.status));
