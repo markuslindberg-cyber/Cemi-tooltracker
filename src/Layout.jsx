@@ -38,7 +38,7 @@ const navigation = [
       { name: 'Översikt', path: '/Inventory' },
       { name: 'Huvudmaskiner', path: '/Huvudmaskiner' },
       { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
-      { name: 'Förflyttningar', path: '/Transfers' },
+      { name: 'Lån av utrustning', path: '/Transfers' },
       { name: 'Service', path: '/Service' },
     ]
   },
