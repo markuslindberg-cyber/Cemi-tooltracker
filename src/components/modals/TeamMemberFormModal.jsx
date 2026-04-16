@@ -113,13 +113,11 @@ export default function TeamMemberFormModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="technician">Tekniker</SelectItem>
-                <SelectItem value="supervisor">Arbetsledare</SelectItem>
-                <SelectItem value="manager">Chef</SelectItem>
-                <SelectItem value="apprentice">Lärling</SelectItem>
-                <SelectItem value="contractor">Underleverantör</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="admin lokalvård">Admin Lokalvård</SelectItem>
                 <SelectItem value="lokalvårdare">Lokalvårdare</SelectItem>
+                <SelectItem value="verktygsförvaltare">Verktygsförvaltare</SelectItem>
+                <SelectItem value="ägare">Ägare</SelectItem>
               </SelectContent>
             </Select>
           </div>
