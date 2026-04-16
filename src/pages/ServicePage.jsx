@@ -405,6 +405,7 @@ export default function ServicePage() {
   const [notFound, setNotFound] = useState(false);
   const [scannerActive, setScannerActive] = useState(false);
   const [activeTab, setActiveTab] = useState('service');
+  const [suggestedTools, setSuggestedTools] = useState([]);
   const inputRef = useRef(null);
 
   const { data: tools = [] } = useQuery({
@@ -437,9 +438,31 @@ export default function ServicePage() {
       setSelectedTool(found);
       setNotFound(false);
       setBarcode('');
+      setSuggestedTools([]);
     } else {
       setNotFound(true);
     }
+  };
+
+  const handleSearchChange = (value) => {
+    setBarcode(value);
+    setNotFound(false);
+    if (value.trim()) {
+      const filtered = tools.filter(t =>
+        t.name?.toLowerCase().includes(value.toLowerCase()) ||
+        t.barcode?.includes(value) ||
+        t.model_number?.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestedTools(filtered.slice(0, 8));
+    } else {
+      setSuggestedTools([]);
+    }
+  };
+
+  const handleSelectTool = (tool) => {
+    setSelectedTool(tool);
+    setBarcode('');
+    setSuggestedTools([]);
   };
 
   if (selectedTool) {
@@ -471,16 +494,38 @@ export default function ServicePage() {
           <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           Extern skanner / sök på streckkod eller namn
         </Label>
-        <div className="flex gap-2">
-          <Input
-            ref={inputRef}
-            placeholder="Skanna streckkod eller skriv maskinnamn..."
-            value={barcode}
-            onChange={e => { setBarcode(e.target.value); setNotFound(false); }}
-            onKeyDown={e => { if (e.key === 'Enter') handleLookup(); }}
-            className="flex-1 border-2 border-green-300 focus:border-green-500 bg-green-50/30"
-            autoFocus
-          />
+        <div className="flex gap-2 relative">
+          <div className="flex-1 relative">
+            <Input
+              ref={inputRef}
+              placeholder="Skanna streckkod eller skriv maskinnamn..."
+              value={barcode}
+              onChange={e => handleSearchChange(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleLookup(); }}
+              className="w-full border-2 border-green-300 focus:border-green-500 bg-green-50/30"
+              autoFocus
+            />
+            {suggestedTools.length > 0 && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {suggestedTools.map(tool => (
+                  <button
+                    key={tool.id}
+                    onClick={() => handleSelectTool(tool)}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 text-left transition-colors"
+                  >
+                    {tool.image_url
+                      ? <img src={tool.image_url} alt={tool.name} className="w-8 h-8 object-cover rounded" />
+                      : <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center"><Package className="w-4 h-4 text-gray-400" /></div>
+                    }
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 text-sm">{tool.name}</p>
+                      <p className="text-xs text-gray-500">{tool.category}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Button onClick={() => handleLookup()}>
             <Search className="w-4 h-4" />
           </Button>
