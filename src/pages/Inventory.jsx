@@ -58,6 +58,7 @@ import { format } from 'date-fns';
 const statusConfig = {
   available: { label: "Tillgänglig", color: "bg-emerald-100 text-emerald-700" },
   in_use: { label: "I bruk", color: "bg-blue-100 text-blue-700" },
+  i_lager: { label: "I lager", color: "bg-cyan-100 text-cyan-700" },
   maintenance: { label: "Underhåll", color: "bg-amber-100 text-amber-700" },
   missing: { label: "Saknas", color: "bg-red-100 text-red-700" },
   retired: { label: "Kasserad", color: "bg-gray-100 text-gray-600" },
