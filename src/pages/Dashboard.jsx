@@ -350,9 +350,9 @@ export default function Dashboard() {
               <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Maskiner ({tools.length})</span>
-                  <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
-                </div>
+                   <span className="text-sm text-gray-500">Maskiner ({activeTools.length})</span>
+                   <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
+                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">Handredskap ({handTools.length})</span>
                   <span className="font-medium text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</span>
