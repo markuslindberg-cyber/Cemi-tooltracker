@@ -138,10 +138,10 @@ export default function Dashboard() {
               onClick={() => setShowLoanRequest(true)}
               size="sm"
               variant="outline"
-              className="hidden sm:flex"
             >
               <RotateCw className="w-4 h-4 mr-1" />
-              Skicka låneförfrågan
+              <span className="hidden sm:inline">Skicka låneförfrågan</span>
+              <span className="sm:hidden">Lån</span>
             </Button>
             <Button
               onClick={() => setShowAddTool(true)}
