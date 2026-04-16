@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus, Calendar } from 'lucide-react';
+import { X, Plus, Calendar, Barcode } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
@@ -22,6 +22,8 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const [useIndividualDates, setUseIndividualDates] = useState(false);
   const [individualDates, setIndividualDates] = useState({});
   const [searchOpen, setSearchOpen] = useState(false);
+  const [scanMode, setScanMode] = useState(false);
+  const [barcodeInput, setBarcodeInput] = useState('');
 
   const { data: tools } = useQuery({
     queryKey: ['tools'],
@@ -108,6 +110,18 @@ export default function LoanRequestModal({ isOpen, onClose }) {
     setIndividualDates(newIndividualDates);
   };
 
+  const handleBarcodeScan = (e) => {
+    e.preventDefault();
+    const scannedTool = tools.find(t => t.barcode === barcodeInput);
+    if (scannedTool) {
+      handleAddTool(scannedTool);
+      setBarcodeInput('');
+    } else {
+      alert(`Ingen maskin hittad med streckkod: ${barcodeInput}`);
+      setBarcodeInput('');
+    }
+  };
+
   const handleSubmit = () => {
     if (!selectedTools.length || !defaultReturnDate || !assignedTo || !destinationLocation) {
       alert('Vänligen fyll i alla obligatoriska fält');
@@ -127,32 +141,57 @@ export default function LoanRequestModal({ isOpen, onClose }) {
           {/* Tool Selection */}
           <div>
             <Label className="block mb-2">Maskiner *</Label>
-            <Popover open={searchOpen} onOpenChange={setSearchOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Lägg till maskin
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="flex-1 justify-start">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Lägg till maskin
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Sök maskin..." />
+                      <CommandList>
+                        <CommandEmpty>Ingen maskin hittad</CommandEmpty>
+                        <CommandGroup>
+                          {tools.map(tool => (
+                            <CommandItem key={tool.id} onSelect={() => handleAddTool(tool)}>
+                              <div className="flex-1">
+                                <div className="font-medium">{tool.name}</div>
+                                <div className="text-xs text-gray-500">{tool.location_name}</div>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <Button 
+                  variant={scanMode ? "default" : "outline"} 
+                  size="icon"
+                  onClick={() => setScanMode(!scanMode)}
+                  title="Skanna streckkod"
+                >
+                  <Barcode className="w-4 h-4" />
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Sök maskin..." />
-                  <CommandList>
-                    <CommandEmpty>Ingen maskin hittad</CommandEmpty>
-                    <CommandGroup>
-                      {tools.map(tool => (
-                        <CommandItem key={tool.id} onSelect={() => handleAddTool(tool)}>
-                          <div className="flex-1">
-                            <div className="font-medium">{tool.name}</div>
-                            <div className="text-xs text-gray-500">{tool.location_name}</div>
-                          </div>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+              </div>
+
+              {scanMode && (
+                <form onSubmit={handleBarcodeScan} className="space-y-2">
+                  <Input
+                    placeholder="Skanna streckkod här..."
+                    value={barcodeInput}
+                    onChange={(e) => setBarcodeInput(e.target.value)}
+                    autoFocus
+                  />
+                  <p className="text-xs text-gray-500">Streckkoden läses in automatiskt när du skannar</p>
+                </form>
+              )}
+            </div>
+
             <div className="mt-3 flex flex-wrap gap-2">
               {selectedTools.map(tool => (
                 <Badge key={tool.id} variant="secondary" className="flex items-center gap-1">
