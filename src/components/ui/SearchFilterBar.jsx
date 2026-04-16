@@ -141,7 +141,10 @@ export default function SearchFilterBar({
                 <span className="font-semibold text-gray-900 text-sm">Filtrera efter:</span>
                 {activeCount > 0 && (
                   <button
-                    onClick={() => { onClearFilters(); }}
+                    onClick={() => {
+                      onStatusChange([]);
+                      onClearFilters();
+                    }}
                     className="text-xs text-[#8B1E1E] hover:underline flex items-center gap-1"
                   >
                     <X className="w-3 h-3" /> Rensa
