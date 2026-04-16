@@ -41,6 +41,9 @@ import {
   CheckSquare,
   Square,
   Tag,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -87,7 +90,24 @@ export default function Inventory() {
   const [locationFilter, setLocationFilter] = useState('all');
   const [assignedToFilter, setAssignedToFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
-  const [sortBy, setSortBy] = useState('updated');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDir, setSortDir] = useState('asc');
+
+  const handleTableSort = (col) => {
+    if (sortBy === col) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(col);
+      setSortDir('asc');
+    }
+  };
+
+  const SortIcon = ({ col }) => {
+    if (sortBy !== col) return <ChevronsUpDown className="w-3.5 h-3.5 ml-1 text-gray-400 inline" />;
+    return sortDir === 'asc'
+      ? <ChevronUp className="w-3.5 h-3.5 ml-1 text-[#8B1E1E] inline" />
+      : <ChevronDown className="w-3.5 h-3.5 ml-1 text-[#8B1E1E] inline" />;
+  };
   const [transferTool, setTransferTool] = useState(null);
   const [editTool, setEditTool] = useState(null);
   const [showAddTool, setShowAddTool] = useState(false);
@@ -179,21 +199,25 @@ export default function Inventory() {
 
     // Sort the filtered items
     return filtered.sort((a, b) => {
-      if (sortBy === 'last_checked') {
-        const aDate = a.last_seen_date ? new Date(a.last_seen_date).getTime() : 0;
-        const bDate = b.last_seen_date ? new Date(b.last_seen_date).getTime() : 0;
-        return bDate - aDate; // Most recent first
-      } else if (sortBy === 'name') {
-        return (a.name || '').localeCompare(b.name || '');
+      let cmp = 0;
+      if (sortBy === 'name') {
+        cmp = (a.name || '').localeCompare(b.name || '');
       } else if (sortBy === 'category') {
-        return (a.category || '').localeCompare(b.category || '');
+        cmp = (a.category || '').localeCompare(b.category || '');
+      } else if (sortBy === 'status') {
+        cmp = (a.status || '').localeCompare(b.status || '');
+      } else if (sortBy === 'location') {
+        cmp = (a.location_name || '').localeCompare(b.location_name || '');
+      } else if (sortBy === 'assigned') {
+        cmp = (a.assigned_to_name || '').localeCompare(b.assigned_to_name || '');
+      } else if (sortBy === 'price') {
+        cmp = (a.purchase_price || 0) - (b.purchase_price || 0);
       } else { // 'updated'
-        const aDate = new Date(a.updated_date).getTime();
-        const bDate = new Date(b.updated_date).getTime();
-        return bDate - aDate;
+        cmp = new Date(a.updated_date).getTime() - new Date(b.updated_date).getTime();
       }
+      return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, sortBy]);
+  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, assignedToFilter, sortBy, sortDir]);
 
   const availableCategories = useMemo(() => {
     return [...new Set(allItems.map(t => t.category).filter(Boolean))].sort();
@@ -658,12 +682,12 @@ export default function Inventory() {
                       </button>
                     )}
                   </TableHead>
-                  <TableHead className="font-semibold">Verktyg</TableHead>
-                  <TableHead className="font-semibold">Kategori</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="font-semibold">Plats</TableHead>
-                  <TableHead className="font-semibold">Tilldelad</TableHead>
-                  <TableHead className="font-semibold">Inköpspris</TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('category')}>Kategori<SortIcon col="category" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('location')}>Plats<SortIcon col="location" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('assigned')}>Tilldelad<SortIcon col="assigned" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('price')}>Inköpspris<SortIcon col="price" /></TableHead>
                   <TableHead className="font-semibold">Servicekostnader</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
