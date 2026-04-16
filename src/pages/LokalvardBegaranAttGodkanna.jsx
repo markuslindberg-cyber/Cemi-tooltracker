@@ -463,6 +463,9 @@ export default function LokalvardBegaranAttGodkanna() {
                       <p className="text-xs text-gray-400 mt-1">
                         {format(new Date(request.request_date), 'dd MMM HH:mm', { locale: sv })}
                       </p>
+                      {request.notes && (
+                        <p className="text-xs text-gray-500 mt-1 italic">📝 {request.notes}</p>
+                      )}
                       {hasSavedScan && (
                         <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">✓ Sparad skanning</span>
                       )}
