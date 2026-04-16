@@ -254,26 +254,35 @@ export default function KostnadPerKund() {
               </div>
             </button>
             {chartOpen && chartData.length > 0 && (
-              <div className="px-2 py-4" style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={90}
-                      innerRadius={45}
-                    >
-                      {chartData.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v) => `${v.toLocaleString('sv-SE')} kr`} />
-                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                  </PieChart>
-                </ResponsiveContainer>
+              <div className="px-2 py-4">
+                <div className="w-full" style={{ height: 220 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={70}
+                        innerRadius={35}
+                      >
+                        {chartData.map((_, i) => (
+                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(v) => `${v.toLocaleString('sv-SE')} kr`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 px-3 pt-2 pb-1">
+                  {chartData.map((entry, i) => (
+                    <div key={entry.name} className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                      <span className="text-xs text-gray-600">{entry.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
