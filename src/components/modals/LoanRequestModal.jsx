@@ -11,6 +11,7 @@ import { X, Plus, Calendar, Barcode } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function LoanRequestModal({ isOpen, onClose }) {
   const queryClient = useQueryClient();
@@ -24,10 +25,17 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scanMode, setScanMode] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState('');
+  const [itemType, setItemType] = useState('tools');
 
   const { data: tools } = useQuery({
     queryKey: ['tools'],
     queryFn: () => base44.entities.Tool.list(),
+    initialData: []
+  });
+
+  const { data: handTools } = useQuery({
+    queryKey: ['handTools'],
+    queryFn: () => base44.entities.HandTool.list(),
     initialData: []
   });
 
@@ -47,6 +55,8 @@ export default function LoanRequestModal({ isOpen, onClose }) {
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
   });
+
+  const availableItems = itemType === 'tools' ? tools : handTools;
 
   const createLoanMutation = useMutation({
     mutationFn: async () => {
@@ -92,6 +102,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
       setComment('');
       setUseIndividualDates(false);
       setIndividualDates({});
+      setItemType('tools');
       onClose();
     }
   });
@@ -112,12 +123,12 @@ export default function LoanRequestModal({ isOpen, onClose }) {
 
   const handleBarcodeScan = (e) => {
     e.preventDefault();
-    const scannedTool = tools.find(t => t.barcode === barcodeInput);
-    if (scannedTool) {
-      handleAddTool(scannedTool);
+    const scannedItem = availableItems.find(t => t.barcode === barcodeInput);
+    if (scannedItem) {
+      handleAddTool(scannedItem);
       setBarcodeInput('');
     } else {
-      alert(`Ingen maskin hittad med streckkod: ${barcodeInput}`);
+      alert(`Inget verktyg/redskap hittad med streckkod: ${barcodeInput}`);
       setBarcodeInput('');
     }
   };
@@ -134,41 +145,49 @@ export default function LoanRequestModal({ isOpen, onClose }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Skicka förfrågan om lån av maskin</DialogTitle>
+          <DialogTitle>Skicka förfrågan om lån</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Item Type Selection */}
+          <Tabs value={itemType} onValueChange={setItemType} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="tools">Maskiner</TabsTrigger>
+              <TabsTrigger value="handtools">Handredskap</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           {/* Tool Selection */}
           <div>
-            <Label className="block mb-2">Maskiner *</Label>
+            <Label className="block mb-2">{itemType === 'tools' ? 'Maskiner' : 'Handredskap'} *</Label>
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Popover open={searchOpen} onOpenChange={setSearchOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="flex-1 justify-start">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Lägg till maskin
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Sök maskin..." />
-                      <CommandList>
-                        <CommandEmpty>Ingen maskin hittad</CommandEmpty>
-                        <CommandGroup>
-                          {tools.map(tool => (
-                            <CommandItem key={tool.id} onSelect={() => handleAddTool(tool)}>
-                              <div className="flex-1">
-                                <div className="font-medium">{tool.name}</div>
-                                <div className="text-xs text-gray-500">{tool.location_name}</div>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                   <PopoverTrigger asChild>
+                     <Button variant="outline" className="flex-1 justify-start">
+                       <Plus className="w-4 h-4 mr-2" />
+                       Lägg till {itemType === 'tools' ? 'maskin' : 'handredskap'}
+                     </Button>
+                   </PopoverTrigger>
+                   <PopoverContent className="w-full p-0">
+                     <Command>
+                       <CommandInput placeholder={`Sök ${itemType === 'tools' ? 'maskin' : 'handredskap'}...`} />
+                       <CommandList>
+                         <CommandEmpty>Ingen {itemType === 'tools' ? 'maskin' : 'handredskap'} hittad</CommandEmpty>
+                         <CommandGroup>
+                           {availableItems.map(item => (
+                             <CommandItem key={item.id} onSelect={() => handleAddTool(item)}>
+                               <div className="flex-1">
+                                 <div className="font-medium">{item.name}</div>
+                                 <div className="text-xs text-gray-500">{item.location_name}</div>
+                               </div>
+                             </CommandItem>
+                           ))}
+                         </CommandGroup>
+                       </CommandList>
+                     </Command>
+                   </PopoverContent>
+                 </Popover>
                 <Button 
                   variant={scanMode ? "default" : "outline"} 
                   size="icon"
@@ -268,6 +287,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
             {!useIndividualDates && (
               <div>
                 <Label className="block mb-2">Återlämningsdatum *</Label>
+                <Calendar className="w-4 h-4 inline text-gray-400 mr-2" />
                 <Input
                   type="date"
                   value={defaultReturnDate}
@@ -278,8 +298,8 @@ export default function LoanRequestModal({ isOpen, onClose }) {
             )}
 
             {useIndividualDates && selectedTools.length > 0 && (
-              <div className="space-y-3 border rounded-lg p-4">
-                <p className="text-sm font-medium">Individuella återlämningsdatum per maskin:</p>
+               <div className="space-y-3 border rounded-lg p-4">
+                 <p className="text-sm font-medium">Individuella återlämningsdatum per {itemType === 'tools' ? 'maskin' : 'handredskap'}:</p>
                 {selectedTools.map(tool => (
                   <div key={tool.id}>
                     <Label className="text-sm">{tool.name}</Label>
