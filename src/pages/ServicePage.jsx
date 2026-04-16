@@ -38,7 +38,7 @@ const SERVICE_TYPE_COLORS = {
 };
 
 // ─── Add Service Dialog ──────────────────────────────────────────────────────
-function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
+function AddServiceDialog({ open, onClose, tool, prefillTemplate, suppliers = [] }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     service_type: 'maintenance',
@@ -145,9 +145,15 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
             <Label>Utförd av</Label>
             <Input value={form.performed_by} onChange={e => setForm(f => ({ ...f, performed_by: e.target.value }))} placeholder="Namn..." />
           </div>
-          <div className="space-y-1">
-            <Label>Kostnad (kr)</Label>
-            <Input type="number" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="0" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label>Kostnad (kr)</Label>
+              <Input type="number" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="0" />
+            </div>
+            <div className="space-y-1">
+              <Label>Fakturanummer</Label>
+              <Input value={form.invoice_number} onChange={e => setForm(f => ({ ...f, invoice_number: e.target.value }))} placeholder="Valfritt..." />
+            </div>
           </div>
           <div className="space-y-1">
             <Label>Beskrivning / vad som utförts</Label>
@@ -176,10 +182,6 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
                 </div>
               )}
             </div>
-          </div>
-          <div className="space-y-1">
-            <Label>Fakturanummer</Label>
-            <Input value={form.invoice_number} onChange={e => setForm(f => ({ ...f, invoice_number: e.target.value }))} placeholder="Valfritt..." />
           </div>
           <div className="space-y-2">
             <Label>Delar/komponenter</Label>
@@ -392,6 +394,7 @@ function ToolServiceHistory({ tool, onBack }) {
         onClose={() => { setAddOpen(false); setSelectedTemplate(null); }}
         tool={tool}
         prefillTemplate={selectedTemplate}
+        suppliers={suppliers}
       />
     </div>
   );
