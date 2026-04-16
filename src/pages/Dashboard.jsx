@@ -244,9 +244,141 @@ export default function Dashboard() {
         )}
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          {/* Recent Tools - simple list */}
-          <div className="lg:col-span-2 space-y-4">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+           {/* Sidebar First */}
+           <div className="space-y-4 lg:order-2">
+            {/* Loan Summary */}
+             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+               <h3 className="font-semibold text-gray-900 mb-4">Låneöversikt</h3>
+               <div className="space-y-3">
+                 <div className="flex justify-between items-center">
+                   <span className="text-sm text-gray-500">Aktiva lån</span>
+                   <span className="font-medium text-gray-900">{activeLoans}</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                   <span className="text-sm text-gray-500">Väntande förfrågningar</span>
+                   <span className="font-medium text-amber-600">{pendingRequests}</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                   <span className="text-sm text-gray-500">Nekade förfrågningar</span>
+                   <span className="font-medium text-red-600">{rejectedRequests}</span>
+                 </div>
+                 {(myLoans > 0 || borrowedTools > 0) && (
+                   <>
+                     <div className="pt-3 border-t border-gray-100 space-y-3">
+                       {myLoans > 0 && (
+                         <div className="flex justify-between items-center">
+                           <span className="text-sm text-gray-500">Maskiner jag lånat</span>
+                           <span className="font-medium text-gray-900">{myLoans}</span>
+                         </div>
+                       )}
+                       {borrowedTools > 0 && (
+                         <div className="flex justify-between items-center">
+                           <span className="text-sm text-gray-500">Från andra platser</span>
+                           <span className="font-medium text-gray-900">{borrowedTools}</span>
+                         </div>
+                       )}
+                     </div>
+                   </>
+                 )}
+               </div>
+               <Link to="/Transfers" className="mt-4 block">
+                 <Button variant="outline" size="sm" className="w-full">
+                   Hantera lån
+                   <ArrowRight className="w-3 h-3 ml-1" />
+                 </Button>
+               </Link>
+             </div>
+
+            {/* Inventory value */}
+             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+               <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
+               <div className="space-y-3">
+                 <div className="flex justify-between items-center">
+                   <span className="text-sm text-gray-500">Maskiner ({activeTools.length})</span>
+                   <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                   <span className="text-sm text-gray-500">Handredskap ({handTools.length})</span>
+                   <span className="font-medium text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</span>
+                 </div>
+                 <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                   <span className="text-sm font-semibold text-gray-700">Totalt</span>
+                   <span className="font-bold text-[#8B1E1E]">{(totalValue + handToolsValue).toLocaleString('sv-SE')} kr</span>
+                 </div>
+               </div>
+               <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                 {[
+                   { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
+                   { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
+                   { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
+                    { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
+                    { label: 'Sålda', count: tools?.filter(t => t.status === 'sålda').length || 0, color: 'bg-gray-400' },
+                    { label: 'Kasserade', count: tools?.filter(t => t.status === 'retired').length || 0, color: 'bg-gray-300' },
+                   ].map(({ label, count, color }) => (
+                   <div key={label} className="flex items-center justify-between">
+                     <div className="flex items-center gap-2">
+                       <div className={`w-2 h-2 rounded-full ${color}`} />
+                       <span className="text-sm text-gray-600">{label}</span>
+                     </div>
+                     <span className="text-sm font-medium text-gray-900">{count}</span>
+                   </div>
+                 ))}
+               </div>
+             </div>
+
+             {/* Active Loans by Location */}
+              {loansByLocation.length > 0 && (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="px-5 py-4 border-b border-gray-100">
+                    <h3 className="font-semibold text-gray-900">Platser med aktiva lån</h3>
+                  </div>
+                  <div className="divide-y divide-gray-100">
+                    {loansByLocation.map(location => (
+                      <Link key={location.id} to={`/locations/${location.id}`} className="block">
+                        <div className="px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
+                          <p className="font-medium text-gray-900 text-sm truncate">{location.name}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                            <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+                            {location.activeLoans} aktiva lån
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+             {/* Recent Activity */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100">
+                  <h3 className="font-semibold text-gray-900">Senaste förflyttningar</h3>
+                </div>
+               {recentTransfers.length > 0 ? (
+                 <div className="divide-y divide-gray-100">
+                   {recentTransfers.map((transfer) => (
+                     <div key={transfer.id} className="px-5 py-3">
+                       <p className="font-medium text-gray-900 text-sm truncate">{transfer.tool_name}</p>
+                       <p className="text-xs text-gray-500 mt-0.5 truncate">
+                         {transfer.from_location_name || '—'} → {transfer.to_location_name || '—'}
+                       </p>
+                       <p className="text-xs text-gray-400 mt-0.5">
+                         {transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM')}
+                       </p>
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <div className="p-6 text-center">
+                   <Clock className="w-7 h-7 text-gray-300 mx-auto mb-2" />
+                   <p className="text-gray-400 text-sm">Inga förflyttningar</p>
+                 </div>
+               )}
+             </div>
+           </div>
+
+           {/* Recent Tools - simple list */}
+           <div className="lg:col-span-2 lg:order-1 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Senaste maskiner</h2>
               <Link to={createPageUrl('Inventory')}>
@@ -300,137 +432,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4">
-           {/* Loan Summary */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-900 mb-4">Låneöversikt</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Aktiva lån</span>
-                  <span className="font-medium text-gray-900">{activeLoans}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Väntande förfrågningar</span>
-                  <span className="font-medium text-amber-600">{pendingRequests}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Nekade förfrågningar</span>
-                  <span className="font-medium text-red-600">{rejectedRequests}</span>
-                </div>
-                {(myLoans > 0 || borrowedTools > 0) && (
-                  <>
-                    <div className="pt-3 border-t border-gray-100 space-y-3">
-                      {myLoans > 0 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-500">Maskiner jag lånat</span>
-                          <span className="font-medium text-gray-900">{myLoans}</span>
-                        </div>
-                      )}
-                      {borrowedTools > 0 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-500">Från andra platser</span>
-                          <span className="font-medium text-gray-900">{borrowedTools}</span>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-              <Link to="/Transfers" className="mt-4 block">
-                <Button variant="outline" size="sm" className="w-full">
-                  Hantera lån
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
-              </Link>
-            </div>
 
-           {/* Inventory value */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Maskiner ({activeTools.length})</span>
-                   <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
-                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Handredskap ({handTools.length})</span>
-                  <span className="font-medium text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</span>
-                </div>
-                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                  <span className="text-sm font-semibold text-gray-700">Totalt</span>
-                  <span className="font-bold text-[#8B1E1E]">{(totalValue + handToolsValue).toLocaleString('sv-SE')} kr</span>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                {[
-                  { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
-                  { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
-                  { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
-                   { label: 'Saknas', count: missingTools, color: 'bg-red-500' },
-                   { label: 'Sålda', count: tools?.filter(t => t.status === 'sålda').length || 0, color: 'bg-gray-400' },
-                   { label: 'Kasserade', count: tools?.filter(t => t.status === 'retired').length || 0, color: 'bg-gray-300' },
-                  ].map(({ label, count, color }) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${color}`} />
-                      <span className="text-sm text-gray-600">{label}</span>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Active Loans by Location */}
-             {loansByLocation.length > 0 && (
-               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                 <div className="px-5 py-4 border-b border-gray-100">
-                   <h3 className="font-semibold text-gray-900">Platser med aktiva lån</h3>
-                 </div>
-                 <div className="divide-y divide-gray-100">
-                   {loansByLocation.map(location => (
-                     <Link key={location.id} to={`/locations/${location.id}`} className="block">
-                       <div className="px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
-                         <p className="font-medium text-gray-900 text-sm truncate">{location.name}</p>
-                         <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                           <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
-                           {location.activeLoans} aktiva lån
-                         </p>
-                       </div>
-                     </Link>
-                   ))}
-                 </div>
-               </div>
-             )}
-
-            {/* Recent Activity */}
-             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-               <div className="px-5 py-4 border-b border-gray-100">
-                 <h3 className="font-semibold text-gray-900">Senaste förflyttningar</h3>
-               </div>
-              {recentTransfers.length > 0 ? (
-                <div className="divide-y divide-gray-100">
-                  {recentTransfers.map((transfer) => (
-                    <div key={transfer.id} className="px-5 py-3">
-                      <p className="font-medium text-gray-900 text-sm truncate">{transfer.tool_name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 truncate">
-                        {transfer.from_location_name || '—'} → {transfer.to_location_name || '—'}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM')}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 text-center">
-                  <Clock className="w-7 h-7 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-400 text-sm">Inga förflyttningar</p>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
 
