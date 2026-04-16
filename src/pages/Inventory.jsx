@@ -149,7 +149,7 @@ export default function Inventory() {
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
   });
 
-  // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap)
+  // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
   const HIDDEN_STATUSES = ['såld', 'retired', 'missing'];
   const allItems = useMemo(() => tools.filter(t => !HIDDEN_STATUSES.includes(t.status)).map(t => ({ ...t, type: 'tool' })), [tools]);
 
