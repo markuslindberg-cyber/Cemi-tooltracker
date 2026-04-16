@@ -293,14 +293,11 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
 function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const queryClient = useQueryClient();
   const [scannerActive, setScannerActive] = useState(false);
-  const [scannedItem, setScannedItem] = useState(null);
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [manualDialogPreselected, setManualDialogPreselected] = useState(null);
   const [manualBarcode, setManualBarcode] = useState('');
   const [checkedItems, setCheckedItems] = useState(new Set(sessionConfig._resumedChecked || []));
   const [manualCounts, setManualCounts] = useState(sessionConfig._resumedManualCounts || {});
-  const [tempStatus, setTempStatus] = useState('');
-  const [tempCondition, setTempCondition] = useState('');
   const [lastScanFeedback, setLastScanFeedback] = useState(null); // { name, found }
   const [scanLog, setScanLog] = useState([]); // [{ id, name, type, timestamp, manualCount? }]
   const externalScanInputRef = useRef(null);
@@ -369,11 +366,11 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
   // Keep external scanner input always focused (unless dialog is open or camera is active)
   useEffect(() => {
-    if (!showManualDialog && !scannerActive && !scannedItem) {
+    if (!showManualDialog && !scannerActive) {
       const timeout = setTimeout(() => externalScanInputRef.current?.focus(), 100);
       return () => clearTimeout(timeout);
     }
-  }, [showManualDialog, scannerActive, scannedItem]);
+  }, [showManualDialog, scannerActive]);
 
   const handleScan = useCallback((barcode) => {
     // Search only within scoped items (or all in open mode)
@@ -392,12 +389,12 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         setManualDialogPreselected(item);
         setShowManualDialog(true);
       } else {
-        setScannedItem(item);
-        setTempStatus(item.status || '');
-        setTempCondition(item.condition || '');
+        // Auto-register without manual confirmation — update last_seen_date in background
         setCheckedItems(prev => new Set([...prev, item.id]));
         setLastScanFeedback({ name: item.name || item.benamning, found: true });
         setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date() }, ...prev]);
+        updateToolMutation.mutate({ id: item.id, data: { last_seen_date: new Date().toISOString() }, type: item._type });
+        setTimeout(() => externalScanInputRef.current?.focus(), 50);
       }
     } else {
       setLastScanFeedback({ name: barcode, found: false });
@@ -414,17 +411,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date(), manualCount: antal }, ...prev]);
   };
 
-  const handleConfirm = async () => {
-    if (!scannedItem) return;
-    const updates = {};
-    if (tempStatus !== scannedItem.status) updates.status = tempStatus;
-    if (tempCondition !== scannedItem.condition) updates.condition = tempCondition;
-    updates.last_seen_date = new Date().toISOString();
-    await updateToolMutation.mutateAsync({ id: scannedItem.id, data: updates, type: scannedItem._type });
-    setScannedItem(null);
-    setLastScanFeedback(null);
-    setTimeout(() => externalScanInputRef.current?.focus(), 100);
-  };
+
 
   const handlePause = async () => {
     await onPause(sessionId, checkedItems, manualCounts);
@@ -571,88 +558,6 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
           onConfirm={handleManualCountConfirm}
           preselectedItem={manualDialogPreselected}
         />
-
-        {/* Scanned item confirm */}
-        {scannedItem && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-              <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center">
-                {scannedItem.image_url
-                  ? <img src={scannedItem.image_url} alt={scannedItem.name} className="w-full h-full object-cover rounded-xl" />
-                  : <Package className="w-8 h-8 text-gray-400" />}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-lg text-gray-900">{scannedItem.name}</h3>
-                  <Badge variant="outline" className="text-xs">
-                    {scannedItem._type === 'handtool' ? 'Handredskap' : scannedItem._type === 'arbetskläder' ? 'Arbetskläder' : scannedItem._type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}
-                  </Badge>
-                </div>
-                {scannedItem.location_name && (
-                  <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
-                    <MapPin className="w-4 h-4" />{scannedItem.location_name}
-                  </div>
-                )}
-              </div>
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select value={tempStatus} onValueChange={setTempStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(scannedItem._type === 'handtool' || scannedItem._type === 'arbetskläder') ? (
-                      <>
-                        <SelectItem value="i_lager">I lager</SelectItem>
-                        <SelectItem value="i_bruk">I bruk</SelectItem>
-                        <SelectItem value="saknas">Saknas</SelectItem>
-                        <SelectItem value="kasserad">Kasserad</SelectItem>
-                      </>
-                    ) : (
-                      <>
-                        <SelectItem value="available">Tillgänglig</SelectItem>
-                        <SelectItem value="in_use">I bruk</SelectItem>
-                        <SelectItem value="maintenance">Underhåll</SelectItem>
-                        <SelectItem value="missing">Saknas</SelectItem>
-                        <SelectItem value="retired">Kasserad</SelectItem>
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Skick</Label>
-                <Select value={tempCondition} onValueChange={setTempCondition}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {(scannedItem._type === 'handtool' || scannedItem._type === 'arbetskläder') ? (
-                      <>
-                        <SelectItem value="ny">Ny</SelectItem>
-                        <SelectItem value="bra">Bra</SelectItem>
-                        <SelectItem value="okej">Okej</SelectItem>
-                        <SelectItem value="dålig">Dålig</SelectItem>
-                      </>
-                    ) : (
-                      <>
-                        <SelectItem value="new">Ny</SelectItem>
-                        <SelectItem value="good">Bra</SelectItem>
-                        <SelectItem value="fair">Okej</SelectItem>
-                        <SelectItem value="poor">Dålig</SelectItem>
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <Button onClick={() => { setScannedItem(null); setLastScanFeedback(null); setTimeout(() => externalScanInputRef.current?.focus(), 100); }} variant="outline" className="flex-1">Avbryt</Button>
-              <Button onClick={handleConfirm} className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]" disabled={updateToolMutation.isPending}>
-                {updateToolMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta</>}
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Scan log */}
         {scanLog.length > 0 && (
