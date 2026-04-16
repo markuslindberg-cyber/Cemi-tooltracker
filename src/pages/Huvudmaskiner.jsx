@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, ChevronDown, X } from 'lucide-react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ export default function Huvudmaskiner() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
+  const [selectedTool, setSelectedTool] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     manufacturer: '',
@@ -347,16 +349,16 @@ export default function Huvudmaskiner() {
                     {ownedTools.length > 0 ? (
                       <ul className="space-y-1">
                         {ownedTools.map((tool) => (
-                          <li key={tool.id} className="text-sm text-gray-700">
-                            •{' '}
-                            <button
-                              onClick={() => navigate(`/Inventory`)}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                            >
-                              {tool.name}
-                            </button>
-                            {tool.subcategory && ` - ${tool.subcategory}`}
-                          </li>
+                         <li key={tool.id} className="text-sm text-gray-700">
+                           •{' '}
+                           <button
+                             onClick={() => setSelectedTool(tool)}
+                             className="text-blue-600 hover:text-blue-800 underline"
+                           >
+                             {tool.name}
+                           </button>
+                           {tool.subcategory && ` - ${tool.subcategory}`}
+                         </li>
                         ))}
                       </ul>
                     ) : (
@@ -374,7 +376,7 @@ export default function Huvudmaskiner() {
                           <li key={tool.id} className="text-sm text-gray-700">
                             •{' '}
                             <button
-                              onClick={() => navigate(`/Inventory`)}
+                              onClick={() => setSelectedTool(tool)}
                               className="text-blue-600 hover:text-blue-800 underline"
                             >
                               {tool.name}
@@ -395,6 +397,52 @@ export default function Huvudmaskiner() {
           );
         })}
       </div>
+
+      {/* Tool Detail Popup */}
+      {selectedTool && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md bg-white p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-semibold">{selectedTool.name}</h2>
+              <button
+                onClick={() => setSelectedTool(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-2 mb-4">
+              {selectedTool.manufacturer && (
+                <p><span className="font-medium">Tillverkare:</span> {selectedTool.manufacturer}</p>
+              )}
+              {selectedTool.model_number && (
+                <p><span className="font-medium">Modell:</span> {selectedTool.model_number}</p>
+              )}
+              {selectedTool.category && (
+                <p><span className="font-medium">Kategori:</span> {selectedTool.category}</p>
+              )}
+              {selectedTool.subcategory && (
+                <p><span className="font-medium">Underkategori:</span> {selectedTool.subcategory}</p>
+              )}
+              {selectedTool.status && (
+                <p><span className="font-medium">Status:</span> {selectedTool.status}</p>
+              )}
+              {selectedTool.location_name && (
+                <p><span className="font-medium">Plats:</span> {selectedTool.location_name}</p>
+              )}
+              {selectedTool.assigned_to_name && (
+                <p><span className="font-medium">Tilldelad:</span> {selectedTool.assigned_to_name}</p>
+              )}
+            </div>
+            <Button
+              onClick={() => setSelectedTool(null)}
+              className="w-full"
+            >
+              Stäng
+            </Button>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
