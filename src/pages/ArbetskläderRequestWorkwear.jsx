@@ -50,7 +50,7 @@ export default function ArbetskläderRequestWorkwear() {
       setSelectedItem(null);
       setSelectedQty(1);
       queryClient.invalidateQueries({ queryKey: ['workwearRequests'] });
-      alert('Begäran skickad!');
+      alert('Begäran skickad till Admin-Lokalvård för godkännande!');
     },
   });
 
@@ -92,11 +92,16 @@ export default function ArbetskläderRequestWorkwear() {
       return;
     }
 
+    const customerName = `${formData.recipient_first_name} ${formData.recipient_last_name}`.trim();
+    
     const submitData = {
-      ...formData,
+      customer_id: user?.id || '',
+      customer_name: customerName,
+      requested_items: formData.requested_items,
       request_date: new Date().toISOString(),
       requested_by_email: user?.email || '',
       requested_by_name: user?.full_name || '',
+      notes: formData.notes,
       status: 'pending',
     };
 
