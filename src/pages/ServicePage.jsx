@@ -37,7 +37,7 @@ const SERVICE_TYPE_COLORS = {
 };
 
 // ─── Add Service Dialog ──────────────────────────────────────────────────────
-function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
+function AddServiceDialog({ open, onClose, tool, prefillTemplate, suppliers = [] }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     service_type: 'maintenance',
@@ -389,6 +389,7 @@ function ToolServiceHistory({ tool, onBack }) {
         onClose={() => { setAddOpen(false); setSelectedTemplate(null); }}
         tool={tool}
         prefillTemplate={selectedTemplate}
+        suppliers={suppliers}
       />
     </div>
   );
