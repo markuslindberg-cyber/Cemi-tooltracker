@@ -143,7 +143,13 @@ export default function SearchFilterBar({
                   <button
                     onClick={() => {
                       onStatusChange([]);
-                      onClearFilters();
+                      onCategoryChange('all');
+                      onSubcategoryChange('all');
+                      onManufacturerChange('all');
+                      onConditionChange('all');
+                      onLocationChange('all');
+                      onAssignedToChange('all');
+                      setOpen(false);
                     }}
                     className="text-xs text-[#8B1E1E] hover:underline flex items-center gap-1"
                   >
