@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Html5QrcodeScanner } from 'html5-qrcode';
@@ -298,6 +298,8 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const [manualCounts, setManualCounts] = useState(sessionConfig._resumedManualCounts || {});
   const [tempStatus, setTempStatus] = useState('');
   const [tempCondition, setTempCondition] = useState('');
+  const [lastScanFeedback, setLastScanFeedback] = useState(null); // { name, found }
+  const externalScanInputRef = useRef(null);
 
   const { data: tools = [] } = useQuery({ queryKey: ['tools'], queryFn: () => base44.entities.Tool.list('-updated_date', 500) });
   const { data: handTools = [] } = useQuery({ queryKey: ['handtools'], queryFn: () => base44.entities.HandTool.list('-updated_date', 500) });
@@ -361,7 +363,15 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     return () => { scanner.clear().catch(() => {}); };
   }, [scannerActive, scopedItems]);
 
-  const handleScan = (barcode) => {
+  // Keep external scanner input always focused (unless dialog is open or camera is active)
+  useEffect(() => {
+    if (!showManualDialog && !scannerActive && !scannedItem) {
+      const timeout = setTimeout(() => externalScanInputRef.current?.focus(), 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [showManualDialog, scannerActive, scannedItem]);
+
+  const handleScan = useCallback((barcode) => {
     // Search only within scoped items (or all in open mode)
     let searchList = scopedItems;
     if (sessionConfig.mode === 'open') {
@@ -382,11 +392,12 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         setTempStatus(item.status || '');
         setTempCondition(item.condition || '');
         setCheckedItems(prev => new Set([...prev, item.id]));
+        setLastScanFeedback({ name: item.name || item.benamning, found: true });
       }
     } else {
-      alert(`Inget föremål hittades med streckkod: ${barcode}`);
+      setLastScanFeedback({ name: barcode, found: false });
     }
-  };
+  }, [scopedItems, tools, handTools, arbetskläderData, lokalvardsData, sessionConfig.mode]);
 
   const handleManualSearch = (barcode) => {
     handleScan(barcode);
@@ -405,6 +416,8 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     updates.last_seen_date = new Date().toISOString();
     await updateToolMutation.mutateAsync({ id: scannedItem.id, data: updates, type: scannedItem._type });
     setScannedItem(null);
+    setLastScanFeedback(null);
+    setTimeout(() => externalScanInputRef.current?.focus(), 100);
   };
 
   const handlePause = async () => {
@@ -475,34 +488,72 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         {/* Scanner */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <h2 className="text-lg font-semibold mb-4">Skanna streckkod</h2>
-          {!scannerActive ? (
+
+          {/* External scanner input — always visible, always focused */}
+          {!scannerActive && (
             <div className="space-y-4">
-              <Button onClick={() => setScannerActive(true)} className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-14" size="lg">
-                <Camera className="w-5 h-5 mr-2" />Starta kameraskanner
-              </Button>
+              <div className="space-y-2">
+                <Label className="text-sm text-gray-600 flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  Extern skanner / tangentbord — skanna produkt efter produkt
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    ref={externalScanInputRef}
+                    placeholder="Håll här fokus och skanna med extern skanner..."
+                    value={manualBarcode}
+                    onChange={e => setManualBarcode(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && manualBarcode.trim()) {
+                        handleScan(manualBarcode.trim());
+                        setManualBarcode('');
+                      }
+                    }}
+                    className="flex-1 border-2 border-green-300 focus:border-green-500 bg-green-50/30"
+                    autoFocus
+                    autoComplete="off"
+                  />
+                  <Button
+                    onClick={() => { if (manualBarcode.trim()) { handleScan(manualBarcode.trim()); setManualBarcode(''); } }}
+                    disabled={!manualBarcode.trim()}
+                  >
+                    <Search className="w-4 h-4" />
+                  </Button>
+                </div>
+                {lastScanFeedback && (
+                  <div className={cn(
+                    "flex items-center gap-2 p-3 rounded-lg text-sm font-medium",
+                    lastScanFeedback.found
+                      ? "bg-green-50 border border-green-200 text-green-800"
+                      : "bg-red-50 border border-red-200 text-red-800"
+                  )}>
+                    {lastScanFeedback.found
+                      ? <><CheckCircle2 className="w-4 h-4" /> Hittad: {lastScanFeedback.name}</>
+                      : <><AlertCircle className="w-4 h-4" /> Ingen artikel hittad för: {lastScanFeedback.name}</>}
+                  </div>
+                )}
+              </div>
+
               <div className="relative">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-                <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER</span></div>
+                <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER ANVÄND KAMERA</span></div>
               </div>
+
               <div className="flex gap-2">
-                <Input
-                  placeholder="Ange streckkod manuellt"
-                  value={manualBarcode}
-                  onChange={e => setManualBarcode(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && manualBarcode) { handleManualSearch(manualBarcode); setManualBarcode(''); } }}
-                />
-                <Button onClick={() => { handleManualSearch(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode}>
-                  <Search className="w-4 h-4" />
+                <Button onClick={() => setScannerActive(true)} variant="outline" className="flex-1">
+                  <Camera className="w-5 h-5 mr-2" />Kameraskanner
+                </Button>
+                <Button variant="outline" onClick={() => { setManualDialogPreselected(null); setShowManualDialog(true); }} className="flex-1">
+                  <Plus className="w-4 h-4 mr-2" />Manuell sökning
                 </Button>
               </div>
-              <Button variant="outline" onClick={() => { setManualDialogPreselected(null); setShowManualDialog(true); }} className="w-full">
-                <Plus className="w-4 h-4 mr-2" />Manuell inmatning
-              </Button>
             </div>
-          ) : (
+          )}
+
+          {scannerActive && (
             <div className="space-y-4">
               <div id="barcode-scanner" className="rounded-xl overflow-hidden" />
-              <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt skanning</Button>
+              <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt kameraskanning</Button>
             </div>
           )}
         </div>
@@ -589,7 +640,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
               </div>
             </div>
             <div className="flex gap-3 pt-2">
-              <Button onClick={() => setScannedItem(null)} variant="outline" className="flex-1">Avbryt</Button>
+              <Button onClick={() => { setScannedItem(null); setLastScanFeedback(null); setTimeout(() => externalScanInputRef.current?.focus(), 100); }} variant="outline" className="flex-1">Avbryt</Button>
               <Button onClick={handleConfirm} className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]" disabled={updateToolMutation.isPending}>
                 {updateToolMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta</>}
               </Button>
