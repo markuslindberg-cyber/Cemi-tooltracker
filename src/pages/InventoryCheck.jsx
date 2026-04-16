@@ -207,17 +207,20 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
     else if (preselectedItem) { setFoundItem(preselectedItem); setQuery(preselectedItem.name || preselectedItem.benamning || ''); }
   }, [isOpen, preselectedItem]);
 
+  const searchItem = (trimmed) => {
+    // Same search logic as main scanner: barcode → artikelnummer → name
+    let item = scopedItems.find(i => (i.barcode || i.streckkod) === trimmed);
+    if (!item) item = scopedItems.find(i => i.artikelnummer === trimmed);
+    if (!item) item = scopedItems.find(i => (i.name || i.benamning || '').toLowerCase().includes(trimmed.toLowerCase()));
+    return item || null;
+  };
+
   const handleSearch = () => {
     setError('');
     setFoundItem(null);
     const trimmed = query.trim();
     if (!trimmed) { setError('Ange streckkod eller namn.'); return; }
-    let item = scopedItems.find(i =>
-      (i.barcode || i.streckkod) === trimmed || (i.artikelnummer) === trimmed
-    );
-    if (!item) {
-      item = scopedItems.find(i => (i.name || i.benamning || '').toLowerCase().includes(trimmed.toLowerCase()));
-    }
+    const item = searchItem(trimmed);
     if (!item) { setError(`Artikel '${trimmed}' hittades inte.`); return; }
     setFoundItem(item);
   };
@@ -299,6 +302,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const [tempStatus, setTempStatus] = useState('');
   const [tempCondition, setTempCondition] = useState('');
   const [lastScanFeedback, setLastScanFeedback] = useState(null); // { name, found }
+  const [scanLog, setScanLog] = useState([]); // [{ id, name, type, timestamp, manualCount? }]
   const externalScanInputRef = useRef(null);
 
   const { data: tools = [] } = useQuery({ queryKey: ['tools'], queryFn: () => base44.entities.Tool.list('-updated_date', 500) });
@@ -393,6 +397,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         setTempCondition(item.condition || '');
         setCheckedItems(prev => new Set([...prev, item.id]));
         setLastScanFeedback({ name: item.name || item.benamning, found: true });
+        setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date() }, ...prev]);
       }
     } else {
       setLastScanFeedback({ name: barcode, found: false });
@@ -406,6 +411,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const handleManualCountConfirm = (item, antal) => {
     setManualCounts(prev => ({ ...prev, [item.id]: antal }));
     setCheckedItems(prev => new Set([...prev, item.id]));
+    setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date(), manualCount: antal }, ...prev]);
   };
 
   const handleConfirm = async () => {
@@ -644,6 +650,33 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
               <Button onClick={handleConfirm} className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]" disabled={updateToolMutation.isPending}>
                 {updateToolMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta</>}
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Scan log */}
+        {scanLog.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+              Skannade produkter ({scanLog.length})
+            </h2>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {scanLog.map((entry, idx) => (
+                <div key={`${entry.id}-${idx}`} className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-gray-900 text-sm">{entry.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}
+                        {entry.manualCount !== undefined && ` · Antal: ${entry.manualCount}`}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-gray-400">{entry.timestamp.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
