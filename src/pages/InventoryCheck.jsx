@@ -66,7 +66,23 @@ function exportToExcel(sessionConfig, checkedItems, allItems) {
 function SetupStep({ onStart }) {
   const [mode, setMode] = useState(''); // 'location' | 'open'
   const [locationId, setLocationId] = useState('');
-  const [toolType, setToolType] = useState('all'); // 'tools' | 'handtools' | 'arbetskläder' | 'lokalvards' | 'all'
+  const [selectedTypes, setSelectedTypes] = useState(['all']); // array of selected types
+
+  const toggleType = (value) => {
+    if (value === 'all') {
+      setSelectedTypes(['all']);
+      return;
+    }
+    setSelectedTypes(prev => {
+      const withoutAll = prev.filter(t => t !== 'all');
+      if (withoutAll.includes(value)) {
+        const next = withoutAll.filter(t => t !== value);
+        return next.length === 0 ? ['all'] : next;
+      } else {
+        return [...withoutAll, value];
+      }
+    });
+  };
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
@@ -75,6 +91,8 @@ function SetupStep({ onStart }) {
 
   const canStart = mode === 'open' || (mode === 'location' && locationId);
   const selectedLocation = locations.find(l => l.id === locationId);
+  // Derive toolType string for backwards compat (used in config)
+  const toolType = selectedTypes.includes('all') ? 'all' : selectedTypes.join(',');
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
@@ -132,7 +150,7 @@ function SetupStep({ onStart }) {
             </div>
 
             <div className="space-y-2">
-              <Label>Vad ska inventeras?</Label>
+              <Label>Vad ska inventeras? <span className="text-xs text-gray-400">(välj en eller flera)</span></Label>
               <div className="grid grid-cols-5 gap-2">
                 {[
                   { value: 'tools', label: 'Maskiner' },
@@ -143,10 +161,10 @@ function SetupStep({ onStart }) {
                 ].map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => setToolType(opt.value)}
+                    onClick={() => toggleType(opt.value)}
                     className={cn(
                       "py-2 px-3 rounded-xl border text-sm font-medium transition-all",
-                      toolType === opt.value
+                      selectedTypes.includes(opt.value)
                         ? "border-[#8B1E1E] bg-[#8B1E1E] text-white"
                         : "border-gray-200 text-gray-700 hover:border-gray-300"
                     )}
@@ -162,7 +180,7 @@ function SetupStep({ onStart }) {
         {mode === 'open' && (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
             <div className="space-y-2">
-              <Label>Vad ska inventeras?</Label>
+              <Label>Vad ska inventeras? <span className="text-xs text-gray-400">(välj en eller flera)</span></Label>
               <div className="grid grid-cols-5 gap-2">
                 {[
                   { value: 'tools', label: 'Maskiner' },
@@ -173,10 +191,10 @@ function SetupStep({ onStart }) {
                 ].map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => setToolType(opt.value)}
+                    onClick={() => toggleType(opt.value)}
                     className={cn(
                       "py-2 px-3 rounded-xl border text-sm font-medium transition-all",
-                      toolType === opt.value
+                      selectedTypes.includes(opt.value)
                         ? "border-[#8B1E1E] bg-[#8B1E1E] text-white"
                         : "border-gray-200 text-gray-700 hover:border-gray-300"
                     )}
@@ -252,24 +270,28 @@ function ActiveInventory({ sessionConfig, onEnd }) {
   // Build scoped item list
   const scopedItems = useMemo(() => {
     const { mode, locationId, toolType } = sessionConfig;
+    // toolType may be 'all', a single type, or comma-separated types
+    const types = toolType === 'all' ? ['tools', 'handtools', 'arbetskläder', 'lokalvards'] : toolType.split(',');
+    const include = (t) => types.includes(t);
+
     let toolList = [];
     let handToolList = [];
     let arbetskläderList = [];
     let lokalvardsList = [];
 
-    if (toolType !== 'handtools' && toolType !== 'arbetskläder' && toolType !== 'lokalvards') {
+    if (include('tools')) {
       toolList = tools.map(t => ({ ...t, _type: 'tool' }));
       if (mode === 'location') toolList = toolList.filter(t => t.location_id === locationId);
     }
-    if (toolType !== 'tools' && toolType !== 'arbetskläder' && toolType !== 'lokalvards') {
+    if (include('handtools')) {
       handToolList = handTools.map(t => ({ ...t, _type: 'handtool' }));
       if (mode === 'location') handToolList = handToolList.filter(t => t.location_id === locationId);
     }
-    if (toolType !== 'tools' && toolType !== 'handtools' && toolType !== 'lokalvards') {
+    if (include('arbetskläder')) {
       arbetskläderList = arbetskläderData.map(a => ({ ...a, _type: 'arbetskläder' }));
       if (mode === 'location') arbetskläderList = arbetskläderList.filter(a => a.location_id === locationId);
     }
-    if (toolType !== 'tools' && toolType !== 'handtools' && toolType !== 'arbetskläder') {
+    if (include('lokalvards')) {
       lokalvardsList = lokalvardsData.map(l => ({ ...l, _type: 'lokalvards', name: l.benamning, image_url: null }));
     }
 
