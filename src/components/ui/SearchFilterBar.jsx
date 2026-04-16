@@ -82,7 +82,7 @@ export default function SearchFilterBar({
   const ref = useRef(null);
 
   const activeCount = [
-    statusFilter !== 'all' ? 1 : 0,
+    Array.isArray(statusFilter) ? (statusFilter.length > 0 ? 1 : 0) : (statusFilter !== 'all' ? 1 : 0),
     categoryFilter !== 'all' ? 1 : 0,
     subcategoryFilter !== 'all' ? 1 : 0,
     manufacturerFilter !== 'all' ? 1 : 0,
@@ -149,10 +149,24 @@ export default function SearchFilterBar({
                 )}
               </div>
 
-              <FilterSection title="Status" defaultOpen={statusFilter !== 'all'}>
-                <FilterOption label="Alla" selected={statusFilter === 'all'} onClick={() => onStatusChange('all')} />
+              <FilterSection title="Status" defaultOpen={Array.isArray(statusFilter) && statusFilter.length > 0}>
+                <FilterOption label="Alla" selected={Array.isArray(statusFilter) ? statusFilter.length === 0 : statusFilter === 'all'} onClick={() => onStatusChange([])} />
                 {statusOptions.map(opt => (
-                  <FilterOption key={opt.value} label={opt.label} selected={statusFilter === opt.value} onClick={() => onStatusChange(opt.value)} />
+                  <FilterOption 
+                    key={opt.value} 
+                    label={opt.label} 
+                    selected={Array.isArray(statusFilter) ? statusFilter.includes(opt.value) : statusFilter === opt.value} 
+                    onClick={() => {
+                      if (Array.isArray(statusFilter)) {
+                        const newFilter = statusFilter.includes(opt.value)
+                          ? statusFilter.filter(v => v !== opt.value)
+                          : [...statusFilter, opt.value];
+                        onStatusChange(newFilter);
+                      } else {
+                        onStatusChange([opt.value]);
+                      }
+                    }} 
+                  />
                 ))}
               </FilterSection>
 
