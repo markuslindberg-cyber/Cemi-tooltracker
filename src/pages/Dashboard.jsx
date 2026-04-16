@@ -148,11 +148,10 @@ export default function Dashboard() {
             <Button
               onClick={() => setShowAddTool(true)}
               size="sm"
-              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 sm:flex-none"
             >
-              <Plus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 sm:mr-1" />
               <span className="hidden sm:inline">Lägg till verktyg</span>
-              <span className="sm:hidden">Lägg till</span>
             </Button>
           </div>
         </div>
