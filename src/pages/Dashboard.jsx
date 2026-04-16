@@ -75,7 +75,7 @@ export default function Dashboard() {
   const retiredTools = tools.filter(t => t.status === 'retired').length;
 
   // Only count active tools in inventory value
-  const activeTools = tools.filter(t => !['såld', 'retired', 'missing'].includes(t.status));
+  const activeTools = tools.filter(t => !['såld', 'retired', 'missing', 'i_lager'].includes(t.status));
   const activeHandTools = handTools.filter(t => !['saknas', 'kasserad'].includes(t.status));
   const totalValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const handToolsValue = activeHandTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
