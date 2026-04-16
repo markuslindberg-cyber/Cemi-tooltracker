@@ -36,23 +36,82 @@ function exportReport(report) {
   document.body.removeChild(link);
 }
 
+function CategorySection({ title, items, bgColor, textColor, icon }) {
+  const [open, setOpen] = useState(false);
+
+  const byCategory = {};
+  items.forEach(item => {
+    const cat = item.category || 'Övrigt';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(item);
+  });
+  const categories = Object.keys(byCategory).sort();
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between text-sm font-semibold px-1 py-1"
+      >
+        <span className={`flex items-center gap-2 ${textColor}`}>
+          {icon} {title} ({items.length})
+        </span>
+        {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+      </button>
+
+      {open && (
+        <div className="space-y-3 pl-1">
+          {categories.map(cat => (
+            <CategoryGroup key={cat} category={cat} items={byCategory[cat]} bgColor={bgColor} textColor={textColor} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CategoryGroup({ category, items, bgColor, textColor }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-gray-100 overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 transition-colors text-sm"
+      >
+        <span className="font-medium text-gray-800">{category}</span>
+        <span className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">{items.length} st</span>
+          {open ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+        </span>
+      </button>
+      {open && (
+        <div className="divide-y divide-gray-50">
+          {items.map((item, i) => (
+            <div key={i} className={`flex items-center justify-between text-sm py-2 px-4 ${bgColor}`}>
+              <span className="font-medium text-gray-900">{item.name}</span>
+              <div className="flex items-center gap-2">
+                {item.location_name && <span className="text-xs text-gray-500">{item.location_name}</span>}
+                <Badge variant="outline" className="text-xs">
+                  {item.type === 'handtool' ? 'Handredskap' : item.type === 'arbetskläder' ? 'Arbetskläder' : item.type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}
+                </Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ReportCard({ report }) {
-   const [expanded, setExpanded] = useState(false);
-   const unchecked = report.unchecked_list || [];
-   const checked = report.checked_list || [];
-   const pct = report.total_items > 0 ? Math.round((report.checked_items / report.total_items) * 100) : 0;
-   const typeLabel = report.tool_type === 'tools' ? 'Maskiner' : report.tool_type === 'handtools' ? 'Handredskap' : report.tool_type === 'arbetskläder' ? 'Arbetskläder' : report.tool_type === 'lokalvards' ? 'Lokalvård' : 'Maskiner & Handredskap';
+  const [expanded, setExpanded] = useState(false);
+  const unchecked = report.unchecked_list || [];
+  const checked = report.checked_list || [];
+  const pct = report.total_items > 0 ? Math.round((report.checked_items / report.total_items) * 100) : 0;
+  const typeLabel = report.tool_type === 'tools' ? 'Maskiner' : report.tool_type === 'handtools' ? 'Handredskap' : report.tool_type === 'arbetskläder' ? 'Arbetskläder' : report.tool_type === 'lokalvards' ? 'Lokalvård' : 'Maskiner & Handredskap';
 
-   // Group unchecked items by category
-   const uncheckedByCategory = {};
-   unchecked.forEach(item => {
-     const cat = item.category || 'Övrigt';
-     if (!uncheckedByCategory[cat]) uncheckedByCategory[cat] = [];
-     uncheckedByCategory[cat].push(item);
-   });
-   const sortedCategories = Object.keys(uncheckedByCategory).sort();
-
-   return (
+  return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">
@@ -98,51 +157,24 @@ function ReportCard({ report }) {
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100">
+        <div className="border-t border-gray-100 p-5 space-y-4">
           {unchecked.length > 0 && (
-            <div className="p-5 border-b border-gray-100">
-              <h4 className="text-sm font-semibold text-amber-700 flex items-center gap-2 mb-3">
-                <AlertTriangle className="w-4 h-4" /> Ej kontrollerade ({unchecked.length})
-              </h4>
-              <div className="space-y-4">
-                {sortedCategories.map(category => (
-                  <div key={category}>
-                    <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
-                      {category} ({uncheckedByCategory[category].length})
-                    </div>
-                    <div className="space-y-2">
-                      {uncheckedByCategory[category].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm py-1.5 px-3 bg-amber-50 rounded-lg">
-                          <span className="font-medium text-gray-900">{item.name}</span>
-                          <div className="flex items-center gap-2">
-                            {item.location_name && <span className="text-xs text-gray-500">{item.location_name}</span>}
-                            <Badge variant="outline" className="text-xs">{item.type === 'handtool' ? 'Handredskap' : item.type === 'arbetskläder' ? 'Arbetskläder' : item.type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}</Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <CategorySection
+              title="Ej kontrollerade"
+              items={unchecked}
+              bgColor="bg-amber-50"
+              textColor="text-amber-700"
+              icon={<AlertTriangle className="w-4 h-4" />}
+            />
           )}
           {checked.length > 0 && (
-            <div className="p-5">
-              <h4 className="text-sm font-semibold text-green-700 flex items-center gap-2 mb-3">
-                <CheckCircle2 className="w-4 h-4" /> Kontrollerade ({checked.length})
-              </h4>
-              <div className="space-y-2">
-                {checked.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm py-1.5 px-3 bg-green-50 rounded-lg">
-                    <span className="font-medium text-gray-900">{item.name}</span>
-                    <div className="flex items-center gap-2">
-                      {item.location_name && <span className="text-xs text-gray-500">{item.location_name}</span>}
-                      <Badge variant="outline" className="text-xs">{item.type === 'handtool' ? 'Handredskap' : 'Maskin'}</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <CategorySection
+              title="Kontrollerade"
+              items={checked}
+              bgColor="bg-green-50"
+              textColor="text-green-700"
+              icon={<CheckCircle2 className="w-4 h-4" />}
+            />
           )}
         </div>
       )}
