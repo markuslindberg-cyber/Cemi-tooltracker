@@ -7,6 +7,7 @@ import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import ToolScanModal from '@/components/modals/ToolScanModal';
 import BulkMoveModal from '@/components/modals/BulkMoveModal';
+import ToolLogTab from '@/components/ToolLogTab';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -114,6 +115,7 @@ export default function Inventory() {
   const [showScanModal, setShowScanModal] = useState(false);
   const [selectedTools, setSelectedTools] = useState(new Set());
   const [showBulkMove, setShowBulkMove] = useState(false);
+  const [toolHistory, setToolHistory] = useState(null);
 
   const toggleSelectTool = (id) => {
     setSelectedTools(prev => {
@@ -652,6 +654,7 @@ export default function Inventory() {
                     onTransfer={setTransferTool}
                     onEdit={setEditTool}
                     onStatusChange={handleStatusChange}
+                    onViewHistory={setToolHistory}
                   />
                 </div>
               );
@@ -852,6 +855,26 @@ export default function Inventory() {
         teamMembers={teamMembers}
         onSubmit={handleSaveTool}
       />
+
+      {/* History Modal */}
+      {toolHistory && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">{toolHistory.name} - Ändringshistorik</h2>
+              <button
+                onClick={() => setToolHistory(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <ToolLogTab toolId={toolHistory.id} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
