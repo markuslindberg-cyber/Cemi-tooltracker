@@ -196,7 +196,7 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
 }
 
 // ─── Manual count dialog ─────────────────────────────────────────────────────────
-function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm }) {
+function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselectedItem }) {
   const [query, setQuery] = useState('');
   const [antal, setAntal] = useState('1');
   const [foundItem, setFoundItem] = useState(null);
@@ -204,7 +204,8 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm }) {
 
   useEffect(() => {
     if (!isOpen) { setQuery(''); setAntal('1'); setFoundItem(null); setError(''); }
-  }, [isOpen]);
+    else if (preselectedItem) { setFoundItem(preselectedItem); setQuery(preselectedItem.name || preselectedItem.benamning || ''); }
+  }, [isOpen, preselectedItem]);
 
   const handleSearch = () => {
     setError('');
@@ -291,6 +292,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const [scannerActive, setScannerActive] = useState(false);
   const [scannedItem, setScannedItem] = useState(null);
   const [showManualDialog, setShowManualDialog] = useState(false);
+  const [manualDialogPreselected, setManualDialogPreselected] = useState(null);
   const [manualBarcode, setManualBarcode] = useState('');
   const [checkedItems, setCheckedItems] = useState(new Set(sessionConfig._resumedChecked || []));
   const [manualCounts, setManualCounts] = useState(sessionConfig._resumedManualCounts || {});
@@ -373,6 +375,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     const item = searchList.find(t => (t.barcode || t.streckkod) === barcode);
     if (item) {
       if (usesManualCount(item)) {
+        setManualDialogPreselected(item);
         setShowManualDialog(true);
       } else {
         setScannedItem(item);
@@ -492,7 +495,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                   <Search className="w-4 h-4" />
                 </Button>
               </div>
-              <Button variant="outline" onClick={() => setShowManualDialog(true)} className="w-full">
+              <Button variant="outline" onClick={() => { setManualDialogPreselected(null); setShowManualDialog(true); }} className="w-full">
                 <Plus className="w-4 h-4 mr-2" />Manuell inmatning
               </Button>
             </div>
@@ -506,9 +509,10 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
         <ManualCountDialog
           isOpen={showManualDialog}
-          onClose={() => setShowManualDialog(false)}
+          onClose={() => { setShowManualDialog(false); setManualDialogPreselected(null); }}
           scopedItems={scopedItems}
           onConfirm={handleManualCountConfirm}
+          preselectedItem={manualDialogPreselected}
         />
 
         {/* Scanned item confirm */}
