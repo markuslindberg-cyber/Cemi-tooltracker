@@ -88,7 +88,6 @@ export default function Inventory() {
   const [manufacturerFilter, setManufacturerFilter] = useState('all');
   const [conditionFilter, setConditionFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
-  const [assignedToFilter, setAssignedToFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
@@ -190,11 +189,9 @@ export default function Inventory() {
       const matchesManufacturer = manufacturerFilter === 'all' || item.manufacturer === manufacturerFilter;
       const matchesCondition = conditionFilter === 'all' || item.condition === conditionFilter;
       const matchesLocation = locationFilter === 'all' || item.location_name === locationFilter;
-      const matchesAssignedTo = assignedToFilter === 'all' || 
-        (assignedToFilter === 'unassigned' ? !item.assigned_to_name : item.assigned_to_name === assignedToFilter);
       
       return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory && 
-             matchesManufacturer && matchesCondition && matchesLocation && matchesAssignedTo;
+             matchesManufacturer && matchesCondition && matchesLocation;
     });
 
     // Sort the filtered items
@@ -217,7 +214,7 @@ export default function Inventory() {
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, assignedToFilter, sortBy, sortDir]);
+  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, sortBy, sortDir]);
 
   const availableCategories = useMemo(() => {
     return [...new Set(allItems.map(t => t.category).filter(Boolean))].sort();
@@ -238,10 +235,6 @@ export default function Inventory() {
 
   const availableLocations = useMemo(() => {
     return [...new Set(allItems.map(t => t.location_name).filter(Boolean))].sort();
-  }, [allItems]);
-
-  const availableAssignedTo = useMemo(() => {
-    return [...new Set(allItems.map(t => t.assigned_to_name).filter(Boolean))].sort();
   }, [allItems]);
 
   const handleTransfer = async (transferData) => {
@@ -300,7 +293,6 @@ export default function Inventory() {
     setManufacturerFilter('all');
     setConditionFilter('all');
     setLocationFilter('all');
-    setAssignedToFilter('all');
   };
 
   const handleDownloadTemplate = () => {
@@ -467,7 +459,7 @@ export default function Inventory() {
             <h1 className="text-3xl font-bold text-gray-900">Maskiner</h1>
             <p className="text-gray-500 mt-1">
               {filteredTools.length} verktyg
-              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || assignedToFilter !== 'all' || searchQuery) && ' matchar filter'}
+              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || searchQuery) && ' matchar filter'}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 md:gap-2">
@@ -575,8 +567,6 @@ export default function Inventory() {
             onConditionChange={setConditionFilter}
             locationFilter={locationFilter}
             onLocationChange={setLocationFilter}
-            assignedToFilter={assignedToFilter}
-            onAssignedToChange={setAssignedToFilter}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             onClearFilters={clearFilters}
@@ -584,7 +574,6 @@ export default function Inventory() {
             availableSubcategories={availableSubcategories}
             availableManufacturers={availableManufacturers}
             availableLocations={availableLocations}
-            availableAssignedTo={availableAssignedTo}
             sortBy={sortBy}
             onSortByChange={setSortBy}
             statusOptions={[
