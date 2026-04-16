@@ -72,8 +72,11 @@ export default function Dashboard() {
   const maintenanceTools = tools.filter(t => t.status === 'maintenance').length;
 
   const soldTools = tools.filter(t => t.status === 'såld').length;
+  const retiredTools = tools.filter(t => t.status === 'retired').length;
 
-  const totalValue = tools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  // Only count active tools in inventory value
+  const activeTools = tools.filter(t => !['såld', 'retired', 'missing'].includes(t.status));
+  const totalValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const handToolsValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
 
   const handleTransfer = async (transferData) => {
