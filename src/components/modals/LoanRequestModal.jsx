@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -14,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function LoanRequestModal({ isOpen, onClose }) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedTools, setSelectedTools] = useState([]);
   const [defaultReturnDate, setDefaultReturnDate] = useState('');
@@ -109,6 +111,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
       setItemType('tools');
       setItemQuantities({});
       onClose();
+      navigate('/Transfers');
     }
   });
 
@@ -155,7 +158,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Skicka förfrågan om lån</DialogTitle>
         </DialogHeader>
