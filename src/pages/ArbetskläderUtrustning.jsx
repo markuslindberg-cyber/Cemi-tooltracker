@@ -227,7 +227,7 @@ export default function ArbetskläderUtrustning() {
             <Button
               onClick={handleDownloadTemplate}
               variant="outline"
-              className="gap-2"
+              className="hidden lg:flex gap-2"
             >
               <Download className="w-4 h-4" />
               Ladda ner mall
@@ -236,7 +236,7 @@ export default function ArbetskläderUtrustning() {
               onClick={handleImportClick}
               disabled={uploading}
               variant="outline"
-              className="gap-2"
+              className="hidden lg:flex gap-2"
             >
               {uploading ? (
                 <>
