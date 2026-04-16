@@ -165,6 +165,11 @@ export default function ToolFormModal({
       const parentTool = allTools.find(t => t.id === value);
       setFormData(prev => ({ ...prev, [field]: value, parent_tool_name: parentTool?.name || '' }));
     }
+    // Auto-fill main machine name when main_machine_id changes
+    if (field === 'main_machine_id') {
+      const maskin = huvudmaskiner.find(m => m.id === value);
+      setFormData(prev => ({ ...prev, [field]: value, main_machine_name: maskin?.name || '' }));
+    }
   };
 
   const handleImageUpload = async (e) => {
