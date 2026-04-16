@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Edit2, Trash2, ChevronDown } from 'lucide-react';
@@ -53,6 +54,13 @@ export default function Huvudmaskiner() {
     queryKey: ['tools'],
     queryFn: () => base44.entities.Tool.list(),
   });
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: () => base44.entities.TeamMember.list(),
+  });
+
+  const navigate = useNavigate();
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Huvudmaskin.create(data),
@@ -304,6 +312,11 @@ export default function Huvudmaskiner() {
                           Plats: {maskin.location_name}
                         </p>
                       )}
+                      {tools.find(t => t.main_machine_id === maskin.id)?.assigned_to_name && (
+                        <p className="text-sm text-gray-500">
+                          Ansvarig: {tools.find(t => t.main_machine_id === maskin.id)?.assigned_to_name}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -353,7 +366,13 @@ export default function Huvudmaskiner() {
                       <ul className="space-y-1">
                         {compatibleTools.map((tool) => (
                           <li key={tool.id} className="text-sm text-gray-700">
-                            • {tool.name}
+                            •{' '}
+                            <button
+                              onClick={() => navigate(`/Inventory`)}
+                              className="text-blue-600 hover:text-blue-800 underline"
+                            >
+                              {tool.name}
+                            </button>
                             {tool.subcategory && ` - ${tool.subcategory}`}
                           </li>
                         ))}
