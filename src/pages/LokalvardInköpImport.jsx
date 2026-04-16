@@ -168,7 +168,7 @@ export default function LokalvardInköpImport() {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-         <div className="flex gap-3">
+         <div className="hidden lg:flex gap-3">
            <Button onClick={handleDownloadTemplate} className="bg-purple-600 hover:bg-purple-700">
              <FileDown className="w-4 h-4 mr-2" /> Ladda ned mall
            </Button>

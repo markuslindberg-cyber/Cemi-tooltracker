@@ -57,7 +57,7 @@ const navigation = [
     icon: SprayCan,
     children: [
       { name: 'Lager', path: '/Lokalvard/Lager' },
-      { name: 'Importera inköp', path: '/Lokalvard/InköpImport' },
+      { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true },
       { name: 'Uttag', path: '/Lokalvard/Uttag' },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
@@ -175,13 +175,14 @@ export default function Layout({ children }) {
                     </button>
                     {isOpen && (
                       <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
-                        {item.children.map((child) => (
+                        {item.children.filter(child => !child.desktopOnly || window.innerWidth >= 1024).map((child) => (
                           <Link
                             key={child.name}
                             to={child.path}
                             onClick={() => setSidebarOpen(false)}
                             className={cn(
                               "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                              child.desktopOnly ? "hidden lg:flex" : "",
                               location.pathname === child.path
                                 ? "text-[#8B1E1E] bg-[#8B1E1E]/10"
                                 : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
