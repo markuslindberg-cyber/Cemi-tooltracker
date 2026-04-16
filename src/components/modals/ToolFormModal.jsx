@@ -781,7 +781,9 @@ export default function ToolFormModal({
                           role="combobox"
                           className="w-full justify-between"
                         >
-                          {formData.compatible_with_main_machine_names?.length ? `${formData.compatible_with_main_machine_names.length} vald(a)` : "Välj huvudmaskiner..."}
+                          {(formData.compatible_with_main_machine_ids || []).length > 0
+                            ? (formData.compatible_with_main_machine_ids || []).map(id => huvudmaskiner.find(m => m.id === id)?.name).filter(Boolean).join(", ")
+                            : "Välj huvudmaskiner..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
