@@ -51,6 +51,7 @@ const navigation = [
       { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning' },
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
       { name: 'Begäran om uttag', path: '/ArbetskläderRequestWorkwear' },
+      { name: 'Förfrågan', path: '/Arbetsklader/Forfragan' },
     ]
   },
   {

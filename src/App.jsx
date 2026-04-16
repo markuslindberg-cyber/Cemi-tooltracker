@@ -29,6 +29,7 @@ import ServicePage from './pages/ServicePage';
 import ServiceMallar from './pages/ServiceMallar';
 import Huvudmaskiner from './pages/Huvudmaskiner';
 import LoanRequests from './pages/LoanRequests';
+import ArbetskladerBegaranAttGodkanna from './pages/ArbetskladerBegaranAttGodkanna';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -104,6 +105,7 @@ const AuthenticatedApp = () => {
       <Route path="/ServiceMallar" element={<LayoutWrapper currentPageName="ServiceMallar"><ServiceMallar /></LayoutWrapper>} />
       <Route path="/Huvudmaskiner" element={<LayoutWrapper currentPageName="Huvudmaskiner"><Huvudmaskiner /></LayoutWrapper>} />
       <Route path="/Transfers" element={<LayoutWrapper currentPageName="LoanRequests"><LoanRequests /></LayoutWrapper>} />
+      <Route path="/Arbetsklader/Forfragan" element={<LayoutWrapper currentPageName="ArbetskladerForfragan"><ArbetskladerBegaranAttGodkanna /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
