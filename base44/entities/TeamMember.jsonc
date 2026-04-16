@@ -30,6 +30,20 @@
     "default_location_name": {
       "type": "string"
     },
+    "location_ids": {
+      "type": "array",
+      "description": "IDs of locations where this team member works",
+      "items": {
+        "type": "string"
+      }
+    },
+    "location_names": {
+      "type": "array",
+      "description": "Names of locations where this team member works",
+      "items": {
+        "type": "string"
+      }
+    },
     "is_active": {
       "type": "boolean",
       "default": true

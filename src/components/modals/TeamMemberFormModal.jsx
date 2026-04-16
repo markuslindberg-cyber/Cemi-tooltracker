@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -17,7 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Loader2, ChevronsUpDown, Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const defaultMember = {
   name: '',
@@ -26,6 +30,8 @@ const defaultMember = {
   role: 'admin lokalvård',
   default_location_id: '',
   default_location_name: '',
+  location_ids: [],
+  location_names: [],
   is_active: true,
 };
 
@@ -54,6 +60,28 @@ export default function TeamMemberFormModal({
       const location = locations?.find(l => l.id === value);
       setFormData(prev => ({ ...prev, [field]: value, default_location_name: location?.name || '' }));
     }
+  };
+
+  const handleAddLocation = (locationId) => {
+    const location = locations?.find(l => l.id === locationId);
+    if (!location || formData.location_ids.includes(locationId)) return;
+    
+    setFormData(prev => ({
+      ...prev,
+      location_ids: [...prev.location_ids, locationId],
+      location_names: [...prev.location_names, location.name]
+    }));
+  };
+
+  const handleRemoveLocation = (locationId) => {
+    setFormData(prev => {
+      const idx = prev.location_ids.indexOf(locationId);
+      return {
+        ...prev,
+        location_ids: prev.location_ids.filter(id => id !== locationId),
+        location_names: prev.location_names.filter((_, i) => i !== idx)
+      };
+    });
   };
 
   const handleSubmit = () => {
@@ -137,6 +165,63 @@ export default function TeamMemberFormModal({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Platser där personen arbetar</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.location_ids.map((id) => {
+                const location = locations?.find(l => l.id === id);
+                return (
+                  <Badge key={id} variant="secondary" className="gap-1">
+                    {location?.name || 'Okänd'}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLocation(id)}
+                      className="hover:text-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                );
+              })}
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  Lägg till plats...
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Sök plats..." />
+                  <CommandEmpty>Ingen plats hittades.</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-auto">
+                    {locations?.map((location) => (
+                      <CommandItem
+                        key={location.id}
+                        value={location.name}
+                        onSelect={() => handleAddLocation(location.id)}
+                        disabled={formData.location_ids.includes(location.id)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            formData.location_ids.includes(location.id) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {location.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="flex items-center justify-between pt-2">
