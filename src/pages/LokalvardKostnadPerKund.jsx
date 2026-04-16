@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Download, ChevronDown, X, TrendingUp, RotateCcw, Filter, ChevronUp } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
 import { toast } from 'sonner';
 
 const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#84cc16', '#22c55e'];
@@ -113,7 +113,7 @@ export default function KostnadPerKund() {
 
   const hasActiveFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0 || selectedCustomerTypes.length > 0;
   const maxTotal = data.length > 0 ? Math.max(...data.map(d => d.total)) : 0;
-  const chartData = data.slice(0, 10).map(d => ({ name: d.namn.length > 12 ? d.namn.slice(0, 12) + '…' : d.namn, total: Math.round(d.total) }));
+  const chartData = data.slice(0, 10).map(d => ({ name: d.namn.length > 15 ? d.namn.slice(0, 15) + '…' : d.namn, value: Math.round(d.total) }));
 
   const FilterChip = ({ label, count, children }) => (
     <Popover>
@@ -254,18 +254,25 @@ export default function KostnadPerKund() {
               </div>
             </button>
             {chartOpen && chartData.length > 0 && (
-              <div className="px-2 py-2" style={{ height: 120 }}>
+              <div className="px-2 py-4" style={{ height: 260 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
-                    <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={80} axisLine={false} tickLine={false} />
-                    <Tooltip formatter={(v) => `${v.toLocaleString('sv-SE')} kr`} />
-                    <Bar dataKey="total" radius={[0, 4, 4, 0]}>
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      innerRadius={45}
+                    >
                       {chartData.map((_, i) => (
                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
                       ))}
-                    </Bar>
-                  </BarChart>
+                    </Pie>
+                    <Tooltip formatter={(v) => `${v.toLocaleString('sv-SE')} kr`} />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
                 </ResponsiveContainer>
               </div>
             )}
