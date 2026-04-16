@@ -88,10 +88,15 @@ export default function ToolFormModal({
 
   const availableCategories = useMemo(() => {
     const categories = [...new Set(allTools.map(t => t.category).filter(Boolean))];
-    if (!categories.includes('Redskap')) {
-      categories.push('Redskap');
+    // Remove old categories and ensure required ones exist
+    const filtered = categories.filter(cat => !['0', 'ah', 'safety', 'Power_tools', 'Hand_tools'].includes(cat));
+    if (!filtered.includes('Redskap')) {
+      filtered.push('Redskap');
     }
-    return categories.sort();
+    if (!filtered.includes('Övrigt')) {
+      filtered.push('Övrigt');
+    }
+    return filtered.sort();
   }, [allTools]);
 
   const availableSubcategories = useMemo(() => {
