@@ -29,28 +29,29 @@ import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
 import { useMemo } from 'react';
 
 const defaultTool = {
-  name: '',
-  manufacturer: '',
-  model_number: '',
-  category: 'power_tools',
-  subcategory: '',
-  status: 'available',
-  condition: 'good',
-  purchase_date: '',
-  purchase_price: '',
-  purchase_location: '',
-  invoice_number: '',
-  location_id: '',
-  location_name: '',
-  assigned_to_email: '',
-  assigned_to_name: '',
-  notes: '',
-  barcode: '',
-  image_url: '',
-  suggested_image_url: '',
-  parent_tool_id: '',
-  parent_tool_name: '',
-  compatible_with: '',
+name: '',
+manufacturer: '',
+model_number: '',
+category: 'power_tools',
+subcategory: '',
+status: 'available',
+condition: 'good',
+purchase_date: '',
+purchase_price: '',
+purchase_location: '',
+invoice_number: '',
+location_id: '',
+location_name: '',
+assigned_to_email: '',
+assigned_to_name: '',
+notes: '',
+barcode: '',
+image_url: '',
+suggested_image_url: '',
+main_machine_id: '',
+main_machine_name: '',
+compatible_with_main_machine_ids: [],
+compatible_with_main_machine_names: [],
 };
 
 export default function ToolFormModal({
@@ -75,6 +76,12 @@ export default function ToolFormModal({
   const { data: allTools = [] } = useQuery({
     queryKey: ['tools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    enabled: isOpen,
+  });
+
+  const { data: huvudmaskiner = [] } = useQuery({
+    queryKey: ['huvudmaskiner'],
+    queryFn: () => base44.entities.Huvudmaskin.list(),
     enabled: isOpen,
   });
 
@@ -729,28 +736,28 @@ export default function ToolFormModal({
                           role="combobox"
                           className="w-full justify-between"
                         >
-                          {formData.parent_tool_name || "Välj huvudmaskin..."}
+                          {formData.main_machine_name || "Välj huvudmaskin..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0" align="start">
                         <Command>
                           <CommandInput placeholder="Sök huvudmaskin..." />
-                          <CommandEmpty>Ingen maskin hittades.</CommandEmpty>
+                          <CommandEmpty>Ingen huvudmaskin hittades.</CommandEmpty>
                           <CommandGroup className="max-h-64 overflow-auto">
-                            {allTools.filter(t => t.category !== 'Redskap').map((tool) => (
+                            {huvudmaskiner.map((maskin) => (
                               <CommandItem
-                                key={tool.id}
-                                value={tool.name}
-                                onSelect={() => handleChange('parent_tool_id', tool.id)}
+                                key={maskin.id}
+                                value={maskin.name}
+                                onSelect={() => handleChange('main_machine_id', maskin.id)}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    formData.parent_tool_id === tool.id ? "opacity-100" : "opacity-0"
+                                    formData.main_machine_id === maskin.id ? "opacity-100" : "opacity-0"
                                   )}
                                 />
-                                {tool.name} {tool.model_number ? `- ${tool.model_number}` : ''}
+                                {maskin.name} {maskin.manufacturer ? `- ${maskin.manufacturer}` : ''}
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -759,12 +766,82 @@ export default function ToolFormModal({
                     </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label>Passar till</Label>
-                    <Input
-                      value={formData.compatible_with}
-                      onChange={(e) => handleChange('compatible_with', e.target.value)}
-                      placeholder="t.ex. Modell X, Y, Z"
-                    />
+                    <Label>Passar till (Huvudmaskiner)</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between"
+                        >
+                          {formData.compatible_with_main_machine_names?.length ? `${formData.compatible_with_main_machine_names.length} vald(a)` : "Välj huvudmaskiner..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Sök huvudmaskin..." />
+                          <CommandEmpty>Ingen huvudmaskin hittades.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {huvudmaskiner.map((maskin) => (
+                              <CommandItem
+                                key={maskin.id}
+                                value={maskin.name}
+                                onSelect={() => {
+                                  const currentIds = formData.compatible_with_main_machine_ids || [];
+                                  const currentNames = formData.compatible_with_main_machine_names || [];
+                                  const isSelected = currentIds.includes(maskin.id);
+
+                                  const newIds = isSelected 
+                                    ? currentIds.filter(id => id !== maskin.id)
+                                    : [...currentIds, maskin.id];
+                                  const newNames = isSelected 
+                                    ? currentNames.filter(name => name !== maskin.name)
+                                    : [...currentNames, maskin.name];
+
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    compatible_with_main_machine_ids: newIds,
+                                    compatible_with_main_machine_names: newNames
+                                  }));
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    (formData.compatible_with_main_machine_ids || []).includes(maskin.id) ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {maskin.name} {maskin.manufacturer ? `- ${maskin.manufacturer}` : ''}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {formData.compatible_with_main_machine_names?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {formData.compatible_with_main_machine_names.map((name) => (
+                          <span key={name} className="px-2 py-1 bg-gray-100 rounded-md text-sm">
+                            {name}
+                            <button
+                              onClick={() => {
+                                const newNames = formData.compatible_with_main_machine_names.filter(n => n !== name);
+                                const newIds = formData.compatible_with_main_machine_ids.filter((_, i) => formData.compatible_with_main_machine_names[i] !== name);
+                                setFormData(prev => ({
+                                  ...prev,
+                                  compatible_with_main_machine_names: newNames,
+                                  compatible_with_main_machine_ids: newIds
+                                }));
+                              }}
+                              className="ml-1 text-gray-500 hover:text-gray-700"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   </div>
                   )}
