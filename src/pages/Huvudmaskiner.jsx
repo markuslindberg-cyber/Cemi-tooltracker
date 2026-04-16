@@ -348,7 +348,13 @@ export default function Huvudmaskiner() {
                       <ul className="space-y-1">
                         {ownedTools.map((tool) => (
                           <li key={tool.id} className="text-sm text-gray-700">
-                            • {tool.name}
+                            •{' '}
+                            <button
+                              onClick={() => navigate(`/Inventory`)}
+                              className="text-blue-600 hover:text-blue-800 underline"
+                            >
+                              {tool.name}
+                            </button>
                             {tool.subcategory && ` - ${tool.subcategory}`}
                           </li>
                         ))}
