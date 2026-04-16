@@ -199,10 +199,7 @@ export default function Locations() {
 
               return (
                 <div key={location.id}>
-                  <div
-                    onClick={() => navigate(`/locations/${location.id}`)}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
-                  >
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-xl ${type.color.split(' ')[0]}`}>
@@ -217,14 +214,14 @@ export default function Locations() {
                               <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-40">
-                              <DropdownMenuItem onClick={() => setEditLocation(location)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setEditLocation(location); }}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleDeleteLocation(location)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteLocation(location); }} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-gray-900 text-lg mb-1">{location.name}</h3>
+                      <h3 onClick={() => navigate(`/locations/${location.id}`)} className="font-semibold text-gray-900 text-lg mb-1 cursor-pointer hover:text-[#8B1E1E] transition-colors">{location.name}</h3>
                       <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
                       {location.address && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>}
                       <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
@@ -285,13 +282,13 @@ export default function Locations() {
                 const Icon = type.icon;
                 const toolCount = getToolCount(location.id);
                 return (
-                  <div key={location.id} onClick={() => navigate(`/locations/${location.id}`)} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                  <div key={location.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
                     <div className={`p-2 rounded-lg ${type.color.split(' ')[0]}`}>
                       <Icon className={`w-5 h-5 ${type.color.split(' ')[1]}`} />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/locations/${location.id}`)}>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900">{location.name}</p>
+                        <p className="font-medium text-gray-900 hover:text-[#8B1E1E] transition-colors">{location.name}</p>
                         {!location.is_active && <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-xs">Inaktiv</Badge>}
                       </div>
                       <p className="text-sm text-gray-500 truncate">{location.address || location.type}</p>
@@ -306,9 +303,9 @@ export default function Locations() {
                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem onClick={() => setEditLocation(location)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setEditLocation(location); }}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDeleteLocation(location)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteLocation(location); }} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
