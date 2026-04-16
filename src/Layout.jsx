@@ -77,18 +77,11 @@ const navigation = [
     ]
   },
   {
-    name: 'Platser',
-    path: '/Locations',
-    icon: MapPin,
-    children: [
-      { name: 'Kontor', path: '/Locations' },
-    ]
-  },
-  {
-    name: 'Team',
-    path: '/Team',
+    name: 'Administration',
+    path: '/Administration',
     icon: Users,
     children: [
+      { name: 'Platser', path: '/Locations' },
       { name: 'Personal', path: '/Team' },
     ]
   },
