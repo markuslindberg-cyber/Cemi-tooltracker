@@ -71,6 +71,8 @@ export default function ToolFormModal({
   const [templateToolId, setTemplateToolId] = useState('');
   const [templateOpen, setTemplateOpen] = useState(false);
   const [searchingImage, setSearchingImage] = useState(false);
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
   const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
   const [customSubcategory, setCustomSubcategory] = useState('');
 
@@ -621,41 +623,81 @@ export default function ToolFormModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Kategori *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
+                  {!showCustomCategory ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between"
+                        >
+                          {formData.category || "Välj kategori..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Sök kategori..." />
+                          <CommandEmpty>Ingen kategori hittades.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-auto">
+                            {availableCategories.map((cat) => (
+                              <CommandItem
+                                key={cat}
+                                value={cat}
+                                onSelect={() => handleChange('category', cat)}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.category === cat ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {cat}
+                              </CommandItem>
+                            ))}
+                            <CommandItem
+                              value="__custom__"
+                              onSelect={() => setShowCustomCategory(true)}
+                            >
+                              + Lägg till egen
+                            </CommandItem>
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        placeholder="Ny kategori"
+                        autoFocus
+                      />
                       <Button
                         variant="outline"
-                        role="combobox"
-                        className="w-full justify-between"
+                        onClick={() => {
+                          if (customCategory.trim()) {
+                            handleChange('category', customCategory.trim());
+                            setShowCustomCategory(false);
+                            setCustomCategory('');
+                          }
+                        }}
+                        className="whitespace-nowrap"
                       >
-                        {formData.category || "Välj kategori..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        OK
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Sök kategori..." />
-                        <CommandEmpty>Ingen kategori hittades.</CommandEmpty>
-                        <CommandGroup className="max-h-64 overflow-auto">
-                          {availableCategories.map((cat) => (
-                            <CommandItem
-                              key={cat}
-                              value={cat}
-                              onSelect={() => handleChange('category', cat)}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.category === cat ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {cat}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setShowCustomCategory(false);
+                          setCustomCategory('');
+                        }}
+                        className="whitespace-nowrap"
+                      >
+                        Avbryt
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                     <Label>Underkategori</Label>
