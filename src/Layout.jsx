@@ -38,6 +38,8 @@ const navigation = [
       { name: 'Översikt', path: '/Inventory' },
       { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
       { name: 'Förflyttningar', path: '/Transfers' },
+      { name: 'Service', path: '/Service' },
+      { name: 'Service Mallar', path: '/ServiceMallar' },
     ]
   },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel },

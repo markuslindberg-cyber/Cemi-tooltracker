@@ -25,6 +25,8 @@ import LocationDetails from './pages/LocationDetails';
 import InventoryReports from './pages/InventoryReports';
 import CheckoutReports from './pages/CheckoutReports';
 import SåldaRedskap from './pages/SåldaRedskap';
+import ServicePage from './pages/ServicePage';
+import ServiceMallar from './pages/ServiceMallar';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -96,6 +98,8 @@ const AuthenticatedApp = () => {
       <Route path="/Lokalvard/InköpImport" element={<LayoutWrapper currentPageName="LokalvardInköpImport"><LokalvardInköpImport /></LayoutWrapper>} />
       <Route path="/Lokalvard/UttagImport" element={<LayoutWrapper currentPageName="LokalvardUttagImport"><LokalvardUttagImport /></LayoutWrapper>} />
       <Route path="/Lokalvard/Artikel/:artikelnummer" element={<LayoutWrapper currentPageName="ArtikelDetaljer"><LokalvardArtikelDetaljer /></LayoutWrapper>} />
+      <Route path="/Service" element={<LayoutWrapper currentPageName="Service"><ServicePage /></LayoutWrapper>} />
+      <Route path="/ServiceMallar" element={<LayoutWrapper currentPageName="ServiceMallar"><ServiceMallar /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
