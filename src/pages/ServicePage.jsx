@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search, Wrench, ClipboardList, Plus, Calendar, User, DollarSign,
-  CheckCircle2, ChevronRight, Package, ArrowLeft, Camera, Trash2
+  CheckCircle2, ChevronRight, Package, ArrowLeft, Camera, Trash2, Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -37,7 +38,7 @@ const SERVICE_TYPE_COLORS = {
 };
 
 // ─── Add Service Dialog ──────────────────────────────────────────────────────
-function AddServiceDialog({ open, onClose, tool, prefillTemplate, suppliers = [] }) {
+function AddServiceDialog({ open, onClose, tool, prefillTemplate }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     service_type: 'maintenance',
@@ -248,6 +249,7 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate, suppliers = []
 
 // ─── Tool Service History ────────────────────────────────────────────────────
 function ToolServiceHistory({ tool, onBack }) {
+  const navigate = useNavigate();
   const [addOpen, setAddOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
@@ -288,6 +290,9 @@ function ToolServiceHistory({ tool, onBack }) {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/Inventory?toolId=${tool.id}`)}>
+            <Info className="w-4 h-4 mr-2" /> Mer info
+          </Button>
           <Button variant="outline" onClick={() => setTemplatePickerOpen(true)}>
             <ClipboardList className="w-4 h-4 mr-2" /> Från mall
           </Button>
@@ -389,7 +394,6 @@ function ToolServiceHistory({ tool, onBack }) {
         onClose={() => { setAddOpen(false); setSelectedTemplate(null); }}
         tool={tool}
         prefillTemplate={selectedTemplate}
-        suppliers={suppliers}
       />
     </div>
   );
