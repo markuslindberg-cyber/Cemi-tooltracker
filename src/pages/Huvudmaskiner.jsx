@@ -357,6 +357,7 @@ export default function Huvudmaskiner() {
                              {tool.name}
                            </button>
                            {tool.subcategory && ` - ${tool.subcategory}`}
+                           {tool.location_name && <span className="text-gray-500"> ({tool.location_name})</span>}
                          </li>
                         ))}
                       </ul>
@@ -372,17 +373,18 @@ export default function Huvudmaskiner() {
                     {compatibleTools.length > 0 ? (
                       <ul className="space-y-1">
                         {compatibleTools.map((tool) => (
-                          <li key={tool.id} className="text-sm text-gray-700">
-                            •{' '}
-                            <button
-                              onClick={() => setSelectedTool(tool)}
-                              className="text-blue-600 hover:text-blue-800 underline"
-                            >
-                              {tool.name}
-                            </button>
-                            {tool.subcategory && ` - ${tool.subcategory}`}
-                          </li>
-                        ))}
+                           <li key={tool.id} className="text-sm text-gray-700">
+                             •{' '}
+                             <button
+                               onClick={() => setSelectedTool(tool)}
+                               className="text-blue-600 hover:text-blue-800 underline"
+                             >
+                               {tool.name}
+                             </button>
+                             {tool.subcategory && ` - ${tool.subcategory}`}
+                             {tool.location_name && <span className="text-gray-500"> ({tool.location_name})</span>}
+                           </li>
+                         ))}
                       </ul>
                     ) : (
                       <p className="text-sm text-gray-500">
