@@ -20,11 +20,35 @@
     "address": {
       "type": "string"
     },
-    "contact_person": {
-      "type": "string"
-    },
-    "contact_phone": {
-      "type": "string"
+    "contacts": {
+      "type": "array",
+      "description": "List of contact persons for this location",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique contact ID"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "is_primary": {
+            "type": "boolean",
+            "default": false,
+            "description": "Is this the primary contact for the location"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
     },
     "parent_location_id": {
       "type": "string",

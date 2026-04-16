@@ -29,8 +29,7 @@ const defaultLocation = {
   name: '',
   type: 'jobsite',
   address: '',
-  contact_person: '',
-  contact_phone: '',
+  contacts: [],
   parent_location_id: '',
   parent_location_name: '',
   is_active: true,
@@ -45,6 +44,9 @@ export default function LocationFormModal({
   isLoading,
 }) {
   const [formData, setFormData] = useState(defaultLocation);
+  const [newContactName, setNewContactName] = useState('');
+  const [newContactEmail, setNewContactEmail] = useState('');
+  const [newContactPhone, setNewContactPhone] = useState('');
 
   const { data: allLocations = [] } = useQuery({
     queryKey: ['locations'],
@@ -63,17 +65,54 @@ export default function LocationFormModal({
   const handleChange = (field, value) => {
     if (field === 'parent_location_id') {
       const parentLoc = allLocations.find(l => l.id === value);
+      const primaryContact = parentLoc?.contacts?.find(c => c.is_primary);
       setFormData(prev => ({
         ...prev,
         [field]: value,
         parent_location_name: parentLoc?.name || '',
-        // Auto-fill contact info from parent
-        contact_person: parentLoc?.contact_person || prev.contact_person,
-        contact_phone: parentLoc?.contact_phone || prev.contact_phone,
       }));
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
+  };
+
+  const handleAddContact = () => {
+    if (!newContactName.trim()) return;
+    const contact = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: newContactName,
+      email: newContactEmail,
+      phone: newContactPhone,
+      is_primary: formData.contacts.length === 0, // First contact is primary
+    };
+    setFormData(prev => ({
+      ...prev,
+      contacts: [...prev.contacts, contact]
+    }));
+    setNewContactName('');
+    setNewContactEmail('');
+    setNewContactPhone('');
+  };
+
+  const handleRemoveContact = (contactId) => {
+    setFormData(prev => {
+      const updated = prev.contacts.filter(c => c.id !== contactId);
+      // If removed was primary, set first as primary
+      if (updated.length > 0 && !updated.some(c => c.is_primary)) {
+        updated[0].is_primary = true;
+      }
+      return { ...prev, contacts: updated };
+    });
+  };
+
+  const handleSetPrimaryContact = (contactId) => {
+    setFormData(prev => ({
+      ...prev,
+      contacts: prev.contacts.map(c => ({
+        ...c,
+        is_primary: c.id === contactId
+      }))
+    }));
   };
 
   const handleSubmit = () => {
@@ -184,21 +223,70 @@ export default function LocationFormModal({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Ansvarig person</Label>
-              <Input
-                value={formData.contact_person}
-                onChange={(e) => handleChange('contact_person', e.target.value)}
-                placeholder="Namn"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Telefonnummer</Label>
-              <Input
-                value={formData.contact_phone}
-                onChange={(e) => handleChange('contact_phone', e.target.value)}
-                placeholder="Telefonnummer"
-              />
+            <div className="space-y-3">
+              <Label>Kontaktpersoner</Label>
+              <div className="space-y-3">
+                {formData.contacts.map((contact, idx) => (
+                  <div key={contact.id} className="bg-gray-50 rounded-lg p-3 space-y-2">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm text-gray-900">{contact.name}</p>
+                        {contact.email && <p className="text-xs text-gray-500">{contact.email}</p>}
+                        {contact.phone && <p className="text-xs text-gray-500">{contact.phone}</p>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {contact.is_primary && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Huvudansvarig</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleSetPrimaryContact(contact.id)}
+                          disabled={contact.is_primary}
+                          className="text-xs px-2 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50"
+                        >
+                          Sätt som huvudansvarig
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveContact(contact.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t pt-3 space-y-2">
+                <p className="text-xs font-medium text-gray-600">Lägg till ny kontakt</p>
+                <Input
+                  value={newContactName}
+                  onChange={(e) => setNewContactName(e.target.value)}
+                  placeholder="Namn *"
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddContact()}
+                />
+                <Input
+                  value={newContactEmail}
+                  onChange={(e) => setNewContactEmail(e.target.value)}
+                  placeholder="E-post (valfritt)"
+                  type="email"
+                />
+                <Input
+                  value={newContactPhone}
+                  onChange={(e) => setNewContactPhone(e.target.value)}
+                  placeholder="Telefon (valfritt)"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddContact}
+                  className="w-full"
+                >
+                  Lägg till kontakt
+                </Button>
+              </div>
             </div>
           </div>
 

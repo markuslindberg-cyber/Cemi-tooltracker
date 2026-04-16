@@ -236,8 +236,17 @@ export default function Locations() {
                           <div className="flex items-center gap-2 text-gray-500"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
                           <span className="font-medium text-gray-900">{getHandToolCount(location.id)}</span>
                         </div>
-                        {location.contact_person && <div className="flex items-center gap-2 text-sm text-gray-500"><User className="w-4 h-4" /><span>{location.contact_person}</span></div>}
-                        {location.contact_phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{location.contact_phone}</span></div>}
+                        {location.contacts && location.contacts.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {location.contacts.map(contact => (
+                              <div key={contact.id} className="text-xs">
+                                {contact.is_primary && <span className="inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded mr-1">Huvudansvarig</span>}
+                                <span className="text-gray-600">{contact.name}</span>
+                                {contact.phone && <span className="text-gray-500"> • {contact.phone}</span>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
