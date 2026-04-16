@@ -81,7 +81,7 @@ export default function Inventory() {
   const queryClient = useQueryClient();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [manufacturerFilter, setManufacturerFilter] = useState('all');
@@ -183,7 +183,7 @@ export default function Inventory() {
         item.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.subcategory?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+      const matchesStatus = statusFilter.length === 0 || statusFilter.includes(item.status);
       const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
       const matchesSubcategory = subcategoryFilter === 'all' || item.subcategory === subcategoryFilter;
       const matchesManufacturer = manufacturerFilter === 'all' || item.manufacturer === manufacturerFilter;
@@ -287,7 +287,7 @@ export default function Inventory() {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setStatusFilter('all');
+    setStatusFilter([]);
     setCategoryFilter('all');
     setSubcategoryFilter('all');
     setManufacturerFilter('all');
@@ -459,7 +459,7 @@ export default function Inventory() {
             <h1 className="text-3xl font-bold text-gray-900">Maskiner</h1>
             <p className="text-gray-500 mt-1">
               {filteredTools.length} verktyg
-              {(statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || searchQuery) && ' matchar filter'}
+              {(statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || searchQuery) && ' matchar filter'}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 md:gap-2">
