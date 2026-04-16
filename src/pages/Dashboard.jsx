@@ -76,8 +76,9 @@ export default function Dashboard() {
 
   // Only count active tools in inventory value
   const activeTools = tools.filter(t => !['såld', 'retired', 'missing'].includes(t.status));
+  const activeHandTools = handTools.filter(t => !['saknas', 'kasserad'].includes(t.status));
   const totalValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
-  const handToolsValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const handToolsValue = activeHandTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
 
   const handleTransfer = async (transferData) => {
     await base44.entities.Transfer.create(transferData);
@@ -299,7 +300,7 @@ export default function Dashboard() {
                    <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
                  </div>
                  <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Handredskap ({handTools.length})</span>
+                   <span className="text-sm text-gray-500">Handredskap ({activeHandTools.length})</span>
                    <span className="font-medium text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</span>
                  </div>
                  <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
