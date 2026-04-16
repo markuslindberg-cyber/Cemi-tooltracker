@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ServiceHistoryPanel from '@/components/ServiceHistoryPanel';
 import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
+import ToolLogTab from '@/components/ToolLogTab';
 import { useMemo } from 'react';
 
 const defaultTool = {
@@ -426,9 +427,10 @@ export default function ToolFormModal({
           </DialogHeader>
 
           <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details">Verktygsdetaljer</TabsTrigger>
               {isEditing && <TabsTrigger value="service">Servicehistorik</TabsTrigger>}
+              {isEditing && <TabsTrigger value="log">Logg</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="details" className="space-y-6 py-4">
@@ -970,20 +972,26 @@ export default function ToolFormModal({
             </TabsContent>
 
             {isEditing && (
-              <TabsContent value="service" className="space-y-4 py-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Service- och reparationshistorik</h3>
-                  <Button
-                    onClick={() => setShowServiceModal(true)}
-                    size="sm"
-                    className="bg-[#8B1E1E] hover:bg-[#6B1515]"
-                  >
-                    <Wrench className="w-4 h-4 mr-2" />
-                    Lägg till servicepost
-                  </Button>
-                </div>
-                <ServiceHistoryPanel serviceRecords={serviceRecords} />
-              </TabsContent>
+              <>
+                <TabsContent value="service" className="space-y-4 py-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">Service- och reparationshistorik</h3>
+                    <Button
+                      onClick={() => setShowServiceModal(true)}
+                      size="sm"
+                      className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+                    >
+                      <Wrench className="w-4 h-4 mr-2" />
+                      Lägg till servicepost
+                    </Button>
+                  </div>
+                  <ServiceHistoryPanel serviceRecords={serviceRecords} />
+                </TabsContent>
+                <TabsContent value="log" className="space-y-4 py-4">
+                  <h3 className="text-lg font-semibold">Ändringshistorik</h3>
+                  <ToolLogTab toolId={tool?.id} />
+                </TabsContent>
+              </>
             )}
           </Tabs>
 
