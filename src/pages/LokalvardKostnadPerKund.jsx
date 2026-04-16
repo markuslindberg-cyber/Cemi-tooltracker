@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Download, ChevronDown, X, TrendingUp, RotateCcw, Filter } from 'lucide-react';
+import { Download, ChevronDown, X, TrendingUp, RotateCcw, Filter, ChevronUp } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { toast } from 'sonner';
 
 const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#84cc16', '#22c55e'];
@@ -106,10 +107,13 @@ export default function KostnadPerKund() {
     a.click();
   };
 
+  const [chartOpen, setChartOpen] = useState(true);
+
   if (loading) return <div className="flex justify-center p-8">Laddar...</div>;
 
   const hasActiveFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0 || selectedCustomerTypes.length > 0;
   const maxTotal = data.length > 0 ? Math.max(...data.map(d => d.total)) : 0;
+  const chartData = data.slice(0, 10).map(d => ({ name: d.namn.length > 12 ? d.namn.slice(0, 12) + '…' : d.namn, total: Math.round(d.total) }));
 
   const FilterChip = ({ label, count, children }) => (
     <Popover>
@@ -232,12 +236,39 @@ export default function KostnadPerKund() {
 
       {data.length > 0 ? (
         <div className="space-y-4 sm:space-y-6">
-          {/* Total summary */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-blue-700 font-medium">Totalt</span>
-            <span className="text-lg sm:text-xl font-bold text-blue-900">
-              {total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
-            </span>
+          {/* Compact chart + total row */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <button
+              onClick={() => setChartOpen(!chartOpen)}
+              className="w-full px-4 py-2.5 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-blue-700 font-medium">Totalt</span>
+                <span className="text-lg font-bold text-blue-900">
+                  {total.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-blue-600">
+                <span className="hidden sm:inline">{chartOpen ? 'Dölj graf' : 'Visa graf'}</span>
+                {chartOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </button>
+            {chartOpen && chartData.length > 0 && (
+              <div className="px-2 py-2" style={{ height: 120 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={80} axisLine={false} tickLine={false} />
+                    <Tooltip formatter={(v) => `${v.toLocaleString('sv-SE')} kr`} />
+                    <Bar dataKey="total" radius={[0, 4, 4, 0]}>
+                      {chartData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
 
           {/* Inline bar chart — mobile-friendly kostnadsfördelning */}
