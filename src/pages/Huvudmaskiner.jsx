@@ -31,6 +31,7 @@ export default function Huvudmaskiner() {
     manufacturer: '',
     model: '',
     year_model: '',
+    registration_number: '',
     location_id: '',
     location_name: '',
     notes: '',
@@ -100,6 +101,7 @@ export default function Huvudmaskiner() {
       manufacturer: '',
       model: '',
       year_model: '',
+      registration_number: '',
       location_id: '',
       location_name: '',
       notes: '',
@@ -194,6 +196,16 @@ export default function Huvudmaskiner() {
                 />
               </div>
               <div>
+                <Label>Regnummer</Label>
+                <Input
+                  value={formData.registration_number}
+                  onChange={(e) =>
+                    setFormData({ ...formData, registration_number: e.target.value })
+                  }
+                  placeholder="Regnummer"
+                />
+              </div>
+              <div>
                 <Label>Plats</Label>
                 <Select
                   value={formData.location_id}
@@ -280,6 +292,11 @@ export default function Huvudmaskiner() {
                           {maskin.manufacturer}
                           {maskin.model && ` - ${maskin.model}`}
                           {maskin.year_model && ` (${maskin.year_model})`}
+                        </p>
+                      )}
+                      {maskin.registration_number && (
+                        <p className="text-sm text-gray-600">
+                          Regnummer: {maskin.registration_number}
                         </p>
                       )}
                       {maskin.location_name && (

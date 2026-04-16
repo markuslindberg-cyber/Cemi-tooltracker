@@ -18,6 +18,10 @@
       "type": "number",
       "description": "\u00c5rsmodell"
     },
+    "registration_number": {
+      "type": "string",
+      "description": "Regnummer"
+    },
     "location_id": {
       "type": "string",
       "description": "Referens till Location-entiteten"
