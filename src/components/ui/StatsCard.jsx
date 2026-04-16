@@ -7,18 +7,18 @@ export default function StatsCard({ title, value, icon: Icon, trend, trendLabel,
 
   return (
     <div className={cn(
-      "bg-white rounded-2xl p-3 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300",
+      "bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300",
       className
     )}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide line-clamp-2">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wide line-clamp-2">{title}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">{value}</p>
           {(trend !== undefined || trendLabel) && (
-            <div className="flex items-center gap-1.5 mt-2">
+            <div className="flex items-center gap-1 mt-1">
               {trend !== undefined && (
                 <span className={cn(
-                  "text-sm font-medium",
+                  "text-xs sm:text-sm font-medium",
                   isPositive && "text-emerald-600",
                   isNegative && "text-red-600",
                   !isPositive && !isNegative && "text-gray-500"
@@ -27,18 +27,18 @@ export default function StatsCard({ title, value, icon: Icon, trend, trendLabel,
                 </span>
               )}
               {trendLabel && (
-                <span className="text-sm text-gray-400">{trendLabel}</span>
+                <span className="text-xs text-gray-400 hidden sm:inline">{trendLabel}</span>
               )}
             </div>
           )}
         </div>
         {Icon && (
         <div className={cn(
-          "p-3 rounded-xl",
+          "p-2 sm:p-3 rounded-xl shrink-0",
           iconClassName || "bg-[#8B1E1E]/10"
         )}>
           <Icon className={cn(
-            "w-6 h-6",
+            "w-4 h-4 sm:w-6 sm:h-6",
             iconClassName ? "" : "text-[#8B1E1E]"
           )} />
         </div>

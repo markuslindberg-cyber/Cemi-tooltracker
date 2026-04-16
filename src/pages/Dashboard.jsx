@@ -96,25 +96,27 @@ export default function Dashboard() {
   const recentlyUsedTools = tools.filter(t => !['såld','retired','missing'].includes(t.status)).slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gray-50/50 p-4 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-5 lg:space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500 mt-1">Spåra, hantera och anpassa dina verktyg</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-500 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
           </div>
           <Button
             onClick={() => setShowAddTool(true)}
-            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
+            size="sm"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 shrink-0"
           >
-            <Plus className="w-5 h-5 mr-2" />
-            Lägg till verktyg
+            <Plus className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">Lägg till verktyg</span>
+            <span className="sm:hidden">Lägg till</span>
           </Button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 lg:grid-cols-5 gap-1.5 lg:gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <StatsCard
             title="Totalt antal verktyg"
             value={totalTools}
@@ -158,18 +160,18 @@ export default function Dashboard() {
         {/* Missing Tools Alert */}
         {missingTools > 0 && (
           <div className="bg-gradient-to-r from-[#8B1E1E] to-[#6B1515] rounded-2xl p-4 text-white shadow-lg shadow-[#8B1E1E]/25">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 rounded-xl">
-                  <AlertTriangle className="w-6 h-6" />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-xl shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{missingTools} verktyg rapporterade saknade</h3>
-                  <p className="text-white/80 text-sm">Granska och hantera saknad utrustning</p>
+                  <h3 className="font-semibold text-sm sm:text-base">{missingTools} verktyg rapporterade saknade</h3>
+                  <p className="text-white/80 text-xs sm:text-sm hidden sm:block">Granska och hantera saknad utrustning</p>
                 </div>
               </div>
-              <Link to="/Inventory/SaldaRedskap">
-                <Button variant="secondary" className="bg-white text-[#8B1E1E] hover:bg-gray-50">
+              <Link to="/Inventory/SaldaRedskap" className="shrink-0">
+                <Button variant="secondary" size="sm" className="bg-white text-[#8B1E1E] hover:bg-gray-50">
                   Visa alla
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -179,7 +181,7 @@ export default function Dashboard() {
         )}
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Recent Tools - simple list */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
