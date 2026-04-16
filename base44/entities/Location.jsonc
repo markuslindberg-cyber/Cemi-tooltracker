@@ -20,34 +20,18 @@
     "address": {
       "type": "string"
     },
-    "contacts": {
+    "team_member_ids": {
       "type": "array",
-      "description": "List of contact persons for this location",
+      "description": "IDs of team members working at this location",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique contact ID"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "phone": {
-            "type": "string"
-          },
-          "is_primary": {
-            "type": "boolean",
-            "default": false,
-            "description": "Is this the primary contact for the location"
-          }
-        },
-        "required": [
-          "name"
-        ]
+        "type": "string"
+      }
+    },
+    "team_member_names": {
+      "type": "array",
+      "description": "Names of team members working at this location",
+      "items": {
+        "type": "string"
       }
     },
     "parent_location_id": {

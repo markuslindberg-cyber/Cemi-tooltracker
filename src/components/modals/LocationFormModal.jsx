@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, ChevronsUpDown, Check } from "lucide-react";
+import { Loader2, ChevronsUpDown, Check, X } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -29,7 +30,8 @@ const defaultLocation = {
   name: '',
   type: 'jobsite',
   address: '',
-  contacts: [],
+  team_member_ids: [],
+  team_member_names: [],
   parent_location_id: '',
   parent_location_name: '',
   is_active: true,
@@ -44,13 +46,16 @@ export default function LocationFormModal({
   isLoading,
 }) {
   const [formData, setFormData] = useState(defaultLocation);
-  const [newContactName, setNewContactName] = useState('');
-  const [newContactEmail, setNewContactEmail] = useState('');
-  const [newContactPhone, setNewContactPhone] = useState('');
 
   const { data: allLocations = [] } = useQuery({
     queryKey: ['locations'],
     queryFn: () => base44.entities.Location.list(),
+    enabled: isOpen,
+  });
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: () => base44.entities.TeamMember.list(),
     enabled: isOpen,
   });
 
@@ -76,43 +81,26 @@ export default function LocationFormModal({
     }
   };
 
-  const handleAddContact = () => {
-    if (!newContactName.trim()) return;
-    const contact = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: newContactName,
-      email: newContactEmail,
-      phone: newContactPhone,
-      is_primary: formData.contacts.length === 0, // First contact is primary
-    };
+  const handleAddTeamMember = (teamMemberId) => {
+    const member = teamMembers.find(m => m.id === teamMemberId);
+    if (!member || formData.team_member_ids.includes(teamMemberId)) return;
+    
     setFormData(prev => ({
       ...prev,
-      contacts: [...prev.contacts, contact]
+      team_member_ids: [...prev.team_member_ids, teamMemberId],
+      team_member_names: [...prev.team_member_names, member.name]
     }));
-    setNewContactName('');
-    setNewContactEmail('');
-    setNewContactPhone('');
   };
 
-  const handleRemoveContact = (contactId) => {
+  const handleRemoveTeamMember = (teamMemberId) => {
     setFormData(prev => {
-      const updated = prev.contacts.filter(c => c.id !== contactId);
-      // If removed was primary, set first as primary
-      if (updated.length > 0 && !updated.some(c => c.is_primary)) {
-        updated[0].is_primary = true;
-      }
-      return { ...prev, contacts: updated };
+      const idx = prev.team_member_ids.indexOf(teamMemberId);
+      return {
+        ...prev,
+        team_member_ids: prev.team_member_ids.filter(id => id !== teamMemberId),
+        team_member_names: prev.team_member_names.filter((_, i) => i !== idx)
+      };
     });
-  };
-
-  const handleSetPrimaryContact = (contactId) => {
-    setFormData(prev => ({
-      ...prev,
-      contacts: prev.contacts.map(c => ({
-        ...c,
-        is_primary: c.id === contactId
-      }))
-    }));
   };
 
   const handleSubmit = () => {
@@ -222,72 +210,61 @@ export default function LocationFormModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <Label>Kontaktpersoner</Label>
-              <div className="space-y-3">
-                {formData.contacts.map((contact, idx) => (
-                  <div key={contact.id} className="bg-gray-50 rounded-lg p-3 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm text-gray-900">{contact.name}</p>
-                        {contact.email && <p className="text-xs text-gray-500">{contact.email}</p>}
-                        {contact.phone && <p className="text-xs text-gray-500">{contact.phone}</p>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {contact.is_primary && (
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Huvudansvarig</span>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleSetPrimaryContact(contact.id)}
-                          disabled={contact.is_primary}
-                          className="text-xs px-2 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50"
-                        >
-                          Sätt som huvudansvarig
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveContact(contact.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t pt-3 space-y-2">
-                <p className="text-xs font-medium text-gray-600">Lägg till ny kontakt</p>
-                <Input
-                  value={newContactName}
-                  onChange={(e) => setNewContactName(e.target.value)}
-                  placeholder="Namn *"
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddContact()}
-                />
-                <Input
-                  value={newContactEmail}
-                  onChange={(e) => setNewContactEmail(e.target.value)}
-                  placeholder="E-post (valfritt)"
-                  type="email"
-                />
-                <Input
-                  value={newContactPhone}
-                  onChange={(e) => setNewContactPhone(e.target.value)}
-                  placeholder="Telefon (valfritt)"
-                />
+          <div className="space-y-2">
+            <Label>Arbetande på denna plats</Label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {formData.team_member_ids.map((id) => {
+                const member = teamMembers.find(m => m.id === id);
+                return (
+                  <Badge key={id} variant="secondary" className="gap-1">
+                    {member?.name || 'Okänd'}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTeamMember(id)}
+                      className="hover:text-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                );
+              })}
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={handleAddContact}
-                  className="w-full"
+                  role="combobox"
+                  className="w-full justify-between"
                 >
-                  Lägg till kontakt
+                  Lägg till personlig...
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
-              </div>
-            </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Sök personlig..." />
+                  <CommandEmpty>Ingen personlig hittades.</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-auto">
+                    {teamMembers.map((member) => (
+                      <CommandItem
+                        key={member.id}
+                        value={member.name}
+                        onSelect={() => handleAddTeamMember(member.id)}
+                        disabled={formData.team_member_ids.includes(member.id)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            formData.team_member_ids.includes(member.id) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {member.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">

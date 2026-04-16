@@ -172,7 +172,7 @@ export default function LocationDetails() {
         </div>
 
          {/* Info card */}
-         {(location.address || location.contacts?.length > 0) && (
+         {(location.address || location.team_member_names?.length > 0) && (
            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
              {location.address && (
                <div className="flex items-start gap-2 text-sm text-gray-600">
@@ -180,23 +180,16 @@ export default function LocationDetails() {
                  <span>{location.address}</span>
                </div>
              )}
-             {location.contacts && location.contacts.length > 0 && (
-               <div className="space-y-2">
-                 {location.contacts.map(contact => (
-                   <div key={contact.id} className="flex items-start gap-2 text-sm text-gray-600">
-                     <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                     <div className="flex-1">
-                       <div className="flex items-center gap-2">
-                         <span className="font-medium">{contact.name}</span>
-                         {contact.is_primary && (
-                           <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 border-0">Huvudansvarig</Badge>
-                         )}
-                       </div>
-                       {contact.phone && <p className="text-xs text-gray-500">{contact.phone}</p>}
-                       {contact.email && <p className="text-xs text-gray-500">{contact.email}</p>}
-                     </div>
-                   </div>
-                 ))}
+             {location.team_member_names && location.team_member_names.length > 0 && (
+               <div className="flex items-start gap-2">
+                 <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                 <div className="flex flex-wrap gap-2">
+                   {location.team_member_names.map((name, idx) => (
+                     <Badge key={idx} variant="secondary" className="text-xs">
+                       {name}
+                     </Badge>
+                   ))}
+                 </div>
                </div>
              )}
            </div>
