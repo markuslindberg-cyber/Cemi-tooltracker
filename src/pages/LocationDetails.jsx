@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
+import LocationFormModal from '@/components/modals/LocationFormModal';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Package,
@@ -19,6 +21,7 @@ import {
   Loader2,
   User,
   Phone,
+  Pencil,
 } from 'lucide-react';
 
 const typeConfig = {
@@ -47,6 +50,8 @@ export default function LocationDetails() {
   const queryClient = useQueryClient();
   const [editTool, setEditTool] = useState(null);
   const [editHandTool, setEditHandTool] = useState(null);
+  const [editLocation, setEditLocation] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const { data: location, isLoading: loadingLocation } = useQuery({
     queryKey: ['location', locationId],
@@ -73,6 +78,24 @@ export default function LocationDetails() {
     queryKey: ['teamMembers'],
     queryFn: () => base44.entities.TeamMember.list(),
   });
+
+  const updateLocationMutation = useMutation({
+    mutationFn: (data) => base44.entities.Location.update(locationId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['location', locationId]);
+      queryClient.invalidateQueries(['locations']);
+      setEditLocation(null);
+    },
+  });
+
+  const handleSaveLocation = async (locationData) => {
+    setIsSaving(true);
+    try {
+      await updateLocationMutation.mutateAsync(locationData);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSaveTool = async (toolData) => {
     if (editTool?.id) {
@@ -121,31 +144,64 @@ export default function LocationDetails() {
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/Locations')}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className={`p-3 rounded-xl ${type.color.split(' ')[0]}`}>
-            <Icon className={`w-6 h-6 ${type.color.split(' ')[1]}`} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{location.name}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
-              {!location.is_active && <Badge variant="secondary" className="text-xs">Inaktiv</Badge>}
+         {/* Header */}
+         <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/Locations')}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className={`p-3 rounded-xl ${type.color.split(' ')[0]}`}>
+              <Icon className={`w-6 h-6 ${type.color.split(' ')[1]}`} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{location.name}</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
+                {!location.is_active && <Badge variant="secondary" className="text-xs">Inaktiv</Badge>}
+              </div>
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setEditLocation(location)}
+            className="gap-2"
+          >
+            <Pencil className="w-4 h-4" />
+            Redigera
+          </Button>
         </div>
 
-        {/* Info card */}
-        {(location.address || location.contact_person || location.contact_phone) && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-wrap gap-6 text-sm text-gray-600">
-            {location.address && <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" />{location.address}</div>}
-            {location.contact_person && <div className="flex items-center gap-2"><User className="w-4 h-4 text-gray-400" />{location.contact_person}</div>}
-            {location.contact_phone && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" />{location.contact_phone}</div>}
-          </div>
-        )}
+         {/* Info card */}
+         {(location.address || location.contacts?.length > 0) && (
+           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+             {location.address && (
+               <div className="flex items-start gap-2 text-sm text-gray-600">
+                 <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                 <span>{location.address}</span>
+               </div>
+             )}
+             {location.contacts && location.contacts.length > 0 && (
+               <div className="space-y-2">
+                 {location.contacts.map(contact => (
+                   <div key={contact.id} className="flex items-start gap-2 text-sm text-gray-600">
+                     <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                     <div className="flex-1">
+                       <div className="flex items-center gap-2">
+                         <span className="font-medium">{contact.name}</span>
+                         {contact.is_primary && (
+                           <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 border-0">Huvudansvarig</Badge>
+                         )}
+                       </div>
+                       {contact.phone && <p className="text-xs text-gray-500">{contact.phone}</p>}
+                       {contact.email && <p className="text-xs text-gray-500">{contact.email}</p>}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             )}
+           </div>
+         )}
 
         {/* Tabs */}
         <Tabs defaultValue="tools">
@@ -243,6 +299,14 @@ export default function LocationDetails() {
         tool={editHandTool}
         locations={allLocations}
         onSuccess={handleHandToolSuccess}
+      />
+
+      <LocationFormModal
+        isOpen={!!editLocation}
+        onClose={() => setEditLocation(null)}
+        location={editLocation}
+        onSubmit={handleSaveLocation}
+        isLoading={isSaving}
       />
     </div>
   );
