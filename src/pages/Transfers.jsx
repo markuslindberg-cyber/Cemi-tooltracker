@@ -46,6 +46,17 @@ export default function Transfers() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState('list');
   const [loanStatusFilter, setLoanStatusFilter] = useState('all');
+  const [sortField, setSortField] = useState('transfer_date');
+  const [sortDirection, setSortDirection] = useState('desc');
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
 
   const { data: transfers = [], isLoading } = useQuery({
     queryKey: ['transfers'],
@@ -82,6 +93,17 @@ export default function Transfers() {
     const matchesStatus = statusFilter === 'all' || transfer.status === statusFilter;
 
     return matchesSearch && matchesDate && matchesStatus;
+  }).sort((a, b) => {
+    let aVal = a[sortField];
+    let bVal = b[sortField];
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') {
+      aVal = aVal.toLowerCase();
+      bVal = bVal.toLowerCase();
+    }
+    const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return sortDirection === 'desc' ? -comparison : comparison;
   });
 
   const filteredLoans = loanRequests.filter(loan => {
@@ -165,13 +187,13 @@ export default function Transfers() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50">
-                      <TableHead className="font-semibold">Datum</TableHead>
-                      <TableHead className="font-semibold">Utrustning</TableHead>
-                      <TableHead className="font-semibold">Från</TableHead>
-                      <TableHead className="font-semibold">Till</TableHead>
-                      <TableHead className="font-semibold">Tilldelad</TableHead>
-                      <TableHead className="font-semibold">Återlämning</TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('transfer_date')}>Datum {sortField === 'transfer_date' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                      <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('tool_name')}>Utrustning {sortField === 'tool_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                      <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('from_location_name')}>Från {sortField === 'from_location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                      <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('to_location_name')}>Till {sortField === 'to_location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                      <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('to_person_name')}>Tilldelad {sortField === 'to_person_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                      <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('expected_return_date')}>Återlämning {sortField === 'expected_return_date' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                      <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>Status {sortField === 'status' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

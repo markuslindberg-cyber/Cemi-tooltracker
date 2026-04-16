@@ -19,7 +19,18 @@ export default function SåldaRedskap() {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [editTool, setEditTool] = useState(null);
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
   const queryClient = useQueryClient();
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['inactive-tools'],
@@ -60,6 +71,17 @@ export default function SåldaRedskap() {
       t.model_number?.toLowerCase().includes(search.toLowerCase());
     const matchFilter = activeFilter === 'all' || t.status === activeFilter;
     return matchSearch && matchFilter;
+  }).sort((a, b) => {
+    let aVal = a[sortField];
+    let bVal = b[sortField];
+    if (aVal === undefined || aVal === null) aVal = '';
+    if (bVal === undefined || bVal === null) bVal = '';
+    if (typeof aVal === 'string') {
+      aVal = aVal.toLowerCase();
+      bVal = bVal.toLowerCase();
+    }
+    const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return sortDirection === 'desc' ? -comparison : comparison;
   });
 
   const counts = {
@@ -124,12 +146,12 @@ export default function SåldaRedskap() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Namn</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Märke</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Modell</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Plats</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Streckkod</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('name')}>Namn {sortField === 'name' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('manufacturer')}>Märke {sortField === 'manufacturer' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('model_number')}>Modell {sortField === 'model_number' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>Status {sortField === 'status' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('location_name')}>Plats {sortField === 'location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('barcode')}>Streckkod {sortField === 'barcode' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
