@@ -84,8 +84,9 @@ export default function ToolFormModal({
 
   const availableSubcategories = useMemo(() => {
     if (!formData.category) return [];
+    const categoryToUse = formData.category === 'Redskap' ? 'power_tools' : formData.category;
     return [...new Set(
-      allTools.filter(t => t.category === formData.category).map(t => t.subcategory).filter(Boolean)
+      allTools.filter(t => t.category === categoryToUse).map(t => t.subcategory).filter(Boolean)
     )].sort();
   }, [allTools, formData.category]);
 
