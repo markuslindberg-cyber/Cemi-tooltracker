@@ -45,34 +45,51 @@ export default function LokalvardInköpImport() {
     const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
-    // Detektera separator från rubrikraden
-    const headerLine = lines[0];
-    const sep = headerLine.includes(';') ? ';' : ',';
-
-    // Parsa en rad med regex som hanterar citerade fält
-    const parseRow = (line) => {
-      const result = [];
-      // Regex matchar antingen ett citerat fält eller ett ociterat fält
-      const re = /("(?:[^"]|"")*"|[^,;]*?)(?:[,;]|$)/g;
-      let match;
-      while ((match = re.exec(line)) !== null) {
-        let val = match[1] ?? '';
-        // Ta bort omslutande citattecken och ersätt "" med "
-        if (val.startsWith('"') && val.endsWith('"')) {
-          val = val.slice(1, -1).replace(/""/g, '"');
+    // Parsa en rad tecken-för-tecken, hanterar citerade fält korrekt
+    const parseRow = (line, sep) => {
+      const fields = [];
+      let field = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQuotes) {
+          if (ch === '"' && line[i + 1] === '"') {
+            field += '"'; i++; // escaped quote
+          } else if (ch === '"') {
+            inQuotes = false; // closing quote
+          } else {
+            field += ch;
+          }
+        } else {
+          if (ch === '"') {
+            inQuotes = true; // opening quote
+          } else if (ch === sep) {
+            fields.push(field.trim());
+            field = '';
+          } else {
+            field += ch;
+          }
         }
-        result.push(val.trim());
-        // Stoppa om vi nått slutet av strängen
-        if (match.index + match[0].length >= line.length) break;
       }
-      return result;
+      fields.push(field.trim());
+      return fields;
     };
 
-    const headers = parseRow(headerLine).map(h => h.toLowerCase().trim());
+    const headerLine = lines[0];
+    // Detektera separator: räkna semikolon vs komma utanför citattecken
+    let commas = 0, semis = 0, inQ = false;
+    for (const ch of headerLine) {
+      if (ch === '"') inQ = !inQ;
+      else if (!inQ && ch === ',') commas++;
+      else if (!inQ && ch === ';') semis++;
+    }
+    const sep = semis > commas ? ';' : ',';
+
+    const headers = parseRow(headerLine, sep).map(h => h.toLowerCase());
     console.log('Detected sep:', sep, '| Headers:', headers);
 
     return lines.slice(1).map(line => {
-      const cols = parseRow(line);
+      const cols = parseRow(line, sep);
       const row = {};
       headers.forEach((h, i) => { row[h] = cols[i] ?? ''; });
       return row;
