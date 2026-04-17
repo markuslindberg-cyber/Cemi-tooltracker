@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Upload, FileDown, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { Upload, FileDown, Loader2, CheckCircle2, AlertCircle, X, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import ImportPreviewTable from '@/components/lokalvard/ImportPreviewTable';
@@ -15,6 +15,7 @@ export default function LokalvardInköpImport() {
   const [results, setResults] = useState(null);
   const [importLogs, setImportLogs] = useState([]);
   const [logHistory, setLogHistory] = useState([]);
+  const [expandedLogIdx, setExpandedLogIdx] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('importLogHistory');
@@ -144,7 +145,7 @@ export default function LokalvardInköpImport() {
         `✕ ${errorCount} fel`
       ]);
       const timestamp = new Date().toLocaleString('sv-SE');
-      const historyEntry = { timestamp, fileName: previewFileName, successCount, skippedCount, errorCount, totalRows: rowsToSend.length };
+      const historyEntry = { timestamp, fileName: previewFileName, successCount, skippedCount, errorCount, totalRows: rowsToSend.length, rows: processedResults };
       const currentHistory = JSON.parse(localStorage.getItem('importLogHistory') || '[]');
       currentHistory.unshift(historyEntry);
       localStorage.setItem('importLogHistory', JSON.stringify(currentHistory.slice(0, 50)));
@@ -277,33 +278,72 @@ export default function LokalvardInköpImport() {
 
       {/* Importhistorik */}
       {logHistory.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Importhistorik</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-2 text-left font-semibold">Datum & tid</th>
-                  <th className="px-4 py-2 text-left font-semibold">Filnamn</th>
-                  <th className="px-4 py-2 text-right font-semibold">Totalt</th>
-                  <th className="px-4 py-2 text-right font-semibold">Tillagda</th>
-                  <th className="px-4 py-2 text-right font-semibold">Hoppade</th>
-                  <th className="px-4 py-2 text-right font-semibold">Fel</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {logHistory.map((entry, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 font-mono text-xs text-gray-600">{entry.timestamp}</td>
-                    <td className="px-4 py-2 text-gray-900">{entry.fileName}</td>
-                    <td className="px-4 py-2 text-right text-gray-700">{entry.totalRows}</td>
-                    <td className="px-4 py-2 text-right"><span className="text-green-600 font-semibold">{entry.successCount}</span></td>
-                    <td className="px-4 py-2 text-right"><span className="text-yellow-600 font-semibold">{entry.skippedCount}</span></td>
-                    <td className="px-4 py-2 text-right"><span className="text-red-600 font-semibold">{entry.errorCount}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Importhistorik</h2>
+            <button
+              className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
+              onClick={() => { localStorage.removeItem('importLogHistory'); setLogHistory([]); }}
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Rensa historik
+            </button>
+          </div>
+          <div className="divide-y border rounded-lg overflow-hidden">
+            {logHistory.map((entry, idx) => (
+              <div key={idx}>
+                <button
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left transition-colors"
+                  onClick={() => setExpandedLogIdx(expandedLogIdx === idx ? null : idx)}
+                >
+                  {expandedLogIdx === idx
+                    ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+                  <span className="font-mono text-xs text-gray-500 w-36 flex-shrink-0">{entry.timestamp}</span>
+                  <span className="text-sm text-gray-800 flex-1 truncate">{entry.fileName}</span>
+                  <div className="flex gap-3 text-xs flex-shrink-0">
+                    <span className="text-green-600 font-semibold">✓ {entry.successCount}</span>
+                    <span className="text-yellow-600 font-semibold">⊘ {entry.skippedCount}</span>
+                    <span className="text-red-600 font-semibold">✕ {entry.errorCount}</span>
+                    <span className="text-gray-400">/ {entry.totalRows} rader</span>
+                  </div>
+                </button>
+                {expandedLogIdx === idx && entry.rows && (
+                  <div className="border-t bg-gray-50 px-4 py-3 overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="text-gray-500">
+                          <th className="pb-2 text-left font-semibold">Status</th>
+                          <th className="pb-2 text-left font-semibold">Streckkod</th>
+                          <th className="pb-2 text-left font-semibold">Artikel</th>
+                          <th className="pb-2 text-left font-semibold">Datum</th>
+                          <th className="pb-2 text-right font-semibold">Antal</th>
+                          <th className="pb-2 text-right font-semibold">Pris</th>
+                          <th className="pb-2 text-left font-semibold">Meddelande</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {entry.rows.map((row, rIdx) => (
+                          <tr key={rIdx} className={row.status === 'success' ? 'text-green-800' : row.status === 'skipped' ? 'text-yellow-700' : 'text-red-700'}>
+                            <td className="py-1.5 pr-3 font-medium">
+                              {row.status === 'success' && '✓'}
+                              {row.status === 'skipped' && '⊘'}
+                              {row.status === 'error' && '✕'}
+                              {' '}{row.status}
+                            </td>
+                            <td className="py-1.5 pr-3 font-mono text-gray-600">{row.streckkod}</td>
+                            <td className="py-1.5 pr-3 text-gray-800">{row.artikelNamn || '–'}</td>
+                            <td className="py-1.5 pr-3 text-gray-600">{row.datum}</td>
+                            <td className="py-1.5 pr-3 text-right text-gray-800">{row.antal}</td>
+                            <td className="py-1.5 pr-3 text-right text-gray-800">{row.pris?.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td className="py-1.5 text-gray-500">{row.message}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
