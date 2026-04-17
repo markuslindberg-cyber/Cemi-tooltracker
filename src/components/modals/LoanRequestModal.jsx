@@ -251,7 +251,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
                     </>
                   ) : (
                     <div className="space-y-2">
-                      <div id="loan-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                      <div id="loan-barcode-scanner" className="rounded-xl overflow-hidden" style={{ minHeight: '300px', backgroundColor: '#000' }} />
                       <Button onClick={() => setCameraActive(false)} variant="outline" className="w-full">
                         Stäng kamera
                       </Button>
