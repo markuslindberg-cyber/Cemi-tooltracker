@@ -61,6 +61,7 @@ const navigation = [
     children: [
       { name: 'Lager', path: '/Lokalvard/Lager' },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true },
+      { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true },
       { name: 'Uttag', path: '/Lokalvard/Uttag' },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
