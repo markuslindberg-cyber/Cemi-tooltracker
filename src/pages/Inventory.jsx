@@ -750,11 +750,11 @@ export default function Inventory() {
                         )}
                       </TableCell>
                       <TableCell className="font-medium text-gray-900">
-                        {tool.purchase_price ? `$${tool.purchase_price.toLocaleString()}` : '—'}
+                        {tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}
                       </TableCell>
                       <TableCell className="font-medium text-gray-900">
                         {serviceCost > 0 ? (
-                          <span className="text-[#8B1E1E]">${serviceCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span className="text-[#8B1E1E]">{serviceCost.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr</span>
                         ) : (
                           '—'
                         )}
