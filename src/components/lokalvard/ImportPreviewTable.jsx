@@ -224,9 +224,8 @@ export default function ImportPreviewTable({ rows, artiklar, onRowsChange, onCon
               else if (isCreate) rowBg = 'bg-blue-50';
               else if (needsAction) rowBg = 'bg-orange-50';
 
-              return (
-                <React.Fragment key={idx}>
-                  <tr className={rowBg}>
+              return [
+              <tr key={`row-${idx}`} className={rowBg}>
                     <td className="px-3 py-2 text-gray-400 text-xs">{idx + 1}</td>
                     <td className="px-3 py-2 font-mono text-xs text-gray-700">{row.streckkod}</td>
                     <td className="px-3 py-2 text-xs max-w-[180px]">
@@ -297,9 +296,9 @@ export default function ImportPreviewTable({ rows, artiklar, onRowsChange, onCon
                         </button>
                       )}
                     </td>
-                  </tr>
-                  {newArticleRowIdx === idx && (
-                    <tr>
+                  </tr>,
+                  newArticleRowIdx === idx ? (
+                    <tr key={`form-${idx}`}>
                       <td colSpan={7} className="px-3 py-3">
                         <NewArticleForm
                           row={row}
@@ -308,9 +307,8 @@ export default function ImportPreviewTable({ rows, artiklar, onRowsChange, onCon
                         />
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              );
+                  ) : null,
+            ];
             })}
           </tbody>
         </table>
