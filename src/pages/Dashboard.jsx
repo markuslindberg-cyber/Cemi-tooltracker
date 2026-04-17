@@ -68,14 +68,14 @@ export default function Dashboard() {
   const HIDDEN_STATUSES = ['såld', 'retired', 'missing'];
   const activeTools = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
-  const availableTools = tools.filter(t => t.status === 'available').length;
-  const inUseTools = tools.filter(t => t.status === 'in_use').length;
+  const availableTools = activeTools.filter(t => t.status === 'available').length;
+  const inUseTools = activeTools.filter(t => t.status === 'in_use').length;
   const missingTools = tools.filter(t => t.status === 'missing').length;
-  const maintenanceTools = tools.filter(t => t.status === 'maintenance').length;
+  const maintenanceTools = activeTools.filter(t => t.status === 'maintenance').length;
 
   const soldTools = tools.filter(t => t.status === 'såld').length;
   const retiredTools = tools.filter(t => t.status === 'retired').length;
-  const iLagerTools = tools.filter(t => t.status === 'i_lager').length;
+  const iLagerTools = activeTools.filter(t => t.status === 'i_lager').length;
 
   // Calculate total value from active tools only
   const activeHandTools = handTools.filter(t => !['saknas', 'kasserad'].includes(t.status));
