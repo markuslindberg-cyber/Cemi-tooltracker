@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useBarcodeCamera } from '@/hooks/useBarcodeCamera';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -354,15 +354,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   // Determine if an item uses manual count (lokalvård or arbetskläder with quantity)
   const usesManualCount = (item) => item._type === 'lokalvards' || item._type === 'arbetskläder';
 
-  useEffect(() => {
-    if (!scannerActive) return;
-    const scanner = new Html5QrcodeScanner("barcode-scanner", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-    scanner.render(
-      (text) => { handleScan(text); scanner.clear(); setScannerActive(false); },
-      () => {}
-    );
-    return () => { scanner.clear().catch(() => {}); };
-  }, [scannerActive, scopedItems]);
+
 
   // Keep external scanner input always focused (unless dialog is open or camera is active)
   useEffect(() => {
@@ -373,6 +365,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   }, [showManualDialog, scannerActive]);
 
   const handleScan = useCallback((barcode) => {
+    const trimmedBarcode = barcode.trim();
     // Search only within scoped items (or all in open mode)
     let searchList = scopedItems;
     if (sessionConfig.mode === 'open') {
@@ -383,7 +376,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         ...lokalvardsData.map(l => ({ ...l, _type: 'lokalvards', name: l.benamning })),
       ];
     }
-    const item = searchList.find(t => (t.barcode || t.streckkod) === barcode);
+    const item = searchList.find(t => (t.barcode || t.streckkod)?.trim() === trimmedBarcode);
     if (item) {
       // Always auto-register — no manual dialog on scan
       setCheckedItems(prev => new Set([...prev, item.id]));
@@ -392,9 +385,11 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
       updateToolMutation.mutate({ id: item.id, data: { last_seen_date: new Date().toISOString() }, type: item._type });
       setTimeout(() => externalScanInputRef.current?.focus(), 50);
     } else {
-      setLastScanFeedback({ name: barcode, found: false });
+      setLastScanFeedback({ name: trimmedBarcode, found: false });
     }
   }, [scopedItems, tools, handTools, arbetskläderData, lokalvardsData, sessionConfig.mode]);
+
+  useBarcodeCamera("barcode-scanner", scannerActive, handleScan);
 
   const handleManualSearch = (barcode) => {
     handleScan(barcode);
@@ -492,17 +487,17 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                     value={manualBarcode}
                     onChange={e => setManualBarcode(e.target.value)}
                     onKeyDown={e => {
-                      if (e.key === 'Enter' && manualBarcode.trim()) {
-                        handleScan(manualBarcode.trim());
-                        setManualBarcode('');
-                      }
-                    }}
+                       if (e.key === 'Enter' && manualBarcode.trim()) {
+                         handleScan(manualBarcode);
+                         setManualBarcode('');
+                       }
+                     }}
                     className="flex-1 border-2 border-green-300 focus:border-green-500 bg-green-50/30"
                     autoFocus
                     autoComplete="off"
                   />
                   <Button
-                    onClick={() => { if (manualBarcode.trim()) { handleScan(manualBarcode.trim()); setManualBarcode(''); } }}
+                    onClick={() => { if (manualBarcode.trim()) { handleScan(manualBarcode); setManualBarcode(''); } }}
                     disabled={!manualBarcode.trim()}
                   >
                     <Search className="w-4 h-4" />
