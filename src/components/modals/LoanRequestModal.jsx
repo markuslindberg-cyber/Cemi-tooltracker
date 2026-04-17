@@ -8,11 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus, Calendar, Barcode } from 'lucide-react';
+import { X, Plus, Calendar, Barcode, Camera } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useBarcodeCamera } from '@/hooks/useBarcodeCamera';
 
 export default function LoanRequestModal({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const [barcodeInput, setBarcodeInput] = useState('');
   const [itemType, setItemType] = useState('tools');
   const [itemQuantities, setItemQuantities] = useState({});
+  const [cameraActive, setCameraActive] = useState(false);
 
   const { data: tools } = useQuery({
     queryKey: ['tools'],
@@ -60,6 +62,18 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   });
 
   const availableItems = itemType === 'tools' ? tools : handTools;
+
+  useBarcodeCamera("loan-barcode-scanner", cameraActive && scanMode, (barcode) => {
+    setBarcodeInput(barcode);
+    const scannedItem = availableItems.find(t => t.barcode === barcode);
+    if (scannedItem) {
+      handleAddTool(scannedItem);
+      setBarcodeInput('');
+      setCameraActive(false);
+    } else {
+      setCameraActive(false);
+    }
+  });
 
   const createLoanMutation = useMutation({
     mutationFn: async () => {
@@ -155,6 +169,12 @@ export default function LoanRequestModal({ isOpen, onClose }) {
     createLoanMutation.mutate();
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      setCameraActive(false);
+    }
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
@@ -213,15 +233,31 @@ export default function LoanRequestModal({ isOpen, onClose }) {
               </div>
 
               {scanMode && (
-                <form onSubmit={handleBarcodeScan} className="space-y-2">
-                  <Input
-                    placeholder="Skanna streckkod här..."
-                    value={barcodeInput}
-                    onChange={(e) => setBarcodeInput(e.target.value)}
-                    autoFocus
-                  />
-                  <p className="text-xs text-gray-500">Streckkoden läses in automatiskt när du skannar</p>
-                </form>
+                <div className="space-y-2">
+                  {!cameraActive ? (
+                    <>
+                      <form onSubmit={handleBarcodeScan} className="space-y-2">
+                        <Input
+                          placeholder="Skanna streckkod här..."
+                          value={barcodeInput}
+                          onChange={(e) => setBarcodeInput(e.target.value)}
+                          autoFocus
+                        />
+                        <p className="text-xs text-gray-500">Streckkoden läses in automatiskt när du skannar</p>
+                      </form>
+                      <Button onClick={() => setCameraActive(true)} variant="outline" className="w-full">
+                        <Camera className="w-4 h-4 mr-2" />Öppna kamera
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <div id="loan-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                      <Button onClick={() => setCameraActive(false)} variant="outline" className="w-full">
+                        Stäng kamera
+                      </Button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
