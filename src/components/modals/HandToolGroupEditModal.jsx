@@ -1,0 +1,74 @@
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+
+export default function HandToolGroupEditModal({ isOpen, onClose, group, onSuccess }) {
+  const [form, setForm] = useState({
+    name: group?.name || '',
+    manufacturer: group?.manufacturer || '',
+    category: group?.category || '',
+    subcategory: group?.items?.[0]?.subcategory || '',
+    barcode: group?.items?.[0]?.barcode || '',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const updates = {
+      name: form.name.trim(),
+      manufacturer: form.manufacturer.trim(),
+      category: form.category.trim(),
+      subcategory: form.subcategory.trim(),
+      barcode: form.barcode.trim(),
+    };
+    await Promise.all(group.items.map(item => base44.entities.HandTool.update(item.id, updates)));
+    setSaving(false);
+    onSuccess();
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Redigera grupp – {group?.name}</DialogTitle>
+          <p className="text-sm text-gray-500">{group?.items?.length} redskap kommer uppdateras</p>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label>Namn</Label>
+            <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Tillverkare</Label>
+            <Input value={form.manufacturer} onChange={e => setForm(f => ({ ...f, manufacturer: e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Kategori</Label>
+            <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Underkategori</Label>
+            <Input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Streckkod</Label>
+            <Input value={form.barcode} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" onClick={onClose}>Avbryt</Button>
+          <Button onClick={handleSave} disabled={saving || !form.name.trim()} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+            {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Sparar...</> : `Uppdatera ${group?.items?.length} redskap`}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

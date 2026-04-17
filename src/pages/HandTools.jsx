@@ -12,6 +12,7 @@ import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2, 
 import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
 import HandToolScanModal from '@/components/modals/HandToolScanModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
+import HandToolGroupEditModal from '@/components/modals/HandToolGroupEditModal';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
 
 const statusConfig = {
@@ -35,6 +36,7 @@ export default function HandTools() {
   const [editTool, setEditTool] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
   const [editingCategory, setEditingCategory] = useState(null);
+  const [groupEditTarget, setGroupEditTarget] = useState(null);
   const [savingCategory, setSavingCategory] = useState(false);
   const [uploadingCategoryImage, setUploadingCategoryImage] = useState(null);
   const categoryImageInputRef = useRef(null);
@@ -435,11 +437,18 @@ export default function HandTools() {
                       </div>
                     </div>
                   </div>
-                  {/* Right: status badges */}
-                  <div className="flex gap-2 flex-wrap justify-end">
+                  {/* Right: status badges + group edit */}
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
                     {Object.entries(byStatus).map(([s, count]) => (
                       <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
                     ))}
+                    <button
+                      onClick={() => setGroupEditTarget(group)}
+                      className="ml-1 p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
+                      title="Redigera hela gruppen"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
                 {/* Items per location as clear rows */}
@@ -502,6 +511,18 @@ export default function HandTools() {
             ))}
           </div>
         </div>
+      )}
+
+      {groupEditTarget && (
+        <HandToolGroupEditModal
+          isOpen={!!groupEditTarget}
+          group={groupEditTarget}
+          onClose={() => setGroupEditTarget(null)}
+          onSuccess={() => {
+            queryClient.invalidateQueries(['handtools']);
+            setGroupEditTarget(null);
+          }}
+        />
       )}
 
       <HandToolScanModal
