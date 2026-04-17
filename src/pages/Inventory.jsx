@@ -452,7 +452,7 @@ export default function Inventory() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -659,8 +659,8 @@ export default function Inventory() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <Table>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+            <Table className="min-w-max">
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="w-10">
