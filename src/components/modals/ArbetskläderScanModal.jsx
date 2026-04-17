@@ -42,6 +42,7 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
   });
 
   const handleScan = (barcode) => {
+    setManualBarcode(barcode);
     const item = items.find(i => i.barcode === barcode);
     if (item) {
       setScannedItem(item);

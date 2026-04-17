@@ -33,6 +33,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools }) {
   });
 
   const handleScan = (barcode) => {
+    setManualBarcode(barcode);
     const tools = handTools.filter(t => t.barcode === barcode);
     if (tools.length > 0) {
       if (foundGroup && foundGroup.barcode === barcode) {

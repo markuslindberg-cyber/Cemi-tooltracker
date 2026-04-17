@@ -35,6 +35,7 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
   });
 
   const handleScan = (barcode) => {
+    setManualBarcode(barcode);
     const tool = tools.find(t => t.barcode === barcode);
     if (tool) {
       setFoundTool(tool);
