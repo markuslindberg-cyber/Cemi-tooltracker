@@ -17,7 +17,6 @@ const defaultForm = {
   manufacturer: '',
   category: '',
   subcategory: '',
-  condition: 'bra',
   status: 'i_lager',
   purchase_date: '',
   purchase_price: '',
@@ -28,7 +27,7 @@ const defaultForm = {
 export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
   const [form, setForm] = useState(defaultForm);
   const [quantity, setQuantity] = useState(1);
-  const [distributions, setDistributions] = useState([{ location_id: '', location_name: '', count: 1, condition: 'bra' }]);
+  const [distributions, setDistributions] = useState([{ location_id: '', location_name: '', count: 1 }]);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -81,7 +80,7 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
   const totalDistributed = distributions.reduce((s, d) => s + (parseInt(d.count) || 0), 0);
 
   const handleAddRow = () => {
-    setDistributions(prev => [...prev, { location_id: '', location_name: '', count: 1, condition: 'bra' }]);
+    setDistributions(prev => [...prev, { location_id: '', location_name: '', count: 1 }]);
   };
 
   const handleRemoveRow = (i) => {
@@ -111,7 +110,6 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
           manufacturer: form.manufacturer,
           category: form.category,
           subcategory: form.subcategory,
-          condition: dist.condition || form.condition,
           status: form.status || 'i_lager',
           notes: form.notes,
           image_url: form.image_url || undefined,
@@ -148,7 +146,6 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
                 manufacturer: t.manufacturer || '',
                 category: t.category || '',
                 subcategory: t.subcategory || '',
-                condition: t.condition || 'bra',
                 status: t.status || 'i_lager',
                 purchase_date: t.purchase_date || '',
                 purchase_price: t.purchase_price ? String(t.purchase_price) : '',
@@ -254,7 +251,7 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
           {/* Distribution */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Fördela på platser och skick</Label>
+              <Label>Fördela på platser</Label>
               <span className={`text-sm font-medium ${totalDistributed === quantity ? 'text-green-600' : 'text-red-500'}`}>
                 {totalDistributed} / {quantity} fördelade
               </span>
@@ -270,17 +267,6 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
                       {locations.map(loc => (
                         <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="w-32">
-                  <Select value={dist.condition} onValueChange={v => handleDistChange(i, 'condition', v)}>
-                    <SelectTrigger><SelectValue placeholder="Skick" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ny">Ny</SelectItem>
-                      <SelectItem value="bra">Bra</SelectItem>
-                      <SelectItem value="okej">Okej</SelectItem>
-                      <SelectItem value="dålig">Dålig</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

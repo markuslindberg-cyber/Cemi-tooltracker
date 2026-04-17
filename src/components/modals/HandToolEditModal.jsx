@@ -163,18 +163,6 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label>Skick</Label>
-              <Select value={form.condition} onValueChange={v => handleChange('condition', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ny">Ny</SelectItem>
-                  <SelectItem value="bra">Bra</SelectItem>
-                  <SelectItem value="okej">Okej</SelectItem>
-                  <SelectItem value="dålig">Dålig</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="space-y-1">

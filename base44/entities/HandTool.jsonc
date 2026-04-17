@@ -29,16 +29,6 @@
       "default": "i_lager",
       "description": "Nuvarande status"
     },
-    "condition": {
-      "type": "string",
-      "enum": [
-        "ny",
-        "bra",
-        "okej",
-        "d\u00e5lig"
-      ],
-      "default": "bra"
-    },
     "location_id": {
       "type": "string",
       "description": "Referens till Location-entiteten"

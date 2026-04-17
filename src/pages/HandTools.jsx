@@ -20,12 +20,6 @@ const statusConfig = {
   kasserad: { label: 'Kasserad', className: 'bg-gray-100 text-gray-600' },
 };
 
-const conditionConfig = {
-  ny:    'Ny',
-  bra:   'Bra',
-  okej:  'Okej',
-  dålig: 'Dålig',
-};
 
 export default function HandTools() {
   const queryClient = useQueryClient();
@@ -34,7 +28,7 @@ export default function HandTools() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [manufacturerFilter, setManufacturerFilter] = useState('all');
-  const [conditionFilter, setConditionFilter] = useState('all');
+
   const [locationFilter, setLocationFilter] = useState('all');
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editTool, setEditTool] = useState(null);
@@ -76,7 +70,7 @@ export default function HandTools() {
     if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
     if (subcategoryFilter !== 'all' && t.subcategory !== subcategoryFilter) return false;
     if (manufacturerFilter !== 'all' && t.manufacturer !== manufacturerFilter) return false;
-    if (conditionFilter !== 'all' && t.condition !== conditionFilter) return false;
+
     if (locationFilter !== 'all' && t.location_name !== locationFilter) return false;
     return true;
   });
@@ -112,7 +106,7 @@ export default function HandTools() {
     queryClient.invalidateQueries(['handtools']);
   };
 
-  const hasFilters = search || statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all';
+  const hasFilters = search || statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || locationFilter !== 'all';
 
   const handleDownloadTemplate = () => {
     const infoRows = [
@@ -224,7 +218,7 @@ export default function HandTools() {
 
   const clearFilters = () => {
     setSearch(''); setStatusFilter([]); setCategoryFilter('all'); setSubcategoryFilter('all');
-    setManufacturerFilter('all'); setConditionFilter('all'); setLocationFilter('all');
+    setManufacturerFilter('all'); setLocationFilter('all');
   };
 
   return (
@@ -273,8 +267,6 @@ export default function HandTools() {
         onSubcategoryChange={setSubcategoryFilter}
         manufacturerFilter={manufacturerFilter}
         onManufacturerChange={setManufacturerFilter}
-        conditionFilter={conditionFilter}
-        onConditionChange={setConditionFilter}
         locationFilter={locationFilter}
         onLocationChange={setLocationFilter}
         viewMode={viewMode}
@@ -292,12 +284,7 @@ export default function HandTools() {
           { value: 'saknas', label: 'Saknas' },
           { value: 'kasserad', label: 'Kasserad' },
         ]}
-        conditionOptions={[
-          { value: 'ny', label: 'Ny' },
-          { value: 'bra', label: 'Bra' },
-          { value: 'okej', label: 'Okej' },
-          { value: 'dålig', label: 'Dålig' },
-        ]}
+
       />
 
       {/* Content */}
@@ -392,7 +379,7 @@ export default function HandTools() {
                         {items.map(item => (
                           <div key={item.id} className="flex items-center gap-1.5 bg-gray-50 rounded-lg px-3 py-1.5 text-sm group">
                             <span className={`w-2 h-2 rounded-full ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
-                            <span className="text-gray-700">{conditionConfig[item.condition] || item.condition}</span>
+                            <span className="text-gray-700">{statusConfig[item.status]?.label || item.status}</span>
                             <button onClick={() => setEditTool(item)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity ml-1"><Edit className="w-3 h-3" /></button>
                             <button onClick={() => handleDelete(item.id)} className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"><Trash2 className="w-3 h-3" /></button>
                           </div>
@@ -418,7 +405,6 @@ export default function HandTools() {
                 <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500">
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
                   {item.location_name && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{item.location_name}</span>}
-                  <span>{conditionConfig[item.condition] || item.condition}</span>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-600"><Edit className="w-4 h-4" /></button>
