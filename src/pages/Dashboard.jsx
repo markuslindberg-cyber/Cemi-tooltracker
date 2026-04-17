@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   const { data: tools = [], refetch: refetchTools } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    queryFn: () => base44.entities.Tool.list('-updated_date'),
   });
 
   const { data: locations = [] } = useQuery({
