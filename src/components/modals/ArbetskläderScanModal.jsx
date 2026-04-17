@@ -78,34 +78,28 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
 
         {!scannedItem ? (
           <div className="space-y-4">
-            {/* Scanner */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="font-semibold mb-4">Skanna streckkod</h3>
-              {!scannerActive ? (
-                <div className="space-y-4">
-                  <Button onClick={() => setScannerActive(true)} className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-12" size="lg">
-                    <Camera className="w-5 h-5 mr-2" />Starta kameraskanner
-                  </Button>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-                    <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER</span></div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Input placeholder="Ange streckkod manuellt" value={manualBarcode}
-                      onChange={e => setManualBarcode(e.target.value)}
-                      onKeyPress={e => e.key === 'Enter' && (handleScan(manualBarcode), setManualBarcode(''))} />
-                    <Button onClick={() => { handleScan(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode}>
-                      <Search className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div id="barcode-scanner" className="rounded-lg overflow-hidden" />
-                  <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt skanning</Button>
-                </div>
-              )}
-            </div>
+            {!scannerActive ? (
+               <div className="flex gap-2">
+                 <Button onClick={() => setScannerActive(true)} className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515] h-10">
+                   <Camera className="w-5 h-5 mr-2" />Kamera
+                 </Button>
+                 <div className="flex-1 flex gap-1">
+                   <Input placeholder="Streckkod" value={manualBarcode}
+                     onChange={e => setManualBarcode(e.target.value)}
+                     onKeyPress={e => e.key === 'Enter' && (handleScan(manualBarcode), setManualBarcode(''))}
+                     className="text-sm"
+                   />
+                   <Button onClick={() => { handleScan(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode} size="sm">
+                     <Search className="w-4 h-4" />
+                   </Button>
+                 </div>
+               </div>
+             ) : (
+               <div className="space-y-3">
+                 <div id="barcode-scanner" className="rounded-lg overflow-hidden bg-black" style={{ minHeight: '300px' }} />
+                 <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt</Button>
+               </div>
+             )}
           </div>
         ) : (
           <div className="space-y-4">

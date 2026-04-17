@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 
 export function useBarcodeCamera(containerId, isActive, onScan) {
@@ -7,33 +7,39 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
   useEffect(() => {
     if (!isActive || !containerId) return;
 
-    scannerRef.current = new Html5QrcodeScanner(
-      containerId,
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 150 }, 
-        aspectRatio: 1.5,
-        useBarCodeDetectorIfSupported: true 
-      },
-      false
-    );
+    const startScanner = () => {
+      try {
+        scannerRef.current = new Html5QrcodeScanner(
+          containerId,
+          { 
+            fps: 15, 
+            qrbox: { width: 300, height: 200 }, 
+            aspectRatio: 1.5,
+            useBarCodeDetectorIfSupported: true,
+            showTorchButtonIfSupported: true,
+            disableFlip: false
+          },
+          false
+        );
 
-    scannerRef.current.render(
-      (decodedText) => {
-        onScan(decodedText);
-        scannerRef.current?.clear();
-      },
-      () => {}
-    );
+        scannerRef.current.render(
+          (decodedText) => {
+            onScan(decodedText);
+            scannerRef.current?.clear().catch(() => {});
+          },
+          () => {}
+        );
+      } catch (error) {
+        console.error('Fel vid kamerastart:', error);
+      }
+    };
+
+    startScanner();
 
     return () => {
       scannerRef.current?.clear().catch(() => {});
     };
   }, [isActive, containerId, onScan]);
 
-  const stopScanning = () => {
-    scannerRef.current?.clear().catch(() => {});
-  };
-
-  return { stopScanning };
+  return null;
 }

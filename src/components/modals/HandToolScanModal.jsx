@@ -100,41 +100,33 @@ export default function HandToolScanModal({ isOpen, onClose, handTools }) {
         {/* Scanner */}
         <div className="space-y-3">
           {!scannerActive ? (
-            <>
+            <div className="flex gap-2">
               <Button
                 onClick={() => setScannerActive(true)}
-                className="w-full bg-[#8B1E1E] hover:bg-[#6B1515] h-12"
+                className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515] h-10"
               >
                 <Camera className="w-5 h-5 mr-2" />
-                Starta kameraskanner
+                Kamera
               </Button>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-white px-2 text-gray-500">ELLER</span>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
+              <div className="flex-1 flex gap-1">
                 <Input
-                  placeholder="Ange streckkod manuellt"
+                  placeholder="Streckkod"
                   value={manualBarcode}
                   onChange={e => setManualBarcode(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleManualSearch()}
+                  className="text-sm"
                 />
-                <Button onClick={handleManualSearch} disabled={!manualBarcode.trim()}>
+                <Button onClick={handleManualSearch} disabled={!manualBarcode.trim()} size="sm">
                   <Search className="w-4 h-4" />
                 </Button>
               </div>
-            </>
+            </div>
           ) : (
             <div className="space-y-3">
-              <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden" />
+              <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '300px' }} />
               <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">
-                Avbryt skanning
+                Avbryt
               </Button>
             </div>
           )}
