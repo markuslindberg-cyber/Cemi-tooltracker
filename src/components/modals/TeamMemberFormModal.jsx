@@ -106,35 +106,38 @@ export default function TeamMemberFormModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Fullständigt namn *</Label>
-            <Input
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="Anna Svensson"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div className="space-y-2">
-               <Label>E-post</Label>
-               <Input
-                 type="email"
-                 value={formData.email}
-                 onChange={(e) => handleChange('email', e.target.value)}
-                 placeholder="anna@exempel.se"
-               />
-             </div>
-             <div className="space-y-2">
-               <Label>Telefon</Label>
-               <Input
-                 value={formData.phone}
-                 onChange={(e) => handleChange('phone', e.target.value)}
-                 placeholder="070-123 45 67"
-               />
-             </div>
+        <div className="space-y-3 py-4">
+           <div className="space-y-2">
+             <Label className="text-sm sm:text-base">Fullständigt namn *</Label>
+             <Input
+               value={formData.name}
+               onChange={(e) => handleChange('name', e.target.value)}
+               placeholder="Anna Svensson"
+               className="text-sm"
+             />
            </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-sm sm:text-base">E-post</Label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                placeholder="anna@exempel.se"
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm sm:text-base">Telefon</Label>
+              <Input
+                value={formData.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                placeholder="070-123 45 67"
+                className="text-sm"
+              />
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label>Roll</Label>
@@ -264,25 +267,25 @@ export default function TeamMemberFormModal({
           </div>
         </div>
 
-        <DialogFooter className="gap-3">
-          <Button variant="outline" onClick={handleClose}>
-            Avbryt
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!formData.name || isLoading}
-            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sparar...
-              </>
-            ) : (
-              isEditing ? 'Spara ändringar' : 'Lägg till medlem'
-            )}
-          </Button>
-        </DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-3">
+           <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto text-sm">
+             Avbryt
+           </Button>
+           <Button
+             onClick={handleSubmit}
+             disabled={!formData.name || isLoading}
+             className="w-full sm:w-auto bg-[#8B1E1E] hover:bg-[#6B1515] text-sm"
+           >
+             {isLoading ? (
+               <>
+                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                 Sparar...
+               </>
+             ) : (
+               isEditing ? 'Spara ändringar' : 'Lägg till medlem'
+             )}
+           </Button>
+         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
