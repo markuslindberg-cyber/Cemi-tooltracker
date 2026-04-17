@@ -39,13 +39,15 @@ export default function LokalvardInköpImport() {
     URL.revokeObjectURL(link.href);
   };
 
+  const parseCSVField = (s) => s == null ? '' : s.trim().replace(/^"(.*)"$/, '$1').replace(/""/g, '"').trim();
+
   const parseCSV = (text) => {
-    const lines = text.split('\n').filter(l => l.trim());
+    const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
     const headerLine = lines[0].replace(/^\uFEFF/, '');
-    const headers = headerLine.split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
+    const headers = headerLine.split(',').map(h => parseCSVField(h).toLowerCase());
     return lines.slice(1).map(line => {
-      const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
+      const cols = line.split(',').map(parseCSVField);
       const row = {};
       headers.forEach((h, i) => { row[h] = cols[i] || ''; });
       return row;
