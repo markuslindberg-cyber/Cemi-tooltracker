@@ -93,6 +93,18 @@ export default function Layout({ children }) {
   const [openMenus, setOpenMenus] = useState({});
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
+
+  // Auto-open parent menu when on a child path
+  useEffect(() => {
+    const autoOpen = {};
+    navigation.forEach(item => {
+      if (item.children) {
+        const anyChildActive = item.children.some(child => location.pathname === child.path || location.pathname.startsWith(child.path + '/'));
+        if (anyChildActive) autoOpen[item.name] = true;
+      }
+    });
+    setOpenMenus(prev => ({ ...prev, ...autoOpen }));
+  }, [location.pathname]);
   const [user, setUser] = useState(null);
   const location = useLocation();
 
@@ -107,7 +119,9 @@ export default function Layout({ children }) {
 
   const isActivePath = (path) => {
     if (path === '/') return location.pathname === '/';
-    return location.pathname.startsWith(path);
+    // Exact match first, then prefix match (avoid /Lokalvard matching /Lokalvard/Lager wrong parent)
+    if (location.pathname === path) return true;
+    return location.pathname.startsWith(path + '/');
   };
 
   return (
