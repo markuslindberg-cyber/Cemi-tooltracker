@@ -62,35 +62,69 @@ export default function LokalvardInköpImport() {
     fileInputRef.current?.click();
   };
 
-  const handleFileUpload = async (e) => {
-    console.log('handleFileUpload triggered', e.target.files);
-    const file = e.target.files?.[0];
-    if (!file) {
-      console.log('No file selected');
-      return;
-    }
+  const parseCSV = (text) => {
+    const lines = text.split('\n').filter(l => l.trim());
+    if (lines.length < 2) return [];
+    // Ta bort BOM om det finns
+    const headerLine = lines[0].replace(/^\uFEFF/, '');
+    const headers = headerLine.split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
+    return lines.slice(1).map(line => {
+      const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
+      const row = {};
+      headers.forEach((h, i) => { row[h] = cols[i] || ''; });
+      return row;
+    }).filter(row => row.streckkod || row.datum); // filtrera tomma rader
+  };
 
-    console.log('File selected:', file.name, file.size);
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: 'object',
-          properties: {
-            streckkod: { type: 'string' },
-            datum: { type: 'string' },
-            antal: { type: 'number' },
-            pris: { type: 'number' }
-          }
-        }
-      });
+      let rows = [];
 
-      if (result.status === 'success' && Array.isArray(result.output)) {
+      if (file.name.endsWith('.csv')) {
+        // Direkt CSV-parsning
+        const text = await file.text();
+        rows = parseCSV(text).map(r => ({
+          streckkod: String(r.streckkod || '').trim(),
+          datum: String(r.datum || '').trim(),
+          antal: parseFloat(r.antal) || 0,
+          pris: parseFloat(r.pris) || 0,
+        })).filter(r => r.streckkod && r.datum && r.antal > 0);
+      } else {
+        // För Excel-filer, använd AI-extraktion
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+          file_url,
+          json_schema: {
+            type: 'object',
+            properties: {
+              streckkod: { type: 'string', description: 'Barcode/streckkod column' },
+              datum: { type: 'string', description: 'Date in YYYY-MM-DD format' },
+              antal: { type: 'number', description: 'Quantity/antal column' },
+              pris: { type: 'number', description: 'Price per unit/pris column' }
+            }
+          }
+        });
+        if (result.status === 'success' && Array.isArray(result.output)) {
+          rows = result.output.map(r => ({
+            streckkod: String(r.streckkod || '').trim(),
+            datum: String(r.datum || '').trim(),
+            antal: parseFloat(r.antal) || 0,
+            pris: parseFloat(r.pris) || 0,
+          })).filter(r => r.streckkod && r.datum && r.antal > 0);
+        } else {
+          toast.error('Importfel: ' + (result.details || 'Okänt fel'));
+          return;
+        }
+      }
+
+      if (rows.length > 0) {
         // Spara progress och kör import i bakgrunden
-        const progress = { status: 'running', file_url: file_url, rows: result.output, fileName: file.name };
-        const initialLogs = [`Startar import av ${result.output.length} rader från ${file.name}...`];
+        const progress = { status: 'running', rows, fileName: file.name };
+        const initialLogs = [`Startar import av ${rows.length} rader från ${file.name}...`];
         setImportProgress(progress);
         setImportLogs(initialLogs);
         localStorage.setItem('importProgress', JSON.stringify(progress));
@@ -98,10 +132,9 @@ export default function LokalvardInköpImport() {
 
         // Kör import asynkront
         base44.functions.invoke('processLokalvardInkopImport', {
-          rows: result.output,
-          fileUrl: file_url
+          rows,
         }).then(res => {
-          const { results: processedResults, summary } = res.data;
+          const { results: processedResults } = res.data;
           setResults(processedResults);
           setImportProgress(null);
           localStorage.removeItem('importProgress');
@@ -127,7 +160,7 @@ export default function LokalvardInköpImport() {
             successCount,
             skippedCount,
             errorCount,
-            totalRows: result.output.length
+            totalRows: rows.length
           };
           const currentHistory = JSON.parse(localStorage.getItem('importLogHistory') || '[]');
           currentHistory.unshift(historyEntry);
@@ -141,7 +174,7 @@ export default function LokalvardInköpImport() {
           localStorage.removeItem('importProgress');
         });
       } else {
-        toast.error('Importfel: ' + (result.details || 'Okänt fel'));
+        toast.error('Inga giltiga rader hittades i filen. Kontrollera att kolumnnamnen är: streckkod, datum, antal, pris');
       }
     } catch (err) {
       toast.error('Importfel: ' + (err.message || 'Okänt fel'));
