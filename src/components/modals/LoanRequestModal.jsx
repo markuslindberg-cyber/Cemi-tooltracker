@@ -144,7 +144,6 @@ export default function LoanRequestModal({ isOpen, onClose }) {
       setBarcodeInput('');
     } else {
       alert(`Inget verktyg/redskap hittad med streckkod: ${barcodeInput}`);
-      setBarcodeInput('');
     }
   };
 
