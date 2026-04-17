@@ -45,49 +45,54 @@ export default function LokalvardInköpImport() {
     const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
-    // Robust funktion för att dela upp en rad i fält, hanterar citerade fält korrekt
-    const parseRowRobust = (line, sepChar) => {
+    // Splittar en rad på given separator, hanterar RFC-4180 citerade fält
+    const splitLine = (line, sep) => {
       const fields = [];
-      let field = '';
-      let inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (inQuotes) {
-          if (ch === '"' && line[i + 1] === '"') {
-            field += '"'; i++; // escaped quote
-          } else if (ch === '"') {
-            inQuotes = false; // closing quote
-          } else {
-            field += ch;
+      let i = 0;
+      while (i <= line.length) {
+        if (line[i] === '"') {
+          // Citerat fält
+          let field = '';
+          i++; // hoppa över öppningscitattecken
+          while (i < line.length) {
+            if (line[i] === '"' && line[i + 1] === '"') {
+              field += '"'; i += 2; // escaped quote
+            } else if (line[i] === '"') {
+              i++; break; // stängningscitattecken
+            } else {
+              field += line[i++];
+            }
           }
+          fields.push(field.trim());
+          // hoppa över separator om den finns
+          if (line[i] === sep) i++;
         } else {
-          if (ch === '"') {
-            inQuotes = true; // opening quote
-          } else if (ch === sepChar) {
-            fields.push(field.trim());
-            field = '';
+          // Ociterat fält — läs till nästa separator
+          const end = line.indexOf(sep, i);
+          if (end === -1) {
+            fields.push(line.slice(i).trim());
+            break;
           } else {
-            field += ch;
+            fields.push(line.slice(i, end).trim());
+            i = end + 1;
           }
         }
       }
-      fields.push(field.trim());
       return fields;
     };
 
+    // Detektera separator: välj den som ger flest fält i rubrikraden
     const headerLine = lines[0];
-    // Detektera separator genom att prova alla kandidater och välja den som ger flest fält
     const candidates = [';', ',', '\t'];
-    const sep = candidates.reduce((best, c) => {
-      return parseRowRobust(headerLine, c).length > parseRowRobust(headerLine, best).length ? c : best;
-    }, candidates[0]);
+    const sep = candidates.reduce((best, c) =>
+      splitLine(headerLine, c).length > splitLine(headerLine, best).length ? c : best
+    , candidates[0]);
 
-    // Använd parseRowRobust för att tolka rubrikraden korrekt
-    const headers = parseRowRobust(headerLine, sep).map(h => h.toLowerCase());
+    const headers = splitLine(headerLine, sep).map(h => h.toLowerCase().trim());
     console.log('Detected sep:', JSON.stringify(sep), '| Headers:', headers);
 
     return lines.slice(1).map(line => {
-      const cols = parseRowRobust(line, sep);
+      const cols = splitLine(line, sep);
       const row = {};
       headers.forEach((h, i) => { row[h] = cols[i] ?? ''; });
       return row;
