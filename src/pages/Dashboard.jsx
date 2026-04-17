@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [showLoanRequest, setShowLoanRequest] = useState(false);
 
   const { data: tools = [], refetch: refetchTools } = useQuery({
-    queryKey: ['tools'],
+    queryKey: ['dashboardTools'],
     queryFn: () => base44.entities.Tool.list('-updated_date'),
   });
 
