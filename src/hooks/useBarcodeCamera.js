@@ -13,7 +13,8 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
           containerId,
           { 
             fps: 10, 
-            qrbox: { width: 250, height: 250 }
+            qrbox: { width: 250, height: 250 },
+            useBarCodeDetectorIfSupported: true
           },
           false
         );
