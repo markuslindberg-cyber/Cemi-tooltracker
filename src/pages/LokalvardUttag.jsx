@@ -51,7 +51,7 @@ export default function LokalvardUttag() {
     queryKey: ['uttag'],
     queryFn: async () => {
        try {
-         const data = await base44.entities.Uttag.filter({is_deleted: false}, '-datum', 100000).catch(() => []);
+         const data = await base44.entities.Uttag.list('-datum', 100000).catch(() => []);
          let checkoutData = [];
          if (base44.entities.LokalvardCheckout?.list) {
            checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', 100000).catch(() => []);
