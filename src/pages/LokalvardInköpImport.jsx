@@ -39,17 +39,54 @@ export default function LokalvardInköpImport() {
     URL.revokeObjectURL(link.href);
   };
 
-  const parseCSVField = (s) => s == null ? '' : s.trim().replace(/^"(.*)"$/, '$1').replace(/""/g, '"').trim();
-
+  // Robust RFC-4180-kompatibel CSV-parser som hanterar citerade fält med kommatecken
   const parseCSV = (text) => {
-    const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    const parseRow = (line) => {
+      const fields = [];
+      let i = 0;
+      while (i < line.length) {
+        if (line[i] === '"') {
+          // Citerat fält
+          let field = '';
+          i++; // hoppa över inledande "
+          while (i < line.length) {
+            if (line[i] === '"' && line[i + 1] === '"') {
+              field += '"'; i += 2;
+            } else if (line[i] === '"') {
+              i++; break;
+            } else {
+              field += line[i++];
+            }
+          }
+          fields.push(field.trim());
+          // hoppa över avgränsare efter avslutande "
+          if (line[i] === ',' || line[i] === ';') i++;
+        } else {
+          // Ociterat fält
+          const sep = line.includes(';') ? ';' : ',';
+          const end = line.indexOf(sep, i);
+          if (end === -1) {
+            fields.push(line.slice(i).trim());
+            break;
+          } else {
+            fields.push(line.slice(i, end).trim());
+            i = end + 1;
+          }
+        }
+      }
+      return fields;
+    };
+
+    const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
+
     const headerLine = lines[0].replace(/^\uFEFF/, '');
-    // Auto-detect separator: semicolon or comma
-    const sep = headerLine.includes(';') ? ';' : ',';
-    const headers = headerLine.split(sep).map(h => parseCSVField(h).toLowerCase());
+    const headers = parseRow(headerLine).map(h => h.toLowerCase());
+
     return lines.slice(1).map(line => {
-      const cols = line.split(sep).map(parseCSVField);
+      const cols = parseRow(line);
       const row = {};
       headers.forEach((h, i) => { row[h] = cols[i] || ''; });
       return row;
