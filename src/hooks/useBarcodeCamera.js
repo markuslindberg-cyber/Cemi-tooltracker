@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 export function useBarcodeCamera(containerId, isActive, onScan) {
   const scannerRef = useRef(null);
@@ -14,7 +14,12 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
           { 
             fps: 10, 
             qrbox: { width: 250, height: 250 },
-            useBarCodeDetectorIfSupported: true
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.QR_CODE,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.CODE_39,
+            ]
           },
           false
         );
