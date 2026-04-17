@@ -60,8 +60,8 @@ const navigation = [
     icon: SprayCan,
     children: [
       { name: 'Lager', path: '/Lokalvard/Lager' },
-      { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true },
-      { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true },
+      { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
+      { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true },
       { name: 'Uttag', path: '/Lokalvard/Uttag' },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
@@ -186,7 +186,11 @@ export default function Layout({ children }) {
                     </button>
                     {isOpen && (
                       <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
-                        {item.children.filter(child => !child.desktopOnly || window.innerWidth >= 1024).map((child) => (
+                        {item.children.filter(child => {
+                          if (child.devOnly && !window.location.hostname.includes('base44.app')) return false;
+                          if (child.desktopOnly && window.innerWidth < 1024) return false;
+                          return true;
+                        }).map((child) => (
                           <Link
                             key={child.name}
                             to={child.path}
