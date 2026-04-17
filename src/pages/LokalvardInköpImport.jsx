@@ -307,8 +307,12 @@ export default function LokalvardInköpImport() {
                     <span className="text-gray-400">/ {entry.totalRows} rader</span>
                   </div>
                 </button>
-                {expandedLogIdx === idx && entry.rows && (
+                {expandedLogIdx === idx && (
                   <div className="border-t bg-gray-50 px-4 py-3 overflow-x-auto">
+                  {!entry.rows && (
+                    <p className="text-xs text-gray-400 italic py-2">Detaljerad logg ej tillgänglig för äldre importer.</p>
+                  )}
+                  {entry.rows && (
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="text-gray-500">
@@ -340,6 +344,7 @@ export default function LokalvardInköpImport() {
                         ))}
                       </tbody>
                     </table>
+                  )}
                   </div>
                 )}
               </div>
