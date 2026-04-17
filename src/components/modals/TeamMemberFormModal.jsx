@@ -99,7 +99,7 @@ export default function TeamMemberFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {isEditing ? 'Redigera teammedlem' : 'Lägg till teammedlem'}
@@ -116,25 +116,25 @@ export default function TeamMemberFormModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>E-post</Label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                placeholder="anna@exempel.se"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Telefon</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => handleChange('phone', e.target.value)}
-                placeholder="070-123 45 67"
-              />
-            </div>
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="space-y-2">
+               <Label>E-post</Label>
+               <Input
+                 type="email"
+                 value={formData.email}
+                 onChange={(e) => handleChange('email', e.target.value)}
+                 placeholder="anna@exempel.se"
+               />
+             </div>
+             <div className="space-y-2">
+               <Label>Telefon</Label>
+               <Input
+                 value={formData.phone}
+                 onChange={(e) => handleChange('phone', e.target.value)}
+                 placeholder="070-123 45 67"
+               />
+             </div>
+           </div>
 
           <div className="space-y-2">
             <Label>Roll</Label>
