@@ -107,8 +107,14 @@ export default function LokalvardInköpImport() {
       }
 
       const matched = matchRows(rows);
+      console.log('Parsed rows:', rows);
+      console.log('Matched rows:', matched);
+      if (rows.length === 0) {
+        toast.error('Filen verkar vara tom eller har fel format.');
+        return;
+      }
       if (matched.length === 0) {
-        toast.error('Inga giltiga rader hittades. Kontrollera kolumnnamnen: streckkod, datum, antal, pris');
+        toast.error(`Inga giltiga rader hittades. ${rows.length} rader lästes men filtrerades bort (saknar streckkod, datum eller antal > 0).`);
         return;
       }
       setPreviewRows(matched);
@@ -180,7 +186,7 @@ export default function LokalvardInköpImport() {
             {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
             <Upload className="w-4 h-4" />
             {uploading ? 'Läser fil...' : 'Välj Excel/CSV-fil'}
-            <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
+            <input type="file" accept=".csv,.xlsx,.xls" onClick={e => { e.target.value = ''; }} onChange={handleFileUpload} className="hidden" />
           </label>
         </div>
         {uploading && (
