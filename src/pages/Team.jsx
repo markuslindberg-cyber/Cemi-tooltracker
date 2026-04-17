@@ -86,14 +86,18 @@ export default function Team() {
     setIsLoading(true);
     try {
       if (editMember?.id) {
-        await base44.entities.TeamMember.update(editMember.id, memberData);
+        // Existing member - send new invitation if requested
+        if (memberData.send_new_invitation && memberData.email) {
+          await base44.users.inviteUser(memberData.email, 'user');
+        }
+        const { send_invitation, send_new_invitation, ...updateData } = memberData;
+        await base44.entities.TeamMember.update(editMember.id, updateData);
       } else {
         // New member - send invitation if requested and email provided
         if (memberData.send_invitation && memberData.email) {
           await base44.users.inviteUser(memberData.email, 'user');
         }
-        // Remove invitation flag before creating entity
-        const { send_invitation, ...entityData } = memberData;
+        const { send_invitation, send_new_invitation, ...entityData } = memberData;
         await base44.entities.TeamMember.create(entityData);
       }
       queryClient.invalidateQueries(['teamMembers']);
