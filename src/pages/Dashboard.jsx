@@ -64,8 +64,9 @@ export default function Dashboard() {
     queryFn: () => base44.entities.LoanRequest.list(),
   });
 
-  // Stats calculations
-  const activeTools = tools.filter(t => !['såld', 'retired', 'missing'].includes(t.status));
+  // Stats calculations - use same filtering as Inventory
+  const HIDDEN_STATUSES = ['såld', 'retired', 'missing'];
+  const activeTools = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
   const availableTools = tools.filter(t => t.status === 'available').length;
   const inUseTools = tools.filter(t => t.status === 'in_use').length;
