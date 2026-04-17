@@ -9,68 +9,51 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { uttagRecords } = await req.json();
-    if (!Array.isArray(uttagRecords) || uttagRecords.length === 0) {
+    const { rows } = await req.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
       return Response.json({ error: 'No records provided' }, { status: 400 });
     }
 
-    const [personal, kunder, artiklar] = await Promise.all([
-      base44.entities.TeamMember.list(null, 10000).catch(() => []),
-      base44.entities.Kund.list(null, 10000).catch(() => []),
-      base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => [])
-    ]);
+    const results = [];
 
-    const personalMap = {};
-    personal.forEach(p => {
-      personalMap[p.name] = p.id;
-    });
-
-    const kundeMap = {};
-    kunder.forEach(k => {
-      kundeMap[k.namn] = k.id;
-    });
-
-    const artikelMap = {};
-    artiklar.forEach(a => {
-      artikelMap[a.streckkod] = a;
-      artikelMap[a.artikelnummer] = a;
-      if (a.old_streckkod) {
-        artikelMap[a.old_streckkod] = a;
+    for (const row of rows) {
+      if (row.action === 'ignore') {
+        results.push({ ...row, status: 'skipped', message: 'Ignorerad av användaren' });
+        continue;
       }
-    });
 
-    const processedRecords = uttagRecords.map(record => {
-      const artikel = artikelMap[record.streckkod];
-      const quantity = parseFloat(record.antal) || 0;
-      const pricePerUnit = parseFloat(record.pris) || 0;
+      const quantity = parseFloat(row.antal) || 0;
+      const pricePerUnit = parseFloat(row.pris) || 0;
       const totalPrice = quantity * pricePerUnit;
+      const manad = row.datum ? row.datum.substring(0, 7) : '';
 
-      return {
-        datum: record.datum,
-        personal_id: '',
-        personal_namn: record.personal,
-        kund_id: '',
-        kund_namn: record.kund,
-        ordernummer: record.ordernummer || null,
+      const uttagRecord = {
+        datum: new Date(row.datum).toISOString(),
+        personal_id: row.matchedPersonal?.id || '',
+        personal_namn: row.personal_namn || '',
+        kund_id: row.matchedKund?.id || '',
+        kund_namn: row.kund_namn || '',
+        ordernummer: row.ordernummer || null,
         artiklar: [{
-          artikel_id: artikel?.id || '',
-          benamning: artikel?.benamning || record.streckkod,
+          artikel_id: row.matchedArtikel?.id || '',
+          benamning: row.matchedArtikel?.benamning || row.streckkod || '',
           antal: quantity,
           pris_per_enhet: pricePerUnit,
           total_pris: totalPrice
         }],
         total_kostnad: totalPrice,
-        manad: record.månad
+        manad
       };
-    });
 
-    const created = await base44.entities.Uttag.bulkCreate(processedRecords);
+      try {
+        await base44.entities.Uttag.create(uttagRecord);
+        results.push({ ...row, status: 'success', message: 'Importerad' });
+      } catch (err) {
+        results.push({ ...row, status: 'error', message: err.message });
+      }
+    }
 
-    return Response.json({
-      success: true,
-      created: created.length,
-      records: created
-    });
+    return Response.json({ results });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
