@@ -39,58 +39,44 @@ export default function LokalvardInköpImport() {
     URL.revokeObjectURL(link.href);
   };
 
-  // Robust RFC-4180-kompatibel CSV-parser som hanterar citerade fält med kommatecken
   const parseCSV = (text) => {
-    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-    const parseRow = (line) => {
-      const fields = [];
-      let i = 0;
-      while (i < line.length) {
-        if (line[i] === '"') {
-          // Citerat fält
-          let field = '';
-          i++; // hoppa över inledande "
-          while (i < line.length) {
-            if (line[i] === '"' && line[i + 1] === '"') {
-              field += '"'; i += 2;
-            } else if (line[i] === '"') {
-              i++; break;
-            } else {
-              field += line[i++];
-            }
-          }
-          fields.push(field.trim());
-          // hoppa över avgränsare efter avslutande "
-          if (line[i] === ',' || line[i] === ';') i++;
-        } else {
-          // Ociterat fält
-          const sep = line.includes(';') ? ';' : ',';
-          const end = line.indexOf(sep, i);
-          if (end === -1) {
-            fields.push(line.slice(i).trim());
-            break;
-          } else {
-            fields.push(line.slice(i, end).trim());
-            i = end + 1;
-          }
-        }
-      }
-      return fields;
-    };
-
+    // Ta bort BOM och normalisera radbrytningar
+    const normalized = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
-    const headerLine = lines[0].replace(/^\uFEFF/, '');
-    const headers = parseRow(headerLine).map(h => h.toLowerCase());
+    // Detektera separator från rubrikraden
+    const headerLine = lines[0];
+    const sep = headerLine.includes(';') ? ';' : ',';
+
+    // Parsa en rad med regex som hanterar citerade fält
+    const parseRow = (line) => {
+      const result = [];
+      // Regex matchar antingen ett citerat fält eller ett ociterat fält
+      const re = /("(?:[^"]|"")*"|[^,;]*?)(?:[,;]|$)/g;
+      let match;
+      while ((match = re.exec(line)) !== null) {
+        let val = match[1] ?? '';
+        // Ta bort omslutande citattecken och ersätt "" med "
+        if (val.startsWith('"') && val.endsWith('"')) {
+          val = val.slice(1, -1).replace(/""/g, '"');
+        }
+        result.push(val.trim());
+        // Stoppa om vi nått slutet av strängen
+        if (match.index + match[0].length >= line.length) break;
+      }
+      return result;
+    };
+
+    const headers = parseRow(headerLine).map(h => h.toLowerCase().trim());
+    console.log('Detected sep:', sep, '| Headers:', headers);
 
     return lines.slice(1).map(line => {
       const cols = parseRow(line);
       const row = {};
-      headers.forEach((h, i) => { row[h] = cols[i] || ''; });
+      headers.forEach((h, i) => { row[h] = cols[i] ?? ''; });
       return row;
-    }).filter(row => row.streckkod || row.datum);
+    }).filter(row => (row.streckkod || '').trim() || (row.datum || '').trim());
   };
 
   // Auto-match rows against existing articles
