@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2, Plus, Minus } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
 
 export default function HandToolScanModal({ isOpen, onClose, handTools }) {
   const queryClient = useQueryClient();
@@ -27,23 +27,10 @@ export default function HandToolScanModal({ isOpen, onClose, handTools }) {
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!scannerActive) return;
-    const scanner = new Html5QrcodeScanner(
-      "ht-barcode-scanner",
-      { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.5 },
-      false
-    );
-    scanner.render(
-      (decodedText) => {
-        handleScan(decodedText);
-        scanner.clear();
-        setScannerActive(false);
-      },
-      () => {}
-    );
-    return () => { scanner.clear().catch(() => {}); };
-  }, [scannerActive, handTools]);
+  useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
+    handleScan(barcode);
+    setScannerActive(false);
+  });
 
   const handleScan = (barcode) => {
     const tools = handTools.filter(t => t.barcode === barcode);

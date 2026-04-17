@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2 } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
 
 export default function ToolScanModal({ isOpen, onClose, tools }) {
   const queryClient = useQueryClient();
@@ -29,23 +29,10 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!scannerActive) return;
-    const scanner = new Html5QrcodeScanner(
-      "tool-barcode-scanner",
-      { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.5 },
-      false
-    );
-    scanner.render(
-      (decodedText) => {
-        handleScan(decodedText);
-        scanner.clear();
-        setScannerActive(false);
-      },
-      () => {}
-    );
-    return () => { scanner.clear().catch(() => {}); };
-  }, [scannerActive, tools]);
+  useBarcodeCamera("tool-barcode-scanner", scannerActive, (barcode) => {
+    handleScan(barcode);
+    setScannerActive(false);
+  });
 
   const handleScan = (barcode) => {
     const tool = tools.find(t => t.barcode === barcode);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
 import {
   Dialog,
   DialogContent,
@@ -36,15 +36,10 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
     },
   });
 
-  useEffect(() => {
-    if (!scannerActive || !isOpen) return;
-    const scanner = new Html5QrcodeScanner("barcode-scanner", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-    scanner.render(
-      (text) => { handleScan(text); scanner.clear(); setScannerActive(false); },
-      () => {}
-    );
-    return () => { scanner.clear().catch(() => {}); };
-  }, [scannerActive, isOpen]);
+  useBarcodeCamera("barcode-scanner", scannerActive && isOpen, (barcode) => {
+    handleScan(barcode);
+    setScannerActive(false);
+  });
 
   const handleScan = (barcode) => {
     const item = items.find(i => i.barcode === barcode);
