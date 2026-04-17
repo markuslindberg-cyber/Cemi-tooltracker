@@ -386,13 +386,8 @@ export default function HandTools() {
             return (
               <div key={`${group.name}-${group.category}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-gray-50">
-                  {/* Left: checkbox + category image + name */}
+                  {/* Left: category image + name */}
                   <div className="flex items-center gap-3">
-                    <Checkbox
-                      checked={groupSelected}
-                      onCheckedChange={() => toggleSelectAll(group.items)}
-                      className="shrink-0"
-                    />
                     <div className="relative group/catimg">
                       <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
                         {categoryImageMap[group.category]?.image_url
@@ -437,7 +432,7 @@ export default function HandTools() {
                       </div>
                     </div>
                   </div>
-                  {/* Right: status badges + group edit */}
+                  {/* Right: status badges + group edit + checkbox */}
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     {Object.entries(byStatus).map(([s, count]) => (
                       <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
@@ -449,6 +444,11 @@ export default function HandTools() {
                     >
                       <Edit className="w-4 h-4" />
                     </button>
+                    <Checkbox
+                      checked={groupSelected}
+                      onCheckedChange={() => toggleSelectAll(group.items)}
+                      className="shrink-0"
+                    />
                   </div>
                 </div>
                 {/* Items per location as clear rows */}
@@ -456,28 +456,31 @@ export default function HandTools() {
                   {Object.entries(byLocation).map(([locName, items]) => (
                     <div key={locName}>
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-50/60">
-                        <Checkbox
-                          checked={items.every(i => selectedIds.has(i.id))}
-                          onCheckedChange={() => toggleSelectAll(items)}
-                        />
                         <MapPin className="w-3.5 h-3.5 text-gray-400" />
                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">{locName}</span>
                         <span className="text-xs text-gray-400">({items.length} st)</span>
+                        <Checkbox
+                          checked={items.every(i => selectedIds.has(i.id))}
+                          onCheckedChange={() => toggleSelectAll(items)}
+                          className="ml-auto"
+                        />
                       </div>
                       <div className="divide-y divide-gray-50">
                         {items.map((item, idx) => (
                           <div key={item.id} className={`flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors group ${selectedIds.has(item.id) ? 'bg-blue-50/40' : ''}`}>
-                            <Checkbox
-                              checked={selectedIds.has(item.id)}
-                              onCheckedChange={() => toggleSelect(item.id)}
-                            />
                             <span className="text-xs text-gray-400 w-5 shrink-0">#{idx + 1}</span>
                             <span className={`w-2 h-2 rounded-full shrink-0 ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
                             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
                             {item.notes && <span className="text-xs text-gray-400 truncate max-w-[160px]">{item.notes}</span>}
-                            <div className="ml-auto flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"><Edit className="w-3.5 h-3.5" /></button>
-                              <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
+                            <div className="ml-auto flex items-center gap-2">
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"><Edit className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
+                              </div>
+                              <Checkbox
+                                checked={selectedIds.has(item.id)}
+                                onCheckedChange={() => toggleSelect(item.id)}
+                              />
                             </div>
                           </div>
                         ))}
