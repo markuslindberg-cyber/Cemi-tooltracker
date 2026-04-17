@@ -65,7 +65,8 @@ export default function Dashboard() {
   });
 
   // Stats calculations
-  const totalTools = tools.length;
+  const activeTools = tools.filter(t => !['såld', 'retired', 'missing'].includes(t.status));
+  const totalTools = activeTools.length;
   const availableTools = tools.filter(t => t.status === 'available').length;
   const inUseTools = tools.filter(t => t.status === 'in_use').length;
   const missingTools = tools.filter(t => t.status === 'missing').length;
@@ -75,10 +76,9 @@ export default function Dashboard() {
   const retiredTools = tools.filter(t => t.status === 'retired').length;
   const iLagerTools = tools.filter(t => t.status === 'i_lager').length;
 
-  // Calculate total value from all tools
-  const activeTools = tools.filter(t => !['såld', 'retired', 'missing'].includes(t.status));
+  // Calculate total value from active tools only
   const activeHandTools = handTools.filter(t => !['saknas', 'kasserad'].includes(t.status));
-  const totalValue = tools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const totalValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const handToolsValue = activeHandTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
 
   const handleTransfer = async (transferData) => {
@@ -296,7 +296,7 @@ export default function Dashboard() {
                <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
                <div className="space-y-3">
                  <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Maskiner ({tools.length})</span>
+                   <span className="text-sm text-gray-500">Maskiner ({activeTools.length})</span>
                    <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
                  </div>
                  <div className="flex justify-between items-center">

@@ -87,7 +87,7 @@ export default function Inventory() {
   const [manufacturerFilter, setManufacturerFilter] = useState('all');
   const [conditionFilter, setConditionFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
 
