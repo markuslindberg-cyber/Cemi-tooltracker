@@ -236,18 +236,20 @@ export default function HandTools() {
           <p className="text-gray-500 text-sm mt-1">{handTools.length} redskap totalt</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={handleDownloadTemplate} className="hidden lg:flex gap-2">
-            <FileSpreadsheet className="w-4 h-4" />
-            Ladda ned mall
-          </Button>
-          <label className="hidden lg:block">
-            <Button variant="outline" disabled={importing} asChild>
-              <span className="gap-2 cursor-pointer">
-                {importing ? <><Loader2 className="w-4 h-4 animate-spin" />Importerar...</> : <><Upload className="w-4 h-4" />Importera CSV</>}
-              </span>
+          {import.meta.env.DEV && <>
+            <Button variant="outline" onClick={handleDownloadTemplate} className="hidden lg:flex gap-2">
+              <FileSpreadsheet className="w-4 h-4" />
+              Ladda ned mall
             </Button>
-            <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImport} className="hidden" disabled={importing} />
-          </label>
+            <label className="hidden lg:block">
+              <Button variant="outline" disabled={importing} asChild>
+                <span className="gap-2 cursor-pointer">
+                  {importing ? <><Loader2 className="w-4 h-4 animate-spin" />Importerar...</> : <><Upload className="w-4 h-4" />Importera CSV</>}
+                </span>
+              </Button>
+              <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImport} className="hidden" disabled={importing} />
+            </label>
+          </>}
           <Button variant="outline" onClick={() => setShowScanModal(true)} className="gap-2">
             <ScanLine className="w-4 h-4" />
             Inventera (skanna)
