@@ -76,12 +76,15 @@ export default function LokalvardInköpImport() {
     };
 
     const headerLine = lines[0];
-    // Detektera separator: prova semikolon först, annars komma
-    const sep = headerLine.includes(';') ? ';' : ',';
+    // Detektera separator genom att prova alla kandidater och välja den som ger flest fält
+    const candidates = [';', ',', '\t'];
+    const sep = candidates.reduce((best, c) => {
+      return parseRowRobust(headerLine, c).length > parseRowRobust(headerLine, best).length ? c : best;
+    }, candidates[0]);
 
     // Använd parseRowRobust för att tolka rubrikraden korrekt
     const headers = parseRowRobust(headerLine, sep).map(h => h.toLowerCase());
-    console.log('Detected sep:', sep, '| Headers:', headers);
+    console.log('Detected sep:', JSON.stringify(sep), '| Headers:', headers);
 
     return lines.slice(1).map(line => {
       const cols = parseRowRobust(line, sep);
