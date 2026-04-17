@@ -45,8 +45,8 @@ export default function LokalvardInköpImport() {
     const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
-    // Parsa en rad tecken-för-tecken, hanterar citerade fält korrekt
-    const parseRow = (line, sep) => {
+    // Robust funktion för att dela upp en rad i fält, hanterar citerade fält korrekt
+    const parseRowRobust = (line, sepChar) => {
       const fields = [];
       let field = '';
       let inQuotes = false;
@@ -63,7 +63,7 @@ export default function LokalvardInköpImport() {
         } else {
           if (ch === '"') {
             inQuotes = true; // opening quote
-          } else if (ch === sep) {
+          } else if (ch === sepChar) {
             fields.push(field.trim());
             field = '';
           } else {
@@ -79,12 +79,12 @@ export default function LokalvardInköpImport() {
     // Detektera separator: prova semikolon först, annars komma
     const sep = headerLine.includes(';') ? ';' : ',';
 
-    // Dela rubrikraden direkt och trimma bort citattecken
-    const headers = headerLine.split(sep).map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
+    // Använd parseRowRobust för att tolka rubrikraden korrekt
+    const headers = parseRowRobust(headerLine, sep).map(h => h.toLowerCase());
     console.log('Detected sep:', sep, '| Headers:', headers);
 
     return lines.slice(1).map(line => {
-      const cols = parseRow(line, sep);
+      const cols = parseRowRobust(line, sep);
       const row = {};
       headers.forEach((h, i) => { row[h] = cols[i] ?? ''; });
       return row;
