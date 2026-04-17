@@ -9,6 +9,7 @@ const subcategoriesByCategory = {
   'Hammrar': ['Klumhugg', 'Gummihammer', 'Slägga'],
   'Skufflar': ['Järnskuffel', 'Träskuffel', 'Plast-skuffel'],
   'Banor': ['Järnbana', 'Träbana'],
+  'Avspärrningsmaterial': ['Farthinder', 'Skyltar', 'Kravallstaketet', 'Koner', 'Markeringsskärmar'],
 };
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,

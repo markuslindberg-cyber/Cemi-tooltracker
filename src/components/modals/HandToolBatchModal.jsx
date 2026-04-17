@@ -50,7 +50,18 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
     enabled: isOpen,
   });
 
-  const availableCategories = [...new Set(allHandTools.map(t => t.category).filter(Boolean))].sort();
+  const PREDEFINED_CATEGORIES = {
+  'Avspärrningsmaterial': ['Farthinder', 'Skyltar', 'Kravallstaketet', 'Koner', 'Markeringsskärmar'],
+};
+
+const availableCategories = [...new Set([
+  ...Object.keys(PREDEFINED_CATEGORIES),
+  ...allHandTools.map(t => t.category).filter(Boolean),
+])].sort();
+
+const availableSubcategories = form.category && PREDEFINED_CATEGORIES[form.category]
+  ? PREDEFINED_CATEGORIES[form.category]
+  : [...new Set(allHandTools.filter(t => t.category === form.category).map(t => t.subcategory).filter(Boolean))].sort();
 
   // When category changes, auto-fill image from category if no custom image set
   useEffect(() => {
@@ -205,11 +216,20 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
             </div>
             <div className="space-y-1">
               <Label>Underkategori</Label>
-              <Input
-                value={form.subcategory}
-                onChange={e => setForm(p => ({ ...p, subcategory: e.target.value }))}
-                placeholder="Valfritt"
-              />
+              {availableSubcategories.length > 0 ? (
+                <Select value={form.subcategory} onValueChange={v => setForm(p => ({ ...p, subcategory: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Välj underkategori" /></SelectTrigger>
+                  <SelectContent>
+                    {availableSubcategories.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  value={form.subcategory}
+                  onChange={e => setForm(p => ({ ...p, subcategory: e.target.value }))}
+                  placeholder="Valfritt"
+                />
+              )}
             </div>
           </div>
 
