@@ -176,12 +176,12 @@ export default function LokalvardInköpImport() {
           <Button onClick={handleDownloadTemplate} className="bg-purple-600 hover:bg-purple-700">
             <FileDown className="w-4 h-4 mr-2" /> Ladda ned mall
           </Button>
-          <Button onClick={() => fileInputRef.current?.click()} disabled={uploading || importing || !!previewRows} className="bg-blue-600 hover:bg-blue-700">
-            {uploading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            <Upload className="w-4 h-4 mr-2" />
+          <label className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-colors ${(uploading || importing || !!previewRows) ? 'opacity-50 pointer-events-none' : ''}`}>
+            {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
+            <Upload className="w-4 h-4" />
             {uploading ? 'Läser fil...' : 'Välj Excel/CSV-fil'}
-          </Button>
-          <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
+            <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
+          </label>
         </div>
         {uploading && (
           <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
