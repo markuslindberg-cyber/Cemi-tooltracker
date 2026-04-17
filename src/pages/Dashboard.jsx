@@ -49,11 +49,6 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Transfer.list('-transfer_date', 5),
   });
 
-  const { data: handTools = [] } = useQuery({
-    queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.list(),
-  });
-
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
@@ -64,7 +59,7 @@ export default function Dashboard() {
     queryFn: () => base44.entities.LoanRequest.list(),
   });
 
-  // Stats calculations - use same filtering as Inventory
+  // Stats calculations - use EXACT same filtering as Inventory (line 150-151)
   const HIDDEN_STATUSES = ['såld', 'retired', 'missing'];
   const activeTools = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
@@ -77,10 +72,8 @@ export default function Dashboard() {
   const retiredTools = tools.filter(t => t.status === 'retired').length;
   const iLagerTools = activeTools.filter(t => t.status === 'i_lager').length;
 
-  // Calculate total value from active tools only
-  const activeHandTools = handTools.filter(t => !['saknas', 'kasserad'].includes(t.status));
+  // Calculate total value from active tools only - exclude handTools to avoid async flicker
   const totalValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
-  const handToolsValue = activeHandTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
 
   const handleTransfer = async (transferData) => {
     await base44.entities.Transfer.create(transferData);
@@ -300,13 +293,9 @@ export default function Dashboard() {
                    <span className="text-sm text-gray-500">Maskiner ({activeTools.length})</span>
                    <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
                  </div>
-                 <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Handredskap ({activeHandTools.length})</span>
-                   <span className="font-medium text-gray-900">{handToolsValue.toLocaleString('sv-SE')} kr</span>
-                 </div>
                  <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
                    <span className="text-sm font-semibold text-gray-700">Totalt</span>
-                   <span className="font-bold text-[#8B1E1E]">{(totalValue + handToolsValue).toLocaleString('sv-SE')} kr</span>
+                   <span className="font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
                  </div>
                </div>
                <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
