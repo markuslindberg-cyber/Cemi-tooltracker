@@ -12,17 +12,8 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
         scannerRef.current = new Html5QrcodeScanner(
           containerId,
           { 
-            fps: 15, 
-            qrbox: { width: 300, height: 200 }, 
-            aspectRatio: 1.5,
-            useBarCodeDetectorIfSupported: true,
-            showTorchButtonIfSupported: true,
-            disableFlip: false,
-            videoConstraints: {
-              facingMode: 'environment',
-              width: { min: 320, ideal: 640, max: 1280 },
-              height: { min: 240, ideal: 480, max: 960 }
-            }
+            fps: 10, 
+            qrbox: { width: 250, height: 250 }
           },
           false
         );
