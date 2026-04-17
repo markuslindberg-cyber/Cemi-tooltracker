@@ -8,6 +8,7 @@ import { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import { useScrollRestore } from '@/hooks/useScrollRestore';
+import NyttUttagModal from '@/components/lokalvard/NyttUttagModal';
 
 export default function LokalvardUttag() {
   useScrollRestore();
@@ -26,6 +27,7 @@ export default function LokalvardUttag() {
   const [expandedRows, setExpandedRows] = useState({});
   const [searchBarcode, setSearchBarcode] = useState('');
   const [showUnmatched, setShowUnmatched] = useState(false);
+  const [showNyttUttagModal, setShowNyttUttagModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [loadAllUttag, setLoadAllUttag] = useState(false);
   const itemsPerPage = 500;
@@ -559,6 +561,12 @@ export default function LokalvardUttag() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-4">
+      <NyttUttagModal
+        open={showNyttUttagModal}
+        onClose={() => setShowNyttUttagModal(false)}
+        artikelMap={artikelMap}
+        artiklar={artiklar}
+      />
       {/* Header */}
        <div className="flex items-center justify-between flex-wrap gap-3">
          <div className="flex items-center gap-3">
@@ -687,6 +695,9 @@ export default function LokalvardUttag() {
               <Download className="w-4 h-4 mr-1" /> CSV
             </Button>
           )}
+          <Button size="sm" onClick={() => setShowNyttUttagModal(true)} className="bg-green-600 hover:bg-green-700">
+            + Nytt uttag
+          </Button>
           {unmatchedArticles.length > 0 && !showUnmatched && (
             <Button size="sm" onClick={() => setShowUnmatched(true)} className="bg-yellow-600 hover:bg-yellow-700">
               ⚠️ Omatchade ({unmatchedArticles.length})
