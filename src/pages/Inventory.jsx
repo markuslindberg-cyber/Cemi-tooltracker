@@ -660,7 +660,7 @@ export default function Inventory() {
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
-            <Table className="min-w-max">
+            <Table className="w-full">
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="w-10">
