@@ -433,11 +433,11 @@ export default function ServicePage() {
   const handleLookup = (code) => {
     const trimmed = (code || barcode).trim();
     if (!trimmed) return;
+    setBarcode(trimmed);
     const found = tools.find(t => t.barcode === trimmed || t.model_number === trimmed || t.name?.toLowerCase() === trimmed.toLowerCase());
     if (found) {
       setSelectedTool(found);
       setNotFound(false);
-      setBarcode('');
       setSuggestedTools([]);
     } else {
       setNotFound(true);
