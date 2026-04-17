@@ -33,6 +33,7 @@ const defaultMember = {
   location_ids: [],
   location_names: [],
   is_active: true,
+  send_invitation: true,
 };
 
 export default function TeamMemberFormModal({
@@ -149,6 +150,19 @@ export default function TeamMemberFormModal({
               </SelectContent>
             </Select>
           </div>
+
+          {!isEditing && (
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <Label>Skicka inbjudan via e-post</Label>
+                <p className="text-sm text-gray-500">Skicka inbjudningslänk till användaren</p>
+              </div>
+              <Switch
+                checked={formData.send_invitation}
+                onCheckedChange={(checked) => handleChange('send_invitation', checked)}
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Standardplats</Label>

@@ -84,15 +84,24 @@ export default function Team() {
 
   const handleSaveMember = async (memberData) => {
     setIsLoading(true);
-    if (editMember?.id) {
-      await base44.entities.TeamMember.update(editMember.id, memberData);
-    } else {
-      await base44.entities.TeamMember.create(memberData);
+    try {
+      if (editMember?.id) {
+        await base44.entities.TeamMember.update(editMember.id, memberData);
+      } else {
+        // New member - send invitation if requested and email provided
+        if (memberData.send_invitation && memberData.email) {
+          await base44.users.inviteUser(memberData.email, 'user');
+        }
+        // Remove invitation flag before creating entity
+        const { send_invitation, ...entityData } = memberData;
+        await base44.entities.TeamMember.create(entityData);
+      }
+      queryClient.invalidateQueries(['teamMembers']);
+      setEditMember(null);
+      setShowAddMember(false);
+    } finally {
+      setIsLoading(false);
     }
-    queryClient.invalidateQueries(['teamMembers']);
-    setEditMember(null);
-    setShowAddMember(false);
-    setIsLoading(false);
   };
 
   const handleDeleteMember = (member) => {
