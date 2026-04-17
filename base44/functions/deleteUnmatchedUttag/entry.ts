@@ -4,11 +4,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Hämta alla artiklar och bygg upp en lookup-map (samma logik som frontend)
+    // Bygg artikelMap
     const artiklar = await base44.asServiceRole.entities.LokalvardsArtikel.list(null, 100000);
     const artikelMap = {};
     artiklar.forEach(a => {
@@ -20,41 +18,51 @@ Deno.serve(async (req) => {
     // Hämta alla uttag
     const uttag = await base44.asServiceRole.entities.Uttag.list(null, 100000);
 
-    // Hitta uttag där ALLA artiklar är omatchade (samma logik som frontend: artikelMap[artikel_id] || artikelMap[benamning])
+    // Hitta omatchade
     const toDelete = [];
     for (const u of uttag) {
       const artiklarList = u.artiklar || [];
       if (artiklarList.length === 0) continue;
-
       const allUnmatched = artiklarList.every(a => {
         const found = (a.artikel_id && artikelMap[a.artikel_id]) || (a.benamning && artikelMap[a.benamning]);
         return !found;
       });
-
-      if (allUnmatched) {
-        toDelete.push(u.id);
-      }
+      if (allUnmatched) toDelete.push(u.id);
     }
 
-    console.log(`Hittade ${toDelete.length} omatchade uttag av ${uttag.length} totalt`);
-
-    // Radera omatchade uttag
+    // Radera via HTTP direkt (kringgår RLS med service role token)
+    const appId = Deno.env.get('BASE44_APP_ID');
+    const serviceToken = req.headers.get('x-service-token') || req.headers.get('authorization')?.replace('Bearer ', '');
+    
     let deleted = 0;
+    const errors = [];
+
     for (const id of toDelete) {
       try {
-        await base44.asServiceRole.entities.Uttag.delete(id);
-        deleted++;
+        // Använd entities API direkt
+        const resp = await fetch(`https://api.base44.com/api/apps/${appId}/entities/Uttag/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': req.headers.get('authorization') || '',
+            'x-user-token': req.headers.get('x-user-token') || '',
+          }
+        });
+        if (resp.ok || resp.status === 404) {
+          deleted++;
+        } else {
+          const body = await resp.text();
+          errors.push({ id, status: resp.status, body: body.slice(0, 200) });
+        }
       } catch (e) {
-        console.log('Skip delete error for id', id, e.message);
+        errors.push({ id, error: e.message });
       }
     }
 
     return Response.json({
-      success: true,
-      total_checked: uttag.length,
-      found_unmatched: toDelete.length,
+      total_uttag: uttag.length,
+      identified: toDelete.length,
       deleted,
-      message: `${deleted} omatchade uttag raderades av totalt ${uttag.length}`
+      errors: errors.slice(0, 10)
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
