@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   const { data: tools = [], refetch: refetchTools } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 100),
+    queryFn: () => base44.entities.Tool.list(),
   });
 
   const { data: locations = [] } = useQuery({
@@ -51,7 +51,7 @@ export default function Dashboard() {
 
   const { data: handTools = [] } = useQuery({
     queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.list('-updated_date', 500),
+    queryFn: () => base44.entities.HandTool.list(),
   });
 
   const { data: user } = useQuery({
