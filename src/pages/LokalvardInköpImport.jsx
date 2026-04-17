@@ -45,9 +45,11 @@ export default function LokalvardInköpImport() {
     const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
     const headerLine = lines[0].replace(/^\uFEFF/, '');
-    const headers = headerLine.split(',').map(h => parseCSVField(h).toLowerCase());
+    // Auto-detect separator: semicolon or comma
+    const sep = headerLine.includes(';') ? ';' : ',';
+    const headers = headerLine.split(sep).map(h => parseCSVField(h).toLowerCase());
     return lines.slice(1).map(line => {
-      const cols = line.split(',').map(parseCSVField);
+      const cols = line.split(sep).map(parseCSVField);
       const row = {};
       headers.forEach((h, i) => { row[h] = cols[i] || ''; });
       return row;
