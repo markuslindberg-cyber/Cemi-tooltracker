@@ -64,8 +64,9 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const availableItems = itemType === 'tools' ? tools : handTools;
 
   useBarcodeCamera("loan-barcode-scanner", cameraActive && scanMode, (barcode) => {
-    setBarcodeInput(barcode);
-    const scannedItem = availableItems.find(t => t.barcode === barcode);
+    const trimmedBarcode = barcode.trim();
+    setBarcodeInput(trimmedBarcode);
+    const scannedItem = availableItems.find(t => t.barcode?.trim() === trimmedBarcode);
     if (scannedItem) {
       handleAddTool(scannedItem);
       setBarcodeInput('');
@@ -152,12 +153,13 @@ export default function LoanRequestModal({ isOpen, onClose }) {
 
   const handleBarcodeScan = (e) => {
     e.preventDefault();
-    const scannedItem = availableItems.find(t => t.barcode === barcodeInput);
+    const trimmedBarcode = barcodeInput.trim();
+    const scannedItem = availableItems.find(t => t.barcode?.trim() === trimmedBarcode);
     if (scannedItem) {
       handleAddTool(scannedItem);
       setBarcodeInput('');
     } else {
-      alert(`Inget verktyg/redskap hittad med streckkod: ${barcodeInput}`);
+      alert(`Inget verktyg/redskap hittad med streckkod: ${trimmedBarcode}`);
     }
   };
 
