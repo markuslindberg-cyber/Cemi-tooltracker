@@ -17,7 +17,12 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
             aspectRatio: 1.5,
             useBarCodeDetectorIfSupported: true,
             showTorchButtonIfSupported: true,
-            disableFlip: false
+            disableFlip: false,
+            videoConstraints: {
+              facingMode: 'environment',
+              width: { min: 320, ideal: 640, max: 1280 },
+              height: { min: 240, ideal: 480, max: 960 }
+            }
           },
           false
         );
