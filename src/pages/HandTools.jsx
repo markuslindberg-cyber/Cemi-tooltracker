@@ -30,7 +30,7 @@ const conditionConfig = {
 export default function HandTools() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [manufacturerFilter, setManufacturerFilter] = useState('all');
@@ -72,7 +72,7 @@ export default function HandTools() {
   const filtered = handTools.filter(t => {
     const q = search.toLowerCase();
     if (q && !`${t.name} ${t.manufacturer} ${t.category} ${t.subcategory}`.toLowerCase().includes(q)) return false;
-    if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+    if (statusFilter.length > 0 && !statusFilter.includes(t.status)) return false;
     if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
     if (subcategoryFilter !== 'all' && t.subcategory !== subcategoryFilter) return false;
     if (manufacturerFilter !== 'all' && t.manufacturer !== manufacturerFilter) return false;
@@ -112,7 +112,7 @@ export default function HandTools() {
     queryClient.invalidateQueries(['handtools']);
   };
 
-  const hasFilters = search || statusFilter !== 'all' || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all';
+  const hasFilters = search || statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all';
 
   const handleDownloadTemplate = () => {
     const infoRows = [
@@ -223,7 +223,7 @@ export default function HandTools() {
   };
 
   const clearFilters = () => {
-    setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setSubcategoryFilter('all');
+    setSearch(''); setStatusFilter([]); setCategoryFilter('all'); setSubcategoryFilter('all');
     setManufacturerFilter('all'); setConditionFilter('all'); setLocationFilter('all');
   };
 
