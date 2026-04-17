@@ -76,16 +76,11 @@ export default function LokalvardInköpImport() {
     };
 
     const headerLine = lines[0];
-    // Detektera separator: räkna semikolon vs komma utanför citattecken
-    let commas = 0, semis = 0, inQ = false;
-    for (const ch of headerLine) {
-      if (ch === '"') inQ = !inQ;
-      else if (!inQ && ch === ',') commas++;
-      else if (!inQ && ch === ';') semis++;
-    }
-    const sep = semis > commas ? ';' : ',';
+    // Detektera separator: prova semikolon först, annars komma
+    const sep = headerLine.includes(';') ? ';' : ',';
 
-    const headers = parseRow(headerLine, sep).map(h => h.toLowerCase());
+    // Dela rubrikraden direkt och trimma bort citattecken
+    const headers = headerLine.split(sep).map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
     console.log('Detected sep:', sep, '| Headers:', headers);
 
     return lines.slice(1).map(line => {
