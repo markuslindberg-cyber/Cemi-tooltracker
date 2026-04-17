@@ -7,8 +7,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
+import { useScrollRestore } from '@/hooks/useScrollRestore';
 
 export default function LokalvardUttag() {
+  useScrollRestore();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);

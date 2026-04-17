@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useScrollRestore } from '@/hooks/useScrollRestore';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import AddArtikelDialog from '@/components/dialogs/AddArtikelDialog';
 import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
 
 export default function LokalvardLager() {
+  useScrollRestore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
