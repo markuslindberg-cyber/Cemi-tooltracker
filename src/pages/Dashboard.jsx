@@ -111,7 +111,7 @@ export default function Dashboard() {
     refetchTools();
   };
 
-  const recentlyUsedTools = tools.filter(t => !['såld','retired','missing'].includes(t.status)).slice(0, 6);
+  const recentlyUsedTools = activeTools.slice(0, 6);
 
   // Loan statistics
   const requestsToApprove = user ? loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending').length : 0;
@@ -386,7 +386,7 @@ export default function Dashboard() {
                 </Button>
               </Link>
             </div>
-            {tools.length === 0 ? (
+            {activeTools.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
                 <Wrench className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 mb-4">Inga maskiner ännu</p>
