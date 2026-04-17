@@ -309,13 +309,15 @@ export default function LokalvardLager() {
             onChange={(e) => setSearch(e.target.value)}
             className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400 w-52"
           />
-          <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
-            <FileDown className="w-4 h-4 mr-1" /> Mall
-          </Button>
-          <Button size="sm" onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-green-600 hover:bg-green-700">
-            <Upload className="w-4 h-4 mr-1" /> Importera
-          </Button>
-          <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
+          {window.location.hostname.includes('base44.app') && <>
+            <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
+              <FileDown className="w-4 h-4 mr-1" /> Mall
+            </Button>
+            <Button size="sm" onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-green-600 hover:bg-green-700">
+              <Upload className="w-4 h-4 mr-1" /> Importera
+            </Button>
+            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
+          </>}
           <Button size="sm" onClick={() => setAddDialogOpen(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
             <Plus className="w-4 h-4 mr-1" /> Ny artikel
           </Button>

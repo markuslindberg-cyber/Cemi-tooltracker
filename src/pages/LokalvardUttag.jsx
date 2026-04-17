@@ -671,13 +671,15 @@ export default function LokalvardUttag() {
             </Popover>
           </div>
 
-          <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
-            <FileDown className="w-4 h-4 mr-1" /> Mall
-          </Button>
-          <Button size="sm" onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-blue-600 hover:bg-blue-700">
-            <Upload className="w-4 h-4 mr-1" /> Importera
-          </Button>
-          <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
+          {window.location.hostname.includes('base44.app') && <>
+            <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
+              <FileDown className="w-4 h-4 mr-1" /> Mall
+            </Button>
+            <Button size="sm" onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-blue-600 hover:bg-blue-700">
+              <Upload className="w-4 h-4 mr-1" /> Importera
+            </Button>
+            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
+          </>}
           {sorted.length > 0 && (
             <Button size="sm" onClick={handleExport} className="hidden lg:flex bg-green-600 hover:bg-green-700">
               <Download className="w-4 h-4 mr-1" /> CSV
