@@ -93,6 +93,7 @@ export default function Layout({ children }) {
   const [openMenus, setOpenMenus] = useState({});
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
+  const location = useLocation();
 
   // Auto-open parent menu when on a child path
   useEffect(() => {
@@ -106,7 +107,6 @@ export default function Layout({ children }) {
     setOpenMenus(prev => ({ ...prev, ...autoOpen }));
   }, [location.pathname]);
   const [user, setUser] = useState(null);
-  const location = useLocation();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
