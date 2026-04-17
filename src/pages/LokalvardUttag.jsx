@@ -204,6 +204,11 @@ export default function LokalvardUttag() {
 
   const [selectedPersonal, setSelectedPersonal] = useState([]);
 
+  const isUnmatched = (u) => u.artiklar?.some(a => {
+    const found = artikelMap[a.artikel_id] || artikelMap[a.benamning] || artikelMap[a.streckkod];
+    return !found;
+  });
+
   const filtered = uttag.filter(u => {
     const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(u.manad);
     const customerMatch = selectedCustomers.length === 0 || selectedCustomers.includes(u.kund_id);
@@ -216,11 +221,8 @@ export default function LokalvardUttag() {
       artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode) ||
       artikelMap[a.artikel_id]?.benamning?.toLowerCase().includes(searchLower)
     );
-    const passes = monthMatch && customerMatch && personalMatch && searchMatch;
-    if (!passes && uttag.length > 0) {
-      console.log('Uttag filtreras bort:', u, {monthMatch, customerMatch, personalMatch, searchMatch, selectedMonths, selectedCustomers, selectedPersonal});
-    }
-    return passes;
+    const unmatchedMatch = showUnmatched ? isUnmatched(u) : !isUnmatched(u);
+    return monthMatch && customerMatch && personalMatch && searchMatch && unmatchedMatch;
   });
 
   const sortField = (item) => {
