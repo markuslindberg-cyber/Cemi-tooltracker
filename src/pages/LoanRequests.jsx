@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, Clock, RotateCw, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, RotateCw, AlertCircle, Pencil } from 'lucide-react';
 import LoanRequestModal from '@/components/modals/LoanRequestModal';
+import EditLoanDialog from '@/components/modals/EditLoanDialog';
 
 export default function LoanRequests() {
   const queryClient = useQueryClient();
@@ -19,6 +20,8 @@ export default function LoanRequests() {
   const [extensionComment, setExtensionComment] = useState('');
   const [extensionDialogOpen, setExtensionDialogOpen] = useState(false);
   const [extensionDate, setExtensionDate] = useState('');
+  const [editLoanOpen, setEditLoanOpen] = useState(false);
+  const [editLoanRequest, setEditLoanRequest] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -57,6 +60,13 @@ export default function LoanRequests() {
       setExtensionComment('');
       setExtensionDate('');
       setSelectedRequest(null);
+    }
+  });
+
+  const updateReturnDateMutation = useMutation({
+    mutationFn: (data) => base44.functions.invoke('updateLoanReturnDate', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['loanRequests'] });
     }
   });
 
@@ -226,9 +236,9 @@ export default function LoanRequests() {
                       </div>
                     )}
                     {request.status === 'approved' && (
-                      <Button variant="outline" size="sm" onClick={() => { setSelectedRequest(request); setExtensionDialogOpen(true); }}>
-                        <RotateCw className="w-3 h-3 mr-1" />
-                        Begär förlängning
+                      <Button variant="outline" size="sm" onClick={() => { setEditLoanRequest(request); setEditLoanOpen(true); }}>
+                        <Pencil className="w-3 h-3 mr-1" />
+                        Redigera lån
                       </Button>
                     )}
                   </div>
@@ -262,10 +272,10 @@ export default function LoanRequests() {
                     <div className="text-sm text-gray-500">
                       Återlämningsdatum: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => { setSelectedRequest(request); setExtensionDialogOpen(true); }}>
-                        <RotateCw className="w-3 h-3 mr-1" />
-                        Begär förlängning
+                    <div className="flex gap-2 flex-wrap">
+                      <Button variant="outline" size="sm" onClick={() => { setEditLoanRequest(request); setEditLoanOpen(true); }}>
+                        <Pencil className="w-3 h-3 mr-1" />
+                        Redigera lån
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => returnMutation.mutate(request.id)}>
                         Markera som returnerad
@@ -356,6 +366,15 @@ export default function LoanRequests() {
           </DialogContent>
         </Dialog>
       )}
+
+      <EditLoanDialog
+        request={editLoanRequest}
+        open={editLoanOpen}
+        onOpenChange={(v) => { setEditLoanOpen(v); if (!v) setEditLoanRequest(null); }}
+        onEarlyReturn={(data) => updateReturnDateMutation.mutate(data)}
+        onExtend={(data) => extendMutation.mutate(data)}
+        isLoading={updateReturnDateMutation.isPending || extendMutation.isPending}
+      />
 
       <LoanRequestModal isOpen={isLoanModalOpen} onClose={() => setIsLoanModalOpen(false)} />
     </div>
