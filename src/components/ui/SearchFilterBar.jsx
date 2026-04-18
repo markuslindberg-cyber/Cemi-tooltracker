@@ -82,13 +82,13 @@ export default function SearchFilterBar({
   const ref = useRef(null);
 
   const activeCount = [
-    statusFilter.length > 0 ? 1 : 0,
-    categoryFilter !== 'all' ? 1 : 0,
-    subcategoryFilter !== 'all' ? 1 : 0,
-    manufacturerFilter !== 'all' ? 1 : 0,
-    conditionFilter !== 'all' ? 1 : 0,
-    locationFilter !== 'all' ? 1 : 0,
-    assignedToFilter !== 'all' ? 1 : 0,
+    statusFilter?.length > 0 ? 1 : 0,
+    categoryFilter && categoryFilter !== 'all' ? 1 : 0,
+    subcategoryFilter && subcategoryFilter !== 'all' ? 1 : 0,
+    manufacturerFilter && manufacturerFilter !== 'all' ? 1 : 0,
+    conditionFilter && conditionFilter !== 'all' ? 1 : 0,
+    locationFilter && locationFilter !== 'all' ? 1 : 0,
+    assignedToFilter && assignedToFilter !== 'all' ? 1 : 0,
   ].reduce((a, b) => a + b, 0);
 
   useEffect(() => {
