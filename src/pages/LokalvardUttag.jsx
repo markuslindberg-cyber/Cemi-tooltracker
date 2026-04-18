@@ -223,8 +223,7 @@ export default function LokalvardUttag() {
       artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode) ||
       artikelMap[a.artikel_id]?.benamning?.toLowerCase().includes(searchLower)
     );
-    const unmatchedMatch = showUnmatched ? isUnmatched(u) : !isUnmatched(u);
-    return monthMatch && customerMatch && personalMatch && searchMatch && unmatchedMatch;
+    return monthMatch && customerMatch && personalMatch && searchMatch && !isUnmatched(u);
   });
 
   const sortField = (item) => {
@@ -731,83 +730,83 @@ export default function LokalvardUttag() {
               <table className="w-full text-sm">
                <thead>
                  <tr className="bg-gray-50 border-b border-gray-200">
-                   <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('datum')}>
-                     Datum <SortIcon col="datum" />
-                   </th>
-                   <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('kund_namn')}>
-                     Kund <SortIcon col="kund_namn" />
-                   </th>
-                   <th className="px-4 py-3 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('personal_namn')}>
-                     Personal <SortIcon col="personal_namn" />
-                   </th>
-                   <th className="px-4 py-3 text-left font-semibold text-gray-600">Artikel</th>
-                   <th className="px-4 py-3 text-center font-semibold text-gray-600">Antal</th>
-                   <th className="px-4 py-3 text-left font-semibold text-gray-600">Ordernummer</th>
-                   <th className="px-4 py-3 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap" onClick={() => handleSort('total_kostnad')}>
-                     Kostnad <SortIcon col="total_kostnad" />
-                   </th>
-                 </tr>
-               </thead>
+                   <th className="px-3 py-2 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap text-xs" onClick={() => handleSort('datum')}>
+                      Datum <SortIcon col="datum" />
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap text-xs" onClick={() => handleSort('kund_namn')}>
+                      Kund <SortIcon col="kund_namn" />
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap text-xs" onClick={() => handleSort('personal_namn')}>
+                      Personal <SortIcon col="personal_namn" />
+                    </th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-600 text-xs">Artikel</th>
+                    <th className="px-3 py-2 text-center font-semibold text-gray-600 text-xs">Antal</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-600 text-xs">Ordernr</th>
+                    <th className="px-3 py-2 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap text-xs" onClick={() => handleSort('total_kostnad')}>
+                      Kostnad <SortIcon col="total_kostnad" />
+                    </th>
+                  </tr>
+                </thead>
                <tbody>
                  {groupedRows.map((row) => {
                    const datumStr = row.datum ? row.datum.split('T')[0] : '';
                    const firstIdx = row.indices[0];
                    return (
                      <tr key={`${row.artikel_id}-${row.datum}-${row.kund_id}`} className="border-b border-gray-100 hover:bg-gray-50">
-                       <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{datumStr}</td>
-                       <td className="px-4 py-3 text-gray-900 font-medium">{row.kund_namn}</td>
-                       <td className="px-4 py-3 text-gray-700">{row.personal_namn}</td>
-                       <td className="px-4 py-3 text-gray-900 cursor-pointer hover:opacity-70" onClick={() => {
-                         const foundArtikel = artikelMap[row.artikel_id] || artikelMap[row.benamning];
-                         if (foundArtikel?.artikelnummer) navigate(`/Lokalvard/Artikel/${foundArtikel.artikelnummer}`);
-                       }}>
-                         {row.artikel_namn || row.benamning}
-                       </td>
-                       <td className="px-4 py-3 text-center text-gray-900">
-                         {editingArticleId === `${row.id}-${firstIdx}` ? (
-                           <input 
-                             type="number" 
-                             value={editArticleForm.antal} 
-                             onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})}
-                             className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs text-center"
-                             placeholder="Antal"
-                             onClick={e => e.stopPropagation()}
-                           />
-                         ) : (
-                           `${row.totalAntal} st`
-                         )}
-                       </td>
-                       <td className="px-4 py-3 text-gray-500 text-xs">{row.ordernummer || '–'}</td>
-                       <td className="px-4 py-3 text-right font-semibold text-gray-900 whitespace-nowrap">
-                         {editingArticleId === `${row.id}-${firstIdx}` ? (
-                           <input
-                             type="number"
-                             step="0.01"
-                             value={editArticleForm.pris_per_enhet}
-                             onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})}
-                             className="w-20 px-1 py-0.5 border border-gray-300 rounded text-xs text-right"
-                             placeholder="Pris"
-                             onClick={e => e.stopPropagation()}
-                           />
-                         ) : (
-                           row.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' kr'
-                         )}
-                       </td>
-                       <td className="px-4 py-3 flex items-center gap-1">
-                         {editingArticleId === `${row.id}-${firstIdx}` ? (
-                           <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                             <button onClick={() => handleSaveArticle(row.id, firstIdx)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
-                             <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
-                             <button onClick={() => handleDeleteUttag(row.id, row.isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
-                           </div>
-                         ) : (
-                           <button onClick={() => handleEditArticle(row.id, row.artikel, firstIdx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
-                         )}
-                       </td>
-                     </tr>
-                   );
-                 })}
-               </tbody>
+                       <td className="px-3 py-1.5 text-gray-900 whitespace-nowrap text-xs">{datumStr}</td>
+                       <td className="px-3 py-1.5 text-gray-900 font-medium text-xs">{row.kund_namn}</td>
+                       <td className="px-3 py-1.5 text-gray-700 text-xs">{row.personal_namn}</td>
+                       <td className="px-3 py-1.5 text-gray-900 cursor-pointer hover:opacity-70 text-xs" onClick={() => {
+                          const foundArtikel = artikelMap[row.artikel_id] || artikelMap[row.benamning];
+                          if (foundArtikel?.artikelnummer) navigate(`/Lokalvard/Artikel/${foundArtikel.artikelnummer}`);
+                        }}>
+                          {row.artikel_namn || row.benamning}
+                        </td>
+                        <td className="px-3 py-1.5 text-center text-gray-900 text-xs">
+                          {editingArticleId === `${row.id}-${firstIdx}` ? (
+                            <input 
+                              type="number" 
+                              value={editArticleForm.antal} 
+                              onChange={(e) => setEditArticleForm({...editArticleForm, antal: e.target.value})}
+                              className="w-16 px-1 py-0.5 border border-gray-300 rounded text-xs text-center"
+                              placeholder="Antal"
+                              onClick={e => e.stopPropagation()}
+                            />
+                          ) : (
+                            `${row.totalAntal} st`
+                          )}
+                        </td>
+                        <td className="px-3 py-1.5 text-gray-500 text-xs">{row.ordernummer || '–'}</td>
+                        <td className="px-3 py-1.5 text-right font-semibold text-gray-900 whitespace-nowrap text-xs">
+                          {editingArticleId === `${row.id}-${firstIdx}` ? (
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={editArticleForm.pris_per_enhet}
+                              onChange={(e) => setEditArticleForm({...editArticleForm, pris_per_enhet: e.target.value})}
+                              className="w-20 px-1 py-0.5 border border-gray-300 rounded text-xs text-right"
+                              placeholder="Pris"
+                              onClick={e => e.stopPropagation()}
+                            />
+                          ) : (
+                            row.totalPrice.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' kr'
+                          )}
+                        </td>
+                        <td className="px-3 py-1.5 flex items-center gap-1">
+                          {editingArticleId === `${row.id}-${firstIdx}` ? (
+                            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => handleSaveArticle(row.id, firstIdx)} className="px-2 py-0.5 bg-green-600 text-white rounded text-xs font-medium hover:bg-green-700">Spara</button>
+                              <button onClick={handleCancelArticleEdit} className="px-2 py-0.5 bg-gray-400 text-white rounded text-xs font-medium hover:bg-gray-500">X</button>
+                              <button onClick={() => handleDeleteUttag(row.id, row.isCheckout)} className="px-2 py-0.5 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700">Ta bort</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => handleEditArticle(row.id, row.artikel, firstIdx)} className="px-2 py-0.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700">Redigera</button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
               </div>
 
