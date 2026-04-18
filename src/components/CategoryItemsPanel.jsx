@@ -34,10 +34,10 @@ function getItemSubtitle(item, entityType) {
 }
 
 function getItemPath(item, entityType) {
-  if (entityType === 'LokalvardsArtikel' && item.artikelnummer) {
-    return `/Lokalvard/Artikel/${item.artikelnummer}`;
+  if (entityType === 'LokalvardsArtikel') {
+    if (item.artikelnummer) return `/Lokalvard/Artikel/${item.artikelnummer}`;
+    if (item.streckkod) return `/Lokalvard/Artikel/${item.streckkod}`;
   }
-  // For others we can't go to a detail page easily, return null
   return null;
 }
 
