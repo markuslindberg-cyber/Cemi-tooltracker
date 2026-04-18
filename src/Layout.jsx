@@ -85,6 +85,7 @@ const navigation = [
     children: [
       { name: 'Platser', path: '/Locations' },
       { name: 'Personal', path: '/Team' },
+      { name: 'Kategorier', path: '/Administration/Kategorier' },
     ]
   },
 ];
