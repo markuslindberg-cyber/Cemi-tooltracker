@@ -97,7 +97,7 @@ export default function LoanRequests() {
   const pendingReturnConfirm = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending_return');
   // Alla aktiva lån som admin eller platsansvarig kan hantera
   const manageableLoans = loanRequests.filter(r =>
-    (isAdmin || r.approver_email === user.email) && r.status === 'approved'
+    (isAdmin || r.approver_email === user.email || r.destination_location_manager_email === user.email) && r.status === 'approved'
   );
 
   const getStatusIcon = (status) => {
