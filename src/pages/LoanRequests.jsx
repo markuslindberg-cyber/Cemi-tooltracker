@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle, Clock, RotateCw, AlertCircle, Pencil } from 'lucide-react';
 import LoanRequestModal from '@/components/modals/LoanRequestModal';
 import EditLoanDialog from '@/components/modals/EditLoanDialog';
+import AdminEditLoanDialog from '@/components/modals/AdminEditLoanDialog';
 
 export default function LoanRequests() {
   const queryClient = useQueryClient();
@@ -25,6 +26,8 @@ export default function LoanRequests() {
   const [confirmReturnOpen, setConfirmReturnOpen] = useState(false);
   const [confirmReturnRequest, setConfirmReturnRequest] = useState(null);
   const [confirmReturnComment, setConfirmReturnComment] = useState('');
+  const [adminEditOpen, setAdminEditOpen] = useState(false);
+  const [adminEditRequest, setAdminEditRequest] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -394,7 +397,7 @@ export default function LoanRequests() {
                     <div className="text-sm text-gray-500">
                       Återlämningsdatum: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => { setEditLoanRequest(request); setEditLoanOpen(true); }}>
+                    <Button variant="outline" size="sm" onClick={() => { setAdminEditRequest(request); setAdminEditOpen(true); }}>
                       <Pencil className="w-3 h-3 mr-1" />
                       Redigera lån
                     </Button>
@@ -533,6 +536,12 @@ export default function LoanRequests() {
         onEarlyReturn={(data) => updateReturnDateMutation.mutate(data)}
         onExtend={(data) => extendMutation.mutate(data)}
         isLoading={updateReturnDateMutation.isPending || extendMutation.isPending}
+      />
+
+      <AdminEditLoanDialog
+        request={adminEditRequest}
+        open={adminEditOpen}
+        onOpenChange={(v) => { setAdminEditOpen(v); if (!v) setAdminEditRequest(null); }}
       />
 
       <LoanRequestModal isOpen={isLoanModalOpen} onClose={() => setIsLoanModalOpen(false)} />
