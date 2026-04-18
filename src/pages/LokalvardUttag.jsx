@@ -77,7 +77,8 @@ export default function LokalvardUttag() {
           streckkod: found?.streckkod || a.streckkod,
           artikel_namn: found?.benamning || a.benamning,
           pris_per_enhet: a.pris_per_enhet || found?.pris || 0,
-          isCheckout: false
+          isCheckout: false,
+          isMatched: !!found
         };
       })
     }));
@@ -105,6 +106,7 @@ export default function LokalvardUttag() {
           streckkod: foundArtikel?.streckkod || item.barcode,
           artikel_namn: foundArtikel?.benamning || item.name,
           isCheckout: true,
+          isMatched: !!foundArtikel,
           antal: antal,
           pris_per_enhet: pris,
           total_pris: antal * pris
@@ -206,10 +208,7 @@ export default function LokalvardUttag() {
 
   const [selectedPersonal, setSelectedPersonal] = useState([]);
 
-  const isUnmatched = (u) => u.artiklar?.some(a => {
-    const found = artikelMap[a.artikel_id] || artikelMap[a.benamning] || artikelMap[a.streckkod];
-    return !found;
-  });
+  const isUnmatched = (u) => u.artiklar?.some(a => a.isMatched === false);
 
   const filtered = uttag.filter(u => {
     const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(u.manad);
