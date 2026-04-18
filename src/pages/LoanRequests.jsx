@@ -109,12 +109,12 @@ export default function LoanRequests() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Förflyttningar</h1>
           <p className="text-gray-600 mt-1">Hantera låneförfrågningar för maskiner</p>
         </div>
-        <Button onClick={() => setIsLoanModalOpen(true)} className="bg-[#8B1E1E] hover:bg-[#6B1616]">
+        <Button onClick={() => setIsLoanModalOpen(true)} className="bg-[#8B1E1E] hover:bg-[#6B1616] w-full sm:w-auto">
           Skicka förfrågan om lån
         </Button>
       </div>

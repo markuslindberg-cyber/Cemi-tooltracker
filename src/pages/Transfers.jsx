@@ -130,11 +130,13 @@ export default function Transfers() {
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Lån av utrustning</h1>
-          <p className="text-gray-500 mt-1">
-            {transfers.length + loanRequests.length} lån totalt
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Lån av utrustning</h1>
+            <p className="text-gray-500 mt-1">
+              {transfers.length + loanRequests.length} lån totalt
+            </p>
+          </div>
         </div>
         {/* Filters */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -184,6 +186,7 @@ export default function Transfers() {
                 <div className="px-6 py-3 bg-gray-50 border-b border-gray-100">
                   <h3 className="font-semibold text-gray-900">Direktförflyttningar</h3>
                 </div>
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50">
@@ -233,6 +236,7 @@ export default function Transfers() {
                     })}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             )}
 
