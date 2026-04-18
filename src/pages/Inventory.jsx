@@ -454,98 +454,37 @@ export default function Inventory() {
     <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Maskiner</h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-gray-500 mt-1 text-sm">
               {filteredTools.length} verktyg
               {(statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || searchQuery) && ' matchar filter'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-1.5 md:gap-2">
+          <div className="flex flex-wrap gap-1.5 md:gap-2 shrink-0">
             {selectedTools.size > 0 && (
-              <Button
-                onClick={() => setShowBulkMove(true)}
-                className="bg-[#8B1E1E] hover:bg-[#6B1515] md:inline-flex hidden"
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Ändra plats ({selectedTools.size})
+              <Button onClick={() => setShowBulkMove(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] md:inline-flex hidden" size="sm">
+                <MapPin className="w-4 h-4 mr-2" />Ändra plats ({selectedTools.size})
               </Button>
             )}
-            <Button
-              onClick={() => setShowScanModal(true)}
-              variant="outline"
-              size="sm"
-              className="hidden sm:inline-flex"
-            >
-              <ScanLine className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Inventera (skanna)</span>
+            <Button onClick={() => setShowScanModal(true)} variant="outline" size="sm" className="hidden sm:inline-flex">
+              <ScanLine className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Inventera (skanna)</span>
             </Button>
-            <Button
-              onClick={handleDownloadTemplate}
-              variant="outline"
-              size="sm"
-              className="hidden md:inline-flex"
-            >
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Ladda ned mall
+            <Button onClick={handleDownloadTemplate} variant="outline" size="sm" className="hidden md:inline-flex">
+              <FileSpreadsheet className="w-4 h-4 mr-2" />Ladda ned mall
             </Button>
-            <Button
-              onClick={handleExportToExcel}
-              variant="outline"
-              size="sm"
-              className="hidden md:inline-flex"
-              disabled={tools.length === 0}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportera data
+            <Button onClick={handleExportToExcel} variant="outline" size="sm" className="hidden md:inline-flex" disabled={tools.length === 0}>
+              <Download className="w-4 h-4 mr-2" />Exportera data
             </Button>
             <label>
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden md:inline-flex"
-                disabled={importing}
-                asChild
-              >
-                <span>
-                  {importing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Importerar...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Importera
-                    </>
-                  )}
-                </span>
+              <Button variant="outline" size="sm" className="hidden md:inline-flex" disabled={importing} asChild>
+                <span>{importing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Importerar...</> : <><Upload className="w-4 h-4 mr-2" />Importera</>}</span>
               </Button>
-              <input
-                type="file"
-                accept=".csv,.xlsx,.xls"
-                onChange={handleImportFromExcel}
-                className="hidden"
-                disabled={importing}
-              />
+              <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImportFromExcel} className="hidden" disabled={importing} />
             </label>
-            <Button
-              onClick={() => setShowAddTool(true)}
-              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 sm:flex-none"
-              size="sm"
-            >
-              <Plus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Lägg till</span>
-            </Button>
-            <Button
-              onClick={handleSearchImages}
-              variant="outline"
-              size="sm"
-              className="hidden md:inline-flex"
-            >
-              <Loader2 className="w-4 h-4 mr-2" />
-              Sök bilder (AI)
+            <Button onClick={() => setShowAddTool(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25" size="sm">
+              <Plus className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Lägg till</span>
             </Button>
           </div>
         </div>

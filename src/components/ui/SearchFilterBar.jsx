@@ -116,14 +116,26 @@ export default function SearchFilterBar({
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+      {/* Search row */}
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Input
+          placeholder="Sök..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="pl-9 h-10 border-gray-200 focus:border-[#8B1E1E]/30 w-full"
+        />
+      </div>
+
+      {/* Filter row */}
+      <div className="flex flex-wrap items-center gap-2">
         {/* Filter button */}
         <div className="relative" ref={ref}>
           <Button
             variant="outline"
             onClick={() => setOpen(!open)}
-            className={cn("h-11 gap-2 border-gray-200", activeCount > 0 && "border-[#8B1E1E]/40 text-[#8B1E1E]")}
+            className={cn("h-9 gap-2 border-gray-200", activeCount > 0 && "border-[#8B1E1E]/40 text-[#8B1E1E]")}
           >
             {activeCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-[#8B1E1E] text-white text-xs flex items-center justify-center font-bold">
@@ -233,21 +245,10 @@ export default function SearchFilterBar({
           )}
         </div>
 
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Sök verktyg..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 h-11 border-gray-200 focus:border-[#8B1E1E]/30"
-          />
-        </div>
-
         {/* Sort */}
         {sortBy !== undefined && onSortByChange && (
           <Select value={sortBy} onValueChange={onSortByChange}>
-            <SelectTrigger className="w-[170px] h-11 border-gray-200">
+            <SelectTrigger className="w-[170px] h-9 border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -261,22 +262,22 @@ export default function SearchFilterBar({
 
         {/* View toggle */}
         {showViewToggle && (
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+          <div className="flex border border-gray-200 rounded-lg overflow-hidden ml-auto">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="icon"
               onClick={() => onViewModeChange('grid')}
-              className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
+              className={`h-9 w-9 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
             >
-              <Grid className="w-5 h-5" />
+              <Grid className="w-4 h-4" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="icon"
               onClick={() => onViewModeChange('list')}
-              className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
+              className={`h-9 w-9 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
             >
-              <List className="w-5 h-5" />
+              <List className="w-4 h-4" />
             </Button>
           </div>
         )}

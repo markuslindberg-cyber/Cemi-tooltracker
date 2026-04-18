@@ -268,19 +268,18 @@ export default function HandTools() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Handredskap</h1>
           <p className="text-gray-500 text-sm mt-1">{handTools.length} redskap totalt</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 shrink-0">
           {import.meta.env.DEV && <>
-            <Button variant="outline" onClick={handleDownloadTemplate} className="hidden lg:flex gap-2">
-              <FileSpreadsheet className="w-4 h-4" />
-              Ladda ned mall
+            <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex gap-2">
+              <FileSpreadsheet className="w-4 h-4" />Ladda ned mall
             </Button>
             <label className="hidden lg:block">
-              <Button variant="outline" disabled={importing} asChild>
+              <Button variant="outline" size="sm" disabled={importing} asChild>
                 <span className="gap-2 cursor-pointer">
                   {importing ? <><Loader2 className="w-4 h-4 animate-spin" />Importerar...</> : <><Upload className="w-4 h-4" />Importera CSV</>}
                 </span>
@@ -288,18 +287,16 @@ export default function HandTools() {
               <input type="file" accept=".csv,.xlsx,.xls" onChange={handleImport} className="hidden" disabled={importing} />
             </label>
           </>}
-          <Button variant="outline" onClick={() => setShowScanModal(true)} className="gap-2">
-            <ScanLine className="w-4 h-4" />
-            Inventera (skanna)
+          <Button variant="outline" size="sm" onClick={() => setShowScanModal(true)} className="gap-2">
+            <ScanLine className="w-4 h-4" /><span className="hidden sm:inline">Inventera (skanna)</span>
           </Button>
-          <Button onClick={() => setShowBatchModal(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] gap-2">
-          <Plus className="w-4 h-4" />
-          Lägg till redskap
-        </Button>
+          <Button size="sm" onClick={() => setShowBatchModal(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] gap-2">
+            <Plus className="w-4 h-4" /><span className="hidden sm:inline">Lägg till redskap</span>
+          </Button>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Search & Filters */}
       <SearchFilterBar
         searchQuery={search}
         onSearchChange={setSearch}
