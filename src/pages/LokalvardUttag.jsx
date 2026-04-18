@@ -221,7 +221,7 @@ export default function LokalvardUttag() {
       artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode) ||
       artikelMap[a.artikel_id]?.benamning?.toLowerCase().includes(searchLower)
     );
-    return monthMatch && customerMatch && personalMatch && searchMatch && !isUnmatched(u);
+    return monthMatch && customerMatch && personalMatch && searchMatch;
   });
 
   const sortField = (item) => {
