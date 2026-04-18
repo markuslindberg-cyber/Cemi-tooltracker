@@ -574,119 +574,14 @@ export default function LokalvardUttag() {
         artiklar={artiklar}
       />
       {/* Header */}
-       <div className="flex items-center justify-between flex-wrap gap-3">
-         <div className="flex items-center gap-3">
-           <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
-           {loadAllUttag && (
-             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Alla uttag laddat ({uttag.length})</span>
-           )}
-         </div>
-         <div className="flex items-center gap-2 flex-wrap">
-           <input
-             type="text"
-             placeholder="Sök streckkod eller namn..."
-             value={searchBarcode}
-             onChange={(e) => setSearchBarcode(e.target.value)}
-             className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
-           />
-           {(selectedMonths.length > 0 || selectedCustomers.length > 0 || selectedPersonal.length > 0 || searchBarcode !== '') && (
-               <Button 
-                 size="sm" 
-                 variant="outline" 
-                 onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); setSelectedPersonal([]); setSearchBarcode(''); }}
-                 className="gap-1 text-xs"
-               >
-                 <RotateCcw className="w-3 h-3" /> Rensa alla
-               </Button>
-             )}
-          {/* Månad filter */}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-            <Calendar className="w-4 h-4 text-gray-400" />
-            <span className="text-xs font-semibold text-gray-500 uppercase">Månad</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
-                  {selectedMonths.length === 0 ? 'Alla' : `${selectedMonths.length}`}
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="end">
-                <div className="space-y-1 max-h-60 overflow-y-auto">
-                  {availableMonths.map(m => (
-                    <label key={m} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
-                      <Checkbox checked={selectedMonths.includes(m)} onCheckedChange={(checked) => setSelectedMonths(prev => checked ? [...prev, m] : prev.filter(x => x !== m))} />
-                      <span className="text-sm">{m}</span>
-                    </label>
-                  ))}
-                </div>
-                {selectedMonths.length > 0 && (
-                  <button onClick={() => setSelectedMonths([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-                    <X className="w-3 h-3" /> Rensa
-                  </button>
-                )}
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Personal filter */}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-            <span className="text-xs font-semibold text-gray-500 uppercase">Personal</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
-                  {selectedPersonal.length === 0 ? 'Alla' : `${selectedPersonal.length}`}
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-60 p-2" align="end">
-                <div className="space-y-1 max-h-60 overflow-y-auto">
-                  {availablePersonal.map(([pid, namn]) => (
-                    <label key={pid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
-                      <Checkbox checked={selectedPersonal.includes(pid)} onCheckedChange={(checked) => setSelectedPersonal(prev => checked ? [...prev, pid] : prev.filter(x => x !== pid))} />
-                      <span className="text-sm">{namn}</span>
-                    </label>
-                  ))}
-                </div>
-                {selectedPersonal.length > 0 && (
-                  <button onClick={() => setSelectedPersonal([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-                    <X className="w-3 h-3" /> Rensa
-                  </button>
-                )}
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Kund filter */}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-            <span className="text-xs font-semibold text-gray-500 uppercase">Kund</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
-                  {selectedCustomers.length === 0 ? 'Alla' : `${selectedCustomers.length}`}
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-60 p-2" align="end">
-                <div className="space-y-1 max-h-60 overflow-y-auto">
-                  {customers.map(cid => {
-                    const cust = uttag.find(u => u.kund_id === cid);
-                    return (
-                      <label key={cid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
-                        <Checkbox checked={selectedCustomers.includes(cid)} onCheckedChange={(checked) => setSelectedCustomers(prev => checked ? [...prev, cid] : prev.filter(x => x !== cid))} />
-                        <span className="text-sm">{cust?.kund_namn}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-                {selectedCustomers.length > 0 && (
-                  <button onClick={() => setSelectedCustomers([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-                    <X className="w-3 h-3" /> Rensa
-                  </button>
-                )}
-              </PopoverContent>
-            </Popover>
-          </div>
-
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">📋 Uttag – Lokalvård</h1>
+          {loadAllUttag && (
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Alla uttag laddat ({uttag.length})</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           {window.location.hostname.includes('base44.app') && <>
             <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
               <FileDown className="w-4 h-4 mr-1" /> Mall
@@ -710,6 +605,117 @@ export default function LokalvardUttag() {
             </Button>
           )}
         </div>
+      </div>
+
+      {/* Sökruta */}
+      <input
+        type="text"
+        placeholder="Sök artikel eller streckkod..."
+        value={searchBarcode}
+        onChange={(e) => setSearchBarcode(e.target.value)}
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
+      />
+
+      {/* Filter-rad */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Månad filter */}
+        <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+          <Calendar className="w-4 h-4 text-gray-400" />
+          <span className="text-xs font-semibold text-gray-500 uppercase">Månad</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+                {selectedMonths.length === 0 ? 'Alla' : `${selectedMonths.length}`}
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2" align="start">
+              <div className="space-y-1 max-h-60 overflow-y-auto">
+                {availableMonths.map(m => (
+                  <label key={m} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                    <Checkbox checked={selectedMonths.includes(m)} onCheckedChange={(checked) => setSelectedMonths(prev => checked ? [...prev, m] : prev.filter(x => x !== m))} />
+                    <span className="text-sm">{m}</span>
+                  </label>
+                ))}
+              </div>
+              {selectedMonths.length > 0 && (
+                <button onClick={() => setSelectedMonths([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
+                  <X className="w-3 h-3" /> Rensa
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Personal filter */}
+        <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+          <span className="text-xs font-semibold text-gray-500 uppercase">Personal</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+                {selectedPersonal.length === 0 ? 'Alla' : `${selectedPersonal.length}`}
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 p-2" align="start">
+              <div className="space-y-1 max-h-60 overflow-y-auto">
+                {availablePersonal.map(([pid, namn]) => (
+                  <label key={pid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                    <Checkbox checked={selectedPersonal.includes(pid)} onCheckedChange={(checked) => setSelectedPersonal(prev => checked ? [...prev, pid] : prev.filter(x => x !== pid))} />
+                    <span className="text-sm">{namn}</span>
+                  </label>
+                ))}
+              </div>
+              {selectedPersonal.length > 0 && (
+                <button onClick={() => setSelectedPersonal([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
+                  <X className="w-3 h-3" /> Rensa
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Kund filter */}
+        <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+          <span className="text-xs font-semibold text-gray-500 uppercase">Kund</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+                {selectedCustomers.length === 0 ? 'Alla' : `${selectedCustomers.length}`}
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 p-2" align="start">
+              <div className="space-y-1 max-h-60 overflow-y-auto">
+                {customers.map(cid => {
+                  const cust = uttag.find(u => u.kund_id === cid);
+                  return (
+                    <label key={cid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                      <Checkbox checked={selectedCustomers.includes(cid)} onCheckedChange={(checked) => setSelectedCustomers(prev => checked ? [...prev, cid] : prev.filter(x => x !== cid))} />
+                      <span className="text-sm">{cust?.kund_namn}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {selectedCustomers.length > 0 && (
+                <button onClick={() => setSelectedCustomers([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
+                  <X className="w-3 h-3" /> Rensa
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {(selectedMonths.length > 0 || selectedCustomers.length > 0 || selectedPersonal.length > 0 || searchBarcode !== '') && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); setSelectedPersonal([]); setSearchBarcode(''); }}
+            className="gap-1 text-xs"
+          >
+            <RotateCcw className="w-3 h-3" /> Rensa alla
+          </Button>
+        )}
       </div>
 
       {showUnmatched ? (

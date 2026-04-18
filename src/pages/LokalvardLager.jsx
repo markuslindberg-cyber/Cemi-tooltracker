@@ -299,16 +299,9 @@ export default function LokalvardLager() {
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold">📦 Lager – Lokalvård</h1>
-        <div className="flex items-center gap-2 flex-wrap">
-          <input
-            type="text"
-            placeholder="Sök artikel eller streckkod..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400 w-52"
-          />
+        <div className="flex items-center gap-2">
           {window.location.hostname.includes('base44.app') && <>
             <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
               <FileDown className="w-4 h-4 mr-1" /> Mall
@@ -323,6 +316,15 @@ export default function LokalvardLager() {
           </Button>
         </div>
       </div>
+
+      {/* Sökruta */}
+      <input
+        type="text"
+        placeholder="Sök artikel eller streckkod..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
+      />
 
       {/* Totalt lagervärde */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
