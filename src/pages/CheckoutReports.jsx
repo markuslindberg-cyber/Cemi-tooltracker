@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Download, Search } from 'lucide-react';
+import { Download, Search, ChevronDown, ChevronUp, User, Calendar, Package } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,6 +16,7 @@ import {
 
 export default function CheckoutReports() {
   const [search, setSearch] = useState('');
+  const [expandedId, setExpandedId] = useState(null);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['checkoutReports'],
@@ -124,29 +125,106 @@ export default function CheckoutReports() {
                   <TableHead>Mottagare</TableHead>
                   <TableHead>Datum</TableHead>
                   <TableHead>Artiklar</TableHead>
+                  <TableHead className="w-8"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredReports.map((report) => (
-                  <TableRow key={report.id}>
-                    <TableCell className="font-medium">{report.project}</TableCell>
-                    <TableCell>
-                      {report.recipient_first_name} {report.recipient_last_name}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(report.checked_out_date).toLocaleDateString('sv-SE')}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {report.checked_out_items.map((item, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {item.name} ({item.quantity})
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredReports.map((report) => {
+                  const isExpanded = expandedId === report.id;
+                  return (
+                    <React.Fragment key={report.id}>
+                      <TableRow
+                        className="cursor-pointer hover:bg-gray-50"
+                        onClick={() => setExpandedId(isExpanded ? null : report.id)}
+                      >
+                        <TableCell className="font-medium">{report.project}</TableCell>
+                        <TableCell>
+                          {report.recipient_first_name} {report.recipient_last_name}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(report.checked_out_date).toLocaleDateString('sv-SE')}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {report.checked_out_items.slice(0, 3).map((item, idx) => (
+                              <Badge key={idx} variant="outline" className="text-xs">
+                                {item.name} ({item.quantity})
+                              </Badge>
+                            ))}
+                            {report.checked_out_items.length > 3 && (
+                              <Badge variant="secondary" className="text-xs">
+                                +{report.checked_out_items.length - 3} till
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="w-8">
+                          {isExpanded
+                            ? <ChevronUp className="w-4 h-4 text-gray-400" />
+                            : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                          <TableCell colSpan={5} className="p-0">
+                            <div className="p-6 space-y-4">
+                              {/* Mottagarinformation */}
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="flex items-start gap-2">
+                                  <User className="w-4 h-4 text-gray-400 mt-0.5" />
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Mottagare</p>
+                                    <p className="text-sm font-medium text-gray-900">
+                                      {report.recipient_first_name} {report.recipient_last_name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Package className="w-4 h-4 text-gray-400 mt-0.5" />
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Projekt</p>
+                                    <p className="text-sm font-medium text-gray-900">{report.project}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
+                                  <div>
+                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Datum & tid</p>
+                                    <p className="text-sm font-medium text-gray-900">
+                                      {new Date(report.checked_out_date).toLocaleString('sv-SE')}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Artikellista */}
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">
+                                  Uttagna artiklar ({report.checked_out_items.length} st)
+                                </p>
+                                <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+                                  {report.checked_out_items.map((item, idx) => (
+                                    <div key={idx} className="flex items-center justify-between px-4 py-2.5">
+                                      <div>
+                                        <p className="text-sm font-medium text-gray-900">{item.name}</p>
+                                        {item.subcategory && (
+                                          <p className="text-xs text-gray-500">{item.subcategory}</p>
+                                        )}
+                                      </div>
+                                      <Badge variant="outline" className="text-xs font-semibold">
+                                        {item.quantity} st
+                                      </Badge>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
