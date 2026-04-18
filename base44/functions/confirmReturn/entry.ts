@@ -29,12 +29,41 @@ Deno.serve(async (req) => {
       approver_comment: comment || loanRequest.approver_comment || ''
     });
 
-    // Notify the loanee that return is confirmed
+    // Logga returnering på varje verktyg i LoanRequest
+    const now = new Date().toISOString();
+    const toolIds = loanRequest.tool_ids || [];
+    await Promise.all(toolIds.map(toolId =>
+      base44.asServiceRole.entities.ToolLog.create({
+        tool_id: toolId,
+        changed_by_email: user.email,
+        changed_by_name: user.full_name,
+        change_date: now,
+        change_type: 'updated',
+        field_name: 'status',
+        old_value: 'in_use',
+        new_value: 'returned',
+        comment: comment || ''
+      })
+    ));
+
+    const commentRow = comment ? `\nKommentar från mottagaren: ${comment}` : '';
+    const dateStr = new Date().toLocaleDateString('sv-SE');
+
+    // Mail till låntagaren
     await base44.integrations.Core.SendEmail({
       to: loanRequest.assigned_to_email,
       subject: `Återlämning bekräftad: ${loanRequest.tool_names.join(', ')}`,
-      body: `Hej ${loanRequest.assigned_to_name},\n\n${user.full_name} har bekräftat mottagning av följande maskiner:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nBekräftad: ${new Date().toLocaleDateString('sv-SE')}\n\nTack för att du lämnade tillbaka utrustningen!`
+      body: `Hej ${loanRequest.assigned_to_name},\n\n${user.full_name} har bekräftat mottagning av följande maskiner:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nBekräftad: ${dateStr}${commentRow}\n\nTack för att du lämnade tillbaka utrustningen!`
     });
+
+    // Mail till platsansvarig för destinationsplatsen
+    if (loanRequest.destination_location_manager_email) {
+      await base44.integrations.Core.SendEmail({
+        to: loanRequest.destination_location_manager_email,
+        subject: `Utrustning åter i lager: ${loanRequest.tool_names.join(', ')}`,
+        body: `Hej ${loanRequest.destination_location_manager_name || ''},\n\nFöljande utrustning som lånades till ${loanRequest.destination_location_name} har nu bekräftats återsänd av ${user.full_name}:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nLånad av: ${loanRequest.assigned_to_name}\nBekräftad: ${dateStr}${commentRow}\n\nMed vänliga hälsningar,\nToolTrack`
+      });
+    }
 
     return Response.json({ success: true, updated });
   } catch (error) {

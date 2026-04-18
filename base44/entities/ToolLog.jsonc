@@ -38,6 +38,10 @@
         "updated"
       ],
       "description": "Typ av \u00e4ndring"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Kommentar kopplad till \u00e4ndringen, t.ex. skick vid \u00e5terl\u00e4mning"
     }
   },
   "required": [
