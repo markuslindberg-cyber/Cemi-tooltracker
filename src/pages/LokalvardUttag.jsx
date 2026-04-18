@@ -42,9 +42,8 @@ export default function LokalvardUttag() {
     artiklar.forEach(a => {
       map[a.id] = a;
       map[a.streckkod] = a;
-      if (a.old_streckkod) {
-        map[a.old_streckkod] = a;
-      }
+      if (a.old_streckkod) map[a.old_streckkod] = a;
+      if (a.benamning) map[a.benamning.toLowerCase()] = a;
     });
     return map;
   }, [artiklar]);
@@ -71,7 +70,7 @@ export default function LokalvardUttag() {
     const processedUttag = (uttagData.uttag || []).map(u => ({
       ...u,
       artiklar: u.artiklar?.map(a => {
-        const found = artikelMap[a.artikel_id] || artikelMap[a.benamning];
+        const found = artikelMap[a.artikel_id] || (a.benamning && artikelMap[a.benamning.toLowerCase()]);
         return {
           ...a,
           streckkod: found?.streckkod || a.streckkod,
