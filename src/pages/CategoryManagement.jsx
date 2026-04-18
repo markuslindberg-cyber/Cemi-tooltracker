@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, RefreshCw, Pencil, Check, X, ChevronDown, ChevronRight, Tag, Layers, Trash2, AlertTriangle } from 'lucide-react';
+import { Loader2, RefreshCw, Pencil, Check, X, ChevronDown, ChevronRight, Tag, Layers, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ENTITY_LABELS = {
@@ -152,7 +152,11 @@ export default function CategoryManagement() {
   const queryClient = useQueryClient();
   const [syncing, setSyncing] = useState(false);
   const [filterType, setFilterType] = useState('all');
-  const [blockedDialog, setBlockedDialog] = useState(null); // { count, entityLabel }
+  const [blockedDialog, setBlockedDialog] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatEntity, setNewCatEntity] = useState('Tool');
+  const [adding, setAdding] = useState(false); // { count, entityLabel }
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['categories'],
@@ -235,6 +239,27 @@ export default function CategoryManagement() {
     }
   };
 
+  const handleAddCategory = async () => {
+    if (!newCatName.trim()) return;
+    setAdding(true);
+    try {
+      await base44.entities.Category.create({
+        name: newCatName.trim(),
+        entity_type: newCatEntity,
+        subcategories: [],
+        page_label: { Tool: 'Maskiner / Inventarie', HandTool: 'Handredskap', 'ArbetskläderUtrustning': 'Arbetskläder', LokalvardsArtikel: 'Lokalvård – Lager' }[newCatEntity],
+      });
+      toast.success(`Kategorin "${newCatName.trim()}" skapades.`);
+      setNewCatName('');
+      setShowAddForm(false);
+      queryClient.invalidateQueries(['categories']);
+    } catch (err) {
+      toast.error('Fel: ' + err.message);
+    } finally {
+      setAdding(false);
+    }
+  };
+
   const entityTypes = ['all', ...Object.keys(ENTITY_LABELS)];
 
   const filtered = filterType === 'all'
@@ -264,11 +289,53 @@ export default function CategoryManagement() {
           <h1 className="text-2xl font-bold text-gray-900">Kategorier</h1>
           <p className="text-sm text-gray-500 mt-1">Hantera kategori- och underkategorinamn globalt i appen</p>
         </div>
-        <Button onClick={handleSync} disabled={syncing} className="bg-[#8B1E1E] hover:bg-[#7a1a1a] gap-2">
-          {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          Synkronisera kategorier
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowAddForm(v => !v)} variant="outline" className="gap-2">
+            <Plus className="w-4 h-4" /> Ny kategori
+          </Button>
+          <Button onClick={handleSync} disabled={syncing} className="bg-[#8B1E1E] hover:bg-[#7a1a1a] gap-2">
+            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            Synkronisera
+          </Button>
+        </div>
       </div>
+
+      {/* Add form */}
+      {showAddForm && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+          <div className="flex-1 space-y-1">
+            <label className="text-xs font-medium text-gray-500">Kategorinamn</label>
+            <input
+              autoFocus
+              value={newCatName}
+              onChange={e => setNewCatName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleAddCategory(); if (e.key === 'Escape') setShowAddForm(false); }}
+              placeholder="T.ex. Grävmaskiner"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-500">Tillhör</label>
+            <select
+              value={newCatEntity}
+              onChange={e => setNewCatEntity(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 bg-white"
+            >
+              {Object.entries(ENTITY_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleAddCategory} disabled={adding || !newCatName.trim()} className="gap-1">
+              {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Spara
+            </Button>
+            <Button variant="outline" onClick={() => { setShowAddForm(false); setNewCatName(''); }}>
+              Avbryt
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Info box */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
