@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, RefreshCw, Pencil, Check, X, ChevronDown, ChevronRight, Tag, Layers, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import CategoryItemsPanel from '@/components/CategoryItemsPanel';
 
 const ENTITY_LABELS = {
   Tool: 'Maskiner',
@@ -83,7 +84,7 @@ function DeleteBlockedDialog({ count, entityLabel, onClose }) {
   );
 }
 
-function CategoryRow({ category, itemCount, onUpdateName, onUpdateSubcat, onDelete }) {
+function CategoryRow({ category, itemCount, onUpdateName, onUpdateSubcat, onDelete, onShowItems }) {
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -110,11 +111,19 @@ function CategoryRow({ category, itemCount, onUpdateName, onUpdateSubcat, onDele
         <Badge className={`text-xs ${ENTITY_COLORS[category.entity_type]}`}>
           {ENTITY_LABELS[category.entity_type] || category.entity_type}
         </Badge>
-        {/* Item count badge */}
+        {/* Item count badge - clickable if items exist */}
         {itemCount !== undefined && (
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${itemCount > 0 ? 'bg-gray-100 text-gray-700' : 'bg-gray-50 text-gray-400'}`}>
+          <button
+            onClick={e => { e.stopPropagation(); if (itemCount > 0) onShowItems(category); }}
+            className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
+              itemCount > 0
+                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer'
+                : 'bg-gray-50 text-gray-400 cursor-default'
+            }`}
+            title={itemCount > 0 ? 'Visa artiklar' : ''}
+          >
             {itemCount} {itemCount === 1 ? 'artikel' : 'artiklar'}
-          </span>
+          </button>
         )}
         <span className="text-xs text-gray-400">{(category.subcategories || []).length} underkategorier</span>
         {/* Delete button */}
@@ -156,7 +165,8 @@ export default function CategoryManagement() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatEntity, setNewCatEntity] = useState('Tool');
-  const [adding, setAdding] = useState(false); // { count, entityLabel }
+  const [adding, setAdding] = useState(false);
+  const [itemsPanelCategory, setItemsPanelCategory] = useState(null);
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['categories'],
@@ -283,6 +293,13 @@ export default function CategoryManagement() {
         />
       )}
 
+      {itemsPanelCategory && (
+        <CategoryItemsPanel
+          category={itemsPanelCategory}
+          onClose={() => setItemsPanelCategory(null)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -394,6 +411,7 @@ export default function CategoryManagement() {
                         onUpdateName={handleUpdateName}
                         onUpdateSubcat={handleUpdateSubcat}
                         onDelete={handleDelete}
+                        onShowItems={setItemsPanelCategory}
                       />
                     </div>
                   );
