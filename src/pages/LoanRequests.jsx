@@ -85,11 +85,17 @@ export default function LoanRequests() {
 
   if (!user) return null;
 
+  const isAdmin = user.role === 'admin';
+
   // Filter requests based on user role
   const myRequests = loanRequests.filter(r => r.requested_by_email === user.email);
   const requestsToApprove = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending');
   const myLoans = loanRequests.filter(r => r.assigned_to_email === user.email && r.status === 'approved');
   const pendingReturnConfirm = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending_return');
+  // Alla aktiva lån som admin eller platsansvarig kan hantera
+  const manageableLoans = loanRequests.filter(r =>
+    (isAdmin || r.approver_email === user.email) && r.status === 'approved'
+  );
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -189,6 +195,9 @@ export default function LoanRequests() {
           </TabsTrigger>
           <TabsTrigger value="mine">Mina förfrågningar ({myRequests.length})</TabsTrigger>
           <TabsTrigger value="loans">Mina lån ({myLoans.length})</TabsTrigger>
+          {(isAdmin || manageableLoans.length > 0) && (
+            <TabsTrigger value="manage">Hantera lån ({manageableLoans.length})</TabsTrigger>
+          )}
         </TabsList>
 
         {/* Requests to Approve */}
@@ -354,6 +363,41 @@ export default function LoanRequests() {
                         Markera som returnerad
                       </Button>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+        {/* Manage Loans (Admin + Approver) */}
+        <TabsContent value="manage" className="space-y-3">
+          {manageableLoans.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-gray-500">
+                Inga aktiva lån att hantera
+              </CardContent>
+            </Card>
+          ) : (
+            manageableLoans.map(request => (
+              <Card key={request.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
+                        <p className="text-sm text-gray-600">Låntagare: {request.assigned_to_name}</p>
+                        <p className="text-sm text-gray-600">Destination: {request.destination_location_name}</p>
+                        <p className="text-sm text-gray-600">Begärd av: {request.requested_by_name}</p>
+                      </div>
+                      <Badge variant="default">Godkänd</Badge>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Återlämningsdatum: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => { setEditLoanRequest(request); setEditLoanOpen(true); }}>
+                      <Pencil className="w-3 h-3 mr-1" />
+                      Redigera lån
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
