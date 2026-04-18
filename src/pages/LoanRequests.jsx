@@ -183,7 +183,7 @@ export default function LoanRequests() {
         </Card>
       </div>
 
-      <Tabs defaultValue="pending" className="space-y-4">
+      <Tabs defaultValue={isAdmin || manageableLoans.length > 0 ? "manage" : "pending"} className="space-y-4">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="pending">
             Väntande ({requestsToApprove.length})
