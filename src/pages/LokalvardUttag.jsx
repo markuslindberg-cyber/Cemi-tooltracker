@@ -834,23 +834,25 @@ export default function LokalvardUttag() {
               )}
 
               {/* Mobile view */}
-              <div className="lg:hidden space-y-2">
+              <div className="lg:hidden space-y-1">
                 {paginatedData.map((u) => (
-                  <div key={`${u.id}-${u.datum}`} className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900">{u.kund_namn}</p>
-                        <p className="text-xs text-gray-500">{u.datum?.split('T')[0]}</p>
+                  <div key={`${u.id}-${u.datum}`} className="bg-white rounded border border-gray-200 px-3 py-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="font-semibold text-xs text-gray-900 truncate">{u.kund_namn}</p>
+                        <p className="text-xs text-gray-400 whitespace-nowrap">{u.datum?.split('T')[0]}</p>
                       </div>
-                      <p className="text-lg font-bold text-gray-900">{u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</p>
+                      <p className="text-xs font-bold text-gray-900 whitespace-nowrap ml-2">{u.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr</p>
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">{u.personal_namn}</p>
-                    <div className="text-xs text-gray-700 mb-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                      <span>{u.personal_namn}</span>
+                      {u.ordernummer && <span>· {u.ordernummer}</span>}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-0.5">
                       {u.artiklar?.map((a, idx) => (
-                        <div key={idx}>{a.benamning} ({a.antal} st)</div>
+                        <span key={idx}>{idx > 0 ? ', ' : ''}{a.benamning} ({a.antal} st)</span>
                       ))}
                     </div>
-                    {u.ordernummer && <p className="text-xs text-gray-500">Ordernummer: {u.ordernummer}</p>}
                   </div>
                 ))}
               </div>
