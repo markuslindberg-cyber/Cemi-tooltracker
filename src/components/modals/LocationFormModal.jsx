@@ -116,7 +116,7 @@ export default function LocationFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="w-full max-w-lg mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {isEditing ? 'Redigera plats' : 'Lägg till ny plats'}
@@ -289,14 +289,14 @@ export default function LocationFormModal({
           </div>
         </div>
 
-        <DialogFooter className="gap-3">
-          <Button variant="outline" onClick={handleClose}>
+        <DialogFooter className="gap-3 flex-col-reverse sm:flex-row">
+          <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
             Avbryt
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!formData.name || !formData.type || isLoading}
-            className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+            className="bg-[#8B1E1E] hover:bg-[#6B1515] w-full sm:w-auto"
           >
             {isLoading ? (
               <>
