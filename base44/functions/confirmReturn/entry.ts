@@ -29,11 +29,12 @@ Deno.serve(async (req) => {
       approver_comment: comment || loanRequest.approver_comment || ''
     });
 
-    // Logga returnering på varje verktyg i LoanRequest
+    // Logga returnering och uppdatera anteckningar på varje verktyg
     const now = new Date().toISOString();
     const toolIds = loanRequest.tool_ids || [];
-    await Promise.all(toolIds.map(toolId =>
-      base44.asServiceRole.entities.ToolLog.create({
+    await Promise.all(toolIds.map(async (toolId) => {
+      // Skapa loggpost
+      await base44.asServiceRole.entities.ToolLog.create({
         tool_id: toolId,
         changed_by_email: user.email,
         changed_by_name: user.full_name,
@@ -43,8 +44,17 @@ Deno.serve(async (req) => {
         old_value: 'in_use',
         new_value: 'returned',
         comment: comment || ''
-      })
-    ));
+      });
+
+      // Lägg till kommentar på maskinens anteckningar om kommentar finns
+      if (comment) {
+        const tool = await base44.asServiceRole.entities.Tool.get(toolId);
+        const existingNotes = tool?.notes || '';
+        const newNote = `[${dateStr} – Återlämnad av ${loanRequest.assigned_to_name}, bekräftad av ${user.full_name}]: ${comment}`;
+        const updatedNotes = existingNotes ? `${existingNotes}\n${newNote}` : newNote;
+        await base44.asServiceRole.entities.Tool.update(toolId, { notes: updatedNotes });
+      }
+    }));
 
     const commentRow = comment ? `\nKommentar från mottagaren: ${comment}` : '';
     const dateStr = new Date().toLocaleDateString('sv-SE');
