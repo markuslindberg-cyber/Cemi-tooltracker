@@ -16,7 +16,7 @@ function fetchItems(entityType, categoryName) {
   if (entityType === 'Tool') return base44.entities.Tool.filter({ category: categoryName }, null, 100000);
   if (entityType === 'HandTool') return base44.entities.HandTool.filter({ category: categoryName }, null, 100000);
   if (entityType === 'ArbetskläderUtrustning') return base44.entities.ArbetskläderUtrustning.filter({ category: categoryName }, null, 100000);
-  if (entityType === 'LokalvardsArtikel') return base44.entities.LokalvardsArtikel.filter({ category: categoryName }, null, 100000);
+  if (entityType === 'LokalvardsArtikel') return base44.entities.LokalvardsArtikel.list(null, 100000);
   return Promise.resolve([]);
 }
 
