@@ -213,14 +213,23 @@ export default function LokalvardUttag() {
     const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(u.manad);
     const customerMatch = selectedCustomers.length === 0 || selectedCustomers.includes(u.kund_id);
     const personalMatch = selectedPersonal.length === 0 || selectedPersonal.includes(u.personal_id);
+    if (searchBarcode === '') return monthMatch && customerMatch && personalMatch;
     const searchLower = searchBarcode.toLowerCase();
-    const searchMatch = searchBarcode === '' || u.artiklar?.some(a => 
-      a.benamning?.toLowerCase().includes(searchLower) ||
-      a.artikel_id?.toLowerCase().includes(searchLower) || 
-      artikelMap[a.artikel_id]?.streckkod?.includes(searchBarcode) ||
-      artikelMap[a.artikel_id]?.old_streckkod?.includes(searchBarcode) ||
-      artikelMap[a.artikel_id]?.benamning?.toLowerCase().includes(searchLower)
-    );
+    const searchMatch = u.artiklar?.some(a => {
+      const benamning = (a.benamning || '').toLowerCase();
+      const artikelNamn = (a.artikel_namn || '').toLowerCase();
+      const artikelId = (a.artikel_id || '').toLowerCase();
+      const streckkod = (a.streckkod || '').toLowerCase();
+      const lagerArtikel = artikelMap[a.artikel_id] || artikelMap[a.streckkod];
+      const lagerNamn = (lagerArtikel?.benamning || '').toLowerCase();
+      const lagerStreckkod = (lagerArtikel?.streckkod || '').toLowerCase();
+      return benamning.includes(searchLower) ||
+        artikelNamn.includes(searchLower) ||
+        artikelId.includes(searchLower) ||
+        streckkod.includes(searchLower) ||
+        lagerNamn.includes(searchLower) ||
+        lagerStreckkod.includes(searchLower);
+    });
     return monthMatch && customerMatch && personalMatch && searchMatch;
   });
 
