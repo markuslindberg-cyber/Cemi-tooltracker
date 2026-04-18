@@ -38,6 +38,9 @@ function getItemPath(item, entityType) {
     if (item.artikelnummer) return `/Lokalvard/Artikel/${item.artikelnummer}`;
     if (item.streckkod) return `/Lokalvard/Artikel/${item.streckkod}`;
   }
+  if (entityType === 'Tool') return `/Inventory?toolId=${item.id}`;
+  if (entityType === 'HandTool') return `/HandTools?toolId=${item.id}`;
+  if (entityType === 'ArbetskläderUtrustning') return `/ArbetskladerUtrustning?toolId=${item.id}`;
   return null;
 }
 
