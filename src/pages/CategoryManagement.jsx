@@ -98,47 +98,54 @@ function CategoryRow({ category, itemCount, onUpdateName, onUpdateSubcat, onDele
   return (
     <div className="border border-gray-200 rounded-xl bg-white overflow-hidden">
       <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="flex items-start gap-2 px-3 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={() => setExpanded(e => !e)}
       >
-        <span className="text-gray-400">
+        <span className="text-gray-400 mt-0.5 shrink-0">
           {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </span>
-        <Tag className="w-4 h-4 text-gray-400 shrink-0" />
-        <div className="flex-1 font-medium text-gray-900" onClick={e => e.stopPropagation()}>
-          <EditableField value={category.name} onSave={(newName) => onUpdateName(category, newName)} />
+
+        {/* Main content */}
+        <div className="flex-1 min-w-0" onClick={e => e.stopPropagation()}>
+          {/* Top row: name + delete */}
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gray-900 flex-1 min-w-0 truncate">
+              <EditableField value={category.name} onSave={(newName) => onUpdateName(category, newName)} />
+            </span>
+            <button
+              onClick={e => { e.stopPropagation(); handleDelete(); }}
+              disabled={deleting}
+              className="shrink-0 p-1.5 text-gray-300 hover:text-red-500 active:text-red-600 transition-colors rounded-lg hover:bg-red-50"
+              title="Radera kategori"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            </button>
+          </div>
+
+          {/* Bottom row: badges */}
+          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+            <Badge className={`text-xs ${ENTITY_COLORS[category.entity_type]}`}>
+              {ENTITY_LABELS[category.entity_type] || category.entity_type}
+            </Badge>
+            {itemCount !== undefined && (
+              <button
+                onClick={e => { e.stopPropagation(); if (itemCount > 0) onShowItems(category); }}
+                className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
+                  itemCount > 0
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 active:bg-blue-300 cursor-pointer'
+                    : 'bg-gray-50 text-gray-400 cursor-default'
+                }`}
+              >
+                {itemCount} {itemCount === 1 ? 'artikel' : 'artiklar'}
+              </button>
+            )}
+            <span className="text-xs text-gray-400">{(category.subcategories || []).length} underkategorier</span>
+          </div>
         </div>
-        <Badge className={`text-xs ${ENTITY_COLORS[category.entity_type]}`}>
-          {ENTITY_LABELS[category.entity_type] || category.entity_type}
-        </Badge>
-        {/* Item count badge - clickable if items exist */}
-        {itemCount !== undefined && (
-          <button
-            onClick={e => { e.stopPropagation(); if (itemCount > 0) onShowItems(category); }}
-            className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
-              itemCount > 0
-                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 cursor-pointer'
-                : 'bg-gray-50 text-gray-400 cursor-default'
-            }`}
-            title={itemCount > 0 ? 'Visa artiklar' : ''}
-          >
-            {itemCount} {itemCount === 1 ? 'artikel' : 'artiklar'}
-          </button>
-        )}
-        <span className="text-xs text-gray-400">{(category.subcategories || []).length} underkategorier</span>
-        {/* Delete button */}
-        <button
-          onClick={e => { e.stopPropagation(); handleDelete(); }}
-          disabled={deleting}
-          className="opacity-0 group-hover:opacity-100 ml-1 text-gray-300 hover:text-red-500 transition-colors"
-          title="Radera kategori"
-        >
-          {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-        </button>
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 bg-gray-50 px-6 py-3">
+        <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
           {(category.subcategories || []).length === 0 ? (
             <p className="text-sm text-gray-400 italic">Inga underkategorier registrerade</p>
           ) : (
