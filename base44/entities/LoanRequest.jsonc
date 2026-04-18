@@ -79,10 +79,11 @@
         "pending",
         "approved",
         "rejected",
+        "pending_return",
         "returned"
       ],
       "default": "pending",
-      "description": "Request status"
+      "description": "Request status. pending_return = l\u00e5ntagaren har markerat som returnerad, v\u00e4ntar p\u00e5 att ansvarig bekr\u00e4ftar mottagning"
     },
     "approver_email": {
       "type": "string",
@@ -122,6 +123,16 @@
       "description": "ID of original request if this is an extension"
     },
     "returned_date": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    },
+    "return_confirmed_by_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Name of person who confirmed receipt of returned tools"
+    },
+    "return_confirmed_date": {
       "type": "string",
       "format": "date-time",
       "nullable": true

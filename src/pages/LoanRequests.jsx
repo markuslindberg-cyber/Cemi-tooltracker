@@ -22,6 +22,9 @@ export default function LoanRequests() {
   const [extensionDate, setExtensionDate] = useState('');
   const [editLoanOpen, setEditLoanOpen] = useState(false);
   const [editLoanRequest, setEditLoanRequest] = useState(null);
+  const [confirmReturnOpen, setConfirmReturnOpen] = useState(false);
+  const [confirmReturnRequest, setConfirmReturnRequest] = useState(null);
+  const [confirmReturnComment, setConfirmReturnComment] = useState('');
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -70,12 +73,23 @@ export default function LoanRequests() {
     }
   });
 
+  const confirmReturnMutation = useMutation({
+    mutationFn: (data) => base44.functions.invoke('confirmReturn', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['loanRequests'] });
+      setConfirmReturnOpen(false);
+      setConfirmReturnRequest(null);
+      setConfirmReturnComment('');
+    }
+  });
+
   if (!user) return null;
 
   // Filter requests based on user role
   const myRequests = loanRequests.filter(r => r.requested_by_email === user.email);
   const requestsToApprove = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending');
   const myLoans = loanRequests.filter(r => r.assigned_to_email === user.email && r.status === 'approved');
+  const pendingReturnConfirm = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending_return');
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -92,6 +106,7 @@ export default function LoanRequests() {
       approved: { label: 'Godkänd', variant: 'default' },
       rejected: { label: 'Nekad', variant: 'destructive' },
       pending: { label: 'Väntar', variant: 'secondary' },
+      pending_return: { label: 'Väntar mottagningsbekräftelse', variant: 'secondary' },
       returned: { label: 'Returnerad', variant: 'outline' }
     };
     return variants[status] || { label: status, variant: 'secondary' };
@@ -160,8 +175,18 @@ export default function LoanRequests() {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending">Väntande godkännande ({requestsToApprove.length})</TabsTrigger>
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="pending">
+            Väntande ({requestsToApprove.length})
+          </TabsTrigger>
+          <TabsTrigger value="confirm_return" className="relative">
+            Bekräfta mottagning
+            {pendingReturnConfirm.length > 0 && (
+              <span className="ml-1.5 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {pendingReturnConfirm.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="mine">Mina förfrågningar ({myRequests.length})</TabsTrigger>
           <TabsTrigger value="loans">Mina lån ({myLoans.length})</TabsTrigger>
         </TabsList>
@@ -196,6 +221,45 @@ export default function LoanRequests() {
                         <p className="text-gray-600">{request.requester_comment}</p>
                       </div>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+
+        {/* Confirm Return Tab */}
+        <TabsContent value="confirm_return" className="space-y-3">
+          {pendingReturnConfirm.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center text-gray-500">
+                Inga maskiner väntar på mottagningsbekräftelse
+              </CardContent>
+            </Card>
+          ) : (
+            pendingReturnConfirm.map(request => (
+              <Card key={request.id} className="border-orange-200 bg-orange-50">
+                <CardContent className="pt-6">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
+                        <p className="text-sm text-gray-600">Lånad av: {request.assigned_to_name}</p>
+                        <p className="text-sm text-gray-600">Från: {request.destination_location_name}</p>
+                      </div>
+                      <Badge className="bg-orange-100 text-orange-800">Väntar mottagning</Badge>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Markerades som returnerad: {request.returned_date ? new Date(request.returned_date).toLocaleDateString('sv-SE') : '–'}
+                    </p>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => { setConfirmReturnRequest(request); setConfirmReturnOpen(true); }}
+                    >
+                      <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                      Bekräfta att jag tagit emot maskinerna
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -277,7 +341,16 @@ export default function LoanRequests() {
                         <Pencil className="w-3 h-3 mr-1" />
                         Redigera lån
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => returnMutation.mutate(request.id)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={returnMutation.isPending}
+                        onClick={() => {
+                          if (window.confirm('Markera maskinerna som returnerade? Ansvarig kommer att få en bekräftelsebegäran.')) {
+                            returnMutation.mutate(request.id);
+                          }
+                        }}
+                      >
                         Markera som returnerad
                       </Button>
                     </div>
@@ -361,6 +434,48 @@ export default function LoanRequests() {
               </Button>
               <Button onClick={handleExtend} disabled={extendMutation.isPending}>
                 Skicka förlängningsbegäran
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Confirm Return Dialog */}
+      {confirmReturnRequest && (
+        <Dialog open={confirmReturnOpen} onOpenChange={(v) => { setConfirmReturnOpen(v); if (!v) { setConfirmReturnRequest(null); setConfirmReturnComment(''); } }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Bekräfta mottagning av maskiner</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="font-medium text-gray-900">{confirmReturnRequest.tool_names.join(', ')}</p>
+                <p className="text-sm text-gray-600 mt-1">Återlämnade av: {confirmReturnRequest.assigned_to_name}</p>
+              </div>
+              <p className="text-sm text-gray-600">
+                Bekräftar du att du har tagit emot ovanstående maskiner och att de är kontrollerade?
+              </p>
+              <div>
+                <label className="block text-sm font-medium mb-2">Kommentar (valfritt)</label>
+                <Textarea
+                  placeholder="T.ex. allt i gott skick..."
+                  value={confirmReturnComment}
+                  onChange={e => setConfirmReturnComment(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => { setConfirmReturnOpen(false); setConfirmReturnRequest(null); setConfirmReturnComment(''); }}>
+                Avbryt
+              </Button>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => confirmReturnMutation.mutate({ loan_request_id: confirmReturnRequest.id, comment: confirmReturnComment })}
+                disabled={confirmReturnMutation.isPending}
+              >
+                <CheckCircle className="w-4 h-4 mr-1.5" />
+                Ja, jag har tagit emot maskinerna
               </Button>
             </DialogFooter>
           </DialogContent>
