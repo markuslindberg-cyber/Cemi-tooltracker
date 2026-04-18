@@ -117,7 +117,7 @@ export default function CategoryManagement() {
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => base44.entities.Category.list('entity_type', 100000),
+    queryFn: () => base44.entities.Category.list(null, 100000),
   });
 
   const handleSync = async () => {
