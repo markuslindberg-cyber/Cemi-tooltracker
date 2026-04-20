@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const emailStyle = `font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px 20px;`;
+const cardStyle = `background: #ffffff; border-radius: 8px; max-width: 560px; margin: 0 auto; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1);`;
+const bodyStyle = `padding: 32px; color: #333;`;
+const tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0;`;
+const labelCellStyle = `padding: 10px 14px; background: #f9f9f9; font-size: 13px; color: #777; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; width: 42%; border-bottom: 1px solid #eee;`;
+const valueCellStyle = `padding: 10px 14px; font-size: 14px; color: #222; border-bottom: 1px solid #eee;`;
+const footerStyle = `text-align: center; padding: 20px 32px; font-size: 12px; color: #aaa; border-top: 1px solid #f0f0f0;`;
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -9,26 +17,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const {
-      original_request_id,
-      new_return_date,
-      extension_comment
-    } = await req.json();
+    const { original_request_id, new_return_date, extension_comment } = await req.json();
 
     const originalRequest = await base44.entities.LoanRequest.get(original_request_id);
-
     if (!originalRequest) {
       return Response.json({ error: 'Original loan request not found' }, { status: 404 });
     }
 
-    // Create new extension request
     const extensionRequest = await base44.entities.LoanRequest.create({
       tool_ids: originalRequest.tool_ids,
       tool_names: originalRequest.tool_names,
-      tool_details: originalRequest.tool_details.map(td => ({
-        ...td,
-        return_date: new_return_date
-      })),
+      tool_details: originalRequest.tool_details.map(td => ({ ...td, return_date: new_return_date })),
       requested_by_email: user.email,
       requested_by_name: user.full_name,
       assigned_to_email: originalRequest.assigned_to_email,
@@ -46,11 +45,56 @@ Deno.serve(async (req) => {
       status: 'pending'
     });
 
-    // Send email to approver about extension request
+    const toolList = originalRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const commentSection = extension_comment
+      ? `<div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 4px; padding: 14px 18px; margin: 20px 0; font-size: 14px; color: #333; font-style: italic;"><strong>Kommentar:</strong> ${extension_comment}</div>`
+      : '';
+    const oldDate = new Date(originalRequest.default_return_date).toLocaleDateString('sv-SE');
+    const newDate = new Date(new_return_date).toLocaleDateString('sv-SE');
+
     await base44.integrations.Core.SendEmail({
       to: originalRequest.approver_email,
-      subject: `Förlängningsbegäran för lånade maskiner: ${originalRequest.tool_names.join(', ')}`,
-      body: `Hej ${originalRequest.approver_name},\n\nEn förlängningsbegäran har inkommit för lånade maskiner:\n\nMaskiner: ${originalRequest.tool_names.join(', ')}\nNytt återlämningsdatum: ${new_return_date}\nBegärt av: ${user.full_name}\n\nKommentar: ${extension_comment || 'Ingen kommentar'}`
+      subject: `🔄 Förlängningsbegäran för lån: ${originalRequest.tool_names.join(', ')}`,
+      body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="background: #2563eb; padding: 28px 32px; text-align: center;">
+      <h2 style="margin:0; color:#fff; font-size:20px;">🔄 Förlängningsbegäran för lån</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${originalRequest.approver_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${user.full_name}</strong> har begärt en förlängning av lånet för följande maskiner.</p>
+
+      <p style="font-size:13px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
+        ${toolList}
+      </ul>
+
+      <table style="${tableStyle}">
+        <tr>
+          <td style="${labelCellStyle}">Begärd av</td>
+          <td style="${valueCellStyle}">${user.full_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Nuvarande datum</td>
+          <td style="${valueCellStyle}">${oldDate}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Nytt datum</td>
+          <td style="${valueCellStyle}"><strong style="color:#2563eb;">${newDate}</strong></td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Destination</td>
+          <td style="${valueCellStyle}">${originalRequest.destination_location_name}</td>
+        </tr>
+      </table>
+
+      ${commentSection}
+
+      <p style="font-size:13px; color:#888; margin-top:24px;">Logga in i ToolTrack för att godkänna eller neka förlängningen.</p>
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
     });
 
     return Response.json({ success: true, extensionRequest });

@@ -1,5 +1,75 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const emailStyle = `
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  padding: 40px 20px;
+`;
+
+const cardStyle = `
+  background: #ffffff;
+  border-radius: 8px;
+  max-width: 560px;
+  margin: 0 auto;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+`;
+
+const headerStyle = (color) => `
+  background: ${color};
+  padding: 28px 32px;
+  text-align: center;
+`;
+
+const bodyStyle = `
+  padding: 32px;
+  color: #333;
+`;
+
+const tableStyle = `
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+`;
+
+const labelCellStyle = `
+  padding: 10px 14px;
+  background: #f9f9f9;
+  font-size: 13px;
+  color: #777;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 42%;
+  border-bottom: 1px solid #eee;
+`;
+
+const valueCellStyle = `
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #222;
+  border-bottom: 1px solid #eee;
+`;
+
+const commentBoxStyle = (color) => `
+  background: ${color}18;
+  border-left: 4px solid ${color};
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin: 20px 0;
+  font-size: 14px;
+  color: #333;
+  font-style: italic;
+`;
+
+const footerStyle = `
+  text-align: center;
+  padding: 20px 32px;
+  font-size: 12px;
+  color: #aaa;
+  border-top: 1px solid #f0f0f0;
+`;
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -9,14 +79,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const {
-      loan_request_id,
-      approved,
-      approver_comment
-    } = await req.json();
+    const { loan_request_id, approved, approver_comment } = await req.json();
 
     const loanRequest = await base44.entities.LoanRequest.get(loan_request_id);
-
     if (!loanRequest) {
       return Response.json({ error: 'Loan request not found' }, { status: 404 });
     }
@@ -29,22 +94,125 @@ Deno.serve(async (req) => {
       approver_comment: approver_comment || ''
     });
 
-    // Send email to requester
-    const statusText = approved ? 'godkänd' : 'nekad';
-    const statusSwedish = approved ? 'Godkänd' : 'Nekad';
+    const toolList = loanRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const commentSection = approver_comment
+      ? `<div style="${commentBoxStyle(approved ? '#16a34a' : '#dc2626')}"><strong>Kommentar från godkännaren:</strong> ${approver_comment}</div>`
+      : '';
 
-    await base44.integrations.Core.SendEmail({
-      to: loanRequest.requested_by_email,
-      subject: `Din förfrågan om lån av maskin är ${statusText}`,
-      body: `Hej ${loanRequest.requested_by_name},\n\nDin förfrågan om lån av ${loanRequest.tool_names.join(', ')} har ${statusText} av ${loanRequest.approver_name}.\n\nStatus: ${statusSwedish}\nKommentar: ${approver_comment || 'Ingen kommentar'}\n\nÅterlämningsdatum: ${loanRequest.default_return_date}`
-    });
-
-    // If approved, send email to destination location manager
-    if (approved && loanRequest.destination_location_manager_email && loanRequest.destination_location_manager_email !== user.email) {
+    if (approved) {
+      // --- GODKÄND MAIL till sökanden ---
       await base44.integrations.Core.SendEmail({
-        to: loanRequest.destination_location_manager_email,
-        subject: `Godkänd: Maskiner lånade från annan plats`,
-        body: `Hej ${loanRequest.destination_location_manager_name},\n\nFöljande maskiner har godkänts för lån till er kontor:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nLånad av: ${loanRequest.assigned_to_name}\nÅterlämningsdatum: ${loanRequest.default_return_date}`
+        to: loanRequest.requested_by_email,
+        subject: `✅ Låneförfrågan godkänd: ${loanRequest.tool_names.join(', ')}`,
+        body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="${headerStyle('#16a34a')}">
+      <h2 style="margin:0; color:#fff; font-size:20px;">✅ Låneförfrågan godkänd</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.requested_by_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din förfrågan om lån av maskiner har <strong style="color:#16a34a;">godkänts</strong> av ${loanRequest.approver_name}.</p>
+
+      <p style="font-size:13px; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Godkända maskiner</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
+        ${toolList}
+      </ul>
+
+      <table style="${tableStyle}">
+        <tr>
+          <td style="${labelCellStyle}">Godkänd av</td>
+          <td style="${valueCellStyle}">${loanRequest.approver_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Låntagare</td>
+          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Destination</td>
+          <td style="${valueCellStyle}">${loanRequest.destination_location_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Återlämning</td>
+          <td style="${valueCellStyle}">${new Date(loanRequest.default_return_date).toLocaleDateString('sv-SE')}</td>
+        </tr>
+      </table>
+      ${commentSection}
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
+      });
+
+      // --- GODKÄND: notis till destinationsplatsens ansvarig ---
+      if (loanRequest.destination_location_manager_email && loanRequest.destination_location_manager_email !== user.email) {
+        await base44.integrations.Core.SendEmail({
+          to: loanRequest.destination_location_manager_email,
+          subject: `Maskiner på väg till er: ${loanRequest.tool_names.join(', ')}`,
+          body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="${headerStyle('#2563eb')}">
+      <h2 style="margin:0; color:#fff; font-size:20px;">📦 Maskiner godkända för lån till er</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.destination_location_manager_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Följande maskiner har godkänts och är på väg till er plats.</p>
+
+      <p style="font-size:13px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
+        ${toolList}
+      </ul>
+
+      <table style="${tableStyle}">
+        <tr>
+          <td style="${labelCellStyle}">Lånas av</td>
+          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Återlämning</td>
+          <td style="${valueCellStyle}">${new Date(loanRequest.default_return_date).toLocaleDateString('sv-SE')}</td>
+        </tr>
+      </table>
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
+        });
+      }
+
+    } else {
+      // --- NEKAD MAIL ---
+      await base44.integrations.Core.SendEmail({
+        to: loanRequest.requested_by_email,
+        subject: `❌ Låneförfrågan nekad: ${loanRequest.tool_names.join(', ')}`,
+        body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="${headerStyle('#dc2626')}">
+      <h2 style="margin:0; color:#fff; font-size:20px;">❌ Låneförfrågan nekad</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.requested_by_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din förfrågan om lån av maskiner har tyvärr <strong style="color:#dc2626;">nekats</strong> av ${loanRequest.approver_name}.</p>
+
+      <p style="font-size:13px; font-weight:700; color:#dc2626; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Berörda maskiner</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
+        ${toolList}
+      </ul>
+
+      <table style="${tableStyle}">
+        <tr>
+          <td style="${labelCellStyle}">Nekad av</td>
+          <td style="${valueCellStyle}">${loanRequest.approver_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Destination</td>
+          <td style="${valueCellStyle}">${loanRequest.destination_location_name}</td>
+        </tr>
+      </table>
+      ${commentSection}
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
       });
     }
 

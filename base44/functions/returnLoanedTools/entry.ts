@@ -2,6 +2,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Låntagaren markerar utrustning som returnerad -> status pending_return
 // Ansvarig måste sedan bekräfta mottagning via confirmReturn
+
+const emailStyle = `font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px 20px;`;
+const cardStyle = `background: #ffffff; border-radius: 8px; max-width: 560px; margin: 0 auto; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1);`;
+const bodyStyle = `padding: 32px; color: #333;`;
+const tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0;`;
+const labelCellStyle = `padding: 10px 14px; background: #f9f9f9; font-size: 13px; color: #777; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; width: 42%; border-bottom: 1px solid #eee;`;
+const valueCellStyle = `padding: 10px 14px; font-size: 14px; color: #222; border-bottom: 1px solid #eee;`;
+const footerStyle = `text-align: center; padding: 20px 32px; font-size: 12px; color: #aaa; border-top: 1px solid #f0f0f0;`;
+const alertBoxStyle = `background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 16px 20px; margin: 20px 0; font-size: 14px; color: #92400e;`;
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -14,7 +24,6 @@ Deno.serve(async (req) => {
     const { loan_request_id } = await req.json();
 
     const loanRequest = await base44.entities.LoanRequest.get(loan_request_id);
-
     if (!loanRequest) {
       return Response.json({ error: 'Loan request not found' }, { status: 404 });
     }
@@ -24,11 +33,48 @@ Deno.serve(async (req) => {
       returned_date: new Date().toISOString()
     });
 
-    // Notify the approver (source location manager) that tools are on their way back
+    const toolList = loanRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const returnedDate = new Date().toLocaleDateString('sv-SE');
+
     await base44.integrations.Core.SendEmail({
       to: loanRequest.approver_email,
-      subject: `Bekräfta mottagning av maskiner: ${loanRequest.tool_names.join(', ')}`,
-      body: `Hej ${loanRequest.approver_name},\n\n${loanRequest.assigned_to_name} har markerat att följande maskiner är på väg tillbaka:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nLånad av: ${loanRequest.assigned_to_name}\nÅterlämnad: ${new Date().toLocaleDateString('sv-SE')}\n\nVänligen logga in i ToolTrack och bekräfta att du har tagit emot maskinerna.`
+      subject: `⏳ Maskiner på väg tillbaka – bekräfta mottagning`,
+      body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="background: #d97706; padding: 28px 32px; text-align: center;">
+      <h2 style="margin:0; color:#fff; font-size:20px;">⏳ Bekräfta mottagning av maskiner</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.approver_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${loanRequest.assigned_to_name}</strong> har markerat att följande maskiner är på väg tillbaka och väntar på din mottagningsbekräftelse.</p>
+
+      <p style="font-size:13px; font-weight:700; color:#d97706; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
+        ${toolList}
+      </ul>
+
+      <table style="${tableStyle}">
+        <tr>
+          <td style="${labelCellStyle}">Låntagare</td>
+          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Lånad från</td>
+          <td style="${valueCellStyle}">${loanRequest.tool_details?.[0]?.location_name || '–'}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Markerad returnerad</td>
+          <td style="${valueCellStyle}">${returnedDate}</td>
+        </tr>
+      </table>
+
+      <div style="${alertBoxStyle}">
+        <strong>Åtgärd krävs:</strong> Logga in i ToolTrack och bekräfta att du har tagit emot maskinerna under fliken <em>"Bekräfta mottagning"</em>.
+      </div>
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
     });
 
     return Response.json({ success: true, updated });

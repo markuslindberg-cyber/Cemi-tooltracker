@@ -1,6 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Ansvarig bekräftar att de tagit emot den returnerade utrustningen
+
+const emailStyle = `font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px 20px;`;
+const cardStyle = `background: #ffffff; border-radius: 8px; max-width: 560px; margin: 0 auto; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1);`;
+const bodyStyle = `padding: 32px; color: #333;`;
+const tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0;`;
+const labelCellStyle = `padding: 10px 14px; background: #f9f9f9; font-size: 13px; color: #777; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; width: 42%; border-bottom: 1px solid #eee;`;
+const valueCellStyle = `padding: 10px 14px; font-size: 14px; color: #222; border-bottom: 1px solid #eee;`;
+const footerStyle = `text-align: center; padding: 20px 32px; font-size: 12px; color: #aaa; border-top: 1px solid #f0f0f0;`;
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -13,7 +22,6 @@ Deno.serve(async (req) => {
     const { loan_request_id, comment } = await req.json();
 
     const loanRequest = await base44.entities.LoanRequest.get(loan_request_id);
-
     if (!loanRequest) {
       return Response.json({ error: 'Loan request not found' }, { status: 404 });
     }
@@ -21,6 +29,8 @@ Deno.serve(async (req) => {
     if (loanRequest.status !== 'pending_return') {
       return Response.json({ error: 'Loan is not pending return confirmation' }, { status: 400 });
     }
+
+    const dateStr = new Date().toLocaleDateString('sv-SE');
 
     const updated = await base44.entities.LoanRequest.update(loan_request_id, {
       status: 'returned',
@@ -33,7 +43,6 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
     const toolIds = loanRequest.tool_ids || [];
     await Promise.all(toolIds.map(async (toolId) => {
-      // Skapa loggpost
       await base44.asServiceRole.entities.ToolLog.create({
         tool_id: toolId,
         changed_by_email: user.email,
@@ -46,7 +55,6 @@ Deno.serve(async (req) => {
         comment: comment || ''
       });
 
-      // Lägg till kommentar på maskinens anteckningar om kommentar finns
       if (comment) {
         const tool = await base44.asServiceRole.entities.Tool.get(toolId);
         const existingNotes = tool?.notes || '';
@@ -56,22 +64,88 @@ Deno.serve(async (req) => {
       }
     }));
 
-    const commentRow = comment ? `\nKommentar från mottagaren: ${comment}` : '';
-    const dateStr = new Date().toLocaleDateString('sv-SE');
+    const toolList = loanRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const commentSection = comment
+      ? `<div style="background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 4px; padding: 14px 18px; margin: 20px 0; font-size: 14px; color: #333; font-style: italic;"><strong>Kommentar från mottagaren:</strong> ${comment}</div>`
+      : '';
 
     // Mail till låntagaren
     await base44.integrations.Core.SendEmail({
       to: loanRequest.assigned_to_email,
-      subject: `Återlämning bekräftad: ${loanRequest.tool_names.join(', ')}`,
-      body: `Hej ${loanRequest.assigned_to_name},\n\n${user.full_name} har bekräftat mottagning av följande maskiner:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nBekräftad: ${dateStr}${commentRow}\n\nTack för att du lämnade tillbaka utrustningen!`
+      subject: `✅ Återlämning bekräftad: ${loanRequest.tool_names.join(', ')}`,
+      body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="background: #16a34a; padding: 28px 32px; text-align: center;">
+      <h2 style="margin:0; color:#fff; font-size:20px;">✅ Återlämning bekräftad</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.assigned_to_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${user.full_name}</strong> har bekräftat mottagningen av maskinerna. Lånet är nu avslutat.</p>
+
+      <p style="font-size:13px; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Återlämnade maskiner</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
+        ${toolList}
+      </ul>
+
+      <table style="${tableStyle}">
+        <tr>
+          <td style="${labelCellStyle}">Bekräftad av</td>
+          <td style="${valueCellStyle}">${user.full_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Bekräftelsedatum</td>
+          <td style="${valueCellStyle}">${dateStr}</td>
+        </tr>
+      </table>
+
+      ${commentSection}
+
+      <p style="font-size:14px; color:#555; margin-top:16px;">Tack för att du tog hand om utrustningen! 🙏</p>
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
     });
 
     // Mail till platsansvarig för destinationsplatsen
     if (loanRequest.destination_location_manager_email) {
       await base44.integrations.Core.SendEmail({
         to: loanRequest.destination_location_manager_email,
-        subject: `Utrustning åter i lager: ${loanRequest.tool_names.join(', ')}`,
-        body: `Hej ${loanRequest.destination_location_manager_name || ''},\n\nFöljande utrustning som lånades till ${loanRequest.destination_location_name} har nu bekräftats återsänd av ${user.full_name}:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nLånad av: ${loanRequest.assigned_to_name}\nBekräftad: ${dateStr}${commentRow}\n\nMed vänliga hälsningar,\nToolTrack`
+        subject: `✅ Utrustning åter i lager: ${loanRequest.tool_names.join(', ')}`,
+        body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="background: #16a34a; padding: 28px 32px; text-align: center;">
+      <h2 style="margin:0; color:#fff; font-size:20px;">✅ Utrustning tillbaka i lager</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.destination_location_manager_name || ''}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Utrustning som lånades till <strong>${loanRequest.destination_location_name}</strong> har nu returnerats och bekräftats mottagen av ${user.full_name}.</p>
+
+      <p style="font-size:13px; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Återlämnade maskiner</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
+        ${toolList}
+      </ul>
+
+      <table style="${tableStyle}">
+        <tr>
+          <td style="${labelCellStyle}">Låntagare</td>
+          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Bekräftad av</td>
+          <td style="${valueCellStyle}">${user.full_name}</td>
+        </tr>
+        <tr>
+          <td style="${labelCellStyle}">Datum</td>
+          <td style="${valueCellStyle}">${dateStr}</td>
+        </tr>
+      </table>
+
+      ${commentSection}
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
       });
     }
 
