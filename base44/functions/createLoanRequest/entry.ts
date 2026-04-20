@@ -37,19 +37,21 @@ Deno.serve(async (req) => {
       destination_location_name,
       default_return_date,
       requester_comment: requester_comment || '',
-      approver_email,
-      approver_name,
+      approver_email: approver_email || user.email,
+      approver_name: approver_name || user.full_name,
       destination_location_manager_email,
       destination_location_manager_name,
       status: 'pending'
     });
 
     // Send email to approver
-    await base44.integrations.Core.SendEmail({
-      to: approver_email,
-      subject: `Ny förfrågan om lån av maskin från ${user.full_name}`,
-      body: `Hej ${approver_name},\n\nEn ny förfrågan om lån av maskin har inkommit:\n\nMaskiner: ${tool_names.join(', ')}\nBegärd av: ${user.full_name}\nSkall lånas av: ${assigned_to_name}\nDestination: ${destination_location_name}\nÅterlämningsdatum: ${default_return_date}\n\nKommentar: ${requester_comment || 'Ingen kommentar'}\n\nVänligen godkänn eller neka förfrågan i systemet.`
-    });
+    if (approver_email) {
+      await base44.integrations.Core.SendEmail({
+        to: approver_email,
+        subject: `Ny förfrågan om lån av maskin från ${user.full_name}`,
+        body: `Hej ${approver_name},\n\nEn ny förfrågan om lån av maskin har inkommit:\n\nMaskiner: ${tool_names.join(', ')}\nBegärd av: ${user.full_name}\nSkall lånas av: ${assigned_to_name}\nDestination: ${destination_location_name}\nÅterlämningsdatum: ${default_return_date}\n\nKommentar: ${requester_comment || 'Ingen kommentar'}\n\nVänligen godkänn eller neka förfrågan i systemet.`
+      });
+    }
 
     // Send email to destination location manager
     if (destination_location_manager_email && destination_location_manager_email !== approver_email) {
