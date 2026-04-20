@@ -599,7 +599,7 @@ export default function LokalvardUttag() {
           <Button size="sm" onClick={() => setShowNyttUttagModal(true)} className="bg-green-600 hover:bg-green-700">
             + Nytt uttag
           </Button>
-          {unmatchedArticles.length > 0 && !showUnmatched && (
+          {window.location.hostname.includes('base44.app') && unmatchedArticles.length > 0 && !showUnmatched && (
             <Button size="sm" onClick={() => setShowUnmatched(true)} className="bg-yellow-600 hover:bg-yellow-700">
               ⚠️ Omatchade ({unmatchedArticles.length})
             </Button>
@@ -880,7 +880,7 @@ export default function LokalvardUttag() {
           </div>
           )}
 
-          {unmatchedArticles.length > 0 && showUnmatched && (
+          {window.location.hostname.includes('base44.app') && unmatchedArticles.length > 0 && showUnmatched && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-yellow-900">⚠️ Omatchade artiklar ({unmatchedArticles.length})</h2>
