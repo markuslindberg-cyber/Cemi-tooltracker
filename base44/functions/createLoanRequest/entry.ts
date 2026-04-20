@@ -189,7 +189,14 @@ Deno.serve(async (req) => {
       status: 'pending'
     });
 
-    if (approver_email) {
+    // Fetch TeamMember data to check subscriptions
+    const teamMembers = await base44.entities.TeamMember.list();
+    const getSubscriptionStatus = (email) => {
+      const member = teamMembers.find(m => m.email === email);
+      return member?.subscribed_to_emails !== false;
+    };
+
+    if (approver_email && getSubscriptionStatus(approver_email)) {
       await base44.integrations.Core.SendEmail({
         to: approver_email,
         subject: `Ny låneförfrågan från ${user.full_name}: ${tool_names.join(', ')}`,
@@ -205,7 +212,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (destination_location_manager_email && destination_location_manager_email !== approver_email) {
+    if (destination_location_manager_email && destination_location_manager_email !== approver_email && getSubscriptionStatus(destination_location_manager_email)) {
       await base44.integrations.Core.SendEmail({
         to: destination_location_manager_email,
         subject: `Maskiner begärda för lån: ${tool_names.join(', ')}`,
@@ -219,7 +226,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Bekräftelsemail till beställaren
+    // Bekräftelsemail till beställaren - alltid skicka denna
     await base44.integrations.Core.SendEmail({
       to: user.email,
       subject: `Låneförfrågan skapad: ${tool_names.join(', ')}`,

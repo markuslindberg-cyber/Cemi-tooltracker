@@ -94,6 +94,13 @@ Deno.serve(async (req) => {
       approver_comment: approver_comment || ''
     });
 
+    // Fetch TeamMember data to check subscriptions
+    const teamMembers = await base44.entities.TeamMember.list();
+    const getSubscriptionStatus = (email) => {
+      const member = teamMembers.find(m => m.email === email);
+      return member?.subscribed_to_emails !== false;
+    };
+
     const toolList = loanRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
     const commentSection = approver_comment
       ? `<div style="${commentBoxStyle(approved ? '#16a34a' : '#dc2626')}"><strong>Kommentar från godkännaren:</strong> ${approver_comment}</div>`
@@ -101,6 +108,7 @@ Deno.serve(async (req) => {
 
     if (approved) {
       // --- GODKÄND MAIL till sökanden ---
+      if (getSubscriptionStatus(loanRequest.requested_by_email)) {
       await base44.integrations.Core.SendEmail({
         to: loanRequest.requested_by_email,
         subject: `✅ Låneförfrågan godkänd: ${loanRequest.tool_names.join(', ')}`,
@@ -142,9 +150,10 @@ Deno.serve(async (req) => {
   </div>
 </div>`
       });
+      }
 
       // --- GODKÄND: notis till destinationsplatsens ansvarig ---
-      if (loanRequest.destination_location_manager_email && loanRequest.destination_location_manager_email !== user.email) {
+      if (loanRequest.destination_location_manager_email && loanRequest.destination_location_manager_email !== user.email && getSubscriptionStatus(loanRequest.destination_location_manager_email)) {
         await base44.integrations.Core.SendEmail({
           to: loanRequest.destination_location_manager_email,
           subject: `Maskiner på väg till er: ${loanRequest.tool_names.join(', ')}`,
@@ -180,6 +189,7 @@ Deno.serve(async (req) => {
       }
 
       // --- GODKÄND: bekräftelse till godkännaren själv ---
+      if (getSubscriptionStatus(user.email)) {
       await base44.integrations.Core.SendEmail({
         to: user.email,
         subject: `Du godkände låneförfrågan: ${loanRequest.tool_names.join(', ')}`,
@@ -203,9 +213,11 @@ Deno.serve(async (req) => {
   </div>
 </div>`
       });
+      }
 
     } else {
       // --- NEKAD MAIL ---
+      if (getSubscriptionStatus(loanRequest.requested_by_email)) {
       await base44.integrations.Core.SendEmail({
         to: loanRequest.requested_by_email,
         subject: `❌ Låneförfrågan nekad: ${loanRequest.tool_names.join(', ')}`,
@@ -239,8 +251,10 @@ Deno.serve(async (req) => {
   </div>
 </div>`
       });
+      }
 
       // --- NEKAD: bekräftelse till godkännaren själv ---
+      if (getSubscriptionStatus(user.email)) {
       await base44.integrations.Core.SendEmail({
         to: user.email,
         subject: `Du nekade låneförfrågan: ${loanRequest.tool_names.join(', ')}`,
@@ -259,6 +273,7 @@ Deno.serve(async (req) => {
   </div>
 </div>`
       });
+      }
     }
 
     return Response.json({ success: true, updated });

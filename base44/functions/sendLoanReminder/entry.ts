@@ -85,11 +85,17 @@ Deno.serve(async (req) => {
       sender_name: user.full_name
     };
 
+    const teamMembers = await base44.entities.TeamMember.list();
+    const getSubscriptionStatus = (email) => {
+      const member = teamMembers.find(m => m.email === email);
+      return member?.subscribed_to_emails !== false;
+    };
+
     const recipients = [];
     const seen = new Set();
 
     const addRecipient = (email, name) => {
-      if (email && !seen.has(email)) {
+      if (email && !seen.has(email) && getSubscriptionStatus(email)) {
         seen.add(email);
         recipients.push({ email, name: name || email });
       }
