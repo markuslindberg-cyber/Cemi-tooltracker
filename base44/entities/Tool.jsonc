@@ -54,57 +54,48 @@
       "type": "number"
     },
     "purchase_location": {
-      "type": "string",
-      "description": "Store or location where the tool was purchased"
+      "type": "string"
     },
     "invoice_number": {
-      "type": "string",
-      "description": "Invoice or receipt number for the purchase"
+      "type": "string"
     },
     "image_url": {
       "type": "string"
     },
     "suggested_image_url": {
-      "type": "string",
-      "description": "AI-generated image URL pending approval"
+      "type": "string"
     },
     "location_id": {
-      "type": "string",
-      "description": "Reference to Location entity"
+      "type": "string"
     },
     "location_name": {
       "type": "string"
     },
     "assigned_to_email": {
-      "type": "string",
-      "description": "Email of the team member assigned"
+      "type": "string"
     },
     "assigned_to_name": {
       "type": "string"
     },
     "main_machine_id": {
       "type": "string",
-      "nullable": true,
-      "description": "ID f\u00f6r huvudmaskinen som detta redskap tillh\u00f6r"
+      "nullable": true
     },
     "main_machine_name": {
       "type": "string",
-      "nullable": true,
-      "description": "Namnet p\u00e5 huvudmaskinen som detta redskap tillh\u00f6r"
+      "nullable": true
     },
     "compatible_with_main_machine_ids": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Lista med ID f\u00f6r huvudmaskiner som detta redskap \u00e4r kompatibelt med"
+      }
     },
     "compatible_with_main_machine_names": {
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Lista med namn p\u00e5 huvudmaskiner som detta redskap \u00e4r kompatibelt med"
+      }
     },
     "notes": {
       "type": "string"
@@ -115,6 +106,17 @@
     },
     "barcode": {
       "type": "string"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mjukradering \u2013 visas i papperskorg"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true,
+      "description": "Tidpunkt f\u00f6r mjukradering"
     }
   },
   "required": [

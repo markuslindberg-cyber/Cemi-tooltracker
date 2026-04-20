@@ -16,8 +16,8 @@
     },
     "old_streckkod": {
       "type": "string",
-      "description": "Tidigare streckkod f\u00f6r uppslagning av gamla uttag",
-      "nullable": true
+      "nullable": true,
+      "description": "Tidigare streckkod"
     },
     "pris": {
       "type": "number",
@@ -49,8 +49,19 @@
     },
     "subcategory": {
       "type": "string",
-      "description": "Underkategori f\u00f6r artikeln",
-      "nullable": true
+      "nullable": true,
+      "description": "Underkategori f\u00f6r artikeln"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mjukradering \u2013 visas i papperskorg"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true,
+      "description": "Tidpunkt f\u00f6r mjukradering"
     }
   },
   "required": [
