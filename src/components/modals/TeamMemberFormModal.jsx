@@ -35,6 +35,7 @@ const defaultMember = {
   is_active: true,
   send_invitation: true,
   send_new_invitation: false,
+  subscribed_to_emails: true,
 };
 
 export default function TeamMemberFormModal({
@@ -169,16 +170,29 @@ export default function TeamMemberFormModal({
           )}
 
           {isEditing && formData.email && (
-            <div className="flex items-center justify-between pt-2">
-              <div>
-                <Label>Skicka ny inbjudningslänk</Label>
-                <p className="text-sm text-gray-500">Skicka uppdaterad inbjudningslänk till e-postadressen</p>
+            <>
+              <div className="flex items-center justify-between pt-2">
+                <div>
+                  <Label>Skicka ny inbjudningslänk</Label>
+                  <p className="text-sm text-gray-500">Skicka uppdaterad inbjudningslänk till e-postadressen</p>
+                </div>
+                <Switch
+                  checked={formData.send_new_invitation}
+                  onCheckedChange={(checked) => handleChange('send_new_invitation', checked)}
+                />
               </div>
-              <Switch
-                checked={formData.send_new_invitation}
-                onCheckedChange={(checked) => handleChange('send_new_invitation', checked)}
-              />
-            </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div>
+                  <Label>Mottar notifikationsmails</Label>
+                  <p className="text-sm text-gray-500">Få mail om låneförfrågningar och statusuppdateringar</p>
+                </div>
+                <Switch
+                  checked={formData.subscribed_to_emails}
+                  onCheckedChange={(checked) => handleChange('subscribed_to_emails', checked)}
+                />
+              </div>
+            </>
           )}
 
           <div className="space-y-2">
