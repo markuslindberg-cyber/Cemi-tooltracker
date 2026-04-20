@@ -393,7 +393,7 @@ export default function Transfers() {
                           )}
                           {loan.approver_email && (
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                              <span className="bg-amber-100 text-amber-700 rounded px-1.5 py-0.5 font-medium">Godkännare</span>
+                              <span className="bg-amber-100 text-amber-700 rounded px-1.5 py-0.5 font-medium">Godkännare (källplats)</span>
                               <span>{loan.approver_name || loan.approver_email}</span>
                             </div>
                           )}

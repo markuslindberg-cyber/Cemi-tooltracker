@@ -88,10 +88,11 @@ export default function LoanRequestModal({ isOpen, onClose }) {
         return_date: useIndividualDates && individualDates[tool.id] ? individualDates[tool.id] : defaultReturnDate
       }));
 
-      // Get approver (person responsible for source location)
+      // Get approver (person responsible for source location = the one who must approve the loan)
       const sourceLoc = selectedTools[0] ? locations.find(l => l.id === selectedTools[0].location_id) : null;
-      const approverEmail = sourceLoc?.team_member_ids?.[0] ? 
-        teamMembers.find(tm => tm.id === sourceLoc.team_member_ids[0])?.email : null;
+      const approverMember = sourceLoc?.team_member_ids?.[0] ? 
+        teamMembers.find(tm => tm.id === sourceLoc.team_member_ids[0]) : null;
+      const approverEmail = approverMember?.email || null;
 
       // Get destination location manager
       const destLocManager = destinationLocation?.team_member_ids?.[0] ? 
@@ -111,7 +112,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
         default_return_date: defaultReturnDate,
         requester_comment: comment,
         approver_email: approverEmail,
-        approver_name: sourceLoc?.team_member_ids?.[0] ? teamMembers.find(tm => tm.id === sourceLoc.team_member_ids[0])?.name : '',
+        approver_name: approverMember?.name || '',
         destination_location_manager_email: destLocManager?.email,
         destination_location_manager_name: destLocManager?.name
       });
@@ -317,6 +318,21 @@ export default function LoanRequestModal({ isOpen, onClose }) {
               </PopoverContent>
             </Popover>
           </div>
+
+          {/* Approver info – sourced from tool's current location */}
+          {selectedTools.length > 0 && (() => {
+            const srcLoc = locations.find(l => l.id === selectedTools[0]?.location_id);
+            const approver = srcLoc?.team_member_ids?.[0] ? teamMembers.find(tm => tm.id === srcLoc.team_member_ids[0]) : null;
+            return (
+              <div className={`rounded-lg p-3 text-sm ${approver ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'}`}>
+                <p className="font-medium text-gray-700 mb-0.5">Godkännare (ansvarig för källplatsen)</p>
+                {approver
+                  ? <p className="text-gray-600">{approver.name} – {approver.email || <span className="text-red-600 font-medium">Ingen e-post registrerad!</span>}</p>
+                  : <p className="text-red-600 font-medium">⚠ Ingen ansvarig är satt på källplatsen ({srcLoc?.name || '—'}). Inget godkännandemail kan skickas!</p>
+                }
+              </div>
+            );
+          })()}
 
           {/* Destination Location */}
           <div>
