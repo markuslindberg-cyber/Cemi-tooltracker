@@ -26,7 +26,7 @@ export default function LokalvardLager() {
 
   const { data: artiklar = [], isLoading: artiklarLoading } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
-    queryFn: () => base44.entities.LokalvardsArtikel.filter({ is_deleted: false }, '-updated_date', 10000).catch(() => []),
+    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).then(r => r.filter(a => !a.is_deleted)).catch(() => []),
     refetchInterval: 5000,
   });
 

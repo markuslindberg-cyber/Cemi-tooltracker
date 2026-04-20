@@ -143,7 +143,7 @@ export default function Inventory() {
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.filter({ is_deleted: false }, '-updated_date', 500),
+    queryFn: () => base44.entities.Tool.list('-updated_date', 500).then(r => r.filter(t => !t.is_deleted)),
   });
 
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager

@@ -49,7 +49,7 @@ export default function HandTools() {
 
   const { data: handTools = [], isLoading } = useQuery({
     queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.filter({ is_deleted: false }, '-updated_date', 1000),
+    queryFn: () => base44.entities.HandTool.list('-updated_date', 1000).then(r => r.filter(t => !t.is_deleted)),
   });
 
   const { data: categoryImages = [] } = useQuery({
