@@ -49,7 +49,7 @@ export default function HandTools() {
 
   const { data: handTools = [], isLoading } = useQuery({
     queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.list('-updated_date', 1000),
+    queryFn: () => base44.entities.HandTool.filter({ is_deleted: false }, '-updated_date', 1000),
   });
 
   const { data: categoryImages = [] } = useQuery({
@@ -109,7 +109,7 @@ export default function HandTools() {
   };
 
   const handleDelete = async (id) => {
-    await base44.entities.HandTool.delete(id);
+    await base44.entities.HandTool.update(id, { is_deleted: true, deleted_at: new Date().toISOString() });
     queryClient.invalidateQueries(['handtools']);
   };
 

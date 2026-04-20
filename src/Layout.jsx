@@ -86,6 +86,7 @@ const navigation = [
       { name: 'Platser', path: '/Locations' },
       { name: 'Personal', path: '/Team' },
       { name: 'Kategorier', path: '/Administration/Kategorier' },
+      { name: 'Papperskorg', path: '/Administration/Papperskorg', desktopOnly: true, devOnly: true },
     ]
   },
 ];

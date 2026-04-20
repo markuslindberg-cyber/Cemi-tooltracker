@@ -64,8 +64,7 @@
       "description": "Skick"
     },
     "location_id": {
-      "type": "string",
-      "description": "Referens till Location-entiteten"
+      "type": "string"
     },
     "location_name": {
       "type": "string"
@@ -85,6 +84,17 @@
     },
     "notes": {
       "type": "string"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mjukradering \u2013 visas i papperskorg"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true,
+      "description": "Tidpunkt f\u00f6r mjukradering"
     }
   },
   "required": [
@@ -97,7 +107,7 @@
     "update": {},
     "delete": {
       "user_condition": {
-        "role": "admin"
+        "role": "admin_lokalv\u00e5rd"
       }
     }
   }

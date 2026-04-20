@@ -143,7 +143,7 @@ export default function Inventory() {
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    queryFn: () => base44.entities.Tool.filter({ is_deleted: false }, '-updated_date', 500),
   });
 
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
@@ -268,8 +268,8 @@ export default function Inventory() {
   };
 
   const handleDeleteTool = async (tool) => {
-    if (window.confirm(`Är du säker på att du vill ta bort "${tool.name}"?`)) {
-      await base44.entities.Tool.delete(tool.id);
+    if (window.confirm(`Är du säker på att du vill ta bort "${tool.name}"? Objektet hamnar i papperskorgen i 30 dagar.`)) {
+      await base44.entities.Tool.update(tool.id, { is_deleted: true, deleted_at: new Date().toISOString() });
       queryClient.invalidateQueries(['tools']);
     }
   };
