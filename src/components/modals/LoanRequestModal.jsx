@@ -173,6 +173,20 @@ export default function LoanRequestModal({ isOpen, onClose }) {
     createLoanMutation.mutate();
   };
 
+  // Auto-set approver based on source location of first selected tool
+  useEffect(() => {
+    if (selectedTools.length > 0 && locations.length > 0 && teamMembers.length > 0) {
+      const sourceLoc = locations.find(l => l.id === selectedTools[0].location_id);
+      if (sourceLoc?.team_member_ids?.length > 0) {
+        // Find the first team member with an email
+        const manager = sourceLoc.team_member_ids
+          .map(id => teamMembers.find(tm => tm.id === id))
+          .find(tm => tm?.email);
+        if (manager) setSelectedApprover(manager);
+      }
+    }
+  }, [selectedTools, locations, teamMembers]);
+
   useEffect(() => {
     if (!isOpen) {
       setCameraActive(false);
