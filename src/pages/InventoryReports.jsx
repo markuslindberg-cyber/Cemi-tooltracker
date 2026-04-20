@@ -39,11 +39,12 @@ function exportReport(report) {
 }
 
 const TYPE_CONFIG = {
-  tools:         { label: 'Maskiner',    icon: Wrench,   color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  handtools:     { label: 'Handredskap', icon: Shovel,   color: 'bg-orange-100 text-orange-700 border-orange-200' },
-  'arbetskläder':{ label: 'Arbetskläder',icon: Shirt,    color: 'bg-purple-100 text-purple-700 border-purple-200' },
-  lokalvards:    { label: 'Lokalvård',   icon: SprayCan, color: 'bg-teal-100 text-teal-700 border-teal-200' },
-  all:           { label: 'Alla typer',  icon: Package,  color: 'bg-gray-100 text-gray-700 border-gray-200' },
+  tools:         { label: 'Maskiner',               icon: Wrench,   color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  handtools:     { label: 'Handredskap',            icon: Shovel,   color: 'bg-orange-100 text-orange-700 border-orange-200' },
+  'arbetskläder':{ label: 'Arbetskläder',           icon: Shirt,    color: 'bg-purple-100 text-purple-700 border-purple-200' },
+  lokalvards:    { label: 'Lokalvård',              icon: SprayCan, color: 'bg-teal-100 text-teal-700 border-teal-200' },
+  both:          { label: 'Maskiner & Handredskap', icon: Package,  color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+  all:           { label: 'Alla typer',             icon: Package,  color: 'bg-gray-100 text-gray-700 border-gray-200' },
 };
 
 function getTypeConfig(toolType) {
@@ -234,7 +235,7 @@ export default function InventoryReports() {
     return groups;
   }, [filtered]);
 
-  const typeOrder = ['tools', 'handtools', 'arbetskläder', 'lokalvards', 'all'];
+  const typeOrder = ['tools', 'handtools', 'both', 'arbetskläder', 'lokalvards', 'all'];
   const sortedGroupKeys = Object.keys(grouped).sort((a, b) => typeOrder.indexOf(a) - typeOrder.indexOf(b));
 
   const handleDelete = async (id) => {
