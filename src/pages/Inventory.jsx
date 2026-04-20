@@ -408,52 +408,85 @@ export default function Inventory() {
           alert('Inga giltiga verktygsdata hittades i filen. Kontrollera att du har fyllt i minst Namn-kolumnen.');
           return;
         }
-        
-        // Create tools in bulk
-        const toolsToCreate = validTools.map(tool => ({
-          name: tool.name,
-          manufacturer: tool.manufacturer || '',
-          model_number: tool.model_number || '',
-          tool_number: tool.tool_number || '',
-          category: tool.category || 'other',
-          subcategory: tool.subcategory || '',
-          status: tool.status || 'available',
-          condition: tool.condition || 'good',
-          barcode: tool.barcode || '',
-          purchase_date: tool.purchase_date || '',
-          purchase_price: tool.purchase_price || null,
-          purchase_location: tool.purchase_location || '',
-          invoice_number: tool.invoice_number || '',
-          location_name: tool.location_name || '',
-          assigned_to_name: tool.assigned_to_name || '',
-          notes: tool.notes || '',
-        }));
 
-        // Create service records if service_cost provided
-        const createdTools = await base44.entities.Tool.bulkCreate(toolsToCreate);
+        // Find existing tools by tool_number or barcode
+        const existingTools = await base44.entities.Tool.list();
         
-        // Create service records for tools with service_cost
-        const serviceRecords = validTools
-          .filter(tool => tool.service_cost && tool.service_cost > 0)
-          .map((tool, idx) => {
-            const createdTool = createdTools[idx];
-            return {
-              tool_id: createdTool.id,
-              tool_name: createdTool.name,
-              service_type: 'annual_service',
-              cost: tool.service_cost,
-              service_date: new Date().toISOString().split('T')[0],
-              description: 'Årlig servicekostnad från malluppladdning',
-              performed_by: 'System'
-            };
-          });
+        let createdCount = 0;
+        let updatedCount = 0;
+        const serviceRecordsToCreate = [];
 
-        if (serviceRecords.length > 0) {
-          await base44.entities.ServiceRecord.bulkCreate(serviceRecords);
+        for (const tool of validTools) {
+          const toolData = {
+            name: tool.name,
+            manufacturer: tool.manufacturer || '',
+            model_number: tool.model_number || '',
+            tool_number: tool.tool_number || '',
+            category: tool.category || 'other',
+            subcategory: tool.subcategory || '',
+            status: tool.status || 'available',
+            condition: tool.condition || 'good',
+            barcode: tool.barcode || '',
+            purchase_date: tool.purchase_date || '',
+            purchase_price: tool.purchase_price || null,
+            purchase_location: tool.purchase_location || '',
+            invoice_number: tool.invoice_number || '',
+            location_name: tool.location_name || '',
+            assigned_to_name: tool.assigned_to_name || '',
+            notes: tool.notes || '',
+          };
+
+          // Look for existing tool by tool_number or barcode
+          const existingTool = existingTools.find(t => 
+            (tool.tool_number && t.tool_number === tool.tool_number) ||
+            (tool.barcode && t.barcode === tool.barcode)
+          );
+
+          if (existingTool) {
+            // Update existing tool
+            await base44.entities.Tool.update(existingTool.id, toolData);
+            updatedCount++;
+
+            // Create service record if service_cost provided
+            if (tool.service_cost && tool.service_cost > 0) {
+              serviceRecordsToCreate.push({
+                tool_id: existingTool.id,
+                tool_name: toolData.name,
+                service_type: 'annual_service',
+                cost: tool.service_cost,
+                service_date: new Date().toISOString().split('T')[0],
+                description: 'Årlig servicekostnad från malluppladdning',
+                performed_by: 'System'
+              });
+            }
+          } else {
+            // Create new tool
+            const createdTool = await base44.entities.Tool.create(toolData);
+            createdCount++;
+
+            // Create service record if service_cost provided
+            if (tool.service_cost && tool.service_cost > 0) {
+              serviceRecordsToCreate.push({
+                tool_id: createdTool.id,
+                tool_name: createdTool.name,
+                service_type: 'annual_service',
+                cost: tool.service_cost,
+                service_date: new Date().toISOString().split('T')[0],
+                description: 'Årlig servicekostnad från malluppladdning',
+                performed_by: 'System'
+              });
+            }
+          }
+        }
+
+        // Create all service records
+        if (serviceRecordsToCreate.length > 0) {
+          await base44.entities.ServiceRecord.bulkCreate(serviceRecordsToCreate);
         }
 
         queryClient.invalidateQueries(['tools']);
-        alert(`${toolsToCreate.length} verktyg importerades!`);
+        const message = `${createdCount} nya verktyg lagda till, ${updatedCount} befintliga verktyg uppdaterade.`;
+        alert(message);
       } else {
         const errorMsg = result.details || 'Okänt fel';
         alert(`Kunde inte extrahera data från filen: ${errorMsg}\n\nKontrollera filformatet och att kolumnrubriker matchar mallen.`);
