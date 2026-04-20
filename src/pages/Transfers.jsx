@@ -393,7 +393,7 @@ export default function Transfers() {
                         <div className="flex flex-col gap-1">
                           {loan.requested_by_email && (
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                              <span className="bg-gray-100 text-gray-500 rounded px-1.5 py-0.5 font-medium">Beställare</span>
+                              <span className="bg-gray-100 text-gray-500 rounded px-1.5 py-0.5 font-medium">Låntagare</span>
                               <span>{loan.requested_by_name || loan.requested_by_email}</span>
                             </div>
                           )}
@@ -405,7 +405,7 @@ export default function Transfers() {
                           )}
                           {loan.destination_location_manager_email && (
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                              <span className="bg-blue-100 text-blue-700 rounded px-1.5 py-0.5 font-medium">Platsansvarig</span>
+                              <span className="bg-blue-100 text-blue-700 rounded px-1.5 py-0.5 font-medium">Ansvarig för mottagarplats</span>
                               <span>{loan.destination_location_manager_name || loan.destination_location_manager_email}</span>
                             </div>
                           )}
