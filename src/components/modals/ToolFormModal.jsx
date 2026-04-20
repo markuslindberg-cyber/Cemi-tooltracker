@@ -40,7 +40,6 @@ status: 'available',
 condition: 'good',
 purchase_date: '',
 purchase_price: '',
-service_cost: '',
 purchase_location: '',
 invoice_number: '',
 location_id: '',
@@ -977,17 +976,7 @@ export default function ToolFormModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Servicekostnad (kr/år)</Label>
-                  <Input
-                    type="number"
-                    value={formData.service_cost}
-                    onChange={(e) => handleChange('service_cost', e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
+
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
