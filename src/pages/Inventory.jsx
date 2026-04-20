@@ -569,7 +569,7 @@ export default function Inventory() {
             )}
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:hidden">
             {filteredTools.map((tool) => {
               const serviceCost = serviceCostsByTool[tool.id] || 0;
               const isSelected = selectedTools.has(tool.id);
@@ -598,7 +598,7 @@ export default function Inventory() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto hidden lg:block">
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow className="bg-gray-50">
