@@ -47,6 +47,7 @@ import {
   Pencil,
   RotateCcw,
 } from 'lucide-react';
+import AdminEditLoanDialog from '@/components/modals/AdminEditLoanDialog';
 import { format, differenceInDays } from 'date-fns';
 
 export default function Transfers() {
@@ -60,6 +61,10 @@ export default function Transfers() {
   // Edit/return transfer dialog
   const [editTransfer, setEditTransfer] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Edit loan request dialog
+  const [editLoan, setEditLoan] = useState(null);
+  const [editLoanOpen, setEditLoanOpen] = useState(false);
   const [editToLocationId, setEditToLocationId] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [editExpectedReturn, setEditExpectedReturn] = useState('');
@@ -367,6 +372,12 @@ export default function Transfers() {
                           <p className="text-sm text-gray-700">{loan.approver_comment}</p>
                         </div>
                       )}
+                      <div className="pt-2 border-t border-gray-100">
+                        <Button variant="outline" size="sm" onClick={() => { setEditLoan(loan); setEditLoanOpen(true); }} className="flex items-center gap-1.5">
+                          <Pencil className="w-3.5 h-3.5" />
+                          Redigera lån
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
@@ -375,6 +386,12 @@ export default function Transfers() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AdminEditLoanDialog
+        request={editLoan}
+        open={editLoanOpen}
+        onOpenChange={(v) => { setEditLoanOpen(v); if (!v) setEditLoan(null); }}
+      />
 
       {/* Edit/Return Transfer Dialog */}
       {editTransfer && (
