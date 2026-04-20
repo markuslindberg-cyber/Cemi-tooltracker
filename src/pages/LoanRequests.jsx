@@ -88,17 +88,20 @@ export default function LoanRequests() {
 
   if (!user) return null;
 
-  const isAdmin = user.role === 'admin';
+  const isAdmin = user.role === 'admin' || user.role === 'ägare' || user.role === 'admin_lokalvård';
+  const isOwner = user.role === 'ägare';
 
   // Filter requests based on user role
   const myRequests = loanRequests.filter(r => r.requested_by_email === user.email);
   const requestsToApprove = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending');
   const myLoans = loanRequests.filter(r => r.assigned_to_email === user.email && r.status === 'approved');
   const pendingReturnConfirm = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending_return');
-  // Alla aktiva lån som admin eller platsansvarig kan hantera
-  const manageableLoans = loanRequests.filter(r =>
-    (isAdmin || r.approver_email === user.email || r.destination_location_manager_email === user.email) && r.status === 'approved'
-  );
+  // Alla lån som admin/ägare kan hantera (ägare ser alla, admin ser aktiva + godkända)
+  const manageableLoans = isOwner
+    ? loanRequests
+    : loanRequests.filter(r =>
+        (isAdmin || r.approver_email === user.email || r.destination_location_manager_email === user.email) && r.status === 'approved'
+      );
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -399,7 +402,7 @@ export default function LoanRequests() {
                     </div>
                     <Button variant="outline" size="sm" onClick={() => { setAdminEditRequest(request); setAdminEditOpen(true); }}>
                       <Pencil className="w-3 h-3 mr-1" />
-                      Redigera lån
+                      {isOwner ? 'Redigera förfrågan' : 'Redigera lån'}
                     </Button>
                   </div>
                 </CardContent>
