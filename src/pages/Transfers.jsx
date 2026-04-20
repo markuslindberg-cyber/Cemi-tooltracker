@@ -371,7 +371,13 @@ export default function Transfers() {
                           <span>{loan.requested_by_name || '—'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
-                          <MapPin className="w-4 h-4" />
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-500">Från:</span>
+                          <span>{loan.tool_details?.[0]?.location_name || '—'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <MapPin className="w-4 h-4 text-emerald-500" />
+                          <span className="text-gray-500">Till:</span>
                           <span>{loan.destination_location_name || '—'}</span>
                         </div>
                         {loan.default_return_date && (

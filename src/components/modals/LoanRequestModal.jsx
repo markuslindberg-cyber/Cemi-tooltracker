@@ -33,6 +33,8 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const [cameraActive, setCameraActive] = useState(false);
   const [assignedToOpen, setAssignedToOpen] = useState(false);
   const [destinationOpen, setDestinationOpen] = useState(false);
+  const [approverOpen, setApproverOpen] = useState(false);
+  const [selectedApprover, setSelectedApprover] = useState(null);
 
   const { data: tools } = useQuery({
     queryKey: ['tools'],
@@ -88,11 +90,8 @@ export default function LoanRequestModal({ isOpen, onClose }) {
         return_date: useIndividualDates && individualDates[tool.id] ? individualDates[tool.id] : defaultReturnDate
       }));
 
-      // Get approver (person responsible for source location = the one who must approve the loan)
-      const sourceLoc = selectedTools[0] ? locations.find(l => l.id === selectedTools[0].location_id) : null;
-      const approverMember = sourceLoc?.team_member_ids?.[0] ? 
-        teamMembers.find(tm => tm.id === sourceLoc.team_member_ids[0]) : null;
-      const approverEmail = approverMember?.email || null;
+      // Approver = manually selected by user
+      const approverEmail = selectedApprover?.email || null;
 
       // Get destination location manager
       const destLocManager = destinationLocation?.team_member_ids?.[0] ? 
@@ -112,7 +111,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
         default_return_date: defaultReturnDate,
         requester_comment: comment,
         approver_email: approverEmail,
-        approver_name: approverMember?.name || '',
+        approver_name: selectedApprover?.name || '',
         destination_location_manager_email: destLocManager?.email,
         destination_location_manager_name: destLocManager?.name
       });
@@ -167,8 +166,8 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   };
 
   const handleSubmit = () => {
-    if (!selectedTools.length || !defaultReturnDate || !assignedTo || !destinationLocation) {
-      alert('Vänligen fyll i alla obligatoriska fält');
+    if (!selectedTools.length || !defaultReturnDate || !assignedTo || !destinationLocation || !selectedApprover) {
+      alert('Vänligen fyll i alla obligatoriska fält (inkl. godkännare)');
       return;
     }
     createLoanMutation.mutate();
@@ -319,20 +318,35 @@ export default function LoanRequestModal({ isOpen, onClose }) {
             </Popover>
           </div>
 
-          {/* Approver info – sourced from tool's current location */}
-          {selectedTools.length > 0 && (() => {
-            const srcLoc = locations.find(l => l.id === selectedTools[0]?.location_id);
-            const approver = srcLoc?.team_member_ids?.[0] ? teamMembers.find(tm => tm.id === srcLoc.team_member_ids[0]) : null;
-            return (
-              <div className={`rounded-lg p-3 text-sm ${approver ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'}`}>
-                <p className="font-medium text-gray-700 mb-0.5">Godkännare (ansvarig för källplatsen)</p>
-                {approver
-                  ? <p className="text-gray-600">{approver.name} – {approver.email || <span className="text-red-600 font-medium">Ingen e-post registrerad!</span>}</p>
-                  : <p className="text-red-600 font-medium">⚠ Ingen ansvarig är satt på källplatsen ({srcLoc?.name || '—'}). Inget godkännandemail kan skickas!</p>
-                }
-              </div>
-            );
-          })()}
+          {/* Approver – manually selected */}
+          <div>
+            <Label className="block mb-2">Godkännare (ansvarig för källplatsen) *</Label>
+            <Popover open={approverOpen} onOpenChange={setApproverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  {selectedApprover ? selectedApprover.name : 'Välj godkännare'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Sök person..." />
+                  <CommandList>
+                    <CommandEmpty>Ingen person hittad</CommandEmpty>
+                    <CommandGroup>
+                      {teamMembers.filter(m => m.email).map(member => (
+                        <CommandItem key={member.id} onSelect={() => { setSelectedApprover(member); setApproverOpen(false); }}>
+                          <div>
+                            <div className="font-medium">{member.name}</div>
+                            <div className="text-xs text-gray-500">{member.email}</div>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
 
           {/* Destination Location */}
           <div>
