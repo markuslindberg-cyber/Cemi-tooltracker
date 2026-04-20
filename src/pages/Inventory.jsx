@@ -614,6 +614,8 @@ export default function Inventory() {
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs hidden sm:table-cell" onClick={() => handleTableSort('location')}>Plats<SortIcon col="location" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs hidden md:table-cell" onClick={() => handleTableSort('price')}>Värde<SortIcon col="price" /></TableHead>
+                  <TableHead className="font-semibold px-1 py-2 text-xs hidden lg:table-cell">Service</TableHead>
                   <TableHead className="w-8 px-2"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -663,6 +665,16 @@ export default function Inventory() {
                            <span className="truncate text-gray-600">{tool.location_name}</span>
                          ) : (
                            <span className="text-gray-400">—</span>
+                         )}
+                       </TableCell>
+                       <TableCell className="font-medium text-gray-900 px-1 py-1 text-xs hidden md:table-cell">
+                         {tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}
+                       </TableCell>
+                       <TableCell className="font-medium text-gray-900 px-1 py-1 text-xs hidden lg:table-cell">
+                         {serviceCost > 0 ? (
+                           <span className="text-[#8B1E1E]">{serviceCost.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr</span>
+                         ) : (
+                           '—'
                          )}
                        </TableCell>
                       <TableCell className="px-2 py-1">
