@@ -211,6 +211,52 @@ export default function LocationFormModal({
           </div>
 
           <div className="space-y-2">
+            <Label>Ansvarig (för lånegodkännanden)</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between">
+                  {formData.team_member_ids[0]
+                    ? teamMembers.find(m => m.id === formData.team_member_ids[0])?.name || 'Okänd'
+                    : 'Välj ansvarig...'}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Sök person..." />
+                  <CommandEmpty>Ingen person hittades.</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-auto">
+                    <CommandItem value="none" onSelect={() => setFormData(prev => ({ ...prev, team_member_ids: prev.team_member_ids.slice(1), team_member_names: prev.team_member_names.slice(1) }))}>
+                      <Check className={cn("mr-2 h-4 w-4", !formData.team_member_ids[0] ? "opacity-100" : "opacity-0")} />
+                      Ingen ansvarig
+                    </CommandItem>
+                    {teamMembers.map((member) => (
+                      <CommandItem
+                        key={member.id}
+                        value={member.name}
+                        onSelect={() => {
+                          setFormData(prev => {
+                            const rest = prev.team_member_ids.filter((id, i) => i !== 0);
+                            const restNames = prev.team_member_names.filter((_, i) => i !== 0);
+                            return {
+                              ...prev,
+                              team_member_ids: [member.id, ...rest.filter(id => id !== member.id)],
+                              team_member_names: [member.name, ...restNames.filter((_, i) => rest[i] !== member.id)]
+                            };
+                          });
+                        }}
+                      >
+                        <Check className={cn("mr-2 h-4 w-4", formData.team_member_ids[0] === member.id ? "opacity-100" : "opacity-0")} />
+                        {member.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="space-y-2">
             <Label>Arbetande på denna plats</Label>
             <div className="flex flex-wrap gap-2 mb-2">
               {formData.team_member_ids.map((id) => {
