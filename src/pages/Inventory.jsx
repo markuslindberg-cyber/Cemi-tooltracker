@@ -296,11 +296,11 @@ export default function Inventory() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = ['name', 'manufacturer', 'model_number', 'category', 'subcategory', 'status', 'condition', 'barcode', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'location_name', 'assigned_to_name', 'notes'];
+    const headers = ['name', 'manufacturer', 'model_number', 'tool_number', 'category', 'subcategory', 'status', 'condition', 'barcode', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'service_cost', 'location_name', 'assigned_to_name', 'notes'];
 
     // Add example row and empty rows
-    const exampleRow = ['Impact Driver', 'DeWalt', 'DCF887B', 'Power Tools', 'Impact Drivers', 'available', 'good', '', '2026-01-01', '199.99', 'Home Depot', 'INV-001', 'Main Warehouse', 'John Smith', 'Example tool'];
-    const emptyRows = Array(19).fill(Array(15).fill(''));
+    const exampleRow = ['Impact Driver', 'DeWalt', 'DCF887B', 'TOOL-001', 'Power Tools', 'Impact Drivers', 'available', 'good', '', '2026-01-01', '199.99', 'Home Depot', 'INV-001', '500', 'Main Warehouse', 'John Smith', 'Example tool'];
+    const emptyRows = Array(19).fill(Array(17).fill(''));
 
     const csvContent = [
       headers.join(','),
@@ -379,6 +379,7 @@ export default function Inventory() {
             name: { type: "string" },
             manufacturer: { type: "string" },
             model_number: { type: "string" },
+            tool_number: { type: "string" },
             category: { type: "string" },
             subcategory: { type: "string" },
             status: { type: "string" },
@@ -388,6 +389,7 @@ export default function Inventory() {
             purchase_price: { type: "number" },
             purchase_location: { type: "string" },
             invoice_number: { type: "string" },
+            service_cost: { type: "number" },
             location_name: { type: "string" },
             assigned_to_name: { type: "string" },
             notes: { type: "string" },
@@ -412,6 +414,7 @@ export default function Inventory() {
           name: tool.name,
           manufacturer: tool.manufacturer || '',
           model_number: tool.model_number || '',
+          tool_number: tool.tool_number || '',
           category: tool.category || 'other',
           subcategory: tool.subcategory || '',
           status: tool.status || 'available',
@@ -426,7 +429,29 @@ export default function Inventory() {
           notes: tool.notes || '',
         }));
 
-        await base44.entities.Tool.bulkCreate(toolsToCreate);
+        // Create service records if service_cost provided
+        const createdTools = await base44.entities.Tool.bulkCreate(toolsToCreate);
+        
+        // Create service records for tools with service_cost
+        const serviceRecords = validTools
+          .filter(tool => tool.service_cost && tool.service_cost > 0)
+          .map((tool, idx) => {
+            const createdTool = createdTools[idx];
+            return {
+              tool_id: createdTool.id,
+              tool_name: createdTool.name,
+              service_type: 'annual_service',
+              cost: tool.service_cost,
+              service_date: new Date().toISOString().split('T')[0],
+              description: 'Årlig servicekostnad från malluppladdning',
+              performed_by: 'System'
+            };
+          });
+
+        if (serviceRecords.length > 0) {
+          await base44.entities.ServiceRecord.bulkCreate(serviceRecords);
+        }
+
         queryClient.invalidateQueries(['tools']);
         alert(`${toolsToCreate.length} verktyg importerades!`);
       } else {
