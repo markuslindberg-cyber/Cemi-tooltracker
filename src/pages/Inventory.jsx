@@ -612,12 +612,8 @@ export default function Inventory() {
                     )}
                   </TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden sm:table-cell" onClick={() => handleTableSort('category')}>Kategori<SortIcon col="category" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden md:table-cell" onClick={() => handleTableSort('location')}>Plats<SortIcon col="location" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden lg:table-cell" onClick={() => handleTableSort('assigned')}>Tilldelad<SortIcon col="assigned" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden xl:table-cell" onClick={() => handleTableSort('price')}>Pris<SortIcon col="price" /></TableHead>
-                  <TableHead className="font-semibold px-2 py-2 text-xs hidden xl:table-cell">Service</TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs hidden sm:table-cell" onClick={() => handleTableSort('location')}>Plats<SortIcon col="location" /></TableHead>
                   <TableHead className="w-8 px-2"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -657,42 +653,16 @@ export default function Inventory() {
                            </div>
                          </div>
                        </TableCell>
-                       <TableCell className="text-gray-600 px-2 py-1 text-xs hidden sm:table-cell">
-                         {categoryLabels[tool.category] || tool.category}
-                       </TableCell>
-                       <TableCell className="px-2 py-1">
+                       <TableCell className="px-1 py-1">
                          <Badge className={`${status.color} border-0 text-xs`}>
                            {status.label}
                          </Badge>
                        </TableCell>
-                       <TableCell className="px-2 py-1 text-xs hidden md:table-cell">
+                       <TableCell className="px-1 py-1 text-xs hidden sm:table-cell">
                          {tool.location_name ? (
-                           <div className="flex items-center gap-1 text-gray-600">
-                             <MapPin className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                             <span className="truncate">{tool.location_name}</span>
-                           </div>
+                           <span className="truncate text-gray-600">{tool.location_name}</span>
                          ) : (
                            <span className="text-gray-400">—</span>
-                         )}
-                       </TableCell>
-                       <TableCell className="px-2 py-1 text-xs hidden lg:table-cell">
-                         {tool.assigned_to_name ? (
-                           <div className="flex items-center gap-1 text-gray-600">
-                             <User className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                             <span className="truncate">{tool.assigned_to_name}</span>
-                           </div>
-                         ) : (
-                           <span className="text-gray-400">—</span>
-                         )}
-                       </TableCell>
-                       <TableCell className="font-medium text-gray-900 px-2 py-1 text-xs hidden xl:table-cell">
-                         {tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}
-                       </TableCell>
-                       <TableCell className="font-medium text-gray-900 px-2 py-1 text-xs hidden xl:table-cell">
-                         {serviceCost > 0 ? (
-                           <span className="text-[#8B1E1E]">{serviceCost.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr</span>
-                         ) : (
-                           '—'
                          )}
                        </TableCell>
                       <TableCell className="px-2 py-1">
