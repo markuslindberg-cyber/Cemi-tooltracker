@@ -529,6 +529,7 @@ export default function HandTools() {
         isOpen={showScanModal}
         onClose={() => setShowScanModal(false)}
         handTools={handTools}
+        locations={locations}
       />
 
       <HandToolBatchModal
