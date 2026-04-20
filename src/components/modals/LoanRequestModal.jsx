@@ -31,6 +31,8 @@ export default function LoanRequestModal({ isOpen, onClose }) {
   const [itemType, setItemType] = useState('tools');
   const [itemQuantities, setItemQuantities] = useState({});
   const [cameraActive, setCameraActive] = useState(false);
+  const [assignedToOpen, setAssignedToOpen] = useState(false);
+  const [destinationOpen, setDestinationOpen] = useState(false);
 
   const { data: tools } = useQuery({
     queryKey: ['tools'],
@@ -292,7 +294,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
           {/* Assigned To */}
           <div>
             <Label className="block mb-2">Vem ska låna *</Label>
-            <Popover>
+            <Popover open={assignedToOpen} onOpenChange={setAssignedToOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-start">
                   {assignedTo ? assignedTo.name : 'Välj person'}
@@ -305,7 +307,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
                     <CommandEmpty>Ingen person hittad</CommandEmpty>
                     <CommandGroup>
                       {teamMembers.map(member => (
-                        <CommandItem key={member.id} onSelect={() => setAssignedTo(member)}>
+                        <CommandItem key={member.id} onSelect={() => { setAssignedTo(member); setAssignedToOpen(false); }}>
                           {member.name}
                         </CommandItem>
                       ))}
@@ -319,7 +321,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
           {/* Destination Location */}
           <div>
             <Label className="block mb-2">Destination (plats där maskinen lånas till) *</Label>
-            <Popover>
+            <Popover open={destinationOpen} onOpenChange={setDestinationOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-start">
                   {destinationLocation ? destinationLocation.name : 'Välj plats'}
@@ -332,7 +334,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
                     <CommandEmpty>Ingen plats hittad</CommandEmpty>
                     <CommandGroup>
                       {locations.map(loc => (
-                        <CommandItem key={loc.id} onSelect={() => setDestinationLocation(loc)}>
+                        <CommandItem key={loc.id} onSelect={() => { setDestinationLocation(loc); setDestinationOpen(false); }}>
                           {loc.name}
                         </CommandItem>
                       ))}
