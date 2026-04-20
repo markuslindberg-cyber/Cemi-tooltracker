@@ -48,6 +48,7 @@ import {
   RotateCcw,
   Bell,
   CheckCircle2,
+  Mail,
 } from 'lucide-react';
 import AdminEditLoanDialog from '@/components/modals/AdminEditLoanDialog';
 import { format, differenceInDays } from 'date-fns';
@@ -379,6 +380,30 @@ export default function Transfers() {
                             <span>Återlämning: {format(new Date(loan.default_return_date), 'd MMM yyyy')}</span>
                           </div>
                         )}
+                      </div>
+                      {/* Mailmottagare */}
+                      <div className="pt-2 border-t border-gray-100">
+                        <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1"><Mail className="w-3 h-3" /> Mailas om statusuppdateringar</p>
+                        <div className="flex flex-col gap-1">
+                          {loan.requested_by_email && (
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                              <span className="bg-gray-100 text-gray-500 rounded px-1.5 py-0.5 font-medium">Beställare</span>
+                              <span>{loan.requested_by_name || loan.requested_by_email}</span>
+                            </div>
+                          )}
+                          {loan.approver_email && (
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                              <span className="bg-amber-100 text-amber-700 rounded px-1.5 py-0.5 font-medium">Godkännare</span>
+                              <span>{loan.approver_name || loan.approver_email}</span>
+                            </div>
+                          )}
+                          {loan.destination_location_manager_email && (
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                              <span className="bg-blue-100 text-blue-700 rounded px-1.5 py-0.5 font-medium">Platsansvarig</span>
+                              <span>{loan.destination_location_manager_name || loan.destination_location_manager_email}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       {loan.approver_comment && (
                         <div className="pt-2 border-t border-gray-100">

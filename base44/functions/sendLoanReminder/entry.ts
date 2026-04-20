@@ -86,16 +86,21 @@ Deno.serve(async (req) => {
     };
 
     const recipients = [];
+    const seen = new Set();
 
-    // Always send to approver if status is pending
-    if (loan.approver_email) {
-      recipients.push({ email: loan.approver_email, name: loan.approver_name || loan.approver_email });
-    }
+    const addRecipient = (email, name) => {
+      if (email && !seen.has(email)) {
+        seen.add(email);
+        recipients.push({ email, name: name || email });
+      }
+    };
 
-    // Also send to assigned person if approved
-    if (loan.assigned_to_email && loan.assigned_to_email !== loan.approver_email) {
-      recipients.push({ email: loan.assigned_to_email, name: loan.assigned_to_name || loan.assigned_to_email });
-    }
+    // Beställaren
+    addRecipient(loan.requested_by_email, loan.requested_by_name);
+    // Godkännaren
+    addRecipient(loan.approver_email, loan.approver_name);
+    // Destinationsplatsens ansvarige
+    addRecipient(loan.destination_location_manager_email, loan.destination_location_manager_name);
 
     for (const r of recipients) {
       await base44.integrations.Core.SendEmail({

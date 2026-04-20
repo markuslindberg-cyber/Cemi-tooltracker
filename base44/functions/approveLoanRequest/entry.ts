@@ -179,6 +179,31 @@ Deno.serve(async (req) => {
         });
       }
 
+      // --- GODKÄND: bekräftelse till godkännaren själv ---
+      await base44.integrations.Core.SendEmail({
+        to: user.email,
+        subject: `Du godkände låneförfrågan: ${loanRequest.tool_names.join(', ')}`,
+        body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="${headerStyle('#16a34a')}">
+      <h2 style="margin:0; color:#fff; font-size:20px;">✅ Du godkände en låneförfrågan</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.approver_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Du har godkänt följande låneförfrågan från <strong>${loanRequest.requested_by_name}</strong>.</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">${toolList}</ul>
+      <table style="${tableStyle}">
+        <tr><td style="${labelCellStyle}">Begärd av</td><td style="${valueCellStyle}">${loanRequest.requested_by_name}</td></tr>
+        <tr><td style="${labelCellStyle}">Destination</td><td style="${valueCellStyle}">${loanRequest.destination_location_name}</td></tr>
+        <tr><td style="${labelCellStyle}">Återlämning</td><td style="${valueCellStyle}">${new Date(loanRequest.default_return_date).toLocaleDateString('sv-SE')}</td></tr>
+      </table>
+      ${commentSection}
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
+      });
+
     } else {
       // --- NEKAD MAIL ---
       await base44.integrations.Core.SendEmail({
@@ -208,6 +233,26 @@ Deno.serve(async (req) => {
           <td style="${valueCellStyle}">${loanRequest.destination_location_name}</td>
         </tr>
       </table>
+      ${commentSection}
+    </div>
+    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+  </div>
+</div>`
+      });
+
+      // --- NEKAD: bekräftelse till godkännaren själv ---
+      await base44.integrations.Core.SendEmail({
+        to: user.email,
+        subject: `Du nekade låneförfrågan: ${loanRequest.tool_names.join(', ')}`,
+        body: `<div style="${emailStyle}">
+  <div style="${cardStyle}">
+    <div style="${headerStyle('#dc2626')}">
+      <h2 style="margin:0; color:#fff; font-size:20px;">❌ Du nekade en låneförfrågan</h2>
+    </div>
+    <div style="${bodyStyle}">
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.approver_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Du har nekat följande låneförfrågan från <strong>${loanRequest.requested_by_name}</strong>.</p>
+      <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">${toolList}</ul>
       ${commentSection}
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
