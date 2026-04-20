@@ -602,7 +602,7 @@ export default function Inventory() {
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="w-10">
+                  <TableHead className="w-8 px-2">
                     {selectedTools.size > 0 && (
                       <button onClick={toggleSelectAll}>
                         {selectedTools.size === filteredTools.length && filteredTools.length > 0
@@ -611,14 +611,14 @@ export default function Inventory() {
                       </button>
                     )}
                   </TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('category')}>Kategori<SortIcon col="category" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('location')}>Plats<SortIcon col="location" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('assigned')}>Tilldelad<SortIcon col="assigned" /></TableHead>
-                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E]" onClick={() => handleTableSort('price')}>Inköpspris<SortIcon col="price" /></TableHead>
-                  <TableHead className="font-semibold">Servicekostnader</TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden sm:table-cell" onClick={() => handleTableSort('category')}>Kategori<SortIcon col="category" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden md:table-cell" onClick={() => handleTableSort('location')}>Plats<SortIcon col="location" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden lg:table-cell" onClick={() => handleTableSort('assigned')}>Tilldelad<SortIcon col="assigned" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs hidden xl:table-cell" onClick={() => handleTableSort('price')}>Pris<SortIcon col="price" /></TableHead>
+                  <TableHead className="font-semibold px-2 py-2 text-xs hidden xl:table-cell">Service</TableHead>
+                  <TableHead className="w-8 px-2"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -631,78 +631,75 @@ export default function Inventory() {
                       className={`hover:bg-gray-50 cursor-pointer ${selectedTools.has(tool.id) ? 'bg-[#8B1E1E]/5' : ''}`}
                       onClick={() => setEditTool(tool)}
                     >
-                      <TableCell onClick={e => { e.stopPropagation(); toggleSelectTool(tool.id); }}>
-                        {selectedTools.size > 0 && (
-                          <>
-                            {selectedTools.has(tool.id)
-                              ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
-                              : <Square className="w-4 h-4 text-gray-400" />}
-                          </>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
-                            {tool.image_url ? (
-                              <img src={tool.image_url} alt={tool.name} className="w-full h-full object-cover rounded-lg" />
-                            ) : (
-                              '🔧'
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{tool.name}</p>
-                            {tool.subcategory && (
-                              <p className="text-xs text-gray-500">{tool.subcategory}</p>
-                            )}
-                            {tool.model_number && (
-                              <p className="text-sm text-gray-500">{tool.model_number}</p>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-600">
-                        {categoryLabels[tool.category] || tool.category}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${status.color} border-0`}>
-                          {status.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {tool.location_name ? (
-                          <div className="flex items-center gap-1.5 text-gray-600">
-                            <MapPin className="w-4 h-4 text-gray-400" />
-                            {tool.location_name}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {tool.assigned_to_name ? (
-                          <div className="flex items-center gap-1.5 text-gray-600">
-                            <User className="w-4 h-4 text-gray-400" />
-                            {tool.assigned_to_name}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium text-gray-900">
-                        {tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}
-                      </TableCell>
-                      <TableCell className="font-medium text-gray-900">
-                        {serviceCost > 0 ? (
-                          <span className="text-[#8B1E1E]">{serviceCost.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr</span>
-                        ) : (
-                          '—'
-                        )}
-                      </TableCell>
-                      <TableCell>
+                      <TableCell onClick={e => { e.stopPropagation(); toggleSelectTool(tool.id); }} className="px-2 py-1">
+                         {selectedTools.size > 0 && (
+                           <>
+                             {selectedTools.has(tool.id)
+                               ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                               : <Square className="w-4 h-4 text-gray-400" />}
+                           </>
+                         )}
+                       </TableCell>
+                       <TableCell className="px-2 py-1">
+                         <div className="flex items-center gap-2">
+                           <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
+                             {tool.image_url ? (
+                               <img src={tool.image_url} alt={tool.name} className="w-full h-full object-cover rounded-lg" />
+                             ) : (
+                               '🔧'
+                             )}
+                           </div>
+                           <div className="min-w-0">
+                             <p className="font-medium text-gray-900 text-sm truncate">{tool.name}</p>
+                             {tool.subcategory && (
+                               <p className="text-xs text-gray-500 truncate hidden sm:block">{tool.subcategory}</p>
+                             )}
+                           </div>
+                         </div>
+                       </TableCell>
+                       <TableCell className="text-gray-600 px-2 py-1 text-xs hidden sm:table-cell">
+                         {categoryLabels[tool.category] || tool.category}
+                       </TableCell>
+                       <TableCell className="px-2 py-1">
+                         <Badge className={`${status.color} border-0 text-xs`}>
+                           {status.label}
+                         </Badge>
+                       </TableCell>
+                       <TableCell className="px-2 py-1 text-xs hidden md:table-cell">
+                         {tool.location_name ? (
+                           <div className="flex items-center gap-1 text-gray-600">
+                             <MapPin className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                             <span className="truncate">{tool.location_name}</span>
+                           </div>
+                         ) : (
+                           <span className="text-gray-400">—</span>
+                         )}
+                       </TableCell>
+                       <TableCell className="px-2 py-1 text-xs hidden lg:table-cell">
+                         {tool.assigned_to_name ? (
+                           <div className="flex items-center gap-1 text-gray-600">
+                             <User className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                             <span className="truncate">{tool.assigned_to_name}</span>
+                           </div>
+                         ) : (
+                           <span className="text-gray-400">—</span>
+                         )}
+                       </TableCell>
+                       <TableCell className="font-medium text-gray-900 px-2 py-1 text-xs hidden xl:table-cell">
+                         {tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}
+                       </TableCell>
+                       <TableCell className="font-medium text-gray-900 px-2 py-1 text-xs hidden xl:table-cell">
+                         {serviceCost > 0 ? (
+                           <span className="text-[#8B1E1E]">{serviceCost.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr</span>
+                         ) : (
+                           '—'
+                         )}
+                       </TableCell>
+                      <TableCell className="px-2 py-1">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <MoreVertical className="h-3 w-3" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
