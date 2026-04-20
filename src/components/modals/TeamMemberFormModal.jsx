@@ -50,18 +50,33 @@ export default function TeamMemberFormModal({
 
   useEffect(() => {
     if (member) {
-      setFormData({ ...defaultMember, ...member });
+      // Auto-set default location if member is responsible for any location
+      const responsibleLocation = locations?.find(l => l.responsible_person_id === member.id);
+      if (responsibleLocation && !member.default_location_id) {
+        setFormData({ 
+          ...defaultMember, 
+          ...member,
+          default_location_id: responsibleLocation.id,
+          default_location_name: responsibleLocation.name
+        });
+      } else {
+        setFormData({ ...defaultMember, ...member });
+      }
     } else {
       setFormData(defaultMember);
     }
-  }, [member, isOpen]);
+  }, [member, locations, isOpen]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     if (field === 'default_location_id') {
       const location = locations?.find(l => l.id === value);
-      setFormData(prev => ({ ...prev, [field]: value, default_location_name: location?.name || '' }));
+      if (location?.responsible_person_id === member?.id) {
+        setFormData(prev => ({ ...prev, [field]: value, default_location_name: location?.name || '' }));
+      } else {
+        setFormData(prev => ({ ...prev, [field]: value, default_location_name: location?.name || '' }));
+      }
     }
   };
 
