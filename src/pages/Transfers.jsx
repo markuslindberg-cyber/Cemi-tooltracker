@@ -204,13 +204,13 @@ export default function Transfers() {
           </div>
         </div>
 
-        <Tabs defaultValue="transfers">
+        <Tabs defaultValue="loans">
           <TabsList>
-            <TabsTrigger value="transfers">
-              Direktförflyttningar ({filteredTransfers.length})
-            </TabsTrigger>
             <TabsTrigger value="loans">
               Låneförfrågningar ({filteredLoans.length})
+            </TabsTrigger>
+            <TabsTrigger value="transfers">
+              Direktförflyttningar ({filteredTransfers.length})
             </TabsTrigger>
           </TabsList>
 
