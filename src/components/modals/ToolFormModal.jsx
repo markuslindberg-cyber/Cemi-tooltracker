@@ -33,12 +33,14 @@ const defaultTool = {
 name: '',
 manufacturer: '',
 model_number: '',
+tool_number: '',
 category: 'power_tools',
 subcategory: '',
 status: 'available',
 condition: 'good',
 purchase_date: '',
 purchase_price: '',
+service_cost: '',
 purchase_location: '',
 invoice_number: '',
 location_id: '',
@@ -618,6 +620,14 @@ export default function ToolFormModal({
                     placeholder="t.ex. 2857-20"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Verktygsnummer</Label>
+                  <Input
+                    value={formData.tool_number}
+                    onChange={(e) => handleChange('tool_number', e.target.value)}
+                    placeholder="t.ex. TN-001"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -962,6 +972,18 @@ export default function ToolFormModal({
                     type="number"
                     value={formData.purchase_price}
                     onChange={(e) => handleChange('purchase_price', e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Servicekostnad (kr/år)</Label>
+                  <Input
+                    type="number"
+                    value={formData.service_cost}
+                    onChange={(e) => handleChange('service_cost', e.target.value)}
                     placeholder="0.00"
                   />
                 </div>
