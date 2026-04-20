@@ -47,6 +47,7 @@ import {
   Pencil,
   RotateCcw,
   Bell,
+  CheckCircle2,
 } from 'lucide-react';
 import AdminEditLoanDialog from '@/components/modals/AdminEditLoanDialog';
 import { format, differenceInDays } from 'date-fns';
@@ -69,11 +70,14 @@ export default function Transfers() {
 
   // Reminder
   const [sendingReminder, setSendingReminder] = useState(null);
+  const [reminderSent, setReminderSent] = useState(null);
 
   const sendReminder = async (loanId) => {
     setSendingReminder(loanId);
     await base44.functions.invoke('sendLoanReminder', { loan_request_id: loanId });
     setSendingReminder(null);
+    setReminderSent(loanId);
+    setTimeout(() => setReminderSent(null), 3000);
   };
   const [editToLocationId, setEditToLocationId] = useState('');
   const [editNotes, setEditNotes] = useState('');
@@ -391,14 +395,20 @@ export default function Transfers() {
                           <Button
                             variant="outline"
                             size="sm"
-                            disabled={sendingReminder === loan.id}
+                            disabled={sendingReminder === loan.id || reminderSent === loan.id}
                             onClick={() => sendReminder(loan.id)}
-                            className="flex items-center gap-1.5 text-amber-700 border-amber-200 hover:bg-amber-50"
+                            className={`flex items-center gap-1.5 transition-colors ${
+                              reminderSent === loan.id
+                                ? 'text-green-700 border-green-300 bg-green-50'
+                                : 'text-amber-700 border-amber-200 hover:bg-amber-50'
+                            }`}
                           >
                             {sendingReminder === loan.id
                               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              : reminderSent === loan.id
+                              ? <CheckCircle2 className="w-3.5 h-3.5" />
                               : <Bell className="w-3.5 h-3.5" />}
-                            Skicka påminnelse
+                            {reminderSent === loan.id ? 'Påminnelse skickad!' : 'Skicka påminnelse'}
                           </Button>
                         )}
                       </div>
