@@ -49,7 +49,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
     if (selectedLocationId && t.location_id !== selectedLocationId) return false;
     if (typeSearch) {
       const q = typeSearch.toLowerCase();
-      if (!`${t.name} ${t.category} ${t.subcategory}`.toLowerCase().includes(q)) return false;
+      if (!`${t.name} ${t.category} ${t.subcategory} ${t.barcode || ''}`.toLowerCase().includes(q)) return false;
     }
     return true;
   });
@@ -181,9 +181,9 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
             </div>
 
             <div className="space-y-2">
-              <Label>Sök redskapstyp (valfritt)</Label>
+              <Label>Sök redskapstyp eller streckkod (valfritt)</Label>
               <Input
-                placeholder="T.ex. Räfsor, Krattor..."
+                placeholder="T.ex. Räfsor, Krattor eller streckkod..."
                 value={typeSearch}
                 onChange={e => setTypeSearch(e.target.value)}
               />
