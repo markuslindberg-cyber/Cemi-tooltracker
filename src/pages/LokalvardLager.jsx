@@ -27,7 +27,7 @@ export default function LokalvardLager() {
   const { data: artiklar = [], isLoading: artiklarLoading } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
     queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).then(r => r.filter(a => !a.is_deleted)).catch(() => []),
-    refetchInterval: 5000,
+    staleTime: 60000,
   });
 
   const { data: uttag = [] } = useQuery({
@@ -44,7 +44,7 @@ export default function LokalvardLager() {
   const { data: inköp = [] } = useQuery({
     queryKey: ['lokalvardInkop'],
     queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
-    refetchInterval: 5000,
+    staleTime: 60000,
   });
 
   const calculateUttag = (aggregatedArtikel) => {
