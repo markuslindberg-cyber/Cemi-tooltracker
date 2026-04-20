@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { XCircle } from 'lucide-react';
 
 export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
   const queryClient = useQueryClient();
@@ -38,6 +39,10 @@ export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
     enabled: open
   });
 
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelComment, setCancelComment] = useState('');
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
   const saveMutation = useMutation({
     mutationFn: () => base44.entities.LoanRequest.update(request.id, {
       default_return_date: returnDate,
@@ -52,6 +57,15 @@ export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
       onOpenChange(false);
     }
   });
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    await base44.functions.invoke('cancelLoanRequest', { loan_request_id: request.id, comment: cancelComment });
+    queryClient.invalidateQueries({ queryKey: ['loanRequests'] });
+    setCancelling(false);
+    setShowCancelConfirm(false);
+    onOpenChange(false);
+  };
 
   const handleLocationChange = (e) => {
     const loc = locations.find(l => l.id === e.target.value);
@@ -129,15 +143,43 @@ export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
-          <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || !returnDate}
-          >
-            {saveMutation.isPending ? 'Sparar...' : 'Spara ändringar'}
-          </Button>
-        </DialogFooter>
+        {showCancelConfirm ? (
+          <div className="space-y-3 border-t pt-4">
+            <p className="text-sm font-medium text-red-700">Bekräfta avbrytning – mail skickas till berörda</p>
+            <Textarea
+              placeholder="Kommentar (valfritt)..."
+              value={cancelComment}
+              onChange={e => setCancelComment(e.target.value)}
+              rows={2}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setShowCancelConfirm(false)}>Tillbaka</Button>
+              <Button size="sm" variant="destructive" disabled={cancelling} onClick={handleCancel}>
+                {cancelling ? 'Avbryter...' : 'Bekräfta avbrytning'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {request.status !== 'returned' && request.status !== 'rejected' && (
+              <Button
+                variant="outline"
+                className="text-red-600 border-red-200 hover:bg-red-50 sm:mr-auto"
+                onClick={() => setShowCancelConfirm(true)}
+              >
+                <XCircle className="w-4 h-4 mr-1.5" />
+                Avbryt lån
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Stäng</Button>
+            <Button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || !returnDate}
+            >
+              {saveMutation.isPending ? 'Sparar...' : 'Spara ändringar'}
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
