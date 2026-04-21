@@ -56,6 +56,8 @@ export default function RequestWorkwear() {
 
   const rawItems = lokalvardData.artiklar || [];
   const allCustomersRaw = lokalvardData.kunder || [];
+  const allTeamMembers = lokalvardData.teamMembers || [];
+  const allPreviousRequests = lokalvardData.previousRequests || [];
 
   // En post per streckkod (senast inköpt)
   const items = Object.values(
@@ -68,25 +70,11 @@ export default function RequestWorkwear() {
     }, {})
   );
 
-  const { data: handlers = [] } = useQuery({
-    queryKey: ['handlers'],
-    queryFn: async () => {
-      const allMembers = await base44.entities.TeamMember.list(null, 10000);
-      return allMembers.filter(m => m.role === 'lokalvårdare' || m.role === 'admin lokalvård');
-    },
-  });
-
+  const handlers = allTeamMembers.filter(m => m.role === 'lokalvårdare' || m.role === 'admin lokalvård');
   const allCustomers = allCustomersRaw;
-
-  const { data: teamMembers = [] } = useQuery({
-    queryKey: ['teamMembers'],
-    queryFn: () => base44.entities.TeamMember.list(null, 10000).catch(() => []),
-  });
-
-  const { data: previousRequests = [], isLoading: loadingHistory } = useQuery({
-    queryKey: ['previousWorkwearRequests'],
-    queryFn: () => base44.entities.WorkwearRequest.list('-request_date', 200).catch(() => []),
-  });
+  const teamMembers = allTeamMembers;
+  const previousRequests = allPreviousRequests;
+  const loadingHistory = false;
 
   const myRequests = previousRequests.filter(r => r.requested_by_email === user?.email);
 
@@ -107,7 +95,10 @@ export default function RequestWorkwear() {
   }, [handlers, user, selectedHandler]);
 
   const createRequestMutation = useMutation({
-   mutationFn: (data) => base44.entities.WorkwearRequest.create(data),
+   mutationFn: async (data) => {
+     const res = await base44.functions.invoke('getLokalvardData', { action: 'createRequest', data });
+     return res.data;
+   },
    onSuccess: () => {
      setFormData({
        customer_id: '',
