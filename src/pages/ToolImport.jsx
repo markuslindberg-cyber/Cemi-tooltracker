@@ -255,7 +255,19 @@ export default function ToolImport() {
 
       {previewRows && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Förhandsgranskning ({previewRows.length} rader)</h2>
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Förhandsgranskning ({previewRows.length} rader)</h2>
+            <div className="flex gap-6 text-sm mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-50 border border-green-200 rounded"></div>
+                <span>Ny maskin (skapas)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-yellow-50 border border-yellow-200 rounded"></div>
+                <span>Befintlig maskin (uppdateras)</span>
+              </div>
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
