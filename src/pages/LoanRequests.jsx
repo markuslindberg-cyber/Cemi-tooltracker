@@ -88,7 +88,11 @@ export default function LoanRequests() {
     }
   });
 
-  if (!user) return null;
+  if (!user) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-gray-200 border-t-[#8B1E1E] rounded-full animate-spin" />
+    </div>
+  );
 
   const isAdmin = user.role === 'admin' || user.role === 'ägare' || user.role === 'admin_lokalvård';
   const isOwner = user.role === 'ägare';
@@ -99,7 +103,7 @@ export default function LoanRequests() {
     ? loanRequests.filter(r => r.status === 'pending')
     : loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending');
   const myLoans = loanRequests.filter(r => r.assigned_to_email === user.email && r.status === 'approved');
-  const pendingReturnConfirm = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending_return');
+  const pendingReturnConfirm = loanRequests.filter(r => (isAdmin || r.approver_email === user.email) && r.status === 'pending_return');
   // Alla lån som admin/ägare kan hantera (ägare ser alla, admin ser aktiva + godkända)
   const manageableLoans = isOwner
     ? loanRequests
