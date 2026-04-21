@@ -260,6 +260,7 @@ export default function Dashboard() {
         )}
 
         {/* Main Content Grid */}
+         {user?.role !== 'lokalvårdare' && (
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
            {/* Sidebar First */}
            <div className="space-y-4 lg:order-2">
@@ -443,8 +444,9 @@ export default function Dashboard() {
           </div>
 
 
-        </div>
-      </div>
+          </div>
+          )}
+          </div>
 
       {/* Modals */}
       <TransferModal
