@@ -709,18 +709,15 @@ export default function ToolImport() {
                       )}
                     </div>
                   )}
-                      </div>
-                    );
-                  })}
-                  </>
-                  ))}
                   </div>
+                  )}
+
+                  {previewRows && (
                   <div className="flex gap-3 justify-end mt-4">
-          <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
-          <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
-        </div>
-      </div>
-    )}
+                  <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
+                  <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
+                  </div>
+                  )}
 
     {editingRowIdx !== null && previewRows && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
