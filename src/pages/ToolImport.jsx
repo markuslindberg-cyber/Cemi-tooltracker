@@ -270,6 +270,7 @@ export default function ToolImport() {
   const [bulkEditField, setBulkEditField] = useState('');
   const [bulkEditValue, setBulkEditValue] = useState('');
   const [filterMode, setFilterMode] = useState('all'); // 'all', 'new', 'update'
+  const [sortBy, setSortBy] = useState(null); // null, 'name', 'name-desc'
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -442,11 +443,17 @@ export default function ToolImport() {
           </div>
           <div className="space-y-2">
             {(() => {
-              const filtered = previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
+              let filtered = previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
                 if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
                 if (filterMode === 'update') return row.action === 'update' && row.matchedTool;
                 return row.action !== 'ignore';
               });
+
+              if (sortBy === 'name') {
+                filtered = filtered.sort((a, b) => (a.row.name || '').localeCompare(b.row.name || ''));
+              } else if (sortBy === 'name-desc') {
+                filtered = filtered.sort((a, b) => (b.row.name || '').localeCompare(a.row.name || ''));
+              }
 
               return (
                 <>
@@ -463,6 +470,16 @@ export default function ToolImport() {
                       <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
                       <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
                     </select>
+                    <button
+                      onClick={() => {
+                        if (sortBy === 'name') setSortBy('name-desc');
+                        else if (sortBy === 'name-desc') setSortBy(null);
+                        else setSortBy('name');
+                      }}
+                      className="text-xs text-gray-600 hover:text-gray-800 font-medium px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                    >
+                      Namn {sortBy === 'name' ? '▲' : sortBy === 'name-desc' ? '▼' : ''}
+                    </button>
                     {filtered.length > 0 && (
                       <button
                         onClick={() => {
