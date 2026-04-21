@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Package,
   RotateCw,
+  SprayCan,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -213,6 +214,26 @@ export default function Dashboard() {
               </Link>
             </div>
           </div>
+        )}
+
+        {/* Lokalvård Shortcut */}
+        {user?.role === 'lokalvårdare' && (
+          <Link to="/RequestWorkwear">
+            <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-4 text-white shadow-lg shadow-emerald-600/25 hover:from-emerald-700 hover:to-emerald-800 transition-all">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-xl shrink-0">
+                    <SprayCan className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm sm:text-base">Begär lokalvårdsartiklar</h3>
+                    <p className="text-white/80 text-xs sm:text-sm hidden sm:block">Skicka en begäran om uttag av lokalvårdsprodukter</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/70 shrink-0" />
+              </div>
+            </div>
+          </Link>
         )}
 
         {/* Missing Tools Alert */}
