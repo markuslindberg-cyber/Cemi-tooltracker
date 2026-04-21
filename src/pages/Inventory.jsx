@@ -296,11 +296,11 @@ export default function Inventory() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = ['name', 'manufacturer', 'model_number', 'tool_number', 'category', 'subcategory', 'status', 'condition', 'barcode', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'service_cost', 'location_name', 'assigned_to_name', 'notes'];
+    const headers = ['name', 'manufacturer', 'model_number', 'serial_number', 'tool_number', 'category', 'subcategory', 'status', 'condition', 'barcode', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'service_cost', 'location_name', 'assigned_to_name', 'notes'];
 
     // Add example row and empty rows
-    const exampleRow = ['Impact Driver', 'DeWalt', 'DCF887B', 'TOOL-001', 'Power Tools', 'Impact Drivers', 'available', 'good', '', '2026-01-01', '199.99', 'Home Depot', 'INV-001', '500', 'Main Warehouse', 'John Smith', 'Example tool'];
-    const emptyRows = Array(19).fill(Array(17).fill(''));
+    const exampleRow = ['Impact Driver', 'DeWalt', 'DCF887B', 'SN-123456', 'TOOL-001', 'Power Tools', 'Impact Drivers', 'available', 'good', '', '2026-01-01', '199.99', 'Home Depot', 'INV-001', '500', 'Main Warehouse', 'John Smith', 'Example tool'];
+    const emptyRows = Array(19).fill(Array(18).fill(''));
 
     const csvContent = [
       headers.join(','),
@@ -379,6 +379,7 @@ export default function Inventory() {
             name: { type: "string" },
             manufacturer: { type: "string" },
             model_number: { type: "string" },
+            serial_number: { type: "string" },
             tool_number: { type: "string" },
             category: { type: "string" },
             subcategory: { type: "string" },
@@ -420,7 +421,7 @@ export default function Inventory() {
           const toolData = {
             name: tool.name,
             manufacturer: tool.manufacturer || '',
-            model_number: tool.model_number || '',
+            model_number: tool.model_number || tool.serial_number || '',
             tool_number: tool.tool_number || '',
             category: tool.category || 'other',
             subcategory: tool.subcategory || '',
