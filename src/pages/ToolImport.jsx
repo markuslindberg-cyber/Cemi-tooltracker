@@ -56,7 +56,7 @@ export default function ToolImport() {
       normalized = normalized.slice(1);
     }
     normalized = normalized.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    const lines = normalized.split('\n');
+    const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
     const splitLine = (line, sep) => {
@@ -70,16 +70,13 @@ export default function ToolImport() {
 
         if (char === '"') {
           if (inQuotes && line[i + 1] === '"') {
-            // Escaped quote
             current += '"';
             i += 2;
           } else {
-            // Toggle quote state
             inQuotes = !inQuotes;
             i++;
           }
         } else if (char === sep && !inQuotes) {
-          // Separator outside quotes - field ends
           fields.push(current.trim());
           current = '';
           i++;
@@ -92,20 +89,36 @@ export default function ToolImport() {
       return fields;
     };
 
+    // Detektera separator
     const headerLine = lines[0];
-    const candidates = [';', ',', '\t'];
-    const sep = candidates.reduce((best, c) =>
-      splitLine(headerLine, c).length > splitLine(headerLine, best).length ? c : best
-    , candidates[0]);
+    const candidates = [',', ';', '\t'];
+    let sep = ',';
+    let maxFields = 0;
+    
+    for (const c of candidates) {
+      const fieldCount = splitLine(headerLine, c).length;
+      if (fieldCount > maxFields) {
+        maxFields = fieldCount;
+        sep = c;
+      }
+    }
 
     const headers = splitLine(headerLine, sep).map(h => h.toLowerCase().trim());
 
     return lines.slice(1)
-      .filter(line => line.trim().length > 0)
       .map(line => {
-        const cols = splitLine(line, sep);
+        let cols = splitLine(line, sep);
+        
+        // Om första kolumnen innehåller citat men inte andra separator, försök parsa om
+        if (cols.length === 1 && cols[0].startsWith('"') && cols[0].includes(sep)) {
+          const cleanLine = cols[0].replace(/^"/, '').replace(/"$/, '');
+          cols = splitLine(cleanLine, sep);
+        }
+        
         const row = {};
-        headers.forEach((h, i) => { row[h] = (cols[i] || '').trim(); });
+        headers.forEach((h, i) => { 
+          row[h] = (cols[i] || '').trim().replace(/^"/, '').replace(/"$/, '');
+        });
         return row;
       })
       .filter(row => (row.barcode || '').trim() || (row.name || '').trim());
