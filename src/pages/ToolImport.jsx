@@ -456,7 +456,7 @@ export default function ToolImport() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex gap-2 items-center mb-3 flex-wrap">
+            <div className="flex gap-2 items-center mb-2 flex-wrap">
               <select
                 value={filterMode}
                 onChange={(e) => {
@@ -469,27 +469,6 @@ export default function ToolImport() {
                 <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
                 <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
               </select>
-
-              <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg p-3 font-semibold text-sm text-gray-700 z-10">
-                <div className="flex items-center gap-3">
-                  <div className="w-4">Val</div>
-                  <div className="w-24">Åtgärd</div>
-                  <button onClick={() => {
-                    if (sortBy === 'barcode') setSortAsc(!sortAsc);
-                    else { setSortBy('barcode'); setSortAsc(true); }
-                  }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1 flex-1">
-                    Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
-                  </button>
-                  <button onClick={() => {
-                    if (sortBy === 'name') setSortAsc(!sortAsc);
-                    else { setSortBy('name'); setSortAsc(true); }
-                  }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1 flex-1">
-                    Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
-                  </button>
-                  <div className="w-20">Kategori</div>
-                  <div className="text-xs text-gray-500">Detaljer</div>
-                </div>
-              </div>
 
               {filtered.length > 0 && (
                 <button
@@ -507,6 +486,27 @@ export default function ToolImport() {
                   {selectedRows.size === filtered.length ? 'Avmarkera alla' : 'Markera alla'}
                 </button>
               )}
+            </div>
+
+            <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg p-3 font-semibold text-sm text-gray-700 z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-4">Val</div>
+                <div className="w-24">Åtgärd</div>
+                <button onClick={() => {
+                  if (sortBy === 'barcode') setSortAsc(!sortAsc);
+                  else { setSortBy('barcode'); setSortAsc(true); }
+                }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1 flex-1">
+                  Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
+                </button>
+                <button onClick={() => {
+                  if (sortBy === 'name') setSortAsc(!sortAsc);
+                  else { setSortBy('name'); setSortAsc(true); }
+                }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1 flex-1">
+                  Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
+                </button>
+                <div className="w-20">Kategori</div>
+                <div className="text-xs text-gray-500">Detaljer</div>
+              </div>
             </div>
 
             <ToolImportPreviewTable
