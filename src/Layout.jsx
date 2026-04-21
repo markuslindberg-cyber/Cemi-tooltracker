@@ -29,7 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare'];
-const NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'ägare'];
+const NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'];
 
 const navigation = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
