@@ -51,6 +51,7 @@ const roleConfig = {
 export default function Team() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [editMember, setEditMember] = useState(null);
   const [showAddMember, setShowAddMember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -81,10 +82,14 @@ export default function Team() {
     return appUsers.find(u => u.email === email);
   };
 
-  const filteredMembers = teamMembers.filter(member =>
-    member.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMembers = teamMembers.filter(member => {
+    const matchesSearch = member.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = roleFilter === 'all' || member.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  const availableRoles = [...new Set(teamMembers.map(m => m.role).filter(Boolean))].sort();
 
   const getToolCount = (memberEmail) => {
     return tools.filter(t => t.assigned_to_email === memberEmail).length;
@@ -178,6 +183,16 @@ export default function Team() {
                 className="pl-10 h-11 border-gray-200"
               />
             </div>
+            <select
+              value={roleFilter}
+              onChange={e => setRoleFilter(e.target.value)}
+              className="h-11 border border-gray-200 rounded-lg px-3 text-sm text-gray-700 bg-white focus:outline-none focus:border-gray-400"
+            >
+              <option value="all">Alla roller</option>
+              {availableRoles.map(role => (
+                <option key={role} value={role}>{roleConfig[role]?.label || role}</option>
+              ))}
+            </select>
             <div className="flex border border-gray-200 rounded-lg overflow-hidden">
               <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
               <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><List className="w-4 h-4" /></Button>
