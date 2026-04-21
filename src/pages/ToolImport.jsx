@@ -448,15 +448,6 @@ export default function ToolImport() {
             )}
           </div>
           <div className="space-y-2">
-            <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg grid grid-cols-[50px_80px_200px_150px_120px_80px_auto] gap-3 p-3 font-semibold text-sm text-gray-700 z-10">
-              <div>Val</div>
-              <div>Åtgärd</div>
-              <div>Namn</div>
-              <div>Streckkod</div>
-              <div>Kategori</div>
-              <div>Status</div>
-              <div>Detaljer</div>
-            </div>
             {(() => {
               let filtered = previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
                 if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
@@ -494,43 +485,26 @@ export default function ToolImport() {
                       <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
                       <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
                     </select>
-                    
-                    <button
-                      onClick={() => {
-                        if (sortBy === 'name') {
-                          setSortAsc(!sortAsc);
-                        } else {
-                          setSortBy('name');
-                          setSortAsc(true);
-                        }
-                      }}
-                      className={`text-xs px-2 py-1 rounded border ${sortBy === 'name' ? 'bg-blue-100 border-blue-400 text-blue-700 font-medium' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
-                    >
-                      Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
-                    </button>
 
-                    <button
-                      onClick={() => {
-                        if (sortBy === 'barcode') {
-                          setSortAsc(!sortAsc);
-                        } else {
-                          setSortBy('barcode');
-                          setSortAsc(true);
-                        }
-                      }}
-                      className={`text-xs px-2 py-1 rounded border ${sortBy === 'barcode' ? 'bg-blue-100 border-blue-400 text-blue-700 font-medium' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
-                    >
-                      Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
-                    </button>
-
-                    {sortBy && (
-                      <button
-                        onClick={() => setSortBy(null)}
-                        className="text-xs px-2 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded"
-                      >
-                        Rensa sortering
+                    <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg grid grid-cols-[50px_80px_200px_150px_120px_80px_auto] gap-3 p-3 font-semibold text-sm text-gray-700 z-10">
+                      <div>Val</div>
+                      <div>Åtgärd</div>
+                      <button onClick={() => {
+                        if (sortBy === 'name') setSortAsc(!sortAsc);
+                        else { setSortBy('name'); setSortAsc(true); }
+                      }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
+                        Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
                       </button>
-                    )}
+                      <button onClick={() => {
+                        if (sortBy === 'barcode') setSortAsc(!sortAsc);
+                        else { setSortBy('barcode'); setSortAsc(true); }
+                      }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
+                        Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
+                      </button>
+                      <div>Kategori</div>
+                      <div>Status</div>
+                      <div>Detaljer</div>
+                    </div>
 
                     {filtered.length > 0 && (
                       <button
@@ -548,7 +522,6 @@ export default function ToolImport() {
                         {selectedRows.size === filtered.length ? 'Avmarkera alla' : 'Markera alla'}
                       </button>
                     )}
-                  </div>
                   {filtered.map(({ row, idx }) => {
                     const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
                     const emptyFields = row.action !== 'ignore' 
