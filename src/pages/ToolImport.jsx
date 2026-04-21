@@ -310,6 +310,30 @@ export default function ToolImport() {
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <div>
             <h2 className="text-xl font-semibold mb-4">Förhandsgranskning ({previewRows.length} rader)</h2>
+            
+            {(() => {
+              const newCount = previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length;
+              const updateCount = previewRows.filter(r => r.action === 'update' && r.matchedTool && r.changes && Object.keys(r.changes).length > 0).length;
+              const noChangeCount = previewRows.filter(r => r.matchedTool && (!r.changes || Object.keys(r.changes).length === 0)).length;
+              
+              return (
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-green-700">{newCount}</div>
+                    <div className="text-sm text-green-600">Nya maskiner</div>
+                  </div>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-yellow-700">{updateCount}</div>
+                    <div className="text-sm text-yellow-600">Maskiner att uppdatera</div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-gray-700">{noChangeCount}</div>
+                    <div className="text-sm text-gray-600">Utan förändring</div>
+                  </div>
+                </div>
+              );
+            })()}
+            
             <div className="flex gap-6 text-sm mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-50 border border-green-200 rounded"></div>
