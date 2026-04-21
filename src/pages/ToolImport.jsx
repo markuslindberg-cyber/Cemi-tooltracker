@@ -44,7 +44,11 @@ export default function ToolImport() {
   };
 
   const parseCSV = (text) => {
-    const normalized = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    // Säkerställ UTF-8 och ta bort BOM
+    const normalized = text
+      .replace(/^\uFEFF/, '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n');
     const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
