@@ -146,7 +146,8 @@ export default function ToolImport() {
     try {
       let rows = [];
       if (file.name.endsWith('.csv')) {
-        const text = await file.text();
+        const buffer = await file.arrayBuffer();
+        const text = new TextDecoder('utf-8').decode(buffer);
         rows = parseCSV(text);
       } else {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
