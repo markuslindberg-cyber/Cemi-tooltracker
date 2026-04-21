@@ -44,6 +44,7 @@ const navigation = [
       { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
       { name: 'Lån av utrustning', path: '/Transfers' },
       { name: 'Service', path: '/Service' },
+      { name: 'Importera maskiner', path: '/Inventory/ToolImport', desktopOnly: true, devOnly: true },
       { name: 'Importhistorik', path: '/Lokalvard/ImportHistorik', desktopOnly: true, devOnly: true },
     ]
   },

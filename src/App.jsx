@@ -32,6 +32,7 @@ import LoanRequests from './pages/LoanRequests';
 import ArbetskladerBegaranAttGodkanna from './pages/ArbetskladerBegaranAttGodkanna';
 import CategoryManagement from './pages/CategoryManagement';
 import ImportHistorik from './pages/ImportHistorik';
+import ToolImport from './pages/ToolImport';
 import Papperskorg from './pages/Papperskorg';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -113,6 +114,7 @@ const AuthenticatedApp = () => {
       <Route path="/Administration/Kategorier" element={<LayoutWrapper currentPageName="CategoryManagement"><CategoryManagement /></LayoutWrapper>} />
       <Route path="/Administration/Papperskorg" element={<LayoutWrapper currentPageName="Papperskorg"><Papperskorg /></LayoutWrapper>} />
       <Route path="/Lokalvard/ImportHistorik" element={<LayoutWrapper currentPageName="ImportHistorik"><ImportHistorik /></LayoutWrapper>} />
+      <Route path="/Inventory/ToolImport" element={<LayoutWrapper currentPageName="ToolImport"><ToolImport /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
