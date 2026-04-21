@@ -96,8 +96,57 @@ export default function Transfers() {
   };
 
   const [approvingLoan, setApprovingLoan] = useState(null);
-  const [approveComment, setApproveComment] = useState('');
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  // Per-tool decisions: { [toolId]: 'approved' | 'rejected' | 'approved_custom_date' }
+  const [toolDecisions, setToolDecisions] = useState({});
+  // Per-tool custom dates: { [toolId]: 'YYYY-MM-DD' }
+  const [toolCustomDates, setToolCustomDates] = useState({});
+  const [approveComment, setApproveComment] = useState('');
+
+  const openApproveDialog = (loan) => {
+    setApprovingLoan(loan);
+    // Initialize all tools as 'approved'
+    const decisions = {};
+    const dates = {};
+    (loan.tool_ids || []).forEach((id) => {
+      decisions[id] = 'approved';
+      dates[id] = loan.default_return_date || '';
+    });
+    setToolDecisions(decisions);
+    setToolCustomDates(dates);
+    setApproveComment('');
+    setApproveDialogOpen(true);
+  };
+
+  const handleApproveSubmit = () => {
+    const approvedToolIds = Object.entries(toolDecisions)
+      .filter(([, v]) => v === 'approved' || v === 'approved_custom_date')
+      .map(([id]) => id);
+    const rejectedToolIds = Object.entries(toolDecisions)
+      .filter(([, v]) => v === 'rejected')
+      .map(([id]) => id);
+
+    const hasChanges = Object.values(toolDecisions).some(v => v === 'rejected' || v === 'approved_custom_date');
+    if (hasChanges && !approveComment.trim()) {
+      alert('Kommentar är obligatorisk när du nekar eller ändrar datum för maskiner.');
+      return;
+    }
+    if (rejectedToolIds.length === 0 && approvedToolIds.length === 0) return;
+
+    const allRejected = approvedToolIds.length === 0;
+
+    // Build adjusted return date: if single date change, use it
+    const customDateToolId = Object.entries(toolDecisions).find(([, v]) => v === 'approved_custom_date')?.[0];
+    const adjustedReturnDate = customDateToolId ? toolCustomDates[customDateToolId] : undefined;
+
+    approveMutation.mutate({
+      loan_request_id: approvingLoan.id,
+      approved: !allRejected,
+      approver_comment: approveComment,
+      approved_tool_ids: allRejected ? [] : approvedToolIds,
+      adjusted_return_date: adjustedReturnDate,
+    });
+  };
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -442,25 +491,14 @@ export default function Transfers() {
                       <div className="pt-2 border-t border-gray-100 flex flex-wrap gap-2">
                         {/* Godkänn/Neka för pending lån där användaren är godkännare */}
                         {loan.status === 'pending' && currentUser && (loan.approver_email === currentUser.email || currentUser.role === 'admin' || currentUser.role === 'ägare') && (
-                          <>
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5"
-                              onClick={() => { setApprovingLoan({ ...loan, _action: 'approve' }); setApproveComment(''); setApproveDialogOpen(true); }}
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" />
-                              Godkänn
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="flex items-center gap-1.5"
-                              onClick={() => { setApprovingLoan({ ...loan, _action: 'reject' }); setApproveComment(''); setApproveDialogOpen(true); }}
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                              Neka
-                            </Button>
-                          </>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5"
+                            onClick={() => openApproveDialog(loan)}
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            Hantera förfrågan
+                          </Button>
                         )}
                         <Button variant="outline" size="sm" onClick={() => { setEditLoan(loan); setEditLoanOpen(true); }} className="flex items-center gap-1.5">
                           <Pencil className="w-3.5 h-3.5" />
@@ -496,22 +534,73 @@ export default function Transfers() {
         </Tabs>
       </div>
 
-      {/* Approve/Reject Dialog */}
+      {/* Approve/Reject Dialog – per tool */}
       {approvingLoan && (
         <Dialog open={approveDialogOpen} onOpenChange={(v) => { setApproveDialogOpen(v); if (!v) { setApprovingLoan(null); setApproveComment(''); } }}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{approvingLoan._action === 'approve' ? 'Godkänn låneförfrågan' : 'Neka låneförfrågan'}</DialogTitle>
+              <DialogTitle>Hantera låneförfrågan</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
-                <p className="font-medium">{approvingLoan.tool_names?.join(', ')}</p>
-                <p className="text-gray-600">Begärd av: {approvingLoan.requested_by_name}</p>
-                <p className="text-gray-600">Destination: {approvingLoan.destination_location_name}</p>
-                <p className="text-gray-600">Återlämning: {approvingLoan.default_return_date && format(new Date(approvingLoan.default_return_date), 'd MMM yyyy')}</p>
+            <div className="space-y-5">
+              {/* Info */}
+              <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
+                <p className="text-gray-600">Begärd av: <strong>{approvingLoan.requested_by_name}</strong></p>
+                <p className="text-gray-600">Destination: <strong>{approvingLoan.destination_location_name}</strong></p>
               </div>
+
+              {/* Per-tool decisions */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Maskiner i förfrågan</Label>
+                {(approvingLoan.tool_ids || []).map((toolId, idx) => {
+                  const toolName = approvingLoan.tool_names?.[idx] || toolId;
+                  const decision = toolDecisions[toolId] || 'approved';
+                  return (
+                    <div key={toolId} className={`border rounded-lg p-3 space-y-2 ${decision === 'rejected' ? 'border-red-200 bg-red-50' : decision === 'approved_custom_date' ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}`}>
+                      <p className="font-medium text-sm">{toolName}</p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setToolDecisions(prev => ({ ...prev, [toolId]: 'approved' }))}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${decision === 'approved' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}
+                        >
+                          Godkänn
+                        </button>
+                        <button
+                          onClick={() => setToolDecisions(prev => ({ ...prev, [toolId]: 'approved_custom_date' }))}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${decision === 'approved_custom_date' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50'}`}
+                        >
+                          Godkänn med annat datum
+                        </button>
+                        <button
+                          onClick={() => setToolDecisions(prev => ({ ...prev, [toolId]: 'rejected' }))}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${decision === 'rejected' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-700 border-red-300 hover:bg-red-50'}`}
+                        >
+                          Neka
+                        </button>
+                      </div>
+                      {decision === 'approved_custom_date' && (
+                        <div>
+                          <Label className="text-xs mb-1 block">Nytt återlämningsdatum</Label>
+                          <Input
+                            type="date"
+                            value={toolCustomDates[toolId] || ''}
+                            onChange={(e) => setToolCustomDates(prev => ({ ...prev, [toolId]: e.target.value }))}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Comment */}
               <div>
-                <Label className="mb-2 block">Kommentar (valfritt)</Label>
+                <Label className="mb-1 block">
+                  Kommentar
+                  {Object.values(toolDecisions).some(v => v === 'rejected' || v === 'approved_custom_date') && (
+                    <span className="text-red-500 ml-1">* (obligatorisk vid nekande/datumändring)</span>
+                  )}
+                </Label>
                 <Textarea
                   placeholder="Lägg till kommentar..."
                   value={approveComment}
@@ -520,25 +609,16 @@ export default function Transfers() {
                 />
               </div>
             </div>
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-2 mt-4">
               <Button variant="outline" onClick={() => { setApproveDialogOpen(false); setApprovingLoan(null); }}>Avbryt</Button>
-              {approvingLoan._action === 'approve' ? (
-                <Button
-                  className="bg-green-600 hover:bg-green-700"
-                  disabled={approveMutation.isPending}
-                  onClick={() => approveMutation.mutate({ loan_request_id: approvingLoan.id, approved: true, approver_comment: approveComment })}
-                >
-                  <CheckCircle className="w-4 h-4 mr-1.5" /> Godkänn
-                </Button>
-              ) : (
-                <Button
-                  variant="destructive"
-                  disabled={approveMutation.isPending}
-                  onClick={() => approveMutation.mutate({ loan_request_id: approvingLoan.id, approved: false, approver_comment: approveComment })}
-                >
-                  <XCircle className="w-4 h-4 mr-1.5" /> Neka
-                </Button>
-              )}
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                disabled={approveMutation.isPending}
+                onClick={handleApproveSubmit}
+              >
+                {approveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1.5" />}
+                Bekräfta
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
