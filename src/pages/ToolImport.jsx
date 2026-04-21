@@ -270,7 +270,8 @@ export default function ToolImport() {
   const [bulkEditField, setBulkEditField] = useState('');
   const [bulkEditValue, setBulkEditValue] = useState('');
   const [filterMode, setFilterMode] = useState('all'); // 'all', 'new', 'update'
-  const [sortBy, setSortBy] = useState(null); // null, 'name', 'name-desc'
+  const [sortBy, setSortBy] = useState(null); // null, 'name', or 'barcode'
+  const [sortAsc, setSortAsc] = useState(true);
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -449,15 +450,24 @@ export default function ToolImport() {
                 return row.action !== 'ignore';
               });
 
+              // Apply sorting
               if (sortBy === 'name') {
-                filtered = filtered.sort((a, b) => (a.row.name || '').localeCompare(b.row.name || ''));
-              } else if (sortBy === 'name-desc') {
-                filtered = filtered.sort((a, b) => (b.row.name || '').localeCompare(a.row.name || ''));
+                filtered.sort((a, b) => {
+                  const aVal = (a.row.name || '').toLowerCase();
+                  const bVal = (b.row.name || '').toLowerCase();
+                  return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+              } else if (sortBy === 'barcode') {
+                filtered.sort((a, b) => {
+                  const aVal = (a.row.barcode || '').toLowerCase();
+                  const bVal = (b.row.barcode || '').toLowerCase();
+                  return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
               }
 
               return (
                 <>
-                  <div className="flex gap-2 items-center mb-3">
+                  <div className="flex gap-2 items-center mb-3 flex-wrap">
                     <select
                       value={filterMode}
                       onChange={(e) => {
@@ -470,16 +480,44 @@ export default function ToolImport() {
                       <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
                       <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
                     </select>
+                    
                     <button
                       onClick={() => {
-                        if (sortBy === 'name') setSortBy('name-desc');
-                        else if (sortBy === 'name-desc') setSortBy(null);
-                        else setSortBy('name');
+                        if (sortBy === 'name') {
+                          setSortAsc(!sortAsc);
+                        } else {
+                          setSortBy('name');
+                          setSortAsc(true);
+                        }
                       }}
-                      className="text-xs text-gray-600 hover:text-gray-800 font-medium px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                      className={`text-xs px-2 py-1 rounded border ${sortBy === 'name' ? 'bg-blue-100 border-blue-400 text-blue-700 font-medium' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
                     >
-                      Namn {sortBy === 'name' ? '▲' : sortBy === 'name-desc' ? '▼' : ''}
+                      Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
                     </button>
+
+                    <button
+                      onClick={() => {
+                        if (sortBy === 'barcode') {
+                          setSortAsc(!sortAsc);
+                        } else {
+                          setSortBy('barcode');
+                          setSortAsc(true);
+                        }
+                      }}
+                      className={`text-xs px-2 py-1 rounded border ${sortBy === 'barcode' ? 'bg-blue-100 border-blue-400 text-blue-700 font-medium' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
+                    >
+                      Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
+                    </button>
+
+                    {sortBy && (
+                      <button
+                        onClick={() => setSortBy(null)}
+                        className="text-xs px-2 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded"
+                      >
+                        Rensa sortering
+                      </button>
+                    )}
+
                     {filtered.length > 0 && (
                       <button
                         onClick={() => {
