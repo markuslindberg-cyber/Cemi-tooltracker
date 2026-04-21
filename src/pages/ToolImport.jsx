@@ -106,7 +106,7 @@ export default function ToolImport() {
       const matched = tools.find(t => t.barcode === barcode);
       const locationMatch = locations.find(l => l.name === (r.location_name || ''));
       
-      return {
+      const newRow = {
         barcode,
         name: r.name || '',
         manufacturer: r.manufacturer || '',
@@ -120,6 +120,22 @@ export default function ToolImport() {
         matchedTool: matched || null,
         action: matched ? 'update' : 'create',
       };
+
+      // Om uppdatering, beräkna vilka fält som ändras
+      if (matched) {
+        const changes = {};
+        const fields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
+        fields.forEach(field => {
+          const oldVal = String(matched[field] || '').trim();
+          const newVal = String(newRow[field] || '').trim();
+          if (oldVal !== newVal && newVal) {
+            changes[field] = { old: oldVal || '(tom)', new: newVal };
+          }
+        });
+        newRow.changes = changes;
+      }
+
+      return newRow;
     }).filter(r => r.barcode && r.name);
   };
 
@@ -214,6 +230,8 @@ export default function ToolImport() {
     }
   };
 
+  const [expandedRowIdx, setExpandedRowIdx] = useState(null);
+
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
       <h1 className="text-3xl font-bold">📥 Importera maskiner</h1>
@@ -268,44 +286,55 @@ export default function ToolImport() {
               </div>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-2 text-left font-semibold">Åtgärd</th>
-                  <th className="px-4 py-2 text-left font-semibold">Streckkod</th>
-                  <th className="px-4 py-2 text-left font-semibold">Namn</th>
-                  <th className="px-4 py-2 text-left font-semibold">Kategori</th>
-                  <th className="px-4 py-2 text-left font-semibold">Status</th>
-                  <th className="px-4 py-2 text-right font-semibold">Pris</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {previewRows.map((row, idx) => (
-                  <tr key={idx} className={row.matchedTool ? 'bg-yellow-50' : 'bg-green-50'}>
-                    <td className="px-4 py-2 text-sm font-medium">
-                      <select
-                        value={row.action || 'create'}
-                        onChange={(e) => {
-                          const newRows = [...previewRows];
-                          newRows[idx].action = e.target.value;
-                          setPreviewRows(newRows);
-                        }}
-                        className="border border-gray-300 rounded px-2 py-1 text-xs"
-                      >
-                        {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
-                        <option value="ignore">Ignorera</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-2 font-mono text-xs">{row.barcode}</td>
-                    <td className="px-4 py-2 text-xs">{row.name}</td>
-                    <td className="px-4 py-2 text-xs">{row.category}</td>
-                    <td className="px-4 py-2 text-xs">{row.status}</td>
-                    <td className="px-4 py-2 text-right text-xs">{row.purchase_price?.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-2">
+            {previewRows.map((row, idx) => (
+              <div key={idx}>
+                <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+                  <select
+                    value={row.action || 'create'}
+                    onChange={(e) => {
+                      const newRows = [...previewRows];
+                      newRows[idx].action = e.target.value;
+                      setPreviewRows(newRows);
+                    }}
+                    className="border border-gray-300 rounded px-2 py-1 text-xs w-24"
+                  >
+                    {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
+                    <option value="ignore">Ignorera</option>
+                  </select>
+                  <span className="font-mono text-xs text-gray-600 w-20">{row.barcode}</span>
+                  <span className="text-sm font-medium flex-1">{row.name}</span>
+                  <span className="text-xs text-gray-500">{row.category}</span>
+                  {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 && (
+                    <button
+                      onClick={() => setExpandedRowIdx(expandedRowIdx === idx ? null : idx)}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      {expandedRowIdx === idx ? '▼' : '▶'} {Object.keys(row.changes).length} ändringar
+                    </button>
+                  )}
+                </div>
+                {expandedRowIdx === idx && row.changes && Object.keys(row.changes).length > 0 && (
+                  <div className="bg-gray-50 border border-gray-200 border-t-0 rounded-b-lg p-4 space-y-2">
+                    {Object.entries(row.changes).map(([field, change]) => (
+                      <div key={field} className="text-sm">
+                        <div className="font-semibold text-gray-700">{field}</div>
+                        <div className="flex gap-4 mt-1">
+                          <div>
+                            <div className="text-xs text-gray-500">Innan:</div>
+                            <div className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded font-mono">{change.old}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500">Nytt:</div>
+                            <div className="text-sm bg-green-50 text-green-800 px-2 py-1 rounded font-mono">{change.new}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
