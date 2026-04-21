@@ -62,22 +62,32 @@ export default function ToolImport() {
     const splitLine = (line, sep) => {
       const fields = [];
       let i = 0;
-      while (i <= line.length) {
+      while (i < line.length) {
+        // Om fältet börjar med citationstecken, läs quoted field
         if (line[i] === '"') {
           let field = '';
-          i++;
+          i++; // Hoppa över inledande citationstecken
           while (i < line.length) {
-            if (line[i] === '"' && line[i + 1] === '"') {
-              field += '"'; i += 2;
-            } else if (line[i] === '"') {
-              i++; break;
+            if (line[i] === '"') {
+              // Kontrollera om det är dubbla citationstecken (escaped)
+              if (line[i + 1] === '"') {
+                field += '"';
+                i += 2;
+              } else {
+                // Avslutande citationstecken
+                i++;
+                break;
+              }
             } else {
-              field += line[i++];
+              field += line[i];
+              i++;
             }
           }
-          fields.push(field.trim());
+          // Hoppa över separator efter citationstecken
           if (line[i] === sep) i++;
+          fields.push(field);
         } else {
+          // Unquoted field — läs tills separator
           const end = line.indexOf(sep, i);
           if (end === -1) {
             fields.push(line.slice(i).trim());
@@ -102,7 +112,7 @@ export default function ToolImport() {
     return lines.slice(1).map(line => {
       const cols = splitLine(line, sep);
       const row = {};
-      headers.forEach((h, i) => { row[h] = cols[i] ?? ''; });
+      headers.forEach((h, i) => { row[h] = (cols[i] || '').trim(); });
       return row;
     }).filter(row => (row.barcode || '').trim() || (row.name || '').trim());
   };
