@@ -613,19 +613,25 @@ export default function ToolImport() {
             <Button 
               onClick={() => {
                 const allRows = previewRows.map((r, idx) => ({
-                  'rad_nr': idx + 1,
-                  'åtgärd': r.action,
                   'namn': r.name,
                   'tillverkare': r.manufacturer,
-                  'modell': r.model_number,
-                  'serienummer': r.serial_number,
-                  'streckkod': r.barcode || '(tom)',
+                  'modell_nummer': r.model_number || '',
+                  'serienummer': r.serial_number || '',
+                  'verktygsnummer': r.tool_number || '',
                   'kategori': r.category,
+                  'underkategori': r.subcategory || '',
                   'status': r.status,
                   'skick': r.condition,
-                  'plats': r.location_name || '(tom)',
-                  'inköpsdatum': r.purchase_date || '(tom)',
-                  'pris': r.purchase_price || '(tom)',
+                  'streckkod': r.barcode || '',
+                  'inköpsdatum': r.purchase_date || '',
+                  'inköpspris': r.purchase_price || '',
+                  'inköpsplats': r.purchase_location || '',
+                  'fakturanummer': r.invoice_number || '',
+                  'servicekostnad': r.service_cost || '',
+                  'plats': r.location_name || '',
+                  'tilldelad_till': r.assigned_to_name || '',
+                  'anteckningar': r.notes || '',
+                  'åtgärd': r.action,
                   'matchad_befintlig': r.matchedTool ? 'Ja' : 'Nej',
                   'ändringar': r.changes ? Object.keys(r.changes).join('; ') : 'Ingen'
                 }));
