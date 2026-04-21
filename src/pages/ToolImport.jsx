@@ -713,8 +713,8 @@ export default function ToolImport() {
                     );
                   })}
                   </>
-                  );
-                  })()}
+                  ))}
+                  </div>
                   <div className="flex gap-3 justify-end mt-4">
           <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
           <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
