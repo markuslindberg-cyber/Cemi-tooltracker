@@ -709,8 +709,6 @@ export default function ToolImport() {
                       )}
                     </div>
                   )}
-                  </div>
-                  )}
 
                   {editingRowIdx !== null && previewRows && (
                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
