@@ -110,7 +110,7 @@ export default function ToolImport() {
   const matchRows = (rawRows) => {
     return rawRows.map(r => {
       const barcode = String(r.barcode || '').trim();
-      const matched = tools.find(t => t.barcode === barcode);
+      const matched = barcode ? tools.find(t => t.barcode === barcode) : null;
       const locationMatch = locations.find(l => l.name === (r.location_name || ''));
       
       const newRow = {
@@ -142,7 +142,7 @@ export default function ToolImport() {
       }
 
       return newRow;
-    }).filter(r => r.barcode && r.name);
+    }).filter(r => r.name);
   };
 
   const handleDownloadTemplate = () => {
