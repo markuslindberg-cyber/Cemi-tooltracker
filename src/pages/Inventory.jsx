@@ -696,7 +696,7 @@ export default function Inventory() {
                            </>
                          )}
                        </TableCell>
-                       <TableCell className="px-2 py-1">
+                       <TableCell className="px-2 py-1 max-w-[160px]">
                          <div className="flex items-center gap-2">
                            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
                              {tool.image_url ? (
