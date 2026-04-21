@@ -522,6 +522,7 @@ export default function ToolImport() {
                         {selectedRows.size === filtered.length ? 'Avmarkera alla' : 'Markera alla'}
                       </button>
                     )}
+
                   {filtered.map(({ row, idx }) => {
                     const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
                     const emptyFields = row.action !== 'ignore' 
@@ -713,13 +714,12 @@ export default function ToolImport() {
                 </>
               );
             })()}
-          </div>
-          <div className="flex gap-3 justify-end">
+          <div className="flex gap-3 justify-end mt-4">
             <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
             <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
           </div>
-          </div>
-          )}
+        </div>
+      )}
 
           {editingRowIdx !== null && previewRows && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
