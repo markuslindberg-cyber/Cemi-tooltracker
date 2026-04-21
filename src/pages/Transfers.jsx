@@ -546,6 +546,9 @@ export default function Transfers() {
               <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
                 <p className="text-gray-600">Begärd av: <strong>{approvingLoan.requested_by_name}</strong></p>
                 <p className="text-gray-600">Destination: <strong>{approvingLoan.destination_location_name}</strong></p>
+                {approvingLoan.requester_comment && (
+                  <p className="text-gray-600 pt-1 border-t border-gray-200 mt-1">Anteckning: <em>{approvingLoan.requester_comment}</em></p>
+                )}
               </div>
 
               {/* Per-tool decisions */}
