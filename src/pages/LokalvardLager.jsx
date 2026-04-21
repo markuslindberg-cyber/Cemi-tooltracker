@@ -52,6 +52,8 @@ export default function LokalvardLager() {
     if (!Array.isArray(uttag)) return 0;
     return uttag.reduce((sum, u) => {
       const matchingItems = u.artiklar?.filter(item => {
+        // Match om benamning är exakt samma
+        if (item.benamning && item.benamning.toLowerCase() === aggregatedArtikel.benamning.toLowerCase()) return true;
         // Match om benamning är streckkoden
         if (item.benamning === aggregatedArtikel.streckkod || item.benamning === aggregatedArtikel.old_streckkod) return true;
         // Match om artikel_id är någon av artikel-IDs i gruppen
