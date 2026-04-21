@@ -96,6 +96,11 @@
       "$or": [
         {
           "user_condition": {
+            "role": "lokalv\u00e5rdare"
+          }
+        },
+        {
+          "user_condition": {
             "role": "admin_lokalv\u00e5rd"
           }
         },

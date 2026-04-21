@@ -90,13 +90,18 @@ export default function RequestWorkwear() {
   const customers = allCustomers.filter(k => k.typ !== 'Internt');
 
   useEffect(() => {
-    if (handlers.length > 0 && !selectedHandler) {
-      const adminHandler = handlers.find(h => h.role === 'admin lokalvård' || h.role === 'admin_lokalvård');
-      if (adminHandler) {
-        setSelectedHandler(adminHandler);
+    if (handlers.length > 0 && user && !selectedHandler) {
+      // Försök hitta den inloggade användaren bland uttagare
+      const me = handlers.find(h => h.email === user.email);
+      if (me) {
+        setSelectedHandler(me);
+      } else {
+        // Annars välj admin som fallback
+        const adminHandler = handlers.find(h => h.role === 'admin lokalvård' || h.role === 'admin_lokalvård');
+        if (adminHandler) setSelectedHandler(adminHandler);
       }
     }
-  }, [handlers, selectedHandler]);
+  }, [handlers, user, selectedHandler]);
 
   const createRequestMutation = useMutation({
    mutationFn: (data) => base44.entities.WorkwearRequest.create(data),
