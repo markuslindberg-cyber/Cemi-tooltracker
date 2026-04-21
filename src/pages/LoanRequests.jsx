@@ -18,6 +18,8 @@ export default function LoanRequests() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [approverComment, setApproverComment] = useState('');
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [approveAdjustedDate, setApproveAdjustedDate] = useState('');
+  const [partialApprovalIds, setPartialApprovalIds] = useState(null); // null = alla godkänns
   const [extensionComment, setExtensionComment] = useState('');
   const [extensionDialogOpen, setExtensionDialogOpen] = useState(false);
   const [extensionDate, setExtensionDate] = useState('');
@@ -93,7 +95,9 @@ export default function LoanRequests() {
 
   // Filter requests based on user role
   const myRequests = loanRequests.filter(r => r.requested_by_email === user.email);
-  const requestsToApprove = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending');
+  const requestsToApprove = isAdmin
+    ? loanRequests.filter(r => r.status === 'pending')
+    : loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending');
   const myLoans = loanRequests.filter(r => r.assigned_to_email === user.email && r.status === 'approved');
   const pendingReturnConfirm = loanRequests.filter(r => r.approver_email === user.email && r.status === 'pending_return');
   // Alla lån som admin/ägare kan hantera (ägare ser alla, admin ser aktiva + godkända)
@@ -125,11 +129,26 @@ export default function LoanRequests() {
   };
 
   const handleApprove = (approved) => {
-    approveMutation.mutate({
+    const payload = {
       loan_request_id: selectedRequest.id,
       approved,
-      approver_comment: approverComment
-    });
+      approver_comment: approverComment,
+    };
+    if (approved && approveAdjustedDate) {
+      payload.adjusted_return_date = approveAdjustedDate;
+    }
+    if (approved && partialApprovalIds !== null) {
+      payload.approved_tool_ids = partialApprovalIds;
+    }
+    approveMutation.mutate(payload);
+  };
+
+  const openApproveDialog = (request) => {
+    setSelectedRequest(request);
+    setApproverComment('');
+    setApproveAdjustedDate('');
+    setPartialApprovalIds(null);
+    setApproveDialogOpen(true);
   };
 
   const handleExtend = () => {
@@ -216,7 +235,7 @@ export default function LoanRequests() {
             </Card>
           ) : (
             requestsToApprove.map(request => (
-              <Card key={request.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => { setSelectedRequest(request); setApproveDialogOpen(true); }}>
+              <Card key={request.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => openApproveDialog(request)}>
                 <CardContent className="pt-6">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
@@ -415,16 +434,75 @@ export default function LoanRequests() {
       {/* Approve/Reject Dialog */}
       {selectedRequest && (
         <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Hantera låneförfrågan</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <p className="font-medium text-gray-900">Maskiner: {selectedRequest.tool_names.join(', ')}</p>
-                <p className="text-sm text-gray-600 mt-1">Begärd av: {selectedRequest.requested_by_name}</p>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+              <div className="bg-gray-50 rounded-lg p-3 space-y-1">
+                <p className="font-medium text-gray-900">{selectedRequest.tool_names.join(', ')}</p>
+                <p className="text-sm text-gray-600">Begärd av: {selectedRequest.requested_by_name}</p>
                 <p className="text-sm text-gray-600">Ska lånas av: {selectedRequest.assigned_to_name}</p>
+                <p className="text-sm text-gray-600">Destination: {selectedRequest.destination_location_name}</p>
+                <p className="text-sm text-gray-600">Önskat återlämningsdatum: <strong>{new Date(selectedRequest.default_return_date).toLocaleDateString('sv-SE')}</strong></p>
+                {selectedRequest.requester_comment && (
+                  <p className="text-sm text-gray-600 italic">Kommentar: {selectedRequest.requester_comment}</p>
+                )}
               </div>
+
+              {/* Partiellt godkännande */}
+              {selectedRequest.tool_names?.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Välj vilka maskiner som godkänns (lämna alla för att godkänna alla)</label>
+                  <div className="space-y-2">
+                    {selectedRequest.tool_details?.map((tool, idx) => {
+                      const toolId = tool.tool_id;
+                      const checked = partialApprovalIds === null || partialApprovalIds.includes(toolId);
+                      return (
+                        <label key={toolId} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(e) => {
+                              if (partialApprovalIds === null) {
+                                // Avmarkera just denna
+                                const allIds = selectedRequest.tool_details.map(t => t.tool_id);
+                                setPartialApprovalIds(allIds.filter(id => id !== toolId));
+                              } else if (e.target.checked) {
+                                const newIds = [...partialApprovalIds, toolId];
+                                if (newIds.length === selectedRequest.tool_details.length) setPartialApprovalIds(null);
+                                else setPartialApprovalIds(newIds);
+                              } else {
+                                setPartialApprovalIds(partialApprovalIds.filter(id => id !== toolId));
+                              }
+                            }}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm">{tool.tool_name}</span>
+                        </label>
+                      );
+                    }) ?? selectedRequest.tool_names.map((name, idx) => (
+                      <label key={idx} className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked className="w-4 h-4" readOnly />
+                        <span className="text-sm">{name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Justerat återlämningsdatum */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Justera återlämningsdatum (valfritt)</label>
+                <input
+                  type="date"
+                  value={approveAdjustedDate}
+                  onChange={(e) => setApproveAdjustedDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">Lämna tomt för att behålla det önskade datumet</p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2">Din kommentar</label>
                 <Textarea
@@ -435,12 +513,20 @@ export default function LoanRequests() {
                 />
               </div>
             </div>
-            <DialogFooter className="flex gap-2">
+            <DialogFooter className="flex gap-2 mt-4">
               <Button variant="destructive" onClick={() => handleApprove(false)} disabled={approveMutation.isPending}>
+                <XCircle className="w-4 h-4 mr-1.5" />
                 Neka
               </Button>
-              <Button onClick={() => handleApprove(true)} disabled={approveMutation.isPending}>
-                Godkänn
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => handleApprove(true)}
+                disabled={approveMutation.isPending || (partialApprovalIds !== null && partialApprovalIds.length === 0)}
+              >
+                <CheckCircle className="w-4 h-4 mr-1.5" />
+                {partialApprovalIds !== null && partialApprovalIds.length < selectedRequest.tool_names.length
+                  ? `Godkänn ${partialApprovalIds.length} av ${selectedRequest.tool_names.length}`
+                  : 'Godkänn'}
               </Button>
             </DialogFooter>
           </DialogContent>

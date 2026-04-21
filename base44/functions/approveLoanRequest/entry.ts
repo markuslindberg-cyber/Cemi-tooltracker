@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { loan_request_id, approved, approver_comment } = await req.json();
+    const { loan_request_id, approved, approver_comment, adjusted_return_date, approved_tool_ids } = await req.json();
 
     const loanRequest = await base44.entities.LoanRequest.get(loan_request_id);
     if (!loanRequest) {
@@ -88,11 +88,34 @@ Deno.serve(async (req) => {
 
     const status = approved ? 'approved' : 'rejected';
 
-    const updated = await base44.entities.LoanRequest.update(loan_request_id, {
+    // Handle partial approval: filter tool_ids and tool_names
+    let updateData = {
       status,
       approval_date: new Date().toISOString(),
-      approver_comment: approver_comment || ''
-    });
+      approver_comment: approver_comment || '',
+    };
+
+    if (approved && adjusted_return_date) {
+      updateData.default_return_date = adjusted_return_date;
+      // Also update all tool_details return dates
+      if (loanRequest.tool_details) {
+        updateData.tool_details = loanRequest.tool_details.map(t => ({ ...t, return_date: adjusted_return_date }));
+      }
+    }
+
+    if (approved && approved_tool_ids && approved_tool_ids.length < loanRequest.tool_ids.length) {
+      // Partial approval: only keep approved tools
+      const approvedSet = new Set(approved_tool_ids);
+      updateData.tool_ids = loanRequest.tool_ids.filter(id => approvedSet.has(id));
+      updateData.tool_names = loanRequest.tool_details
+        ? loanRequest.tool_details.filter(t => approvedSet.has(t.tool_id)).map(t => t.tool_name)
+        : loanRequest.tool_names.filter((_, i) => approvedSet.has(loanRequest.tool_ids[i]));
+      updateData.tool_details = loanRequest.tool_details
+        ? loanRequest.tool_details.filter(t => approvedSet.has(t.tool_id))
+        : loanRequest.tool_details;
+    }
+
+    const updated = await base44.entities.LoanRequest.update(loan_request_id, updateData);
 
     // Fetch TeamMember data to check subscriptions
     const teamMembers = await base44.entities.TeamMember.list();
