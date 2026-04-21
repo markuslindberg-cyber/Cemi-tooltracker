@@ -97,6 +97,16 @@ export default function ToolImportPreviewTable({
                   ✏️
                 </button>
               )}
+              <button
+                onClick={() => {
+                  const newRows = previewRows.filter((_, i) => i !== idx);
+                  setPreviewRows(newRows);
+                }}
+                className="text-xs text-red-600 hover:text-red-800 font-medium ml-1"
+                title="Ta bort denna rad"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
             {expandedRowIdx === idx && (
               <div className="bg-gray-50 border border-gray-200 border-t-0 rounded-b-lg p-4 space-y-2">
