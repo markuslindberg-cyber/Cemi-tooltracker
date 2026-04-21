@@ -48,6 +48,8 @@ import {
   RotateCcw,
   Bell,
   CheckCircle2,
+  CheckCircle,
+  XCircle,
   Mail,
 } from 'lucide-react';
 import AdminEditLoanDialog from '@/components/modals/AdminEditLoanDialog';
@@ -93,6 +95,15 @@ export default function Transfers() {
     }
   };
 
+  const [approvingLoan, setApprovingLoan] = useState(null);
+  const [approveComment, setApproveComment] = useState('');
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: transfers = [], isLoading } = useQuery({
     queryKey: ['transfers'],
     queryFn: () => base44.entities.Transfer.list('-transfer_date', 200),
@@ -101,6 +112,16 @@ export default function Transfers() {
   const { data: loanRequests = [], isLoading: isLoadingLoans } = useQuery({
     queryKey: ['loanRequests'],
     queryFn: () => base44.entities.LoanRequest.list('-created_date', 200),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (data) => base44.functions.invoke('approveLoanRequest', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['loanRequests'] });
+      setApproveDialogOpen(false);
+      setApprovingLoan(null);
+      setApproveComment('');
+    }
   });
 
   const { data: locations = [] } = useQuery({
@@ -349,8 +370,9 @@ export default function Transfers() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredLoans.map((loan) => {
                   const config = loanStatusConfig[loan.status] || { label: loan.status, color: 'bg-gray-100 text-gray-700' };
+                  const needsMyAction = loan.status === 'pending' && currentUser && (loan.approver_email === currentUser.email || currentUser.role === 'admin' || currentUser.role === 'ägare');
                   return (
-                    <div key={loan.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+                    <div key={loan.id} className={`bg-white rounded-2xl shadow-sm p-5 space-y-4 ${needsMyAction ? 'border-2 border-red-400 bg-red-50' : 'border border-gray-100'}`}>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <p className="text-sm text-gray-500 mb-1">Utrustning</p>
@@ -417,7 +439,29 @@ export default function Transfers() {
                           <p className="text-sm text-gray-700">{loan.approver_comment}</p>
                         </div>
                       )}
-                      <div className="pt-2 border-t border-gray-100 flex gap-2">
+                      <div className="pt-2 border-t border-gray-100 flex flex-wrap gap-2">
+                        {/* Godkänn/Neka för pending lån där användaren är godkännare */}
+                        {loan.status === 'pending' && currentUser && (loan.approver_email === currentUser.email || currentUser.role === 'admin' || currentUser.role === 'ägare') && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5"
+                              onClick={() => { setApprovingLoan({ ...loan, _action: 'approve' }); setApproveComment(''); setApproveDialogOpen(true); }}
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Godkänn
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="flex items-center gap-1.5"
+                              onClick={() => { setApprovingLoan({ ...loan, _action: 'reject' }); setApproveComment(''); setApproveDialogOpen(true); }}
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              Neka
+                            </Button>
+                          </>
+                        )}
                         <Button variant="outline" size="sm" onClick={() => { setEditLoan(loan); setEditLoanOpen(true); }} className="flex items-center gap-1.5">
                           <Pencil className="w-3.5 h-3.5" />
                           Redigera
@@ -451,6 +495,54 @@ export default function Transfers() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Approve/Reject Dialog */}
+      {approvingLoan && (
+        <Dialog open={approveDialogOpen} onOpenChange={(v) => { setApproveDialogOpen(v); if (!v) { setApprovingLoan(null); setApproveComment(''); } }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{approvingLoan._action === 'approve' ? 'Godkänn låneförfrågan' : 'Neka låneförfrågan'}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-sm">
+                <p className="font-medium">{approvingLoan.tool_names?.join(', ')}</p>
+                <p className="text-gray-600">Begärd av: {approvingLoan.requested_by_name}</p>
+                <p className="text-gray-600">Destination: {approvingLoan.destination_location_name}</p>
+                <p className="text-gray-600">Återlämning: {approvingLoan.default_return_date && format(new Date(approvingLoan.default_return_date), 'd MMM yyyy')}</p>
+              </div>
+              <div>
+                <Label className="mb-2 block">Kommentar (valfritt)</Label>
+                <Textarea
+                  placeholder="Lägg till kommentar..."
+                  value={approveComment}
+                  onChange={(e) => setApproveComment(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => { setApproveDialogOpen(false); setApprovingLoan(null); }}>Avbryt</Button>
+              {approvingLoan._action === 'approve' ? (
+                <Button
+                  className="bg-green-600 hover:bg-green-700"
+                  disabled={approveMutation.isPending}
+                  onClick={() => approveMutation.mutate({ loan_request_id: approvingLoan.id, approved: true, approver_comment: approveComment })}
+                >
+                  <CheckCircle className="w-4 h-4 mr-1.5" /> Godkänn
+                </Button>
+              ) : (
+                <Button
+                  variant="destructive"
+                  disabled={approveMutation.isPending}
+                  onClick={() => approveMutation.mutate({ loan_request_id: approvingLoan.id, approved: false, approver_comment: approveComment })}
+                >
+                  <XCircle className="w-4 h-4 mr-1.5" /> Neka
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <AdminEditLoanDialog
         request={editLoan}
