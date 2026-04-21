@@ -78,7 +78,7 @@ export default function RequestWorkwear() {
 
   const myRequests = previousRequests.filter(r => r.requested_by_email === user?.email);
 
-  const customers = allCustomers.filter(k => k.typ !== 'Internt');
+  const customers = allCustomers.filter(k => k.typ !== 'Internt' && k.status === 'aktiv');
 
   useEffect(() => {
     if (handlers.length > 0 && user && !selectedHandler) {

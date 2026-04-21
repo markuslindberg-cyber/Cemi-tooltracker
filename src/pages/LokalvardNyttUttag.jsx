@@ -31,7 +31,9 @@ export default function LokalvardNyttUttag() {
     queryKey: ['approvedRequests'],
     queryFn: async () => {
       const requests = await base44.entities.WorkwearRequest.list('-request_date', 10000);
-      return requests.filter(r => r.status === 'approved');
+      const customers = await base44.entities.Kund.list(null, 10000).catch(() => []);
+      const activeCustomerIds = customers.filter(k => k.status === 'aktiv').map(k => k.id);
+      return requests.filter(r => r.status === 'approved' && activeCustomerIds.includes(r.customer_id));
     },
   });
 

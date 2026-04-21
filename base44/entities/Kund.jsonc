@@ -22,6 +22,15 @@
     "projektnummer": {
       "type": "string",
       "description": "Projektnummer eller projektnamn"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aktiv",
+        "inaktiv"
+      ],
+      "default": "aktiv",
+      "description": "Kund aktiv eller inaktiv"
     }
   },
   "required": [
