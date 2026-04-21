@@ -211,8 +211,13 @@ export default function LoanRequests() {
 
       <Tabs defaultValue={requestsToApprove.length > 0 ? "pending" : pendingReturnConfirm.length > 0 ? "confirm_return" : "mine"} className="space-y-4">
         <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="pending">
-            Väntande ({requestsToApprove.length})
+          <TabsTrigger value="pending" className="relative">
+            Väntande godkännande
+            {requestsToApprove.length > 0 && (
+              <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {requestsToApprove.length}
+              </span>
+            )}
           </TabsTrigger>
           <TabsTrigger value="confirm_return" className="relative">
             Bekräfta mottagning
@@ -238,31 +243,52 @@ export default function LoanRequests() {
               </CardContent>
             </Card>
           ) : (
-            requestsToApprove.map(request => (
-              <Card key={request.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => openApproveDialog(request)}>
-                <CardContent className="pt-6">
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
-                        <p className="text-sm text-gray-600">Begärd av: {request.requested_by_name}</p>
-                        <p className="text-sm text-gray-600">Ska lånas av: {request.assigned_to_name}</p>
+            requestsToApprove.map(request => {
+              const isMyApproval = request.approver_email === user.email;
+              return (
+                <Card
+                  key={request.id}
+                  className={`transition-shadow cursor-pointer ${isMyApproval ? 'border-red-300 hover:shadow-md hover:border-red-400 bg-red-50' : 'hover:shadow-md opacity-75'}`}
+                  onClick={() => openApproveDialog(request)}
+                >
+                  <CardContent className="pt-6">
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
+                          <p className="text-sm text-gray-600">Begärd av: {request.requested_by_name}</p>
+                          <p className="text-sm text-gray-600">Ska lånas av: {request.assigned_to_name || '–'}</p>
+                          <p className="text-sm text-gray-500">Ansvarig godkännare: {request.approver_name}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          {isMyApproval ? (
+                            <Badge className="bg-red-600 text-white">Kräver din åtgärd</Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Väntande</Badge>
+                          )}
+                        </div>
                       </div>
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Väntande</Badge>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Destination: {request.destination_location_name} | Återlämning: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
-                    </div>
-                    {request.requester_comment && (
-                      <div className="text-sm bg-gray-50 p-2 rounded border-l-2 border-gray-300">
-                        <p className="font-medium text-gray-700">Kommentar:</p>
-                        <p className="text-gray-600">{request.requester_comment}</p>
+                      <div className="text-sm text-gray-500">
+                        Destination: {request.destination_location_name} | Återlämning: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                      {request.requester_comment && (
+                        <div className="text-sm bg-white p-2 rounded border-l-2 border-gray-300">
+                          <p className="font-medium text-gray-700">Kommentar:</p>
+                          <p className="text-gray-600">{request.requester_comment}</p>
+                        </div>
+                      )}
+                      {isMyApproval && (
+                        <div className="flex gap-2 pt-1">
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={(e) => { e.stopPropagation(); openApproveDialog(request); }}>
+                            <CheckCircle className="w-3.5 h-3.5 mr-1" /> Godkänn / Neka
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </TabsContent>
 
