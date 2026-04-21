@@ -21,7 +21,11 @@ import {
   Wrench,
   Grid,
   List,
+  LogIn,
+  Clock,
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { sv } from 'date-fns/locale';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,6 +71,15 @@ export default function Team() {
     queryKey: ['tools'],
     queryFn: () => base44.entities.Tool.list(),
   });
+
+  const { data: appUsers = [] } = useQuery({
+    queryKey: ['appUsers'],
+    queryFn: () => base44.entities.User.list(),
+  });
+
+  const getUserInfo = (email) => {
+    return appUsers.find(u => u.email === email);
+  };
 
   const filteredMembers = teamMembers.filter(member =>
     member.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -230,11 +243,23 @@ export default function Team() {
                       {member.phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{member.phone}</span></div>}
                       {member.default_location_name && <div className="flex items-center gap-2 text-sm text-gray-500"><MapPin className="w-4 h-4" /><span className="truncate">{member.default_location_name}</span></div>}
                     </div>
-                    <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2 text-gray-500"><Wrench className="w-4 h-4" /><span>Tilldelade verktyg</span></div>
                         <span className="font-medium text-gray-900">{toolCount}</span>
                       </div>
+                      {(() => {
+                        const userInfo = getUserInfo(member.email);
+                        if (!userInfo) return (
+                          <div className="flex items-center gap-2 text-xs text-gray-400"><LogIn className="w-3.5 h-3.5" /><span>Ej inloggad i appen</span></div>
+                        );
+                        return (
+                          <div className="flex items-center gap-2 text-xs text-emerald-600">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Senast aktiv {formatDistanceToNow(new Date(userInfo.updated_date), { addSuffix: true, locale: sv })}</span>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -264,6 +289,16 @@ export default function Team() {
                     <div className="hidden sm:flex items-center gap-6 text-sm text-gray-500">
                       {member.default_location_name && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{member.default_location_name}</span>}
                       <span className="flex items-center gap-1"><Wrench className="w-4 h-4" />{toolCount}</span>
+                      {(() => {
+                        const userInfo = getUserInfo(member.email);
+                        if (!userInfo) return <span className="flex items-center gap-1 text-gray-400"><LogIn className="w-4 h-4" />Ej inloggad</span>;
+                        return (
+                          <span className="flex items-center gap-1 text-emerald-600">
+                            <Clock className="w-4 h-4" />
+                            {formatDistanceToNow(new Date(userInfo.updated_date), { addSuffix: true, locale: sv })}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
