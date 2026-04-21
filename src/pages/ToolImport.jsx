@@ -59,7 +59,8 @@ export default function ToolImport() {
     const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
-    const splitLine = (line, sep) => {
+    // Parsea RFC 4180 CSV med tvålagerd escape-sekvens
+    const parseCSVLine = (line, sep) => {
       const fields = [];
       let i = 0;
       let current = '';
@@ -70,14 +71,17 @@ export default function ToolImport() {
 
         if (char === '"') {
           if (inQuotes && line[i + 1] === '"') {
+            // Dubbla citat inom quoted field = en enda citat
             current += '"';
             i += 2;
           } else {
+            // Toggle quote state
             inQuotes = !inQuotes;
             i++;
           }
         } else if (char === sep && !inQuotes) {
-          fields.push(current.trim());
+          // Separator utanför quotes
+          fields.push(current);
           current = '';
           i++;
         } else {
@@ -85,39 +89,36 @@ export default function ToolImport() {
           i++;
         }
       }
-      fields.push(current.trim());
+      fields.push(current);
       return fields;
     };
 
-    // Detektera separator
     const headerLine = lines[0];
     const candidates = [',', ';', '\t'];
     let sep = ',';
     let maxFields = 0;
     
     for (const c of candidates) {
-      const fieldCount = splitLine(headerLine, c).length;
+      const fieldCount = parseCSVLine(headerLine, c).length;
       if (fieldCount > maxFields) {
         maxFields = fieldCount;
         sep = c;
       }
     }
 
-    const headers = splitLine(headerLine, sep).map(h => h.toLowerCase().trim());
+    const headers = parseCSVLine(headerLine, sep).map(h => h.toLowerCase().trim());
 
     return lines.slice(1)
       .map(line => {
-        let cols = splitLine(line, sep);
-        
-        // Om första kolumnen innehåller citat men inte andra separator, försök parsa om
-        if (cols.length === 1 && cols[0].startsWith('"') && cols[0].includes(sep)) {
-          const cleanLine = cols[0].replace(/^"/, '').replace(/"$/, '');
-          cols = splitLine(cleanLine, sep);
-        }
-        
+        const cols = parseCSVLine(line, sep);
         const row = {};
         headers.forEach((h, i) => { 
-          row[h] = (cols[i] || '').trim().replace(/^"/, '').replace(/"$/, '');
+          let val = (cols[i] || '').trim();
+          // Ta bort citattecken från början och slut
+          if (val.startsWith('"') && val.endsWith('"')) {
+            val = val.slice(1, -1);
+          }
+          row[h] = val;
         });
         return row;
       })
