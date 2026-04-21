@@ -470,24 +470,25 @@ export default function ToolImport() {
                 <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
               </select>
 
-              <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg grid grid-cols-[50px_80px_200px_150px_120px_80px_auto] gap-3 p-3 font-semibold text-sm text-gray-700 z-10">
-                <div>Val</div>
-                <div>Åtgärd</div>
-                <button onClick={() => {
-                  if (sortBy === 'name') setSortAsc(!sortAsc);
-                  else { setSortBy('name'); setSortAsc(true); }
-                }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
-                  Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
-                </button>
-                <button onClick={() => {
-                  if (sortBy === 'barcode') setSortAsc(!sortAsc);
-                  else { setSortBy('barcode'); setSortAsc(true); }
-                }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
-                  Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
-                </button>
-                <div>Kategori</div>
-                <div>Status</div>
-                <div>Detaljer</div>
+              <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg p-3 font-semibold text-sm text-gray-700 z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-4">Val</div>
+                  <div className="w-24">Åtgärd</div>
+                  <button onClick={() => {
+                    if (sortBy === 'barcode') setSortAsc(!sortAsc);
+                    else { setSortBy('barcode'); setSortAsc(true); }
+                  }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1 flex-1">
+                    Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
+                  </button>
+                  <button onClick={() => {
+                    if (sortBy === 'name') setSortAsc(!sortAsc);
+                    else { setSortBy('name'); setSortAsc(true); }
+                  }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1 flex-1">
+                    Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
+                  </button>
+                  <div className="w-20">Kategori</div>
+                  <div className="text-xs text-gray-500">Detaljer</div>
+                </div>
               </div>
 
               {filtered.length > 0 && (

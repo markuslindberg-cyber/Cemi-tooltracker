@@ -28,41 +28,47 @@ export default function ToolImportPreviewTable({
         return (
           <div key={idx}>
             <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
-              <input
-                type="checkbox"
-                checked={selectedRows.has(idx)}
-                onChange={(e) => {
-                  const newSelected = new Set(selectedRows);
-                  if (e.target.checked) newSelected.add(idx);
-                  else newSelected.delete(idx);
-                  setSelectedRows(newSelected);
-                }}
-                className="w-4 h-4 rounded cursor-pointer"
-              />
-              <select
-                value={row.action || 'create'}
-                onChange={(e) => {
-                  const newRows = [...previewRows];
-                  newRows[idx].action = e.target.value;
-                  setPreviewRows(newRows);
-                }}
-                className="border border-gray-300 rounded px-2 py-1 text-xs w-24"
-              >
-                {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
-                <option value="ignore">Ignorera</option>
-              </select>
-              <span className="font-mono text-xs text-gray-600 w-20">{row.barcode}</span>
+              <div className="w-4 flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={selectedRows.has(idx)}
+                  onChange={(e) => {
+                    const newSelected = new Set(selectedRows);
+                    if (e.target.checked) newSelected.add(idx);
+                    else newSelected.delete(idx);
+                    setSelectedRows(newSelected);
+                  }}
+                  className="w-4 h-4 rounded cursor-pointer"
+                />
+              </div>
+              <div className="w-24 flex-shrink-0">
+                <select
+                  value={row.action || 'create'}
+                  onChange={(e) => {
+                    const newRows = [...previewRows];
+                    newRows[idx].action = e.target.value;
+                    setPreviewRows(newRows);
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1 text-xs w-full"
+                >
+                  {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
+                  <option value="ignore">Ignorera</option>
+                </select>
+              </div>
+              <span className="font-mono text-xs text-gray-600 flex-1">{row.barcode}</span>
               <span className="text-sm font-medium flex-1">{row.name}</span>
-              <span className="text-xs text-gray-500">{row.category}</span>
+              <div className="w-20 flex-shrink-0">
+                <span className="text-xs text-gray-500">{row.category}</span>
+              </div>
               <button
                 onClick={() => setExpandedRowIdx(expandedRowIdx === idx ? null : idx)}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium text-nowrap ml-2"
               >
                 {expandedRowIdx === idx ? '▼' : '▶'} 
                 {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 
-                  ? ` ${Object.keys(row.changes).length} ändringar`
+                  ? ` ${Object.keys(row.changes).length} änd.`
                   : !row.matchedTool && emptyFields.length > 0
-                  ? ` ${emptyFields.length} tomma fält`
+                  ? ` ${emptyFields.length} tomma`
                   : ' Visa'}
               </button>
               {row.matchedTool && (
@@ -71,9 +77,9 @@ export default function ToolImportPreviewTable({
                     setEditingRowIdx(idx);
                     setEditFormData({ ...row });
                   }}
-                  className="text-xs text-green-600 hover:text-green-800 font-medium"
+                  className="text-xs text-green-600 hover:text-green-800 font-medium ml-1"
                 >
-                  ✏️ Redigera
+                  ✏️
                 </button>
               )}
             </div>
