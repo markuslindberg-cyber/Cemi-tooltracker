@@ -266,6 +266,9 @@ export default function ToolImport() {
   const [selectedUpdates, setSelectedUpdates] = useState({});
   const [editingRowIdx, setEditingRowIdx] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [bulkEditField, setBulkEditField] = useState('');
+  const [bulkEditValue, setBulkEditValue] = useState('');
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -344,6 +347,87 @@ export default function ToolImport() {
                 <span>Befintlig maskin (uppdateras)</span>
               </div>
             </div>
+
+            {selectedRows.size > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                <p className="text-sm font-semibold text-blue-900 mb-3">{selectedRows.size} maskiner valda - Massuppdatering</p>
+                <div className="flex gap-3 items-end">
+                  <div>
+                    <label className="block text-xs font-medium text-blue-700 mb-1">Välj fält</label>
+                    <select
+                      value={bulkEditField}
+                      onChange={(e) => setBulkEditField(e.target.value)}
+                      className="border border-blue-300 rounded px-2 py-1 text-sm bg-white"
+                    >
+                      <option value="">- Välj fält -</option>
+                      <option value="status">Status</option>
+                      <option value="condition">Skick</option>
+                      <option value="category">Kategori</option>
+                      <option value="location_name">Plats</option>
+                      <option value="manufacturer">Tillverkare</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-blue-700 mb-1">Nytt värde</label>
+                    {bulkEditField === 'status' ? (
+                      <select value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} className="border border-blue-300 rounded px-2 py-1 text-sm">
+                        <option value="">- Välj -</option>
+                        <option value="available">Tillgänglig</option>
+                        <option value="in_use">I bruk</option>
+                        <option value="maintenance">Underhål</option>
+                        <option value="missing">Saknas</option>
+                        <option value="retired">Kasserad</option>
+                        <option value="sålda">Såld</option>
+                      </select>
+                    ) : bulkEditField === 'condition' ? (
+                      <select value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} className="border border-blue-300 rounded px-2 py-1 text-sm">
+                        <option value="">- Välj -</option>
+                        <option value="new">Ny</option>
+                        <option value="good">Bra</option>
+                        <option value="fair">Okej</option>
+                        <option value="poor">Dålig</option>
+                      </select>
+                    ) : bulkEditField === 'category' ? (
+                      <select value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} className="border border-blue-300 rounded px-2 py-1 text-sm">
+                        <option value="">- Välj -</option>
+                        {availableCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      </select>
+                    ) : bulkEditField === 'location_name' ? (
+                      <select value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} className="border border-blue-300 rounded px-2 py-1 text-sm">
+                        <option value="">- Välj -</option>
+                        {locations.map(loc => <option key={loc.id} value={loc.name}>{loc.name}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} placeholder="Ange värde" className="border border-blue-300 rounded px-2 py-1 text-sm" />
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (bulkEditField && bulkEditValue) {
+                        const newRows = [...previewRows];
+                        selectedRows.forEach(idx => {
+                          newRows[idx][bulkEditField] = bulkEditValue;
+                        });
+                        setPreviewRows(newRows);
+                        setSelectedRows(new Set());
+                        setBulkEditField('');
+                        setBulkEditValue('');
+                      }
+                    }}
+                    disabled={!bulkEditField || !bulkEditValue}
+                    className="px-4 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded text-sm font-medium"
+                  >
+                    Applicera
+                  </button>
+                  <button
+                    onClick={() => setSelectedRows(new Set())}
+                    className="px-3 py-1 border border-blue-300 hover:bg-blue-100 rounded text-sm text-blue-700"
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             {previewRows.map((row, idx) => {
@@ -355,6 +439,17 @@ export default function ToolImport() {
               return (
                 <div key={idx}>
                   <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.has(idx)}
+                      onChange={(e) => {
+                        const newSelected = new Set(selectedRows);
+                        if (e.target.checked) newSelected.add(idx);
+                        else newSelected.delete(idx);
+                        setSelectedRows(newSelected);
+                      }}
+                      className="w-4 h-4 rounded cursor-pointer"
+                    />
                     <select
                       value={row.action || 'create'}
                       onChange={(e) => {
