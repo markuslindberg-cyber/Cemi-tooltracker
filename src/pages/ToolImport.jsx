@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Upload, FileDown, Loader2, CheckCircle2, AlertCircle, X, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import ToolImportPreviewTable from '@/components/ToolImportPreviewTable';
 
 export default function ToolImport() {
   const fileInputRef = useRef(null);
@@ -15,6 +16,16 @@ export default function ToolImport() {
   const [importLogs, setImportLogs] = useState([]);
   const [logHistory, setLogHistory] = useState([]);
   const [expandedLogIdx, setExpandedLogIdx] = useState(null);
+  const [expandedRowIdx, setExpandedRowIdx] = useState(null);
+  const [selectedUpdates, setSelectedUpdates] = useState({});
+  const [editingRowIdx, setEditingRowIdx] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [bulkEditField, setBulkEditField] = useState('');
+  const [bulkEditValue, setBulkEditValue] = useState('');
+  const [filterMode, setFilterMode] = useState('all');
+  const [sortBy, setSortBy] = useState(null);
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     const saved = localStorage.getItem('toolImportHistory');
@@ -31,7 +42,6 @@ export default function ToolImport() {
     queryFn: () => base44.entities.Location.list(null, 1000).catch(() => []),
   });
 
-  // Get available categories and subcategories from existing tools
   const availableCategories = React.useMemo(() => {
     const categories = [...new Set(tools.map(t => t.category).filter(Boolean))];
     const filtered = categories.filter(cat => !['0', 'ah', 'safety', 'Power_tools', 'Hand_tools'].includes(cat));
@@ -40,33 +50,12 @@ export default function ToolImport() {
     return filtered.sort();
   }, [tools]);
 
-  const getSubcategoriesForCategory = (category) => {
-    const categoryToUse = category === 'Redskap' ? 'power_tools' : category;
-    return [...new Set(tools.filter(t => t.category === categoryToUse).map(t => t.subcategory).filter(Boolean))].sort();
-  };
-
-  const handleDownloadTemplate = () => {
-    const headers = ['barcode', 'name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
-    const exampleRow = ['1234567890', 'Borrmaskin BOSCH', 'BOSCH', 'Maskiner', 'available', 'good', 'Huvudlager', '2026-04-15', '2499.99'];
-    const csv = [headers, exampleRow, ...Array(19).fill(Array(9).fill(''))].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'tool_import_template.csv';
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-
   const parseCSV = (text) => {
-    // Säkerställ UTF-8 och ta bort BOM
     let normalized = text;
-    // Ta bort UTF-8 BOM om det finns
     if (normalized.charCodeAt(0) === 0xFEFF) {
       normalized = normalized.slice(1);
     }
-    normalized = normalized
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n');
+    normalized = normalized.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const lines = normalized.split('\n').filter(l => l.trim());
     if (lines.length < 2) return [];
 
@@ -139,7 +128,6 @@ export default function ToolImport() {
         action: matched ? 'update' : 'create',
       };
 
-      // Om uppdatering, beräkna vilka fält som ändras
       if (matched) {
         const changes = {};
         const fields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
@@ -155,6 +143,18 @@ export default function ToolImport() {
 
       return newRow;
     }).filter(r => r.barcode && r.name);
+  };
+
+  const handleDownloadTemplate = () => {
+    const headers = ['barcode', 'name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
+    const exampleRow = ['1234567890', 'Borrmaskin BOSCH', 'BOSCH', 'Maskiner', 'available', 'good', 'Huvudlager', '2026-04-15', '2499.99'];
+    const csv = [headers, exampleRow, ...Array(19).fill(Array(9).fill(''))].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'tool_import_template.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
   };
 
   const handleFileUpload = async (e) => {
@@ -218,8 +218,6 @@ export default function ToolImport() {
     if (!previewRows) return;
     const rowsToSend = previewRows.map((r, idx) => {
       if (r.action === 'ignore') return null;
-
-      // For updates, filter out non-selected fields
       if (r.action === 'update') {
         const filteredChanges = {};
         Object.entries(r.changes || {}).forEach(([field, change]) => {
@@ -230,7 +228,6 @@ export default function ToolImport() {
         });
         return { ...r, changes: filteredChanges };
       }
-
       return r;
     }).filter(Boolean);
 
@@ -267,16 +264,26 @@ export default function ToolImport() {
     }
   };
 
-  const [expandedRowIdx, setExpandedRowIdx] = useState(null);
-  const [selectedUpdates, setSelectedUpdates] = useState({});
-  const [editingRowIdx, setEditingRowIdx] = useState(null);
-  const [editFormData, setEditFormData] = useState({});
-  const [selectedRows, setSelectedRows] = useState(new Set());
-  const [bulkEditField, setBulkEditField] = useState('');
-  const [bulkEditValue, setBulkEditValue] = useState('');
-  const [filterMode, setFilterMode] = useState('all'); // 'all', 'new', 'update'
-  const [sortBy, setSortBy] = useState(null); // null, 'name', or 'barcode'
-  const [sortAsc, setSortAsc] = useState(true);
+  // Filter and sort logic
+  let filtered = previewRows ? previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
+    if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
+    if (filterMode === 'update') return row.action === 'update' && row.matchedTool;
+    return row.action !== 'ignore';
+  }) : [];
+
+  if (sortBy === 'name') {
+    filtered.sort((a, b) => {
+      const aVal = (a.row.name || '').toLowerCase();
+      const bVal = (b.row.name || '').toLowerCase();
+      return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+  } else if (sortBy === 'barcode') {
+    filtered.sort((a, b) => {
+      const aVal = (a.row.barcode || '').toLowerCase();
+      const bVal = (b.row.barcode || '').toLowerCase();
+      return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -447,348 +454,163 @@ export default function ToolImport() {
               </div>
             )}
           </div>
+
           <div className="space-y-2">
-            {(() => {
-              let filtered = previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
-                if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
-                if (filterMode === 'update') return row.action === 'update' && row.matchedTool;
-                return row.action !== 'ignore';
-              });
+            <div className="flex gap-2 items-center mb-3 flex-wrap">
+              <select
+                value={filterMode}
+                onChange={(e) => {
+                  setFilterMode(e.target.value);
+                  setSelectedRows(new Set());
+                }}
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+              >
+                <option value="all">Alla ({previewRows.filter(r => r.action !== 'ignore').length})</option>
+                <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
+                <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
+              </select>
 
-              // Apply sorting
-              if (sortBy === 'name') {
-                filtered.sort((a, b) => {
-                  const aVal = (a.row.name || '').toLowerCase();
-                  const bVal = (b.row.name || '').toLowerCase();
-                  return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                });
-              } else if (sortBy === 'barcode') {
-                filtered.sort((a, b) => {
-                  const aVal = (a.row.barcode || '').toLowerCase();
-                  const bVal = (b.row.barcode || '').toLowerCase();
-                  return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                });
-              }
-
-              return (
-                <>
-                  <div className="flex gap-2 items-center mb-3 flex-wrap">
-                    <select
-                      value={filterMode}
-                      onChange={(e) => {
-                        setFilterMode(e.target.value);
-                        setSelectedRows(new Set());
-                      }}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
-                    >
-                      <option value="all">Alla ({previewRows.filter(r => r.action !== 'ignore').length})</option>
-                      <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
-                      <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
-                    </select>
-
-                    <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg grid grid-cols-[50px_80px_200px_150px_120px_80px_auto] gap-3 p-3 font-semibold text-sm text-gray-700 z-10">
-                      <div>Val</div>
-                      <div>Åtgärd</div>
-                      <button onClick={() => {
-                        if (sortBy === 'name') setSortAsc(!sortAsc);
-                        else { setSortBy('name'); setSortAsc(true); }
-                      }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
-                        Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
-                      </button>
-                      <button onClick={() => {
-                        if (sortBy === 'barcode') setSortAsc(!sortAsc);
-                        else { setSortBy('barcode'); setSortAsc(true); }
-                      }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
-                        Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
-                      </button>
-                      <div>Kategori</div>
-                      <div>Status</div>
-                      <div>Detaljer</div>
-                    </div>
-
-                    {filtered.length > 0 && (
-                      <button
-                        onClick={() => {
-                          if (selectedRows.size === filtered.length) {
-                            setSelectedRows(new Set());
-                          } else {
-                            const newSelected = new Set(selectedRows);
-                            filtered.forEach(({ idx }) => newSelected.add(idx));
-                            setSelectedRows(newSelected);
-                          }
-                        }}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        {selectedRows.size === filtered.length ? 'Avmarkera alla' : 'Markera alla'}
-                      </button>
-                    )}
-
-                  <>
-                  {filtered.map(({ row, idx }) => {
-                    const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
-                    const emptyFields = row.action !== 'ignore' 
-                      ? allFields.filter(f => !row[f] || row[f] === '' || row[f] === 0)
-                      : [];
-                    
-                    return (
-                      <div key={idx}>
-                  <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.has(idx)}
-                      onChange={(e) => {
-                        const newSelected = new Set(selectedRows);
-                        if (e.target.checked) newSelected.add(idx);
-                        else newSelected.delete(idx);
-                        setSelectedRows(newSelected);
-                      }}
-                      className="w-4 h-4 rounded cursor-pointer"
-                    />
-                    <select
-                      value={row.action || 'create'}
-                      onChange={(e) => {
-                        const newRows = [...previewRows];
-                        newRows[idx].action = e.target.value;
-                        setPreviewRows(newRows);
-                      }}
-                      className="border border-gray-300 rounded px-2 py-1 text-xs w-24"
-                    >
-                      {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
-                      <option value="ignore">Ignorera</option>
-                    </select>
-                    <span className="font-mono text-xs text-gray-600 w-20">{row.barcode}</span>
-                    <span className="text-sm font-medium flex-1">{row.name}</span>
-                    <span className="text-xs text-gray-500">{row.category}</span>
-                    <button
-                      onClick={() => setExpandedRowIdx(expandedRowIdx === idx ? null : idx)}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      {expandedRowIdx === idx ? '▼' : '▶'} 
-                      {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 
-                        ? ` ${Object.keys(row.changes).length} ändringar`
-                        : !row.matchedTool && emptyFields.length > 0
-                        ? ` ${emptyFields.length} tomma fält`
-                        : ' Visa'}
-                    </button>
-                    {row.matchedTool && (
-                      <button
-                        onClick={() => {
-                          setEditingRowIdx(idx);
-                          setEditFormData({ ...row });
-                        }}
-                        className="text-xs text-green-600 hover:text-green-800 font-medium"
-                      >
-                        ✏️ Redigera
-                      </button>
-                    )}
-                  </div>
-                  {expandedRowIdx === idx && (
-                    <div className="bg-gray-50 border border-gray-200 border-t-0 rounded-b-lg p-4 space-y-2">
-                      {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 ? (
-                        // Update mode - show changes
-                        Object.entries(row.changes).map(([field, change]) => (
-                          <div key={field} className="text-sm">
-                            <div className="font-semibold text-gray-700">{field}</div>
-                            <div className="flex gap-4 mt-1">
-                              <div>
-                                <div className="text-xs text-gray-500">Innan:</div>
-                                <div className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded font-mono">{change.old}</div>
-                              </div>
-                              <div>
-                                <div className="text-xs text-gray-500">Nytt:</div>
-                                <div className="text-sm bg-green-50 text-green-800 px-2 py-1 rounded font-mono">{change.new}</div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : !row.matchedTool ? (
-                        // Create mode - show empty fields with suggestions
-                        <div>
-                          {emptyFields.length > 0 ? (
-                            <div className="space-y-3">
-                              <p className="text-sm font-semibold text-gray-700">Tomma fält som kan fyllas i:</p>
-                              {emptyFields.map(field => {
-                                const fieldLabel = field === 'location_name' ? 'plats' : field === 'purchase_date' ? 'inköpsdatum' : field === 'purchase_price' ? 'inköpspris' : field;
-                                const suggestions = field === 'category' 
-                                  ? availableCategories 
-                                  : field === 'subcategory' && row.category
-                                  ? getSubcategoriesForCategory(row.category)
-                                  : field === 'status'
-                                  ? ['available', 'in_use', 'maintenance', 'missing', 'retired', 'sålda']
-                                  : field === 'condition'
-                                  ? ['new', 'good', 'fair', 'poor']
-                                  : field === 'location_name'
-                                  ? locations.map(l => l.name)
-                                  : [];
-
-                                return (
-                                  <div key={field} className="text-sm">
-                                    <label className="block text-xs font-medium text-gray-600 mb-1">{fieldLabel}</label>
-                                    {suggestions.length > 0 ? (
-                                      <div className="space-y-1">
-                                        <select
-                                          value={row[field] || ''}
-                                          onChange={(e) => {
-                                            const newRows = [...previewRows];
-                                            newRows[idx][field] = e.target.value;
-                                            setPreviewRows(newRows);
-                                          }}
-                                          className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
-                                        >
-                                          <option value="">- Välj {fieldLabel} -</option>
-                                          {suggestions.map(s => (
-                                            <option key={s} value={s}>{s}</option>
-                                          ))}
-                                        </select>
-                                        {row[field] === '' && <p className="text-xs text-gray-500 italic">eller ange manuellt nedan</p>}
-                                      </div>
-                                    ) : null}
-                                    <input
-                                      type={field === 'purchase_price' ? 'number' : field === 'purchase_date' ? 'date' : 'text'}
-                                      value={row[field] || ''}
-                                      onChange={(e) => {
-                                        const newRows = [...previewRows];
-                                        newRows[idx][field] = e.target.value;
-                                        setPreviewRows(newRows);
-                                      }}
-                                      placeholder={`Ange ${fieldLabel}`}
-                                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs mt-1"
-                                    />
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gray-600">Alla fält är ifyllda!</p>
-                          )}
-                        </div>
-                      ) : row.matchedTool ? (
-                        // Update mode - select which fields to update
-                        <div className="space-y-3">
-                          <p className="text-sm font-semibold text-gray-700">Välj vilka fält som ska uppdateras:</p>
-                          {allFields.map(field => {
-                            const key = `${idx}-${field}`;
-                            const isSelected = selectedUpdates[key] !== false && row.changes?.[field];
-                            const hasChange = row.changes?.[field];
-                            
-                            if (!hasChange) return null;
-                            
-                            return (
-                              <div key={field} className="flex items-start gap-3 p-2 border border-gray-200 rounded bg-white">
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={(e) => {
-                                    setSelectedUpdates(prev => ({
-                                      ...prev,
-                                      [key]: e.target.checked
-                                    }));
-                                  }}
-                                  className="mt-1 w-4 h-4 rounded border-gray-300 cursor-pointer"
-                                />
-                                <div className="flex-1">
-                                  <div className="font-medium text-xs text-gray-700 mb-1">{field}</div>
-                                  <div className="flex gap-2 text-xs">
-                                    <div>
-                                      <span className="text-gray-500">Innan: </span>
-                                      <span className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-mono">{row.changes[field].old}</span>
-                                    </div>
-                                    <span className="text-gray-400">→</span>
-                                    <div>
-                                      <span className="text-gray-500">Efter: </span>
-                                      <span className="bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-mono">{row.changes[field].new}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-600">Ingen information att visa</p>
-                      )}
-                    </div>
-                  )}
-
-                  {editingRowIdx !== null && previewRows && (
-                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                  <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Redigera maskin</h3>
-              <button onClick={() => setEditingRowIdx(null)} className="text-gray-400 hover:text-gray-600">✕</button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-900"><strong>Maskin:</strong> {editFormData.name} ({editFormData.barcode})</p>
-                <p className="text-sm text-blue-900"><strong>Befintlig:</strong> {previewRows[editingRowIdx].matchedTool?.name}</p>
+              <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg grid grid-cols-[50px_80px_200px_150px_120px_80px_auto] gap-3 p-3 font-semibold text-sm text-gray-700 z-10">
+                <div>Val</div>
+                <div>Åtgärd</div>
+                <button onClick={() => {
+                  if (sortBy === 'name') setSortAsc(!sortAsc);
+                  else { setSortBy('name'); setSortAsc(true); }
+                }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
+                  Namn {sortBy === 'name' && (sortAsc ? '↑' : '↓')}
+                </button>
+                <button onClick={() => {
+                  if (sortBy === 'barcode') setSortAsc(!sortAsc);
+                  else { setSortBy('barcode'); setSortAsc(true); }
+                }} className="text-left hover:text-blue-700 cursor-pointer flex items-center gap-1">
+                  Streckkod {sortBy === 'barcode' && (sortAsc ? '↑' : '↓')}
+                </button>
+                <div>Kategori</div>
+                <div>Status</div>
+                <div>Detaljer</div>
               </div>
 
-              <div className="space-y-4">
-                {['name', 'manufacturer', 'model_number', 'serial_number', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'].map(field => (
-                  <div key={field}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">{field}</label>
-                    <input
-                      type={field === 'purchase_price' ? 'number' : field === 'purchase_date' ? 'date' : 'text'}
-                      value={editFormData[field] || ''}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, [field]: e.target.value }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t pt-4 mt-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="applyToSimilar"
-                    defaultChecked={false}
-                    className="w-4 h-4 rounded border-gray-300"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Applicera samma ändringar på andra maskiner av samma sort (namn, tillverkare, modell)</span>
-                </label>
-              </div>
-
-              <div className="flex gap-3 justify-end">
-                <button onClick={() => setEditingRowIdx(null)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Avbryt</button>
+              {filtered.length > 0 && (
                 <button
                   onClick={() => {
-                    const applyToSimilar = document.getElementById('applyToSimilar').checked;
-                    if (applyToSimilar) {
-                      const newRows = [...previewRows];
-                      const baseRow = newRows[editingRowIdx];
-                      newRows.forEach((row, idx) => {
-                        if (idx !== editingRowIdx && row.matchedTool && 
-                            row.name === baseRow.name && 
-                            row.manufacturer === baseRow.manufacturer && 
-                            row.model_number === baseRow.model_number) {
-                          Object.keys(editFormData).forEach(key => {
-                            row[key] = editFormData[key];
-                          });
-                        }
-                      });
-                      newRows[editingRowIdx] = editFormData;
-                      setPreviewRows(newRows);
+                    if (selectedRows.size === filtered.length) {
+                      setSelectedRows(new Set());
                     } else {
-                      const newRows = [...previewRows];
-                      newRows[editingRowIdx] = editFormData;
-                      setPreviewRows(newRows);
+                      const newSelected = new Set(selectedRows);
+                      filtered.forEach(({ idx }) => newSelected.add(idx));
+                      setSelectedRows(newSelected);
                     }
-                    setEditingRowIdx(null);
                   }}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                  className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  Spara ändringar
+                  {selectedRows.size === filtered.length ? 'Avmarkera alla' : 'Markera alla'}
                 </button>
+              )}
+            </div>
+
+            <ToolImportPreviewTable
+              filtered={filtered}
+              selectedRows={selectedRows}
+              setSelectedRows={setSelectedRows}
+              expandedRowIdx={expandedRowIdx}
+              setExpandedRowIdx={setExpandedRowIdx}
+              previewRows={previewRows}
+              setPreviewRows={setPreviewRows}
+              setEditingRowIdx={setEditingRowIdx}
+              setEditFormData={setEditFormData}
+              availableCategories={availableCategories}
+              locations={locations}
+              selectedUpdates={selectedUpdates}
+              setSelectedUpdates={setSelectedUpdates}
+            />
+          </div>
+
+          {editingRowIdx !== null && previewRows && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Redigera maskin</h3>
+                  <button onClick={() => setEditingRowIdx(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-900"><strong>Maskin:</strong> {editFormData.name} ({editFormData.barcode})</p>
+                    <p className="text-sm text-blue-900"><strong>Befintlig:</strong> {previewRows[editingRowIdx].matchedTool?.name}</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {['name', 'manufacturer', 'model_number', 'serial_number', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'].map(field => (
+                      <div key={field}>
+                        <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">{field}</label>
+                        <input
+                          type={field === 'purchase_price' ? 'number' : field === 'purchase_date' ? 'date' : 'text'}
+                          value={editFormData[field] || ''}
+                          onChange={(e) => setEditFormData(prev => ({ ...prev, [field]: e.target.value }))}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t pt-4 mt-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="applyToSimilar"
+                        defaultChecked={false}
+                        className="w-4 h-4 rounded border-gray-300"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Applicera samma ändringar på andra maskiner av samma sort (namn, tillverkare, modell)</span>
+                    </label>
+                  </div>
+
+                  <div className="flex gap-3 justify-end">
+                    <button onClick={() => setEditingRowIdx(null)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Avbryt</button>
+                    <button
+                      onClick={() => {
+                        const applyToSimilar = document.getElementById('applyToSimilar').checked;
+                        if (applyToSimilar) {
+                          const newRows = [...previewRows];
+                          const baseRow = newRows[editingRowIdx];
+                          newRows.forEach((row, idx) => {
+                            if (idx !== editingRowIdx && row.matchedTool && 
+                                row.name === baseRow.name && 
+                                row.manufacturer === baseRow.manufacturer && 
+                                row.model_number === baseRow.model_number) {
+                              Object.keys(editFormData).forEach(key => {
+                                row[key] = editFormData[key];
+                              });
+                            }
+                          });
+                          newRows[editingRowIdx] = editFormData;
+                          setPreviewRows(newRows);
+                        } else {
+                          const newRows = [...previewRows];
+                          newRows[editingRowIdx] = editFormData;
+                          setPreviewRows(newRows);
+                        }
+                        setEditingRowIdx(null);
+                      }}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                    >
+                      Spara ändringar
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+          )}
+
+          <div className="flex gap-3 justify-end mt-4">
+            <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
+            <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
           </div>
         </div>
-        )}
+      )}
 
-        {importLogs.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      {importLogs.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="bg-white rounded p-3 font-mono text-sm space-y-1 max-h-40 overflow-y-auto">
             {importLogs.map((log, idx) => (
               <div key={idx} className="text-gray-700">{log}</div>
@@ -916,19 +738,14 @@ export default function ToolImport() {
                           ))}
                         </tbody>
                       </table>
-                      )}
-                      </div>
-                      )}
-                      </div>
-                      ))}
-                      </div>
-
-                      {previewRows && (
-                      <div className="flex gap-3 justify-end mt-4">
-                      <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
-                      <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
-                      </div>
-                      )}
-                      </div>
-                      );
-                      }
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
