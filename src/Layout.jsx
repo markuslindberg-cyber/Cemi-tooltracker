@@ -65,13 +65,13 @@ const navigation = [
     icon: SprayCan,
     roles: LOKALVARDARE_ROLES,
     children: [
-      { name: 'Lager', path: '/Lokalvard/Lager' },
-      { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
-      { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true },
-      { name: 'Uttag', path: '/Lokalvard/Uttag' },
-      { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
-      { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
-      { name: 'Kunder', path: '/Lokalvard/Kunder' },
+      { name: 'Lager', path: '/Lokalvard/Lager', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true, roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true, roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Begäran om uttag av lokalvårdsartiklar', path: '/RequestWorkwear' },
     ]
   },
@@ -202,6 +202,7 @@ export default function Layout({ children }) {
                         {item.children.filter(child => {
                           if (child.devOnly && !window.location.hostname.includes('base44.app')) return false;
                           if (child.desktopOnly && window.innerWidth < 1024) return false;
+                          if (child.roles && !child.roles.includes(user?.role)) return false;
                           return true;
                         }).map((child) => (
                           <Link
