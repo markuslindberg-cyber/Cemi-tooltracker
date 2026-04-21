@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Upload, FileDown, Loader2, CheckCircle2, AlertCircle, X, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
@@ -30,6 +30,20 @@ export default function ToolImport() {
     queryKey: ['locations'],
     queryFn: () => base44.entities.Location.list(null, 1000).catch(() => []),
   });
+
+  // Get available categories and subcategories from existing tools
+  const availableCategories = React.useMemo(() => {
+    const categories = [...new Set(tools.map(t => t.category).filter(Boolean))];
+    const filtered = categories.filter(cat => !['0', 'ah', 'safety', 'Power_tools', 'Hand_tools'].includes(cat));
+    if (!filtered.includes('Redskap')) filtered.push('Redskap');
+    if (!filtered.includes('Övrigt')) filtered.push('Övrigt');
+    return filtered.sort();
+  }, [tools]);
+
+  const getSubcategoriesForCategory = (category) => {
+    const categoryToUse = category === 'Redskap' ? 'power_tools' : category;
+    return [...new Set(tools.filter(t => t.category === categoryToUse).map(t => t.subcategory).filter(Boolean))].sort();
+  };
 
   const handleDownloadTemplate = () => {
     const headers = ['barcode', 'name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
@@ -362,27 +376,61 @@ export default function ToolImport() {
                           </div>
                         ))
                       ) : !row.matchedTool ? (
-                        // Create mode - show empty fields
+                        // Create mode - show empty fields with suggestions
                         <div>
                           {emptyFields.length > 0 ? (
                             <div className="space-y-3">
                               <p className="text-sm font-semibold text-gray-700">Tomma fält som kan fyllas i:</p>
-                              {emptyFields.map(field => (
-                                <div key={field} className="text-sm">
-                                  <label className="block text-xs font-medium text-gray-600 mb-1">{field}</label>
-                                  <input
-                                    type={field === 'purchase_price' ? 'number' : 'text'}
-                                    value={row[field] || ''}
-                                    onChange={(e) => {
-                                      const newRows = [...previewRows];
-                                      newRows[idx][field] = e.target.value;
-                                      setPreviewRows(newRows);
-                                    }}
-                                    placeholder={`Ange ${field}`}
-                                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
-                                  />
-                                </div>
-                              ))}
+                              {emptyFields.map(field => {
+                                const fieldLabel = field === 'location_name' ? 'plats' : field === 'purchase_date' ? 'inköpsdatum' : field === 'purchase_price' ? 'inköpspris' : field;
+                                const suggestions = field === 'category' 
+                                  ? availableCategories 
+                                  : field === 'subcategory' && row.category
+                                  ? getSubcategoriesForCategory(row.category)
+                                  : field === 'status'
+                                  ? ['available', 'in_use', 'maintenance', 'missing', 'retired', 'sålda']
+                                  : field === 'condition'
+                                  ? ['new', 'good', 'fair', 'poor']
+                                  : field === 'location_name'
+                                  ? locations.map(l => l.name)
+                                  : [];
+
+                                return (
+                                  <div key={field} className="text-sm">
+                                    <label className="block text-xs font-medium text-gray-600 mb-1">{fieldLabel}</label>
+                                    {suggestions.length > 0 ? (
+                                      <div className="space-y-1">
+                                        <select
+                                          value={row[field] || ''}
+                                          onChange={(e) => {
+                                            const newRows = [...previewRows];
+                                            newRows[idx][field] = e.target.value;
+                                            setPreviewRows(newRows);
+                                          }}
+                                          className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+                                        >
+                                          <option value="">- Välj {fieldLabel} -</option>
+                                          {suggestions.map(s => (
+                                            <option key={s} value={s}>{s}</option>
+                                          ))}
+                                        </select>
+                                        {row[field] === '' && <p className="text-xs text-gray-500 italic">eller ange manuellt nedan</p>}
+                                      </div>
+                                    ) : null}
+                                    <input
+                                      type={field === 'purchase_price' ? 'number' : field === 'purchase_date' ? 'date' : 'text'}
+                                      value={row[field] || ''}
+                                      onChange={(e) => {
+                                        const newRows = [...previewRows];
+                                        newRows[idx][field] = e.target.value;
+                                        setPreviewRows(newRows);
+                                      }}
+                                      placeholder={`Ange ${fieldLabel}`}
+                                      className="w-full border border-gray-300 rounded px-2 py-1 text-xs mt-1"
+                                    />
+                                  </div>
+                                );
+                              })}
                             </div>
                           ) : (
                             <p className="text-sm text-gray-600">Alla fält är ifyllda!</p>
