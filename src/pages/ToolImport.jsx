@@ -448,6 +448,15 @@ export default function ToolImport() {
             )}
           </div>
           <div className="space-y-2">
+            <div className="sticky top-0 bg-gray-50 border border-gray-300 rounded-t-lg grid grid-cols-[50px_80px_200px_150px_120px_80px_auto] gap-3 p-3 font-semibold text-sm text-gray-700 z-10">
+              <div>Val</div>
+              <div>Åtgärd</div>
+              <div>Namn</div>
+              <div>Streckkod</div>
+              <div>Kategori</div>
+              <div>Status</div>
+              <div>Detaljer</div>
+            </div>
             {(() => {
               let filtered = previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
                 if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
