@@ -269,6 +269,7 @@ export default function ToolImport() {
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [bulkEditField, setBulkEditField] = useState('');
   const [bulkEditValue, setBulkEditValue] = useState('');
+  const [filterMode, setFilterMode] = useState('all'); // 'all', 'new', 'update'
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -360,11 +361,21 @@ export default function ToolImport() {
                       className="border border-blue-300 rounded px-2 py-1 text-sm bg-white"
                     >
                       <option value="">- Välj fält -</option>
-                      <option value="status">Status</option>
-                      <option value="condition">Skick</option>
-                      <option value="category">Kategori</option>
-                      <option value="location_name">Plats</option>
-                      <option value="manufacturer">Tillverkare</option>
+                      {(() => {
+                        const availableFields = new Set();
+                        selectedRows.forEach(idx => {
+                          if (!previewRows[idx]) return;
+                          const row = previewRows[idx];
+                          if (!row.matchedTool) {
+                            ['name', 'manufacturer', 'model_number', 'serial_number', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'].forEach(f => availableFields.add(f));
+                          } else if (row.changes) {
+                            Object.keys(row.changes).forEach(f => availableFields.add(f));
+                          }
+                        });
+                        return Array.from(availableFields).sort().map(field => (
+                          <option key={field} value={field}>{field}</option>
+                        ));
+                      })()}
                     </select>
                   </div>
                   <div>
@@ -430,13 +441,52 @@ export default function ToolImport() {
             )}
           </div>
           <div className="space-y-2">
-            {previewRows.map((row, idx) => {
-              const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
-              const emptyFields = row.action !== 'ignore' 
-                ? allFields.filter(f => !row[f] || row[f] === '' || row[f] === 0)
-                : [];
-              
+            {(() => {
+              const filtered = previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
+                if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
+                if (filterMode === 'update') return row.action === 'update' && row.matchedTool;
+                return row.action !== 'ignore';
+              });
+
               return (
+                <>
+                  <div className="flex gap-2 items-center mb-3">
+                    <select
+                      value={filterMode}
+                      onChange={(e) => {
+                        setFilterMode(e.target.value);
+                        setSelectedRows(new Set());
+                      }}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    >
+                      <option value="all">Alla ({previewRows.filter(r => r.action !== 'ignore').length})</option>
+                      <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
+                      <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
+                    </select>
+                    {filtered.length > 0 && (
+                      <button
+                        onClick={() => {
+                          if (selectedRows.size === filtered.length) {
+                            setSelectedRows(new Set());
+                          } else {
+                            const newSelected = new Set(selectedRows);
+                            filtered.forEach(({ idx }) => newSelected.add(idx));
+                            setSelectedRows(newSelected);
+                          }
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {selectedRows.size === filtered.length ? 'Avmarkera alla' : 'Markera alla'}
+                      </button>
+                    )}
+                  </div>
+                  {filtered.map(({ row, idx }) => {
+                    const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
+                    const emptyFields = row.action !== 'ignore' 
+                      ? allFields.filter(f => !row[f] || row[f] === '' || row[f] === 0)
+                      : [];
+                    
+                    return (
                 <div key={idx}>
                   <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
                     <input
@@ -616,8 +666,11 @@ export default function ToolImport() {
                     </div>
                   )}
                 </div>
+                    );
+                  })}
+                </>
               );
-            })}
+            })()}
           </div>
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
