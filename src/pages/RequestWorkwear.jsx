@@ -209,10 +209,10 @@ export default function RequestWorkwear() {
               </button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-2">
-              {previousRequests.filter(r => r.requested_items?.length > 0).length === 0 ? (
+              {myRequests.filter(r => r.requested_items?.length > 0).length === 0 ? (
                 <p className="text-gray-500 text-sm text-center py-8">Inga tidigare begäranden hittades</p>
               ) : (
-                previousRequests.filter(r => r.requested_items?.length > 0).map(r => (
+                myRequests.filter(r => r.requested_items?.length > 0).map(r => (
                   <button
                     key={r.id}
                     onClick={() => handleCopyRequest(r)}
