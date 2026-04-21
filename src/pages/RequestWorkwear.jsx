@@ -46,10 +46,16 @@ export default function RequestWorkwear() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
-  const { data: rawItems = [] } = useQuery({
-    queryKey: ['lokalvardsArtiklar'],
-    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).catch(() => []),
+  const { data: lokalvardData = {} } = useQuery({
+    queryKey: ['lokalvardData'],
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getLokalvardData', {});
+      return res.data;
+    },
   });
+
+  const rawItems = lokalvardData.artiklar || [];
+  const allCustomersRaw = lokalvardData.kunder || [];
 
   // En post per streckkod (senast inköpt)
   const items = Object.values(
@@ -70,10 +76,7 @@ export default function RequestWorkwear() {
     },
   });
 
-  const { data: allCustomers = [] } = useQuery({
-    queryKey: ['customers'],
-    queryFn: () => base44.entities.Kund.list('-updated_date', 10000).catch(() => []),
-  });
+  const allCustomers = allCustomersRaw;
 
   const { data: teamMembers = [] } = useQuery({
     queryKey: ['teamMembers'],
