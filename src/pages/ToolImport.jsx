@@ -712,8 +712,8 @@ export default function ToolImport() {
                   </div>
                   )}
 
-    {editingRowIdx !== null && previewRows && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                  {editingRowIdx !== null && previewRows && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
               <h3 className="text-lg font-semibold">Redigera maskin</h3>
@@ -787,9 +787,9 @@ export default function ToolImport() {
             </div>
           </div>
         </div>
-      )}
+        )}
 
-      {importLogs.length > 0 && (
+        {importLogs.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="bg-white rounded p-3 font-mono text-sm space-y-1 max-h-40 overflow-y-auto">
             {importLogs.map((log, idx) => (
