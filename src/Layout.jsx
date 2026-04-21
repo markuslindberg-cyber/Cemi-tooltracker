@@ -28,12 +28,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
+const LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare'];
+const NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'ägare'];
+
 const navigation = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   {
     name: 'Maskiner',
     path: '/Inventory',
     icon: Package,
+    roles: NOT_LOKALVARDARE,
     children: [
       { name: 'Översikt', path: '/Inventory' },
       { name: 'Huvudmaskiner', path: '/Huvudmaskiner' },
@@ -42,7 +46,7 @@ const navigation = [
       { name: 'Service', path: '/Service' },
     ]
   },
-  { name: 'Handredskap', path: '/HandTools', icon: Shovel },
+  { name: 'Handredskap', path: '/HandTools', icon: Shovel, roles: NOT_LOKALVARDARE },
   {
     name: 'Arbetskläder',
     path: '/ArbetskladerUtrustning',
@@ -58,7 +62,7 @@ const navigation = [
     name: 'Lokalvård',
     path: '/Lokalvard',
     icon: SprayCan,
-    roles: ['lokalvårdare', 'admin_lokalvård', 'ägare'],
+    roles: LOKALVARDARE_ROLES,
     children: [
       { name: 'Lager', path: '/Lokalvard/Lager' },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
@@ -74,6 +78,7 @@ const navigation = [
     name: 'Inventeringskontroll',
     path: '/InventoryCheck',
     icon: Wrench,
+    roles: NOT_LOKALVARDARE,
     children: [
       { name: 'Inventering', path: '/InventoryCheck' },
       { name: 'Inventeringsrapporter', path: '/InventoryReports' },
@@ -83,6 +88,7 @@ const navigation = [
     name: 'Administration',
     path: '/Administration',
     icon: Users,
+    roles: NOT_LOKALVARDARE,
     children: [
       { name: 'Platser', path: '/Locations' },
       { name: 'Personal', path: '/Team' },
