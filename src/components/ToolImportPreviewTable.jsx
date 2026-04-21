@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight, Info, X } from 'lucide-react';
 
 export default function ToolImportPreviewTable({
   filtered,
@@ -16,6 +16,7 @@ export default function ToolImportPreviewTable({
   selectedUpdates,
   setSelectedUpdates,
 }) {
+  const [infoModalIdx, setInfoModalIdx] = useState(null);
   const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
 
   return (
@@ -70,6 +71,12 @@ export default function ToolImportPreviewTable({
                   : !row.matchedTool && emptyFields.length > 0
                   ? ` ${emptyFields.length} tomma`
                   : ' Visa'}
+              </button>
+              <button
+                onClick={() => setInfoModalIdx(idx)}
+                className="text-xs text-gray-400 hover:text-blue-600 ml-1"
+              >
+                <Info className="w-4 h-4" />
               </button>
               {row.matchedTool && (
                 <button
@@ -208,6 +215,48 @@ export default function ToolImportPreviewTable({
           </div>
         );
       })}
+
+      {infoModalIdx !== null && previewRows && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Maskindata</h3>
+              <button onClick={() => setInfoModalIdx(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {allFields.map(field => (
+                  <div key={field} className="border border-gray-200 rounded-lg p-3">
+                    <div className="text-xs font-medium text-gray-500 uppercase mb-1">{field}</div>
+                    <div className="text-sm font-medium text-gray-900 break-words">
+                      {previewRows[infoModalIdx]?.[field] || '(tom)'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {previewRows[infoModalIdx]?.matchedTool && (
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-3">Befintlig maskin (matchad)</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {allFields.map(field => (
+                      <div key={field} className="border border-gray-200 rounded-lg p-3 bg-yellow-50">
+                        <div className="text-xs font-medium text-gray-500 uppercase mb-1">{field}</div>
+                        <div className="text-sm font-medium text-gray-900 break-words">
+                          {previewRows[infoModalIdx].matchedTool?.[field] || '(tom)'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
