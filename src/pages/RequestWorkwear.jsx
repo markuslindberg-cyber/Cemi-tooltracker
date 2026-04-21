@@ -331,7 +331,7 @@ export default function RequestWorkwear() {
                   {customers.map((customer) => (
                     <CommandItem
                        key={customer.id}
-                       value={customer.id}
+                       value={`${customer.namn} ${customer.projektnummer || ''}`}
                        onSelect={() => {
                          setSelectedCustomer(customer);
                          setFormData(prev => ({
