@@ -288,54 +288,96 @@ export default function ToolImport() {
             </div>
           </div>
           <div className="space-y-2">
-            {previewRows.map((row, idx) => (
-              <div key={idx}>
-                <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
-                  <select
-                    value={row.action || 'create'}
-                    onChange={(e) => {
-                      const newRows = [...previewRows];
-                      newRows[idx].action = e.target.value;
-                      setPreviewRows(newRows);
-                    }}
-                    className="border border-gray-300 rounded px-2 py-1 text-xs w-24"
-                  >
-                    {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
-                    <option value="ignore">Ignorera</option>
-                  </select>
-                  <span className="font-mono text-xs text-gray-600 w-20">{row.barcode}</span>
-                  <span className="text-sm font-medium flex-1">{row.name}</span>
-                  <span className="text-xs text-gray-500">{row.category}</span>
-                  {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 && (
+            {previewRows.map((row, idx) => {
+              const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
+              const emptyFields = row.action !== 'ignore' 
+                ? allFields.filter(f => !row[f] || row[f] === '' || row[f] === 0)
+                : [];
+              
+              return (
+                <div key={idx}>
+                  <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+                    <select
+                      value={row.action || 'create'}
+                      onChange={(e) => {
+                        const newRows = [...previewRows];
+                        newRows[idx].action = e.target.value;
+                        setPreviewRows(newRows);
+                      }}
+                      className="border border-gray-300 rounded px-2 py-1 text-xs w-24"
+                    >
+                      {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
+                      <option value="ignore">Ignorera</option>
+                    </select>
+                    <span className="font-mono text-xs text-gray-600 w-20">{row.barcode}</span>
+                    <span className="text-sm font-medium flex-1">{row.name}</span>
+                    <span className="text-xs text-gray-500">{row.category}</span>
                     <button
                       onClick={() => setExpandedRowIdx(expandedRowIdx === idx ? null : idx)}
                       className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
-                      {expandedRowIdx === idx ? '▼' : '▶'} {Object.keys(row.changes).length} ändringar
+                      {expandedRowIdx === idx ? '▼' : '▶'} 
+                      {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 
+                        ? ` ${Object.keys(row.changes).length} ändringar`
+                        : !row.matchedTool && emptyFields.length > 0
+                        ? ` ${emptyFields.length} tomma fält`
+                        : ' Visa'}
                     </button>
+                  </div>
+                  {expandedRowIdx === idx && (
+                    <div className="bg-gray-50 border border-gray-200 border-t-0 rounded-b-lg p-4 space-y-2">
+                      {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 ? (
+                        // Update mode - show changes
+                        Object.entries(row.changes).map(([field, change]) => (
+                          <div key={field} className="text-sm">
+                            <div className="font-semibold text-gray-700">{field}</div>
+                            <div className="flex gap-4 mt-1">
+                              <div>
+                                <div className="text-xs text-gray-500">Innan:</div>
+                                <div className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded font-mono">{change.old}</div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500">Nytt:</div>
+                                <div className="text-sm bg-green-50 text-green-800 px-2 py-1 rounded font-mono">{change.new}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : !row.matchedTool ? (
+                        // Create mode - show empty fields
+                        <div>
+                          {emptyFields.length > 0 ? (
+                            <div className="space-y-3">
+                              <p className="text-sm font-semibold text-gray-700">Tomma fält som kan fyllas i:</p>
+                              {emptyFields.map(field => (
+                                <div key={field} className="text-sm">
+                                  <label className="block text-xs font-medium text-gray-600 mb-1">{field}</label>
+                                  <input
+                                    type={field === 'purchase_price' ? 'number' : 'text'}
+                                    value={row[field] || ''}
+                                    onChange={(e) => {
+                                      const newRows = [...previewRows];
+                                      newRows[idx][field] = e.target.value;
+                                      setPreviewRows(newRows);
+                                    }}
+                                    placeholder={`Ange ${field}`}
+                                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-600">Alla fält är ifyllda!</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-600">Ingen information att visa</p>
+                      )}
+                    </div>
                   )}
                 </div>
-                {expandedRowIdx === idx && row.changes && Object.keys(row.changes).length > 0 && (
-                  <div className="bg-gray-50 border border-gray-200 border-t-0 rounded-b-lg p-4 space-y-2">
-                    {Object.entries(row.changes).map(([field, change]) => (
-                      <div key={field} className="text-sm">
-                        <div className="font-semibold text-gray-700">{field}</div>
-                        <div className="flex gap-4 mt-1">
-                          <div>
-                            <div className="text-xs text-gray-500">Innan:</div>
-                            <div className="text-sm bg-red-50 text-red-800 px-2 py-1 rounded font-mono">{change.old}</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-gray-500">Nytt:</div>
-                            <div className="text-sm bg-green-50 text-green-800 px-2 py-1 rounded font-mono">{change.new}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
