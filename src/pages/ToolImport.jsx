@@ -110,14 +110,19 @@ export default function ToolImport() {
 
     return lines.slice(1)
       .map(line => {
-        const cols = parseCSVLine(line, sep);
+        let processedLine = line;
+        
+        // Om raden är ett enda quoted field (hela raden mellan citat), extrahera innehållet
+        if (processedLine.startsWith('"') && processedLine.endsWith('"')) {
+          const innerContent = processedLine.slice(1, -1);
+          // Unescape dubbla citat
+          processedLine = innerContent.replace(/""/g, '"');
+        }
+        
+        const cols = parseCSVLine(processedLine, sep);
         const row = {};
         headers.forEach((h, i) => { 
           let val = (cols[i] || '').trim();
-          // Ta bort citattecken från början och slut
-          if (val.startsWith('"') && val.endsWith('"')) {
-            val = val.slice(1, -1);
-          }
           row[h] = val;
         });
         return row;
