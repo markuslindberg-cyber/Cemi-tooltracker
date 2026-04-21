@@ -156,7 +156,7 @@ export default function LokalvardLager() {
     if (!matchSearch) return false;
     
     const saldoForGroup = calculateSaldo(a);
-    if (filterTyp === 'aktiva') return !a.utgaende || (a.utgaende && saldoForGroup > 0);
+    if (filterTyp === 'aktiva') return saldoForGroup > 0;
     if (filterTyp === 'lowStock') return saldoForGroup > 0 && saldoForGroup < (a.lagertroskelvarde || 10);
     if (filterTyp === 'empty') return saldoForGroup === 0;
     if (filterTyp === 'utgaende') return !!a.utgaende;
