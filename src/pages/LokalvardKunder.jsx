@@ -10,7 +10,7 @@ export default function LokalvardKunder() {
    const queryClient = useQueryClient();
    const [editingId, setEditingId] = useState(null);
    const [editForm, setEditForm] = useState({});
-   const [form, setForm] = useState({ namn: '', typ: 'Cemi', projektnummer: '' });
+   const [form, setForm] = useState({ namn: '', typ: 'Cemi', projektnummer: '', status: 'aktiv' });
    const [submitting, setSubmitting] = useState(false);
    const [sortBy, setSortBy] = useState('namn');
    const [sortOrder, setSortOrder] = useState('asc');
@@ -52,19 +52,20 @@ export default function LokalvardKunder() {
       namn: form.namn,
       typ: form.typ,
       projektnummer: form.projektnummer || null,
+      status: form.status,
     });
   };
 
   const handleEditClick = (kund) => {
     setEditingId(kund.id);
-    setEditForm({ namn: kund.namn, typ: kund.typ, projektnummer: kund.projektnummer || '' });
+    setEditForm({ namn: kund.namn, typ: kund.typ, projektnummer: kund.projektnummer || '', status: kund.status || 'aktiv' });
   };
 
   const handleSaveEdit = () => {
     if (!editForm.namn.trim()) return;
     updateMutation.mutate({
       id: editingId,
-      data: { namn: editForm.namn, typ: editForm.typ, projektnummer: editForm.projektnummer || null },
+      data: { namn: editForm.namn, typ: editForm.typ, projektnummer: editForm.projektnummer || null, status: editForm.status },
     });
   };
 
@@ -108,30 +109,38 @@ export default function LokalvardKunder() {
       {/* Create Form */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <h3 className="font-semibold mb-3">Lägg till ny kund</h3>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-2">
-          <input
-            type="text"
-            placeholder="Kundnamn"
-            value={form.namn}
-            onChange={(e) => setForm({...form, namn: e.target.value})}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            required
-          />
-          <select
-            value={form.typ}
-            onChange={(e) => setForm({...form, typ: e.target.value})}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          >
-            {kundTyper.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <input
-            type="text"
-            placeholder="Projektnummer"
-            value={form.projektnummer}
-            onChange={(e) => setForm({...form, projektnummer: e.target.value})}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          />
-          <Button type="submit" disabled={submitting} className="bg-blue-600 hover:bg-blue-700 col-span-1 md:col-span-2">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-6 gap-2">
+           <input
+             type="text"
+             placeholder="Kundnamn"
+             value={form.namn}
+             onChange={(e) => setForm({...form, namn: e.target.value})}
+             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+             required
+           />
+           <select
+             value={form.typ}
+             onChange={(e) => setForm({...form, typ: e.target.value})}
+             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+           >
+             {kundTyper.map(t => <option key={t} value={t}>{t}</option>)}
+           </select>
+           <input
+             type="text"
+             placeholder="Projektnummer"
+             value={form.projektnummer}
+             onChange={(e) => setForm({...form, projektnummer: e.target.value})}
+             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+           />
+           <select
+             value={form.status}
+             onChange={(e) => setForm({...form, status: e.target.value})}
+             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+           >
+             <option value="aktiv">Aktiv</option>
+             <option value="inaktiv">Inaktiv</option>
+           </select>
+           <Button type="submit" disabled={submitting} className="bg-blue-600 hover:bg-blue-700 col-span-1">
             {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-1" />}
             Lägg till
           </Button>
@@ -157,19 +166,25 @@ export default function LokalvardKunder() {
                   </div>
                 </th>
                 <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('projektnummer')}>
-                  <div className="flex items-center gap-1">
-                    Projektnummer
-                    {sortBy === 'projektnummer' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
-                  </div>
-                </th>
-                <th className="px-4 py-2 text-left font-semibold">Åtgärd</th>
+                   <div className="flex items-center gap-1">
+                     Projektnummer
+                     {sortBy === 'projektnummer' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
+                   </div>
+                 </th>
+                 <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>
+                   <div className="flex items-center gap-1">
+                     Status
+                     {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
+                   </div>
+                 </th>
+                 <th className="px-4 py-2 text-left font-semibold">Åtgärd</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="px-4 py-8 text-center text-gray-500">Inga kunder ännu</td>
-                </tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-gray-500">Inga kunder ännu</td>
+                    </tr>
               ) : (
                 sorted.map(kund => {
                   const isEditing = editingId === kund.id;
@@ -191,6 +206,18 @@ export default function LokalvardKunder() {
                         {isEditing ? (
                           <input type="text" value={editForm.projektnummer} onChange={(e) => setEditForm({...editForm, projektnummer: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-full" />
                         ) : (kund.projektnummer || '-')}
+                      </td>
+                      <td className="px-4 py-2">
+                        {isEditing ? (
+                          <select value={editForm.status} onChange={(e) => setEditForm({...editForm, status: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-full">
+                            <option value="aktiv">Aktiv</option>
+                            <option value="inaktiv">Inaktiv</option>
+                          </select>
+                        ) : (
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${kund.status === 'aktiv' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {kund.status === 'aktiv' ? 'Aktiv' : 'Inaktiv'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {isEditing ? (
