@@ -58,6 +58,7 @@ const navigation = [
     name: 'Lokalvård',
     path: '/Lokalvard',
     icon: SprayCan,
+    roles: ['lokalvårdare', 'admin_lokalvård', 'ägare'],
     children: [
       { name: 'Lager', path: '/Lokalvard/Lager' },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
@@ -161,7 +162,10 @@ export default function Layout({ children }) {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {navigation.map((item) => {
+            {navigation.filter(item => {
+              if (!item.roles) return true;
+              return item.roles.includes(user?.role);
+            }).map((item) => {
               const isActive = isActivePath(item.path);
 
               if (item.children) {
