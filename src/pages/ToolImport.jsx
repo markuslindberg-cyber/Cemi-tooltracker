@@ -709,21 +709,21 @@ export default function ToolImport() {
                     </div>
                   )}
                 </div>
-                    );
-                  })}
-                </>
-              );
-            })()}
-          <div className="flex gap-3 justify-end mt-4">
-            <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
-            <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
-          </div>
+                );
+              })}
+            </>
+          );
+        })()}
+        <div className="flex gap-3 justify-end mt-4">
+          <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
+          <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
         </div>
-      )}
+      </div>
+    )}
 
-          {editingRowIdx !== null && previewRows && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    {editingRowIdx !== null && previewRows && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
               <h3 className="text-lg font-semibold">Redigera maskin</h3>
               <button onClick={() => setEditingRowIdx(null)} className="text-gray-400 hover:text-gray-600">✕</button>
@@ -795,8 +795,8 @@ export default function ToolImport() {
               </div>
             </div>
           </div>
-          </div>
-          )}
+        </div>
+      )}
 
       {importLogs.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
