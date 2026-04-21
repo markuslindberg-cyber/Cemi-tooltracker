@@ -62,6 +62,18 @@ const commentBoxStyle = `
   font-style: italic;
 `;
 
+const buttonStyle = `
+  display: inline-block;
+  background: #8B1E1E;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 20px 0;
+`;
+
 const footerStyle = `
   text-align: center;
   padding: 20px 32px;
@@ -111,7 +123,10 @@ function buildApproverEmail({ approver_name, tool_names, requester_name, assigne
 
       ${commentSection}
 
-      <p style="font-size:13px; color:#888; margin-top:24px;">Logga in i ToolTrack för att godkänna eller neka förfrågan.</p>
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="${Deno.env.get('TOOLTRACK_APP_URL') || 'https://app.tooltrack.se'}/Transfers" style="${buttonStyle}">Öppna ToolTrack</a>
+      </div>
+      <p style="font-size:13px; color:#888; text-align:center; margin-top:16px;">Eller logga in för att godkänna eller neka förfrågan.</p>
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
   </div>
@@ -150,6 +165,10 @@ function buildDestManagerEmail({ manager_name, tool_names, assigned_to_name, ret
       </table>
 
       ${commentSection}
+
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="${Deno.env.get('TOOLTRACK_APP_URL') || 'https://app.tooltrack.se'}/Transfers" style="${buttonStyle}">Öppna ToolTrack</a>
+      </div>
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
   </div>
