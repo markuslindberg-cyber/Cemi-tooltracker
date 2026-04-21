@@ -146,9 +146,14 @@ export default function ToolImport() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = ['barcode', 'name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
-    const exampleRow = ['1234567890', 'Borrmaskin BOSCH', 'BOSCH', 'Maskiner', 'available', 'good', 'Huvudlager', '2026-04-15', '2499.99'];
-    const csv = [headers, exampleRow, ...Array(19).fill(Array(9).fill(''))].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const headers = ['name', 'manufacturer', 'model_number', 'serial_number', 'tool_number', 'category', 'subcategory', 'status', 'condition', 'barcode', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'service_cost', 'location_name', 'assigned_to_name', 'notes'];
+    const exampleRow = ['Impact Driver', 'DeWalt', 'DCF887B', 'SN-123456', 'TOOL-001', 'Power Tools', 'Impact Drivers', 'available', 'good', '', '2026-01-01', '199.99', 'Home Depot', 'INV-001', '500', 'Main Warehouse', 'John Smith', 'Example tool'];
+    const emptyRows = Array(19).fill(Array(18).fill(''));
+    const csv = [
+      headers.join(','),
+      exampleRow.map(cell => `"${cell}"`).join(','),
+      ...emptyRows.map(row => row.join(','))
+    ].join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
