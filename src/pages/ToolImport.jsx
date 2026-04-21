@@ -523,6 +523,7 @@ export default function ToolImport() {
               locations={locations}
               selectedUpdates={selectedUpdates}
               setSelectedUpdates={setSelectedUpdates}
+              tools={tools}
             />
           </div>
 
