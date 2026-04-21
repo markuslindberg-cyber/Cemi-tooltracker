@@ -264,6 +264,8 @@ export default function ToolImport() {
 
   const [expandedRowIdx, setExpandedRowIdx] = useState(null);
   const [selectedUpdates, setSelectedUpdates] = useState({});
+  const [editingRowIdx, setEditingRowIdx] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -355,6 +357,17 @@ export default function ToolImport() {
                         ? ` ${emptyFields.length} tomma fält`
                         : ' Visa'}
                     </button>
+                    {row.matchedTool && (
+                      <button
+                        onClick={() => {
+                          setEditingRowIdx(idx);
+                          setEditFormData({ ...row });
+                        }}
+                        className="text-xs text-green-600 hover:text-green-800 font-medium"
+                      >
+                        ✏️ Redigera
+                      </button>
+                    )}
                   </div>
                   {expandedRowIdx === idx && (
                     <div className="bg-gray-50 border border-gray-200 border-t-0 rounded-b-lg p-4 space-y-2">
@@ -491,8 +504,85 @@ export default function ToolImport() {
             <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
             <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
           </div>
-        </div>
-      )}
+          </div>
+          )}
+
+          {editingRowIdx !== null && previewRows && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Redigera maskin</h3>
+              <button onClick={() => setEditingRowIdx(null)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-900"><strong>Maskin:</strong> {editFormData.name} ({editFormData.barcode})</p>
+                <p className="text-sm text-blue-900"><strong>Befintlig:</strong> {previewRows[editingRowIdx].matchedTool?.name}</p>
+              </div>
+
+              <div className="space-y-4">
+                {['name', 'manufacturer', 'model_number', 'serial_number', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'].map(field => (
+                  <div key={field}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">{field}</label>
+                    <input
+                      type={field === 'purchase_price' ? 'number' : field === 'purchase_date' ? 'date' : 'text'}
+                      value={editFormData[field] || ''}
+                      onChange={(e) => setEditFormData(prev => ({ ...prev, [field]: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="applyToSimilar"
+                    defaultChecked={false}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Applicera samma ändringar på andra maskiner av samma sort (namn, tillverkare, modell)</span>
+                </label>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button onClick={() => setEditingRowIdx(null)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Avbryt</button>
+                <button
+                  onClick={() => {
+                    const applyToSimilar = document.getElementById('applyToSimilar').checked;
+                    if (applyToSimilar) {
+                      const newRows = [...previewRows];
+                      const baseRow = newRows[editingRowIdx];
+                      newRows.forEach((row, idx) => {
+                        if (idx !== editingRowIdx && row.matchedTool && 
+                            row.name === baseRow.name && 
+                            row.manufacturer === baseRow.manufacturer && 
+                            row.model_number === baseRow.model_number) {
+                          Object.keys(editFormData).forEach(key => {
+                            row[key] = editFormData[key];
+                          });
+                        }
+                      });
+                      newRows[editingRowIdx] = editFormData;
+                      setPreviewRows(newRows);
+                    } else {
+                      const newRows = [...previewRows];
+                      newRows[editingRowIdx] = editFormData;
+                      setPreviewRows(newRows);
+                    }
+                    setEditingRowIdx(null);
+                  }}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                >
+                  Spara ändringar
+                </button>
+              </div>
+            </div>
+          </div>
+          </div>
+          )}
 
       {importLogs.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
