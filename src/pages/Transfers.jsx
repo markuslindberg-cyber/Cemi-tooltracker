@@ -246,6 +246,11 @@ export default function Transfers() {
     return sortDirection === 'desc' ? -cmp : cmp;
   });
 
+  const pendingForMe = loanRequests.filter(loan =>
+    loan.status === 'pending' && currentUser &&
+    (loan.approver_email === currentUser.email || currentUser.role === 'admin' || currentUser.role === 'ägare')
+  );
+
   const filteredLoans = loanRequests.filter(loan => {
     const matchesSearch = !searchQuery ||
       loan.tool_names?.some(name => name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -281,6 +286,33 @@ export default function Transfers() {
           <p className="text-gray-500 mt-1">{transfers.length + loanRequests.length} lån totalt</p>
         </div>
 
+        {/* Pending action banner */}
+        {pendingForMe.length > 0 ? (
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-amber-900">
+                {pendingForMe.length === 1
+                  ? '1 förfrågan väntar på ditt svar'
+                  : `${pendingForMe.length} förfrågningar väntar på ditt svar`}
+              </p>
+              <p className="text-sm text-amber-700">Gå till fliken "Låneförfrågningar" och hantera dem.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-green-800">Inga väntande förfrågningar</p>
+              <p className="text-sm text-green-700">Du har inga förfrågningar att hantera just nu.</p>
+            </div>
+          </div>
+        )}
+
         {/* Search */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
           <div className="relative max-w-md">
@@ -296,8 +328,13 @@ export default function Transfers() {
 
         <Tabs defaultValue="loans">
           <TabsList>
-            <TabsTrigger value="loans">
+            <TabsTrigger value="loans" className="flex items-center gap-2">
               Låneförfrågningar ({filteredLoans.length})
+              {pendingForMe.length > 0 && (
+                <span className="bg-amber-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {pendingForMe.length}
+                </span>
+              )}
             </TabsTrigger>
             <TabsTrigger value="transfers">
               Direktförflyttningar ({filteredTransfers.length})
