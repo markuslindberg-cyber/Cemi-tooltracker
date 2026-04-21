@@ -59,8 +59,12 @@ export default function ToolImport() {
 
   const parseCSV = (text) => {
     // Säkerställ UTF-8 och ta bort BOM
-    const normalized = text
-      .replace(/^\uFEFF/, '')
+    let normalized = text;
+    // Ta bort UTF-8 BOM om det finns
+    if (normalized.charCodeAt(0) === 0xFEFF) {
+      normalized = normalized.slice(1);
+    }
+    normalized = normalized
       .replace(/\r\n/g, '\n')
       .replace(/\r/g, '\n');
     const lines = normalized.split('\n').filter(l => l.trim());
@@ -161,7 +165,8 @@ export default function ToolImport() {
       let rows = [];
       if (file.name.endsWith('.csv')) {
         const buffer = await file.arrayBuffer();
-        const text = new TextDecoder('utf-8').decode(buffer);
+        const decoder = new TextDecoder('utf-8');
+        const text = decoder.decode(buffer);
         rows = parseCSV(text);
       } else {
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
