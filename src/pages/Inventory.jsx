@@ -421,7 +421,8 @@ export default function Inventory() {
           const toolData = {
             name: tool.name,
             manufacturer: tool.manufacturer || '',
-            model_number: tool.model_number || tool.serial_number || '',
+            model_number: tool.model_number || '',
+            serial_number: tool.serial_number || '',
             tool_number: tool.tool_number || '',
             category: tool.category || 'other',
             subcategory: tool.subcategory || '',

@@ -12,7 +12,11 @@
     },
     "model_number": {
       "type": "string",
-      "description": "Model or serial number"
+      "description": "Model number"
+    },
+    "serial_number": {
+      "type": "string",
+      "description": "Serial number / Serienummer"
     },
     "tool_number": {
       "type": "string",

@@ -33,6 +33,7 @@ const defaultTool = {
 name: '',
 manufacturer: '',
 model_number: '',
+serial_number: '',
 tool_number: '',
 category: 'power_tools',
 subcategory: '',
@@ -612,13 +613,24 @@ export default function ToolFormModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Modell / Serienummer</Label>
+                  <Label>Modellnummer</Label>
                   <Input
                     value={formData.model_number}
                     onChange={(e) => handleChange('model_number', e.target.value)}
                     placeholder="t.ex. 2857-20"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Serienummer</Label>
+                  <Input
+                    value={formData.serial_number}
+                    onChange={(e) => handleChange('serial_number', e.target.value)}
+                    placeholder="t.ex. SN-123456"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Verktygsnummer</Label>
                   <Input
