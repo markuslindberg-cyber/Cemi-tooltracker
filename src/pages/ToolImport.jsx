@@ -523,6 +523,7 @@ export default function ToolImport() {
                       </button>
                     )}
 
+                  <>
                   {filtered.map(({ row, idx }) => {
                     const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
                     const emptyFields = row.action !== 'ignore' 
@@ -530,7 +531,7 @@ export default function ToolImport() {
                       : [];
                     
                     return (
-                <div key={idx}>
+                      <div key={idx}>
                   <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
                     <input
                       type="checkbox"
@@ -708,12 +709,12 @@ export default function ToolImport() {
                       )}
                     </div>
                   )}
-                </div>
-                );
-              })}
-            </>
-          );
-        })()}
+                      </div>
+                    );
+                  })}
+          </>
+        );
+      })()}
         <div className="flex gap-3 justify-end mt-4">
           <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
           <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
@@ -935,6 +936,7 @@ export default function ToolImport() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
+      </>
+      </div>
+      );
+      }
