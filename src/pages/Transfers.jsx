@@ -553,10 +553,20 @@ export default function Transfers() {
                 <Label className="text-sm font-semibold">Maskiner i förfrågan</Label>
                 {(approvingLoan.tool_ids || []).map((toolId, idx) => {
                   const toolName = approvingLoan.tool_names?.[idx] || toolId;
+                  const toolDetail = approvingLoan.tool_details?.find(t => t.tool_id === toolId);
+                  const returnDate = toolDetail?.return_date || approvingLoan.default_return_date;
                   const decision = toolDecisions[toolId] || 'approved';
                   return (
                     <div key={toolId} className={`border rounded-lg p-3 space-y-2 ${decision === 'rejected' ? 'border-red-200 bg-red-50' : decision === 'approved_custom_date' ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}`}>
-                      <p className="font-medium text-sm">{toolName}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-medium text-sm">{toolName}</p>
+                        {returnDate && (
+                          <span className="text-xs text-gray-500 whitespace-nowrap flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(returnDate), 'd MMM yyyy')}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => setToolDecisions(prev => ({ ...prev, [toolId]: 'approved' }))}
