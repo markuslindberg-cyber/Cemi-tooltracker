@@ -56,48 +56,39 @@ export default function ToolImport() {
       normalized = normalized.slice(1);
     }
     normalized = normalized.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    const lines = normalized.split('\n').filter(l => l.trim());
+    const lines = normalized.split('\n');
     if (lines.length < 2) return [];
 
     const splitLine = (line, sep) => {
       const fields = [];
       let i = 0;
+      let current = '';
+      let inQuotes = false;
+
       while (i < line.length) {
-        // Om fältet börjar med citationstecken, läs quoted field
-        if (line[i] === '"') {
-          let field = '';
-          i++; // Hoppa över inledande citationstecken
-          while (i < line.length) {
-            if (line[i] === '"') {
-              // Kontrollera om det är dubbla citationstecken (escaped)
-              if (line[i + 1] === '"') {
-                field += '"';
-                i += 2;
-              } else {
-                // Avslutande citationstecken
-                i++;
-                break;
-              }
-            } else {
-              field += line[i];
-              i++;
-            }
-          }
-          // Hoppa över separator efter citationstecken
-          if (line[i] === sep) i++;
-          fields.push(field);
-        } else {
-          // Unquoted field — läs tills separator
-          const end = line.indexOf(sep, i);
-          if (end === -1) {
-            fields.push(line.slice(i).trim());
-            break;
+        const char = line[i];
+
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            // Escaped quote
+            current += '"';
+            i += 2;
           } else {
-            fields.push(line.slice(i, end).trim());
-            i = end + 1;
+            // Toggle quote state
+            inQuotes = !inQuotes;
+            i++;
           }
+        } else if (char === sep && !inQuotes) {
+          // Separator outside quotes - field ends
+          fields.push(current.trim());
+          current = '';
+          i++;
+        } else {
+          current += char;
+          i++;
         }
       }
+      fields.push(current.trim());
       return fields;
     };
 
@@ -109,12 +100,15 @@ export default function ToolImport() {
 
     const headers = splitLine(headerLine, sep).map(h => h.toLowerCase().trim());
 
-    return lines.slice(1).map(line => {
-      const cols = splitLine(line, sep);
-      const row = {};
-      headers.forEach((h, i) => { row[h] = (cols[i] || '').trim(); });
-      return row;
-    }).filter(row => (row.barcode || '').trim() || (row.name || '').trim());
+    return lines.slice(1)
+      .filter(line => line.trim().length > 0)
+      .map(line => {
+        const cols = splitLine(line, sep);
+        const row = {};
+        headers.forEach((h, i) => { row[h] = (cols[i] || '').trim(); });
+        return row;
+      })
+      .filter(row => (row.barcode || '').trim() || (row.name || '').trim());
   };
 
   const matchRows = (rawRows) => {
