@@ -605,6 +605,40 @@ export default function ToolImport() {
           )}
 
           <div className="flex gap-3 justify-end mt-4">
+            <Button 
+              onClick={() => {
+                const allRows = previewRows.map((r, idx) => ({
+                  'rad_nr': idx + 1,
+                  'åtgärd': r.action,
+                  'namn': r.name,
+                  'tillverkare': r.manufacturer,
+                  'modell': r.model_number,
+                  'serienummer': r.serial_number,
+                  'streckkod': r.barcode || '(tom)',
+                  'kategori': r.category,
+                  'status': r.status,
+                  'skick': r.condition,
+                  'plats': r.location_name || '(tom)',
+                  'inköpsdatum': r.purchase_date || '(tom)',
+                  'pris': r.purchase_price || '(tom)',
+                  'matchad_befintlig': r.matchedTool ? 'Ja' : 'Nej',
+                  'ändringar': r.changes ? Object.keys(r.changes).join('; ') : 'Ingen'
+                }));
+                const csv = [
+                  Object.keys(allRows[0]),
+                  ...allRows.map(r => Object.values(r).map(v => `"${v}"`))
+                ].map(r => r.join(',')).join('\n');
+                const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `tool_import_preview_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+              }}
+              variant="outline"
+            >
+              Ladda ned rapport
+            </Button>
             <Button onClick={() => setPreviewRows(null)} variant="outline">Avbryt</Button>
             <Button onClick={handleConfirmImport} className="bg-green-600 hover:bg-green-700">Importera</Button>
           </div>
