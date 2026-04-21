@@ -44,6 +44,7 @@ const navigation = [
       { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
       { name: 'Lån av utrustning', path: '/Transfers' },
       { name: 'Service', path: '/Service' },
+      { name: 'Importhistorik', path: '/Lokalvard/ImportHistorik', desktopOnly: true, devOnly: true },
     ]
   },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel, roles: NOT_LOKALVARDARE },
@@ -67,7 +68,6 @@ const navigation = [
       { name: 'Lager', path: '/Lokalvard/Lager' },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
       { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true },
-      { name: 'Importhistorik', path: '/Lokalvard/ImportHistorik', desktopOnly: true, devOnly: true },
       { name: 'Uttag', path: '/Lokalvard/Uttag' },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
