@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -24,8 +25,12 @@ const statusConfig = {
 
 
 export default function HandTools() {
-  const queryClient = useQueryClient();
-  const [search, setSearch] = useState('');
+   const queryClient = useQueryClient();
+   const [search, setSearch] = useState('');
+   const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
+     () => queryClient.invalidateQueries(['handtools']),
+     isLoading
+   );
   const [statusFilter, setStatusFilter] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [subcategoryFilter, setSubcategoryFilter] = useState('all');
@@ -266,7 +271,18 @@ export default function HandTools() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div ref={containerRef} className="p-6 space-y-6 overflow-y-auto min-h-screen" style={{ transform: isPulling ? `translateY(${pullDistance * 0.5}px)` : 'translateY(0)', transition: isPulling ? 'none' : 'transform 0.3s ease-out' }}>
+      {pullDistance > 0 && (
+        <div className="fixed top-0 left-0 right-0 flex justify-center items-center h-16 pointer-events-none">
+          <div style={{ opacity: Math.min(pullDistance / PULL_THRESHOLD, 1) }}>
+            {isPulling ? (
+              <Loader2 className="w-5 h-5 text-[#8B1E1E] animate-spin" />
+            ) : (
+              <div className="text-xs text-gray-500">{pullDistance >= PULL_THRESHOLD ? 'Släpp för att uppdatera' : 'Dra för att uppdatera'}</div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
