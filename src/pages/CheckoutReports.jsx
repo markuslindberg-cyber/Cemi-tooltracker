@@ -5,14 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Download, Search, ChevronDown, ChevronUp, User, Calendar, Package } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 
 export default function CheckoutReports() {
   const [search, setSearch] = useState('');
@@ -39,14 +31,9 @@ export default function CheckoutReports() {
       alert('Inga rapporter att exportera');
       return;
     }
-
-    // Skapa CSV-innehål
     const headers = ['Projekt', 'Mottagare', 'Datum', 'Antal artiklar', 'Artiklar'];
     const rows = filteredReports.map(report => {
-      const itemsText = report.checked_out_items
-        .map(item => `${item.name} (${item.quantity})`)
-        .join('; ');
-      
+      const itemsText = report.checked_out_items.map(item => `${item.name} (${item.quantity})`).join('; ');
       return [
         report.project || '',
         `${report.recipient_first_name} ${report.recipient_last_name}`,
@@ -55,20 +42,11 @@ export default function CheckoutReports() {
         itemsText,
       ];
     });
-
-    // Konvertera till CSV
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
-    ].join('\n');
-
-    // Skapa och ladda ner fil
+    const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${cell}"`).join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
+    link.setAttribute('href', URL.createObjectURL(blob));
     link.setAttribute('download', `uttagsrapporter_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -83,32 +61,31 @@ export default function CheckoutReports() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Uttagsrapporter</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{filteredReports.length} rapporter</p>
-          </div>
-          <Button
-            onClick={exportToExcel}
-            className="gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Exportera alla
-          </Button>
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Uttagsrapporter</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{filteredReports.length} rapporter</p>
         </div>
 
-        {/* Sök */}
-        <div className="mb-6 relative">
-          <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Sök efter projekt eller mottagare..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
+        {/* Sök + knappar */}
+        <div className="mb-6 space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Sök efter projekt eller mottagare..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={exportToExcel} variant="outline" className="gap-2 w-full sm:w-auto">
+              <Download className="w-4 h-4" />
+              Exportera alla
+            </Button>
+          </div>
         </div>
 
         {/* Rapporter */}
@@ -117,116 +94,90 @@ export default function CheckoutReports() {
             <p className="text-gray-500 dark:text-gray-400 text-lg">Inga rapporter hittades</p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Projekt</TableHead>
-                  <TableHead>Mottagare</TableHead>
-                  <TableHead>Datum</TableHead>
-                  <TableHead>Artiklar</TableHead>
-                  <TableHead className="w-8"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredReports.map((report) => {
-                  const isExpanded = expandedId === report.id;
-                  return (
-                    <React.Fragment key={report.id}>
-                      <TableRow
-                        className="cursor-pointer hover:bg-gray-50"
-                        onClick={() => setExpandedId(isExpanded ? null : report.id)}
-                      >
-                        <TableCell className="font-medium">{report.project}</TableCell>
-                        <TableCell>
+          <div className="space-y-3">
+            {filteredReports.map((report) => {
+              const isExpanded = expandedId === report.id;
+              return (
+                <div
+                  key={report.id}
+                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden"
+                >
+                  {/* Card header – klickbar */}
+                  <button
+                    className="w-full text-left px-4 py-4 flex items-start justify-between gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    onClick={() => setExpandedId(isExpanded ? null : report.id)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{report.project}</p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3.5 h-3.5" />
                           {report.recipient_first_name} {report.recipient_last_name}
-                        </TableCell>
-                        <TableCell>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
                           {new Date(report.checked_out_date).toLocaleDateString('sv-SE')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {report.checked_out_items.slice(0, 3).map((item, idx) => (
-                              <Badge key={idx} variant="outline" className="text-xs">
-                                {item.name} ({item.quantity})
-                              </Badge>
-                            ))}
-                            {report.checked_out_items.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{report.checked_out_items.length - 3} till
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="w-8">
-                          {isExpanded
-                            ? <ChevronUp className="w-4 h-4 text-gray-400" />
-                            : <ChevronDown className="w-4 h-4 text-gray-400" />}
-                        </TableCell>
-                      </TableRow>
-                      {isExpanded && (
-                        <TableRow className="bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                          <TableCell colSpan={5} className="p-0">
-                            <div className="p-6 space-y-4">
-                              {/* Mottagarinformation */}
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="flex items-start gap-2">
-                                  <User className="w-4 h-4 text-gray-400 mt-0.5" />
-                                  <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mottagare</p>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                      {report.recipient_first_name} {report.recipient_last_name}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <Package className="w-4 h-4 text-gray-400 mt-0.5" />
-                                  <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Projekt</p>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{report.project}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
-                                  <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Datum & tid</p>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                      {new Date(report.checked_out_date).toLocaleString('sv-SE')}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Package className="w-3.5 h-3.5" />
+                          {report.checked_out_items.length} artiklar
+                        </span>
+                      </div>
+                    </div>
+                    {isExpanded
+                      ? <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                      : <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />}
+                  </button>
 
-                              {/* Artikellista */}
+                  {/* Expanderat innehåll */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 dark:border-gray-800 p-4 space-y-4 bg-gray-50 dark:bg-gray-800/30">
+                      {/* Info-grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mottagare</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">
+                            {report.recipient_first_name} {report.recipient_last_name}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Projekt</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{report.project}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Datum & tid</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">
+                            {new Date(report.checked_out_date).toLocaleString('sv-SE')}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Artikellista */}
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-2">
+                          Uttagna artiklar ({report.checked_out_items.length} st)
+                        </p>
+                        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+                          {report.checked_out_items.map((item, idx) => (
+                            <div key={idx} className="flex items-center justify-between px-4 py-2.5">
                               <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-2">
-                                  Uttagna artiklar ({report.checked_out_items.length} st)
-                                </p>
-                                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
-                                  {report.checked_out_items.map((item, idx) => (
-                                    <div key={idx} className="flex items-center justify-between px-4 py-2.5">
-                                      <div>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
-                                        {item.subcategory && (
-                                          <p className="text-xs text-gray-500 dark:text-gray-400">{item.subcategory}</p>
-                                        )}
-                                      </div>
-                                      <Badge variant="outline" className="text-xs font-semibold">
-                                        {item.quantity} st
-                                      </Badge>
-                                    </div>
-                                  ))}
-                                </div>
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
+                                {item.subcategory && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">{item.subcategory}</p>
+                                )}
                               </div>
+                              <Badge variant="outline" className="text-xs font-semibold">
+                                {item.quantity} st
+                              </Badge>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
