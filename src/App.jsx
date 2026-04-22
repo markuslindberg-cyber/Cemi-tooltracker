@@ -5,7 +5,8 @@ import { queryClientInstance } from '@/lib/query-client'
 import VisualEditAgent from '@/lib/VisualEditAgent'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import HandTools from './pages/HandTools';
 import ArbetskläderUtrustning from './pages/ArbetskläderUtrustning';
@@ -45,6 +46,21 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
+const PageTransition = ({ children }) => {
+  const location = useLocation();
+  return (
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.2 }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
@@ -70,10 +86,13 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <Routes>
+    <AnimatePresence mode="wait">
+      <Routes>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
+          <PageTransition>
+            <MainPage />
+          </PageTransition>
         </LayoutWrapper>
       } />
       {Object.entries(Pages).map(([path, Page]) => (
@@ -82,7 +101,9 @@ const AuthenticatedApp = () => {
           path={`/${path}`}
           element={
             <LayoutWrapper currentPageName={path}>
-              <Page />
+              <PageTransition>
+                <Page />
+              </PageTransition>
             </LayoutWrapper>
           }
         />
@@ -117,6 +138,7 @@ const AuthenticatedApp = () => {
       <Route path="/Inventory/ToolImport" element={<LayoutWrapper currentPageName="ToolImport"><ToolImport /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </AnimatePresence>
   );
 };
 

@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Loader2, ChevronsUpDown, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import MobileSelect from "@/components/ui/mobile-select";
 
 const defaultMember = {
   name: '',
@@ -157,18 +158,18 @@ export default function TeamMemberFormModal({
 
           <div className="space-y-2">
             <Label>Roll</Label>
-            <Select value={formData.role} onValueChange={(v) => handleChange('role', v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="admin lokalvård">Admin Lokalvård</SelectItem>
-                <SelectItem value="lokalvårdare">Lokalvårdare</SelectItem>
-                <SelectItem value="verktygsförvaltare">Verktygsförvaltare</SelectItem>
-                <SelectItem value="ägare">Ägare</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={formData.role}
+              onChange={(v) => handleChange('role', v)}
+              options={[
+                { value: 'admin', label: 'Admin' },
+                { value: 'admin lokalvård', label: 'Admin Lokalvård' },
+                { value: 'lokalvårdare', label: 'Lokalvårdare' },
+                { value: 'verktygsförvaltare', label: 'Verktygsförvaltare' },
+                { value: 'ägare', label: 'Ägare' },
+              ]}
+              placeholder="Välj roll"
+            />
           </div>
 
           {!isEditing && (
@@ -212,19 +213,15 @@ export default function TeamMemberFormModal({
 
           <div className="space-y-2">
             <Label>Standardplats</Label>
-            <Select value={formData.default_location_id} onValueChange={(v) => handleChange('default_location_id', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Välj standardplats" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={null}>Ingen</SelectItem>
-                {locations?.map((location) => (
-                  <SelectItem key={location.id} value={location.id}>
-                    {location.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={formData.default_location_id}
+              onChange={(v) => handleChange('default_location_id', v)}
+              options={[
+                { value: '', label: 'Ingen' },
+                ...(locations?.map((location) => ({ value: location.id, label: location.name })) || [])
+              ]}
+              placeholder="Välj standardplats"
+            />
           </div>
 
           <div className="space-y-2">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatsCard from '@/components/ui/StatsCard';
@@ -29,11 +30,17 @@ export default function Dashboard() {
   const [editTool, setEditTool] = useState(null);
   const [showAddTool, setShowAddTool] = useState(false);
   const [showLoanRequest, setShowLoanRequest] = useState(false);
+  const queryClient = useQueryClient();
 
-  const { data: tools = [], refetch: refetchTools } = useQuery({
+  const { data: tools = [], refetch: refetchTools, isLoading } = useQuery({
     queryKey: ['dashboardTools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
   });
+
+  const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
+    () => queryClient.invalidateQueries(['dashboardTools']),
+    isLoading
+  );
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
@@ -76,35 +83,89 @@ export default function Dashboard() {
   // Calculate total value from active tools only - exclude handTools to avoid async flicker
   const totalValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
 
-  const handleTransfer = async (transferData) => {
-    await base44.entities.Transfer.create(transferData);
-    await base44.entities.Tool.update(transferData.tool_id, {
-      location_id: transferData.to_location_id,
-      location_name: transferData.to_location_name,
-      assigned_to_email: transferData.to_person_email,
-      assigned_to_name: transferData.to_person_name,
-      status: 'in_use',
-      last_seen_date: new Date().toISOString(),
-    });
-    refetchTools();
-    setTransferTool(null);
-  };
+  const toolMutation = useMutation({
+    mutationFn: async (toolData) => {
+      if (editTool?.id) {
+        return base44.entities.Tool.update(editTool.id, toolData);
+      } else {
+        return base44.entities.Tool.create(toolData);
+      }
+    },
+    onMutate: async (toolData) => {
+      await queryClient.cancelQueries({ queryKey: ['dashboardTools'] });
+      const prevTools = queryClient.getQueryData(['dashboardTools']);
+      if (editTool?.id) {
+        queryClient.setQueryData(['dashboardTools'], (old) =>
+          old?.map(t => t.id === editTool.id ? { ...t, ...toolData } : t) || []
+        );
+      } else {
+        queryClient.setQueryData(['dashboardTools'], (old) => [...(old || []), { ...toolData, id: 'temp-' + Date.now() }]);
+      }
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['dashboardTools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardTools'] });
+      setEditTool(null);
+      setShowAddTool(false);
+    },
+  });
 
-  const handleSaveTool = async (toolData) => {
-    if (editTool?.id) {
-      await base44.entities.Tool.update(editTool.id, toolData);
-    } else {
-      await base44.entities.Tool.create(toolData);
-    }
-    refetchTools();
-    setEditTool(null);
-    setShowAddTool(false);
-  };
+  const transferMutation = useMutation({
+    mutationFn: async (transferData) => {
+      await base44.entities.Transfer.create(transferData);
+      return base44.entities.Tool.update(transferData.tool_id, {
+        location_id: transferData.to_location_id,
+        location_name: transferData.to_location_name,
+        assigned_to_email: transferData.to_person_email,
+        assigned_to_name: transferData.to_person_name,
+        status: 'in_use',
+        last_seen_date: new Date().toISOString(),
+      });
+    },
+    onMutate: async (transferData) => {
+      await queryClient.cancelQueries({ queryKey: ['dashboardTools'] });
+      const prevTools = queryClient.getQueryData(['dashboardTools']);
+      queryClient.setQueryData(['dashboardTools'], (old) =>
+        old?.map(t => t.id === transferData.tool_id 
+          ? { ...t, location_id: transferData.to_location_id, location_name: transferData.to_location_name, status: 'in_use' }
+          : t
+        ) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['dashboardTools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardTools'] });
+      setTransferTool(null);
+    },
+  });
 
-  const handleStatusChange = async (tool, newStatus) => {
-    await base44.entities.Tool.update(tool.id, { status: newStatus });
-    refetchTools();
-  };
+  const statusMutation = useMutation({
+    mutationFn: (data) => base44.entities.Tool.update(data.id, { status: data.newStatus }),
+    onMutate: async ({ id, newStatus }) => {
+      await queryClient.cancelQueries({ queryKey: ['dashboardTools'] });
+      const prevTools = queryClient.getQueryData(['dashboardTools']);
+      queryClient.setQueryData(['dashboardTools'], (old) =>
+        old?.map(t => t.id === id ? { ...t, status: newStatus } : t) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['dashboardTools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardTools'] });
+    },
+  });
+
+  const handleTransfer = (transferData) => transferMutation.mutate(transferData);
+  const handleSaveTool = (toolData) => toolMutation.mutate(toolData);
+  const handleStatusChange = (tool, newStatus) => statusMutation.mutate({ id: tool.id, newStatus });
 
   const recentlyUsedTools = activeTools.slice(0, 6);
 
@@ -122,7 +183,18 @@ export default function Dashboard() {
   })).filter(l => l.activeLoans > 0);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-4 lg:p-8">
+    <div ref={containerRef} className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-4 lg:p-8 overflow-y-auto" style={{ transform: isPulling ? `translateY(${pullDistance * 0.5}px)` : 'translateY(0)', transition: isPulling ? 'none' : 'transform 0.3s ease-out' }}>
+      {pullDistance > 0 && (
+        <div className="fixed top-0 left-0 right-0 flex justify-center items-center h-16 pointer-events-none">
+          <div style={{ opacity: Math.min(pullDistance / PULL_THRESHOLD, 1) }}>
+            {isPulling ? (
+              <span className="text-xs text-gray-500">Uppdaterar...</span>
+            ) : (
+              <div className="text-xs text-gray-500">{pullDistance >= PULL_THRESHOLD ? 'Släpp för att uppdatera' : 'Dra för att uppdatera'}</div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto space-y-5 lg:space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">

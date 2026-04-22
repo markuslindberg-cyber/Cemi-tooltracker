@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Upload, X, Wrench, Check, ChevronsUpDown } from "lucide-react";
+import MobileSelect from "@/components/ui/mobile-select";
 import { base44 } from "@/api/base44Client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
@@ -927,36 +928,36 @@ export default function ToolFormModal({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Select value={formData.status} onValueChange={(v) => handleChange('status', v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="available">Tillgänglig</SelectItem>
-                      <SelectItem value="in_use">I bruk</SelectItem>
-                      <SelectItem value="maintenance">Underhåll</SelectItem>
-                      <SelectItem value="missing">Saknas</SelectItem>
-                      <SelectItem value="retired">Kasserad</SelectItem>
-                      <SelectItem value="sålda">Såld</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                   <Label>Status</Label>
+                   <MobileSelect
+                     value={formData.status}
+                     onChange={(v) => handleChange('status', v)}
+                     options={[
+                       { value: 'available', label: 'Tillgänglig' },
+                       { value: 'in_use', label: 'I bruk' },
+                       { value: 'maintenance', label: 'Underhåll' },
+                       { value: 'missing', label: 'Saknas' },
+                       { value: 'retired', label: 'Kasserad' },
+                       { value: 'sålda', label: 'Såld' },
+                     ]}
+                     placeholder="Välj status"
+                   />
+                 </div>
 
-                <div className="space-y-2">
-                  <Label>Skick</Label>
-                  <Select value={formData.condition} onValueChange={(v) => handleChange('condition', v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">Ny</SelectItem>
-                      <SelectItem value="good">Bra</SelectItem>
-                      <SelectItem value="fair">Okej</SelectItem>
-                      <SelectItem value="poor">Dålig</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                 <div className="space-y-2">
+                   <Label>Skick</Label>
+                   <MobileSelect
+                     value={formData.condition}
+                     onChange={(v) => handleChange('condition', v)}
+                     options={[
+                       { value: 'new', label: 'Ny' },
+                       { value: 'good', label: 'Bra' },
+                       { value: 'fair', label: 'Okej' },
+                       { value: 'poor', label: 'Dålig' },
+                     ]}
+                     placeholder="Välj skick"
+                   />
+                 </div>
                 <div className="space-y-2">
                   <Label>Streckkod / Tag-ID</Label>
                   <Input
@@ -1012,21 +1013,17 @@ export default function ToolFormModal({
               {/* Assignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Plats</Label>
-                  <Select value={formData.location_id} onValueChange={(v) => handleChange('location_id', v)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Välj plats" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={null}>Ej tilldelad</SelectItem>
-                      {locations?.map((location) => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <Label>Plats</Label>
+                    <MobileSelect
+                      value={formData.location_id}
+                      onChange={(v) => handleChange('location_id', v)}
+                      options={[
+                        { value: '', label: 'Ej tilldelad' },
+                        ...(locations?.map((location) => ({ value: location.id, label: location.name })) || [])
+                      ]}
+                      placeholder="Välj plats"
+                    />
+                  </div>
               </div>
 
               {/* Notes */}
