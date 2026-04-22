@@ -171,8 +171,8 @@ export default function LoanRequests() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Förflyttningar</h1>
-          <p className="text-gray-600 mt-1">Hantera låneförfrågningar för maskiner</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Förflyttningar</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Hantera låneförfrågningar för maskiner</p>
         </div>
         <Button onClick={() => setIsLoanModalOpen(true)} className="bg-[#8B1E1E] hover:bg-[#6B1616] w-full sm:w-auto">
           Skicka förfrågan om lån
@@ -183,7 +183,7 @@ export default function LoanRequests() {
       <div className="grid grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Väntande förfrågningar</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Väntande förfrågningar</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{requestsToApprove.length}</div>
@@ -191,7 +191,7 @@ export default function LoanRequests() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Utlånade maskiner</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Utlånade maskiner</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{myLoans.reduce((sum, r) => sum + r.tool_ids.length, 0)}</div>
@@ -199,7 +199,7 @@ export default function LoanRequests() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Lånade från andra</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Lånade från andra</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -248,17 +248,17 @@ export default function LoanRequests() {
               return (
                 <Card
                   key={request.id}
-                  className={`transition-shadow cursor-pointer ${isMyApproval ? 'border-red-300 hover:shadow-md hover:border-red-400 bg-red-50' : 'hover:shadow-md opacity-75'}`}
+                  className={`transition-shadow cursor-pointer ${isMyApproval ? 'border-red-300 dark:border-red-800 hover:shadow-md hover:border-red-400 bg-red-50 dark:bg-red-900/20' : 'hover:shadow-md opacity-75'}`}
                   onClick={() => openApproveDialog(request)}
                 >
                   <CardContent className="pt-6">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
-                          <p className="text-sm text-gray-600">Begärd av: {request.requested_by_name}</p>
-                          <p className="text-sm text-gray-600">Ska lånas av: {request.assigned_to_name || '–'}</p>
-                          <p className="text-sm text-gray-500">Ansvarig godkännare: {request.approver_name}</p>
+                          <p className="font-semibold text-gray-900 dark:text-gray-100">{request.tool_names.join(', ')}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Begärd av: {request.requested_by_name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Ska lånas av: {request.assigned_to_name || '–'}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-500">Ansvarig godkännare: {request.approver_name}</p>
                         </div>
                         <div className="flex flex-col items-end gap-1 shrink-0">
                           {isMyApproval ? (
@@ -268,13 +268,13 @@ export default function LoanRequests() {
                           )}
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         Destination: {request.destination_location_name} | Återlämning: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
                       </div>
                       {request.requester_comment && (
-                        <div className="text-sm bg-white p-2 rounded border-l-2 border-gray-300">
-                          <p className="font-medium text-gray-700">Kommentar:</p>
-                          <p className="text-gray-600">{request.requester_comment}</p>
+                        <div className="text-sm bg-white dark:bg-gray-800 p-2 rounded border-l-2 border-gray-300 dark:border-gray-600">
+                          <p className="font-medium text-gray-700 dark:text-gray-300">Kommentar:</p>
+                          <p className="text-gray-600 dark:text-gray-400">{request.requester_comment}</p>
                         </div>
                       )}
                       {isMyApproval && (
@@ -302,18 +302,18 @@ export default function LoanRequests() {
             </Card>
           ) : (
             pendingReturnConfirm.map(request => (
-              <Card key={request.id} className="border-orange-200 bg-orange-50">
+              <Card key={request.id} className="border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
                 <CardContent className="pt-6">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
-                        <p className="text-sm text-gray-600">Lånad av: {request.assigned_to_name}</p>
-                        <p className="text-sm text-gray-600">Från: {request.destination_location_name}</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{request.tool_names.join(', ')}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Lånad av: {request.assigned_to_name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Från: {request.destination_location_name}</p>
                       </div>
                       <Badge className="bg-orange-100 text-orange-800">Väntar mottagning</Badge>
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Markerades som returnerad: {request.returned_date ? new Date(request.returned_date).toLocaleDateString('sv-SE') : '–'}
                     </p>
                     <Button
@@ -346,21 +346,21 @@ export default function LoanRequests() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
-                        <p className="text-sm text-gray-600">Ska lånas av: {request.assigned_to_name}</p>
-                        <p className="text-sm text-gray-600">Destination: {request.destination_location_name}</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{request.tool_names.join(', ')}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Ska lånas av: {request.assigned_to_name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Destination: {request.destination_location_name}</p>
                       </div>
                       <Badge variant={getStatusBadge(request.status).variant}>
                         {getStatusBadge(request.status).label}
                       </Badge>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       Återlämningsdatum: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
                     </div>
                     {request.approver_comment && (
-                      <div className="text-sm bg-gray-50 p-2 rounded border-l-2 border-blue-300">
-                        <p className="font-medium text-gray-700">Kommentar från godkännare:</p>
-                        <p className="text-gray-600">{request.approver_comment}</p>
+                      <div className="text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded border-l-2 border-blue-300 dark:border-blue-700">
+                        <p className="font-medium text-gray-700 dark:text-gray-300">Kommentar från godkännare:</p>
+                        <p className="text-gray-600 dark:text-gray-400">{request.approver_comment}</p>
                       </div>
                     )}
                     {request.status === 'approved' && (
@@ -391,13 +391,13 @@ export default function LoanRequests() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
-                        <p className="text-sm text-gray-600">Från: {request.tool_details[0]?.location_name}</p>
-                        <p className="text-sm text-gray-600">Till: {request.destination_location_name}</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{request.tool_names.join(', ')}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Från: {request.tool_details[0]?.location_name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Till: {request.destination_location_name}</p>
                       </div>
                       <Badge variant="default">Godkänd</Badge>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       Återlämningsdatum: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
                     </div>
                     <div className="flex gap-2 flex-wrap">
@@ -439,14 +439,14 @@ export default function LoanRequests() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-semibold text-gray-900">{request.tool_names.join(', ')}</p>
-                        <p className="text-sm text-gray-600">Låntagare: {request.assigned_to_name}</p>
-                        <p className="text-sm text-gray-600">Destination: {request.destination_location_name}</p>
-                        <p className="text-sm text-gray-600">Begärd av: {request.requested_by_name}</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{request.tool_names.join(', ')}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Låntagare: {request.assigned_to_name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Destination: {request.destination_location_name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Begärd av: {request.requested_by_name}</p>
                       </div>
                       <Badge variant="default">Godkänd</Badge>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       Återlämningsdatum: {new Date(request.default_return_date).toLocaleDateString('sv-SE')}
                     </div>
                     <Button variant="outline" size="sm" onClick={() => { setAdminEditRequest(request); setAdminEditOpen(true); }}>
@@ -469,14 +469,14 @@ export default function LoanRequests() {
               <DialogTitle>Hantera låneförfrågan</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-              <div className="bg-gray-50 rounded-lg p-3 space-y-1">
-                <p className="font-medium text-gray-900">{selectedRequest.tool_names.join(', ')}</p>
-                <p className="text-sm text-gray-600">Begärd av: {selectedRequest.requested_by_name}</p>
-                <p className="text-sm text-gray-600">Ska lånas av: {selectedRequest.assigned_to_name}</p>
-                <p className="text-sm text-gray-600">Destination: {selectedRequest.destination_location_name}</p>
-                <p className="text-sm text-gray-600">Önskat återlämningsdatum: <strong>{new Date(selectedRequest.default_return_date).toLocaleDateString('sv-SE')}</strong></p>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-1">
+                <p className="font-medium text-gray-900 dark:text-gray-100">{selectedRequest.tool_names.join(', ')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Begärd av: {selectedRequest.requested_by_name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Ska lånas av: {selectedRequest.assigned_to_name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Destination: {selectedRequest.destination_location_name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Önskat återlämningsdatum: <strong>{new Date(selectedRequest.default_return_date).toLocaleDateString('sv-SE')}</strong></p>
                 {selectedRequest.requester_comment && (
-                  <p className="text-sm text-gray-600 italic">Kommentar: {selectedRequest.requester_comment}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 italic">Kommentar: {selectedRequest.requester_comment}</p>
                 )}
               </div>
 
@@ -528,7 +528,7 @@ export default function LoanRequests() {
                   type="date"
                   value={approveAdjustedDate}
                   onChange={(e) => setApproveAdjustedDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 />
                 <p className="text-xs text-gray-500 mt-1">Lämna tomt för att behålla det önskade datumet</p>
               </div>
@@ -572,8 +572,8 @@ export default function LoanRequests() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <p className="font-medium text-gray-900">Maskiner: {selectedRequest.tool_names.join(', ')}</p>
-                <p className="text-sm text-gray-600 mt-1">Nuvarande återlämningsdatum: {new Date(selectedRequest.default_return_date).toLocaleDateString('sv-SE')}</p>
+                <p className="font-medium text-gray-900 dark:text-gray-100">Maskiner: {selectedRequest.tool_names.join(', ')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Nuvarande återlämningsdatum: {new Date(selectedRequest.default_return_date).toLocaleDateString('sv-SE')}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Nytt återlämningsdatum *</label>
@@ -581,7 +581,7 @@ export default function LoanRequests() {
                   type="date"
                   value={extensionDate}
                   onChange={(e) => setExtensionDate(e.target.value)}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                 />
               </div>
               <div>
@@ -614,11 +614,11 @@ export default function LoanRequests() {
               <DialogTitle>Bekräfta mottagning av maskiner</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <p className="font-medium text-gray-900">{confirmReturnRequest.tool_names.join(', ')}</p>
-                <p className="text-sm text-gray-600 mt-1">Återlämnade av: {confirmReturnRequest.assigned_to_name}</p>
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <p className="font-medium text-gray-900 dark:text-gray-100">{confirmReturnRequest.tool_names.join(', ')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Återlämnade av: {confirmReturnRequest.assigned_to_name}</p>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Bekräftar du att du har tagit emot ovanstående maskiner och att de är kontrollerade?
               </p>
               <div>
