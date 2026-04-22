@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { base44 } from '@/api/base44Client';
 import {
   LayoutDashboard,
   Package,
-  MapPin,
   Users,
-  ArrowRightLeft,
   Menu,
   X,
   LogOut,
   ChevronDown,
+  ChevronLeft,
   Wrench,
   Shovel,
-  ClipboardList,
   Shirt,
   SprayCan,
 } from 'lucide-react';
@@ -30,6 +28,9 @@ import { cn } from "@/lib/utils";
 
 const LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare'];
 const NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'];
+
+// Top-level routes that are "root" tabs (no back button shown)
+const ROOT_PATHS = ['/', '/Inventory', '/HandTools', '/Team', '/Dashboard'];
 
 const navigation = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -99,12 +100,30 @@ const navigation = [
   },
 ];
 
+// Bottom tab bar items
+const BOTTOM_TABS = [
+  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { name: 'Maskiner', path: '/Inventory', icon: Package },
+  { name: 'Handredskap', path: '/HandTools', icon: Shovel },
+  { name: 'Team', path: '/Team', icon: Users },
+];
+
+const slideVariants = {
+  initial: { x: '4%', opacity: 0 },
+  animate: { x: 0, opacity: 1 },
+  exit: { x: '-4%', opacity: 0 },
+};
+
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
+  const [user, setUser] = useState(null);
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const isRootPath = ROOT_PATHS.includes(location.pathname);
 
   // Auto-open parent menu when on a child path
   useEffect(() => {
@@ -117,7 +136,6 @@ export default function Layout({ children }) {
     });
     setOpenMenus(prev => ({ ...prev, ...autoOpen }));
   }, [location.pathname]);
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -130,16 +148,27 @@ export default function Layout({ children }) {
 
   const isActivePath = (path) => {
     if (path === '/') return location.pathname === '/';
-    // Exact match first, then prefix match (avoid /Lokalvard matching /Lokalvard/Lager wrong parent)
     if (location.pathname === path) return true;
     return location.pathname.startsWith(path + '/');
   };
+
+  // Get current page title for mobile header
+  const currentPageTitle = (() => {
+    for (const item of navigation) {
+      if (item.children) {
+        const child = item.children.find(c => c.path === location.pathname);
+        if (child) return child.name;
+      }
+      if (item.path === location.pathname) return item.name;
+    }
+    return 'ToolTrack';
+  })();
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -159,7 +188,7 @@ export default function Layout({ children }) {
               </div>
               <span className="text-xl font-bold text-gray-900">ToolTrack</span>
             </Link>
-            <button 
+            <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
             >
@@ -269,7 +298,7 @@ export default function Layout({ children }) {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => base44.auth.logout()}
                     className="text-[#8B1E1E]"
                   >
@@ -286,26 +315,78 @@ export default function Layout({ children }) {
       {/* Main Content */}
       <div className="lg:pl-72">
         {/* Mobile Header */}
-        <header className="lg:hidden h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-30">
-          <button 
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 text-gray-600 hover:text-gray-900"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
-              <Wrench className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-gray-900">ToolTrack</span>
-          </Link>
-          <div className="w-10" /> {/* Spacer for centering */}
+        <header className="lg:hidden h-14 bg-white border-b border-gray-200 flex items-center justify-between px-2 sticky top-0 z-30" style={{ paddingTop: 'var(--sat)' }}>
+          {/* Left: back button on child routes, menu on root routes */}
+          {isRootPath ? (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 text-gray-600 hover:text-gray-900"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 text-gray-600 hover:text-gray-900 flex items-center gap-1"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+
+          {/* Center: title */}
+          <span className="font-semibold text-gray-900 text-sm truncate max-w-[200px]">
+            {isRootPath ? (
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
+                  <Wrench className="w-3.5 h-3.5 text-white" />
+                </div>
+                ToolTrack
+              </Link>
+            ) : currentPageTitle}
+          </span>
+
+          {/* Right: spacer */}
+          <div className="w-10" />
         </header>
 
-        {/* Page Content */}
-        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen">
-          {children}
+        {/* Page Content with slide animation */}
+        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen pb-16 lg:pb-0" style={{ paddingBottom: 'calc(4rem + var(--sab))' }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={slideVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
+
+        {/* Mobile Bottom Tab Bar */}
+        <nav
+          className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-30"
+          style={{ paddingBottom: 'var(--sab)' }}
+        >
+          {BOTTOM_TABS.map((tab) => {
+            const active = isActivePath(tab.path);
+            return (
+              <Link
+                key={tab.name}
+                to={tab.path}
+                className={cn(
+                  "flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors",
+                  active ? "text-[#8B1E1E]" : "text-gray-400"
+                )}
+              >
+                <tab.icon className={cn("w-5 h-5", active ? "text-[#8B1E1E]" : "text-gray-400")} />
+                <span>{tab.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );

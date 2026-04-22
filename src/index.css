@@ -2,6 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Mobile / Native-like enhancements ── */
+
+/* Safe area insets for notch / home-indicator on Android & iOS */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+html {
+  /* Disable rubber-band / overscroll bounce */
+  overscroll-behavior: none;
+}
+
+body {
+  overscroll-behavior: none;
+  /* Push content away from device edges */
+  padding-top: var(--sat);
+  padding-right: var(--sar);
+  padding-left: var(--sal);
+}
+
+/* Prevent text selection on interactive UI chrome */
+button,
+a,
+nav,
+[role="tab"],
+[role="menuitem"] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Dark mode – auto-follow system preference */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 0% 90%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 90%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 0% 70%;
+  }
+}
+
 
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
