@@ -14,44 +14,13 @@ import NyttUttagModal from '@/components/lokalvard/NyttUttagModal';
 export default function LokalvardUttag() {
   useScrollRestore();
   const queryClient = useQueryClient();
-  const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
-    () => queryClient.invalidateQueries(['uttag']),
-    uttagLoading
-  );
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  const [sortBy, setSortBy] = useState('datum');
-  const [sortOrder, setSortOrder] = useState('desc');
-  const [selectedMonths, setSelectedMonths] = useState([]);
-  const [selectedCustomers, setSelectedCustomers] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [editingArticleId, setEditingArticleId] = useState(null);
-  const [editArticleForm, setEditArticleForm] = useState({});
-  const [uploading, setUploading] = useState(false);
-  const [expandedRows, setExpandedRows] = useState({});
-  const [searchBarcode, setSearchBarcode] = useState('');
-  const [showUnmatched, setShowUnmatched] = useState(false);
-  const [showNyttUttagModal, setShowNyttUttagModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loadAllUttag, setLoadAllUttag] = useState(false);
-  const itemsPerPage = 500;
 
   const { data: artiklar = [] } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
     queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
   });
-
-  const artikelMap = useMemo(() => {
-    const map = {};
-    artiklar.forEach(a => {
-      map[a.id] = a;
-      map[a.streckkod] = a;
-      if (a.old_streckkod) map[a.old_streckkod] = a;
-      if (a.benamning) map[a.benamning.toLowerCase()] = a;
-    });
-    return map;
-  }, [artiklar]);
 
   const { data: uttagData = [], isLoading: uttagLoading, refetch } = useQuery({
     queryKey: ['uttag'],
@@ -70,6 +39,39 @@ export default function LokalvardUttag() {
     },
     refetchInterval: 2000,
   });
+
+  const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
+    () => queryClient.invalidateQueries(['uttag']),
+    uttagLoading
+  );
+
+  const [sortBy, setSortBy] = useState('datum');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [selectedMonths, setSelectedMonths] = useState([]);
+  const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [editingArticleId, setEditingArticleId] = useState(null);
+  const [editArticleForm, setEditArticleForm] = useState({});
+  const [uploading, setUploading] = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
+  const [searchBarcode, setSearchBarcode] = useState('');
+  const [showUnmatched, setShowUnmatched] = useState(false);
+  const [showNyttUttagModal, setShowNyttUttagModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadAllUttag, setLoadAllUttag] = useState(false);
+  const itemsPerPage = 500;
+
+  const artikelMap = useMemo(() => {
+    const map = {};
+    artiklar.forEach(a => {
+      map[a.id] = a;
+      map[a.streckkod] = a;
+      if (a.old_streckkod) map[a.old_streckkod] = a;
+      if (a.benamning) map[a.benamning.toLowerCase()] = a;
+    });
+    return map;
+  }, [artiklar]);
 
   const uttag = useMemo(() => {
     const processedUttag = (uttagData.uttag || []).map(u => ({
