@@ -89,17 +89,17 @@ export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="font-medium text-gray-900 text-sm">{request.tool_names?.join(', ')}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Begärd av: {request.requested_by_name}</p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+            <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{request.tool_names?.join(', ')}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Begärd av: {request.requested_by_name}</p>
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Låntagare</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Låntagare</label>
             <select
               value={assignedToEmail}
               onChange={handlePersonChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-400 dark:focus:border-blue-600"
             >
               <option value="">Välj person</option>
               {teamMembers.map(m => (
@@ -109,11 +109,11 @@ export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Destinationsplats</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Destinationsplats</label>
             <select
               value={destinationLocationId}
               onChange={handleLocationChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-400 dark:focus:border-blue-600"
             >
               <option value="">Välj plats</option>
               {locations.map(l => (
@@ -123,17 +123,17 @@ export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Återlämningsdatum</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Återlämningsdatum</label>
             <input
               type="date"
               value={returnDate}
               onChange={e => setReturnDate(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-400 dark:focus:border-blue-600"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Kommentar</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kommentar</label>
             <Textarea
               placeholder="Anteckning om lånet..."
               value={approverComment}
@@ -144,8 +144,8 @@ export default function AdminEditLoanDialog({ request, open, onOpenChange }) {
         </div>
 
         {showCancelConfirm ? (
-          <div className="space-y-3 border-t pt-4">
-            <p className="text-sm font-medium text-red-700">Bekräfta avbrytning – mail skickas till berörda</p>
+          <div className="space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <p className="text-sm font-medium text-red-600 dark:text-red-400">Bekräfta avbrytning – mail skickas till berörda</p>
             <Textarea
               placeholder="Kommentar (valfritt)..."
               value={cancelComment}

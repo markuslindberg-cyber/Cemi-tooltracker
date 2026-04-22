@@ -43,10 +43,10 @@ export default function EditLoanDialog({ request, open, onOpenChange, onEarlyRet
 
         <div className="space-y-4">
           <div>
-            <p className="font-medium text-gray-900">{request.tool_names?.join(', ')}</p>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="font-medium text-gray-900 dark:text-gray-100">{request.tool_names?.join(', ')}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               Nuvarande återlämningsdatum:{' '}
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-gray-700 dark:text-gray-300">
                 {currentDate ? new Date(currentDate).toLocaleDateString('sv-SE') : '–'}
               </span>
             </p>
@@ -56,22 +56,22 @@ export default function EditLoanDialog({ request, open, onOpenChange, onEarlyRet
             <div className="grid grid-cols-1 gap-3">
               <button
                 onClick={() => { setMode('early'); setNewDate(''); }}
-                className="flex items-start gap-3 border border-gray-200 rounded-xl p-4 text-left hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                className="flex items-start gap-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 rounded-xl p-4 text-left hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-600 dark:hover:bg-blue-900/20 transition-colors"
               >
-                <CalendarCheck className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                <CalendarCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-medium text-gray-900">Ange tidigare återlämningsdatum</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Uppdaterar datumet direkt – ingen ny godkännandeförfrågan skickas</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">Ange tidigare återlämningsdatum</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Uppdaterar datumet direkt – ingen ny godkännandeförfrågan skickas</p>
                 </div>
               </button>
               <button
                 onClick={() => { setMode('extend'); setNewDate(''); }}
-                className="flex items-start gap-3 border border-gray-200 rounded-xl p-4 text-left hover:border-orange-400 hover:bg-orange-50 transition-colors"
+                className="flex items-start gap-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 rounded-xl p-4 text-left hover:border-orange-400 hover:bg-orange-50 dark:hover:border-orange-600 dark:hover:bg-orange-900/20 transition-colors"
               >
-                <CalendarPlus className="w-5 h-5 text-orange-600 mt-0.5 shrink-0" />
+                <CalendarPlus className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-medium text-gray-900">Begär förlängning</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Skickar en ny förfrågan om förlängt återlämningsdatum som kräver godkännande</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">Begär förlängning</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Skickar en ny förfrågan om förlängt återlämningsdatum som kräver godkännande</p>
                 </div>
               </button>
             </div>
@@ -81,19 +81,19 @@ export default function EditLoanDialog({ request, open, onOpenChange, onEarlyRet
             <div className="space-y-4">
               <button
                 onClick={() => { setMode(null); setNewDate(''); setComment(''); }}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
                 <ArrowLeft className="w-3.5 h-3.5" /> Tillbaka
               </button>
 
               <div className="flex items-center gap-2">
-                <Badge className={mode === 'early' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}>
+                <Badge className={mode === 'early' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'}>
                   {mode === 'early' ? 'Tidigare återlämning' : 'Förlängning'}
                 </Badge>
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {mode === 'early' ? 'Nytt (tidigare) återlämningsdatum *' : 'Nytt (förlängt) återlämningsdatum *'}
                 </label>
                 <input
@@ -102,15 +102,15 @@ export default function EditLoanDialog({ request, open, onOpenChange, onEarlyRet
                   min={mode === 'extend' ? (currentDate || today) : today}
                   max={mode === 'early' ? (currentDate || undefined) : undefined}
                   onChange={e => setNewDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-400 dark:focus:border-blue-600"
                 />
                 {mode === 'early' && (
-                  <p className="text-xs text-gray-400">Välj ett datum före det nuvarande återlämningsdatumet</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">Välj ett datum före det nuvarande återlämningsdatumet</p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Kommentar</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kommentar</label>
                 <Textarea
                   placeholder={mode === 'early' ? 'T.ex. Projektet slutfördes tidigare...' : 'Förklara varför förlängning behövs...'}
                   value={comment}
