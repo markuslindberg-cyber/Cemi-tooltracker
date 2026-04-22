@@ -34,6 +34,7 @@ export default function Huvudmaskiner() {
     model: '',
     year_model: '',
     registration_number: '',
+    project_number: '',
     location_id: '',
     location_name: '',
     notes: '',
@@ -111,6 +112,7 @@ export default function Huvudmaskiner() {
       model: '',
       year_model: '',
       registration_number: '',
+      project_number: '',
       location_id: '',
       location_name: '',
       notes: '',
@@ -215,6 +217,16 @@ export default function Huvudmaskiner() {
                 />
               </div>
               <div>
+                <Label>Projektnummer</Label>
+                <Input
+                  value={formData.project_number}
+                  onChange={(e) =>
+                    setFormData({ ...formData, project_number: e.target.value })
+                  }
+                  placeholder="Projektnummer"
+                />
+              </div>
+              <div>
                 <Label>Plats</Label>
                 <Select
                   value={formData.location_id}
@@ -306,6 +318,11 @@ export default function Huvudmaskiner() {
                       {maskin.registration_number && (
                         <p className="text-sm text-gray-600">
                           Regnummer: {maskin.registration_number}
+                        </p>
+                      )}
+                      {maskin.project_number && (
+                        <p className="text-sm text-gray-600">
+                          Projektnummer: {maskin.project_number}
                         </p>
                       )}
                       {maskin.location_name && (

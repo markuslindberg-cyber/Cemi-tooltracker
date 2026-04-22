@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Regnummer"
     },
+    "project_number": {
+      "type": "string",
+      "description": "Projektnummer"
+    },
     "location_id": {
       "type": "string",
       "description": "Referens till Location-entiteten"
