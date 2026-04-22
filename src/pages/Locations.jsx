@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import LocationFormModal from '@/components/modals/LocationFormModal';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
@@ -87,35 +87,71 @@ export default function Locations() {
     return handTools.filter(t => t.location_id === locationId).length;
   };
 
-  const handleSaveLocation = async (locationData) => {
-    setIsLoading(true);
-    if (editLocation?.id) {
-      await base44.entities.Location.update(editLocation.id, locationData);
-    } else {
-      await base44.entities.Location.create(locationData);
-    }
-    queryClient.invalidateQueries(['locations']);
-    setEditLocation(null);
-    setShowAddLocation(false);
-    setIsLoading(false);
-  };
+  const saveLocationMutation = useMutation({
+    mutationFn: async (locationData) => {
+      if (editLocation?.id) {
+        return base44.entities.Location.update(editLocation.id, locationData);
+      } else {
+        return base44.entities.Location.create(locationData);
+      }
+    },
+    onMutate: async (locationData) => {
+      await queryClient.cancelQueries({ queryKey: ['locations'] });
+      const prevLocations = queryClient.getQueryData(['locations']);
+      if (editLocation?.id) {
+        queryClient.setQueryData(['locations'], (old) =>
+          old?.map(l => l.id === editLocation.id ? { ...l, ...locationData } : l) || []
+        );
+      } else {
+        queryClient.setQueryData(['locations'], (old) => [...(old || []), { ...locationData, id: 'temp-' + Date.now() }]);
+      }
+      return { prevLocations };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevLocations) queryClient.setQueryData(['locations'], context.prevLocations);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      setEditLocation(null);
+      setShowAddLocation(false);
+    },
+  });
+
+  const deleteLocationMutation = useMutation({
+    mutationFn: async (data) => {
+      if (data.unassign) {
+        await base44.functions.invoke('unassignToolsFromEntity', { entityType: 'Location', entityId: data.locationId });
+      }
+      return base44.entities.Location.delete(data.locationId);
+    },
+    onMutate: async ({ locationId }) => {
+      await queryClient.cancelQueries({ queryKey: ['locations'] });
+      const prevLocations = queryClient.getQueryData(['locations']);
+      queryClient.setQueryData(['locations'], (old) =>
+        old?.filter(l => l.id !== locationId) || []
+      );
+      return { prevLocations };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevLocations) queryClient.setQueryData(['locations'], context.prevLocations);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+      queryClient.invalidateQueries({ queryKey: ['handtools'] });
+      setLocationToDelete(null);
+    },
+  });
+
+  const handleSaveLocation = (locationData) => saveLocationMutation.mutate(locationData);
 
   const handleDeleteLocation = (location) => {
     setLocationToDelete(location);
   };
 
-  const confirmDeleteLocation = async (unassign) => {
+  const confirmDeleteLocation = (unassign) => {
     if (!locationToDelete) return;
-    setIsLoading(true);
-    if (unassign) {
-      await base44.functions.invoke('unassignToolsFromEntity', { entityType: 'Location', entityId: locationToDelete.id });
-    }
-    await base44.entities.Location.delete(locationToDelete.id);
-    queryClient.invalidateQueries(['locations']);
-    queryClient.invalidateQueries(['tools']);
-    queryClient.invalidateQueries(['handtools']);
-    setLocationToDelete(null);
-    setIsLoading(false);
+    deleteLocationMutation.mutate({ locationId: locationToDelete.id, unassign });
   };
 
   if (loadingLocations) {
@@ -325,7 +361,7 @@ export default function Locations() {
         }}
         location={editLocation}
         onSubmit={handleSaveLocation}
-        isLoading={isLoading}
+        isLoading={saveLocationMutation.isPending}
       />
       <DeleteConfirmationModal
         isOpen={!!locationToDelete}

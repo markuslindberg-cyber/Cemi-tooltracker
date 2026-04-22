@@ -138,15 +138,31 @@ export default function Inventory() {
     }
   };
 
-  const handleBulkMove = async (locationId, locationName) => {
-    await Promise.all(
-      [...selectedTools].map(id =>
-        base44.entities.Tool.update(id, { location_id: locationId, location_name: locationName })
+  const bulkMoveMutation = useMutation({
+    mutationFn: (data) => Promise.all(
+      data.toolIds.map(id =>
+        base44.entities.Tool.update(id, { location_id: data.locationId, location_name: data.locationName })
       )
-    );
-    queryClient.invalidateQueries(['tools']);
-    setSelectedTools(new Set());
-  };
+    ),
+    onMutate: async ({ toolIds, locationId, locationName }) => {
+      await queryClient.cancelQueries({ queryKey: ['tools'] });
+      const prevTools = queryClient.getQueryData(['tools']);
+      queryClient.setQueryData(['tools'], (old) =>
+        old?.map(t => toolIds.includes(t.id) ? { ...t, location_id: locationId, location_name: locationName } : t) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['tools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+      setSelectedTools(new Set());
+    },
+  });
+
+  const handleBulkMove = (locationId, locationName) => 
+    bulkMoveMutation.mutate({ toolIds: [...selectedTools], locationId, locationName });
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
@@ -244,40 +260,110 @@ export default function Inventory() {
     return [...new Set(allItems.map(t => t.location_name).filter(Boolean))].sort();
   }, [allItems]);
 
-  const handleTransfer = async (transferData) => {
-    await base44.entities.Transfer.create(transferData);
-    await base44.entities.Tool.update(transferData.tool_id, {
-      location_id: transferData.to_location_id,
-      location_name: transferData.to_location_name,
-      assigned_to_email: transferData.to_person_email,
-      assigned_to_name: transferData.to_person_name,
-      status: 'in_use',
-      last_seen_date: new Date().toISOString(),
-    });
-    queryClient.invalidateQueries(['tools']);
-    setTransferTool(null);
-  };
+  const transferMutation = useMutation({
+    mutationFn: async (transferData) => {
+      await base44.entities.Transfer.create(transferData);
+      return base44.entities.Tool.update(transferData.tool_id, {
+        location_id: transferData.to_location_id,
+        location_name: transferData.to_location_name,
+        assigned_to_email: transferData.to_person_email,
+        assigned_to_name: transferData.to_person_name,
+        status: 'in_use',
+        last_seen_date: new Date().toISOString(),
+      });
+    },
+    onMutate: async (transferData) => {
+      await queryClient.cancelQueries({ queryKey: ['tools'] });
+      const prevTools = queryClient.getQueryData(['tools']);
+      queryClient.setQueryData(['tools'], (old) =>
+        old?.map(t => t.id === transferData.tool_id 
+          ? { ...t, location_id: transferData.to_location_id, location_name: transferData.to_location_name, assigned_to_email: transferData.to_person_email, assigned_to_name: transferData.to_person_name, status: 'in_use' }
+          : t
+        ) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['tools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+      setTransferTool(null);
+    },
+  });
 
-  const handleSaveTool = async (toolData) => {
-    if (editTool?.id) {
-      await base44.entities.Tool.update(editTool.id, toolData);
-    } else {
-      await base44.entities.Tool.create(toolData);
-    }
-    queryClient.invalidateQueries(['tools']);
-    setEditTool(null);
-    setShowAddTool(false);
-  };
+  const toolMutation = useMutation({
+    mutationFn: async (toolData) => {
+      if (editTool?.id) {
+        return base44.entities.Tool.update(editTool.id, toolData);
+      } else {
+        return base44.entities.Tool.create(toolData);
+      }
+    },
+    onMutate: async (toolData) => {
+      await queryClient.cancelQueries({ queryKey: ['tools'] });
+      const prevTools = queryClient.getQueryData(['tools']);
+      if (editTool?.id) {
+        queryClient.setQueryData(['tools'], (old) =>
+          old?.map(t => t.id === editTool.id ? { ...t, ...toolData } : t) || []
+        );
+      } else {
+        queryClient.setQueryData(['tools'], (old) => [...(old || []), { ...toolData, id: 'temp-' + Date.now() }]);
+      }
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['tools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+      setEditTool(null);
+      setShowAddTool(false);
+    },
+  });
 
-  const handleStatusChange = async (tool, newStatus) => {
-    await base44.entities.Tool.update(tool.id, { status: newStatus });
-    queryClient.invalidateQueries(['tools']);
-  };
+  const statusMutation = useMutation({
+    mutationFn: (data) => base44.entities.Tool.update(data.id, { status: data.newStatus }),
+    onMutate: async ({ id, newStatus }) => {
+      await queryClient.cancelQueries({ queryKey: ['tools'] });
+      const prevTools = queryClient.getQueryData(['tools']);
+      queryClient.setQueryData(['tools'], (old) =>
+        old?.map(t => t.id === id ? { ...t, status: newStatus } : t) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['tools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+    },
+  });
 
-  const handleDeleteTool = async (tool) => {
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Tool.update(id, { is_deleted: true, deleted_at: new Date().toISOString() }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['tools'] });
+      const prevTools = queryClient.getQueryData(['tools']);
+      queryClient.setQueryData(['tools'], (old) =>
+        old?.filter(t => t.id !== id) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['tools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+    },
+  });
+
+  const handleTransfer = (transferData) => transferMutation.mutate(transferData);
+  const handleSaveTool = (toolData) => toolMutation.mutate(toolData);
+  const handleStatusChange = (tool, newStatus) => statusMutation.mutate({ id: tool.id, newStatus });
+  const handleDeleteTool = (tool) => {
     if (window.confirm(`Är du säker på att du vill ta bort "${tool.name}"? Objektet hamnar i papperskorgen i 30 dagar.`)) {
-      await base44.entities.Tool.update(tool.id, { is_deleted: true, deleted_at: new Date().toISOString() });
-      queryClient.invalidateQueries(['tools']);
+      deleteMutation.mutate(tool.id);
     }
   };
 

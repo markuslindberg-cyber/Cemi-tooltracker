@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import TeamMemberFormModal from '@/components/modals/TeamMemberFormModal';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
@@ -105,66 +105,101 @@ export default function Team() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const handleSaveMember = async (memberData) => {
-    setIsLoading(true);
-    try {
-      if (editMember?.id) {
-        // Existing member - send new invitation if requested
-        if (memberData.send_new_invitation && memberData.email) {
-          await base44.users.inviteUser(memberData.email, 'user');
-        }
-        const { send_invitation, send_new_invitation, ...updateData } = memberData;
-        await base44.entities.TeamMember.update(editMember.id, updateData);
-      } else {
-        // New member - send invitation if requested and email provided
-        if (memberData.send_invitation && memberData.email) {
-          await base44.users.inviteUser(memberData.email, 'user');
-        }
-        const { send_invitation, send_new_invitation, ...entityData } = memberData;
-        await base44.entities.TeamMember.create(entityData);
+  const saveMemberMutation = useMutation({
+    mutationFn: async (memberData) => {
+      if (memberData.send_new_invitation && memberData.email) {
+        await base44.users.inviteUser(memberData.email, 'user');
       }
-      queryClient.invalidateQueries(['teamMembers']);
+      if (memberData.send_invitation && memberData.email) {
+        await base44.users.inviteUser(memberData.email, 'user');
+      }
+      const { send_invitation, send_new_invitation, ...data } = memberData;
+      if (editMember?.id) {
+        return base44.entities.TeamMember.update(editMember.id, data);
+      } else {
+        return base44.entities.TeamMember.create(data);
+      }
+    },
+    onMutate: async (memberData) => {
+      await queryClient.cancelQueries({ queryKey: ['teamMembers'] });
+      const prevMembers = queryClient.getQueryData(['teamMembers']);
+      const { send_invitation, send_new_invitation, ...data } = memberData;
+      if (editMember?.id) {
+        queryClient.setQueryData(['teamMembers'], (old) =>
+          old?.map(m => m.id === editMember.id ? { ...m, ...data } : m) || []
+        );
+      } else {
+        queryClient.setQueryData(['teamMembers'], (old) => [...(old || []), { ...data, id: 'temp-' + Date.now() }]);
+      }
+      return { prevMembers };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevMembers) queryClient.setQueryData(['teamMembers'], context.prevMembers);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
       setEditMember(null);
       setShowAddMember(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
+
+  const handleSaveMember = (memberData) => saveMemberMutation.mutate(memberData);
 
   const handleDeleteMember = (member) => {
     setMemberToDelete(member);
   };
 
-  const confirmDeleteMember = async (unassign) => {
+  const deleteMemberMutation = useMutation({
+    mutationFn: async (data) => {
+      if (data.unassign) {
+        await base44.functions.invoke('unassignToolsFromEntity', { entityType: 'TeamMember', entityId: data.memberId });
+      }
+      return base44.entities.TeamMember.delete(data.memberId);
+    },
+    onMutate: async ({ memberId }) => {
+      await queryClient.cancelQueries({ queryKey: ['teamMembers'] });
+      const prevMembers = queryClient.getQueryData(['teamMembers']);
+      queryClient.setQueryData(['teamMembers'], (old) =>
+        old?.filter(m => m.id !== memberId) || []
+      );
+      return { prevMembers };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevMembers) queryClient.setQueryData(['teamMembers'], context.prevMembers);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+      setMemberToDelete(null);
+    },
+  });
+
+  const confirmDeleteMember = (unassign) => {
     if (!memberToDelete) return;
-    setIsLoading(true);
-    if (unassign) {
-      await base44.functions.invoke('unassignToolsFromEntity', { entityType: 'TeamMember', entityId: memberToDelete.id });
-    }
-    await base44.entities.TeamMember.delete(memberToDelete.id);
-    queryClient.invalidateQueries(['teamMembers']);
-    queryClient.invalidateQueries(['tools']);
-    setMemberToDelete(null);
-    setIsLoading(false);
+    deleteMemberMutation.mutate({ memberId: memberToDelete.id, unassign });
   };
 
   const handleInactivateMember = (member) => {
     setMemberToInactivate(member);
   };
 
-  const confirmInactivate = async (targetMemberId, replacementMemberId) => {
-    setInactivating(true);
-    const res = await base44.functions.invoke('inactivateUser', { targetMemberId, replacementMemberId });
-    if (res.data?.success) {
-      toast({ title: 'Användare inaktiverad', description: res.data.message });
-      queryClient.invalidateQueries(['teamMembers']);
-      queryClient.invalidateQueries(['tools']);
-      queryClient.invalidateQueries(['locations']);
-      setMemberToInactivate(null);
-    } else {
-      toast({ title: 'Fel', description: res.data?.error || 'Något gick fel', variant: 'destructive' });
-    }
-    setInactivating(false);
+  const inactivateMutation = useMutation({
+    mutationFn: (data) => base44.functions.invoke('inactivateUser', { targetMemberId: data.targetMemberId, replacementMemberId: data.replacementMemberId }),
+    onSuccess: (res) => {
+      if (res.data?.success) {
+        toast({ title: 'Användare inaktiverad', description: res.data.message });
+        queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
+        queryClient.invalidateQueries({ queryKey: ['tools'] });
+        queryClient.invalidateQueries({ queryKey: ['locations'] });
+        setMemberToInactivate(null);
+      } else {
+        toast({ title: 'Fel', description: res.data?.error || 'Något gick fel', variant: 'destructive' });
+      }
+    },
+  });
+
+  const confirmInactivate = (targetMemberId, replacementMemberId) => {
+    inactivateMutation.mutate({ targetMemberId, replacementMemberId });
   };
 
   if (loadingMembers) {
@@ -373,7 +408,7 @@ export default function Team() {
         member={editMember}
         locations={locations}
         onSubmit={handleSaveMember}
-        isLoading={isLoading}
+        isLoading={saveMemberMutation.isPending}
       />
       <InactivateUserDialog
         isOpen={!!memberToInactivate}
@@ -381,7 +416,7 @@ export default function Team() {
         member={memberToInactivate}
         activeMembers={teamMembers}
         onConfirm={confirmInactivate}
-        isLoading={inactivating}
+        isLoading={inactivateMutation.isPending}
       />
       <DeleteConfirmationModal
         isOpen={!!memberToDelete}

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,29 +94,60 @@ export default function HandTools() {
     return acc;
   }, {});
 
-  const handleRenameCategory = async () => {
+  const renameMutation = useMutation({
+    mutationFn: async ({ oldName, newName }) => {
+      const toUpdate = handTools.filter(t => t.category === oldName);
+      await Promise.all(toUpdate.map(t => base44.entities.HandTool.update(t.id, { category: newName })));
+      const existing = categoryImageMap[oldName];
+      if (existing) {
+        await base44.entities.CategoryImage.update(existing.id, { category: newName });
+      }
+    },
+    onMutate: async ({ oldName, newName }) => {
+      await queryClient.cancelQueries({ queryKey: ['handtools'] });
+      const prevTools = queryClient.getQueryData(['handtools']);
+      queryClient.setQueryData(['handtools'], (old) =>
+        old?.map(t => t.category === oldName ? { ...t, category: newName } : t) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['handtools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['handtools'] });
+      queryClient.invalidateQueries({ queryKey: ['categoryimages'] });
+      setEditingCategory(null);
+    },
+  });
+
+  const handleRenameCategory = () => {
     if (!editingCategory || editingCategory.newName.trim() === editingCategory.oldName) {
       setEditingCategory(null);
       return;
     }
-    setSavingCategory(true);
-    const toUpdate = handTools.filter(t => t.category === editingCategory.oldName);
-    await Promise.all(toUpdate.map(t => base44.entities.HandTool.update(t.id, { category: editingCategory.newName.trim() })));
-    // Also rename the category image record if it exists
-    const existing = categoryImageMap[editingCategory.oldName];
-    if (existing) {
-      await base44.entities.CategoryImage.update(existing.id, { category: editingCategory.newName.trim() });
-    }
-    queryClient.invalidateQueries(['handtools']);
-    queryClient.invalidateQueries(['categoryimages']);
-    setSavingCategory(false);
-    setEditingCategory(null);
+    renameMutation.mutate({ oldName: editingCategory.oldName, newName: editingCategory.newName.trim() });
   };
 
-  const handleDelete = async (id) => {
-    await base44.entities.HandTool.update(id, { is_deleted: true, deleted_at: new Date().toISOString() });
-    queryClient.invalidateQueries(['handtools']);
-  };
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.HandTool.update(id, { is_deleted: true, deleted_at: new Date().toISOString() }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['handtools'] });
+      const prevTools = queryClient.getQueryData(['handtools']);
+      queryClient.setQueryData(['handtools'], (old) =>
+        old?.filter(t => t.id !== id) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['handtools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['handtools'] });
+    },
+  });
+
+  const handleDelete = (id) => deleteMutation.mutate(id);
 
   const toggleSelect = (id) => {
     setSelectedIds(prev => {
@@ -137,9 +168,31 @@ export default function HandTools() {
     });
   };
 
-  const handleBulkSave = async () => {
+  const bulkSaveMutation = useMutation({
+    mutationFn: async ({ updates, toolIds }) => {
+      return Promise.all(toolIds.map(id => base44.entities.HandTool.update(id, updates)));
+    },
+    onMutate: async ({ updates, toolIds }) => {
+      await queryClient.cancelQueries({ queryKey: ['handtools'] });
+      const prevTools = queryClient.getQueryData(['handtools']);
+      queryClient.setQueryData(['handtools'], (old) =>
+        old?.map(t => toolIds.includes(t.id) ? { ...t, ...updates } : t) || []
+      );
+      return { prevTools };
+    },
+    onError: (err, newData, context) => {
+      if (context?.prevTools) queryClient.setQueryData(['handtools'], context.prevTools);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['handtools'] });
+      setSelectedIds(new Set());
+      setBulkStatus('');
+      setBulkLocation('');
+    },
+  });
+
+  const handleBulkSave = () => {
     if (!bulkStatus && !bulkLocation) return;
-    setSavingBulk(true);
     const updates = {};
     if (bulkStatus) updates.status = bulkStatus;
     if (bulkLocation) {
@@ -147,12 +200,7 @@ export default function HandTools() {
       updates.location_id = bulkLocation;
       updates.location_name = loc?.name || '';
     }
-    await Promise.all([...selectedIds].map(id => base44.entities.HandTool.update(id, updates)));
-    queryClient.invalidateQueries(['handtools']);
-    setSelectedIds(new Set());
-    setBulkStatus('');
-    setBulkLocation('');
-    setSavingBulk(false);
+    bulkSaveMutation.mutate({ updates, toolIds: [...selectedIds] });
   };
 
   const hasFilters = search || statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || locationFilter !== 'all';
@@ -376,8 +424,8 @@ export default function HandTools() {
                   {locations.map(loc => <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Button size="sm" onClick={handleBulkSave} disabled={savingBulk || (!bulkStatus && !bulkLocation)} className="bg-[#8B1E1E] hover:bg-[#6B1515] h-8">
-                {savingBulk ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              <Button size="sm" onClick={handleBulkSave} disabled={bulkSaveMutation.isPending || (!bulkStatus && !bulkLocation)} className="bg-[#8B1E1E] hover:bg-[#6B1515] h-8">
+                {bulkSaveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                 Spara
               </Button>
               <button onClick={() => setSelectedIds(new Set())} className="text-gray-400 hover:text-gray-600 ml-auto"><XIcon className="w-4 h-4" /></button>
@@ -426,8 +474,8 @@ export default function HandTools() {
                               onChange={e => setEditingCategory(prev => ({ ...prev, newName: e.target.value }))}
                               onKeyDown={e => { if (e.key === 'Enter') handleRenameCategory(); if (e.key === 'Escape') setEditingCategory(null); }}
                             />
-                            <button onClick={handleRenameCategory} disabled={savingCategory} className="text-green-600 hover:text-green-700">
-                              {savingCategory ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                            <button onClick={handleRenameCategory} disabled={renameMutation.isPending} className="text-green-600 hover:text-green-700">
+                              {renameMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                             </button>
                             <button onClick={() => setEditingCategory(null)} className="text-gray-400 hover:text-gray-600"><XIcon className="w-3 h-3" /></button>
                           </div>
