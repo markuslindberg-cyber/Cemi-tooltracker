@@ -111,8 +111,8 @@ export default function ArbetskläderRequestWorkwear() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Begäran om arbetskläder och skyddsutrustning</h1>
-        <p className="text-gray-600 mt-2">Fyll i formuläret för att göra en begäran</p>
+        <h1 className="text-3xl font-bold dark:text-gray-100">Begäran om arbetskläder och skyddsutrustning</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Fyll i formuläret för att göra en begäran</p>
       </div>
 
       <Card className="p-6 space-y-6">
@@ -196,10 +196,10 @@ export default function ArbetskläderRequestWorkwear() {
               <Label>Valda artiklar</Label>
               <div className="space-y-2">
                 {formData.requested_items.map(item => (
-                  <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                  <div key={item.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                     <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">{item.subcategory} • Antal: {item.quantity}</p>
+                      <p className="font-medium dark:text-gray-100">{item.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{item.subcategory} • Antal: {item.quantity}</p>
                     </div>
                     <button
                       onClick={() => removeItem(item.id)}

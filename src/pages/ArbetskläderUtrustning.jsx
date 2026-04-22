@@ -215,13 +215,13 @@ export default function ArbetskläderUtrustning() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Arbetskläder & Utrustning</h1>
-            <p className="text-gray-500 mt-1">{groupedItems.length} artiklar</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Arbetskläder & Utrustning</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{groupedItems.length} artiklar</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button
@@ -331,19 +331,19 @@ export default function ArbetskläderUtrustning() {
         {/* Items Display */}
         {groupedItems.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Inga artiklar hittades</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">Inga artiklar hittades</p>
           </div>
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6' : 'space-y-4 mt-6'}>
             {groupedItems.map((group) => (
               <div
                 key={group.name}
-                className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{group.name}</h3>
-                    <p className="text-sm text-gray-500">{group.subcategory}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">{group.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{group.subcategory}</p>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -357,18 +357,18 @@ export default function ArbetskläderUtrustning() {
 
                 <div className="space-y-2 mb-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Kategori:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Kategori:</span>
                     <Badge variant="outline">{group.category}</Badge>
                   </div>
                   {group.manufacturer && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Tillverkare:</span>
-                      <span className="font-medium">{group.manufacturer}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Tillverkare:</span>
+                       <span className="font-medium dark:text-gray-200">{group.manufacturer}</span>
                     </div>
                   )}
                   {group.sizes.length > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Storlekar:</span>
+                      <span className="text-gray-600 dark:text-gray-400">Storlekar:</span>
                       <div className="flex flex-wrap gap-1 justify-end">
                         {group.sizes.sort((a, b) => {
                           const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -381,14 +381,14 @@ export default function ArbetskläderUtrustning() {
                   )}
                   {group.location_name && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Plats:</span>
-                      <span className="font-medium">{group.location_name}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Plats:</span>
+                       <span className="font-medium dark:text-gray-200">{group.location_name}</span>
                     </div>
                   )}
                 </div>
 
                 {group.notes && (
-                  <p className="text-sm text-gray-600 border-t pt-2">{group.notes}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 border-t dark:border-gray-700 pt-2">{group.notes}</p>
                 )}
               </div>
             ))}

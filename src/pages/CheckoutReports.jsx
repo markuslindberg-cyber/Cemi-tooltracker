@@ -83,13 +83,13 @@ export default function CheckoutReports() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Uttagsrapporter</h1>
-            <p className="text-gray-500 mt-1">{filteredReports.length} rapporter</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Uttagsrapporter</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{filteredReports.length} rapporter</p>
           </div>
           <Button
             onClick={exportToExcel}
@@ -114,10 +114,10 @@ export default function CheckoutReports() {
         {/* Rapporter */}
         {filteredReports.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Inga rapporter hittades</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg">Inga rapporter hittades</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -165,7 +165,7 @@ export default function CheckoutReports() {
                         </TableCell>
                       </TableRow>
                       {isExpanded && (
-                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                        <TableRow className="bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                           <TableCell colSpan={5} className="p-0">
                             <div className="p-6 space-y-4">
                               {/* Mottagarinformation */}
@@ -173,8 +173,8 @@ export default function CheckoutReports() {
                                 <div className="flex items-start gap-2">
                                   <User className="w-4 h-4 text-gray-400 mt-0.5" />
                                   <div>
-                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Mottagare</p>
-                                    <p className="text-sm font-medium text-gray-900">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Mottagare</p>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                       {report.recipient_first_name} {report.recipient_last_name}
                                     </p>
                                   </div>
@@ -182,15 +182,15 @@ export default function CheckoutReports() {
                                 <div className="flex items-start gap-2">
                                   <Package className="w-4 h-4 text-gray-400 mt-0.5" />
                                   <div>
-                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Projekt</p>
-                                    <p className="text-sm font-medium text-gray-900">{report.project}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Projekt</p>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{report.project}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-start gap-2">
                                   <Calendar className="w-4 h-4 text-gray-400 mt-0.5" />
                                   <div>
-                                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Datum & tid</p>
-                                    <p className="text-sm font-medium text-gray-900">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Datum & tid</p>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                       {new Date(report.checked_out_date).toLocaleString('sv-SE')}
                                     </p>
                                   </div>
@@ -199,16 +199,16 @@ export default function CheckoutReports() {
 
                               {/* Artikellista */}
                               <div>
-                                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-2">
                                   Uttagna artiklar ({report.checked_out_items.length} st)
                                 </p>
-                                <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+                                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
                                   {report.checked_out_items.map((item, idx) => (
                                     <div key={idx} className="flex items-center justify-between px-4 py-2.5">
                                       <div>
-                                        <p className="text-sm font-medium text-gray-900">{item.name}</p>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
                                         {item.subcategory && (
-                                          <p className="text-xs text-gray-500">{item.subcategory}</p>
+                                          <p className="text-xs text-gray-500 dark:text-gray-400">{item.subcategory}</p>
                                         )}
                                       </div>
                                       <Badge variant="outline" className="text-xs font-semibold">

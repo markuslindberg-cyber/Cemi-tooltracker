@@ -240,21 +240,21 @@ export default function ArbetskladerBegaranAttGodkanna() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Begäran – Arbetskläder</h1>
-        <p className="text-gray-600 mt-1">Granska, godkänn och registrera uttag</p>
+        <h1 className="text-3xl font-bold dark:text-gray-100">Begäran – Arbetskläder</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Granska, godkänn och registrera uttag</p>
       </div>
 
       {step === 1 && (
-        <div className="flex gap-1 border-b">
+        <div className="flex gap-1 border-b dark:border-gray-800">
           <button
             onClick={() => setTab('pending')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'pending' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'pending' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
           >
             Väntande {pendingRequests.length > 0 && <span className="ml-1 bg-[#8B1E1E] text-white text-xs rounded-full px-1.5">{pendingRequests.length}</span>}
           </button>
           <button
             onClick={() => setTab('history')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'history' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'history' ? 'border-[#8B1E1E] text-[#8B1E1E]' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
           >
             Historik
           </button>
@@ -280,14 +280,14 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 <button
                   key={request.id}
                   onClick={() => { setSelectedRequest(request); setRejectNotes(''); setStep(2); }}
-                  className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white transition-all flex items-center justify-between"
+                  className="w-full text-left p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white dark:bg-gray-900 transition-all flex items-center justify-between"
                 >
                   <div>
-                    <p className="font-semibold text-gray-900">{request.customer_name}</p>
-                    <p className="text-sm text-gray-600 mt-0.5">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{request.customer_name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
                       {request.requested_items?.length} artikel(r) • Begärd av: {request.requested_by_name || request.requested_by_email}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                       {format(new Date(request.request_date), 'dd MMM HH:mm', { locale: sv })}
                     </p>
                   </div>
@@ -313,16 +313,16 @@ export default function ArbetskladerBegaranAttGodkanna() {
           ) : (
             <div className="space-y-2">
               {historyRequests.map((request) => (
-                <div key={request.id} className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+                <div key={request.id} className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
                   <button
                     onClick={() => setExpandedHistory(expandedHistory === request.id ? null : request.id)}
-                    className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {statusBadge(request.status)}
                       <div>
-                        <p className="font-semibold text-gray-900">{request.customer_name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{request.customer_name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {request.requested_items?.length} artikel(r) • {format(new Date(request.request_date), 'dd MMM yyyy', { locale: sv })}
                         </p>
                       </div>
@@ -331,14 +331,14 @@ export default function ArbetskladerBegaranAttGodkanna() {
                   </button>
 
                   {expandedHistory === request.id && (
-                    <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-4 text-sm">
+                    <div className="border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800/50 space-y-4 text-sm">
                       <div>
-                        <p className="text-gray-600 font-medium mb-2">Artiklar</p>
+                        <p className="text-gray-600 dark:text-gray-300 font-medium mb-2">Artiklar</p>
                         <div className="space-y-1">
                           {request.requested_items?.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-sm p-2 bg-white rounded border border-gray-100">
-                              <span className="text-gray-700">{item.name}</span>
-                              <span className="font-medium text-gray-600">{item.quantity} st</span>
+                            <div key={idx} className="flex justify-between text-sm p-2 bg-white dark:bg-gray-900 rounded border border-gray-100 dark:border-gray-700">
+                              <span className="text-gray-700 dark:text-gray-300">{item.name}</span>
+                              <span className="font-medium text-gray-600 dark:text-gray-400">{item.quantity} st</span>
                             </div>
                           ))}
                         </div>
@@ -378,10 +378,10 @@ export default function ArbetskladerBegaranAttGodkanna() {
             <h3 className="font-semibold mb-3">Begärda artiklar</h3>
             <div className="space-y-2">
               {selectedRequest.requested_items?.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">{item.subcategory}</p>
+                    <p className="font-medium dark:text-gray-100">{item.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}</p>
                   </div>
                   <p className="font-semibold">{item.quantity} st</p>
                 </div>
@@ -437,11 +437,11 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 const isComplete = scanned && scanned.scanned_quantity >= item.quantity;
                 return (
                   <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border ${
-                    isComplete ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    isComplete ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   }`}>
                     <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-500">{item.subcategory}</p>
+                      <p className="font-medium dark:text-gray-100">{item.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold">{scanned?.scanned_quantity || 0}/{item.quantity}</p>
