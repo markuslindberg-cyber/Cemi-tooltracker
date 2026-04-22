@@ -137,6 +137,7 @@ export default function AddArtikelDialog({ open, onOpenChange, artiklar }) {
               </label>
               <Input
                 type="text"
+                autoFocus
                 value={form.streckkod}
                 onChange={(e) => handleStreckkodChange(e.target.value)}
                 placeholder="Skriv eller skanna streckkod"
