@@ -176,7 +176,7 @@ export default function TeamMemberFormModal({
             <div className="flex items-center justify-between pt-2">
               <div>
                 <Label>Skicka inbjudan via e-post</Label>
-                <p className="text-sm text-gray-500">Skicka inbjudningslänk till användaren</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Skicka inbjudningslänk till användaren</p>
               </div>
               <Switch
                 checked={formData.send_invitation}
@@ -190,7 +190,7 @@ export default function TeamMemberFormModal({
               <div className="flex items-center justify-between pt-2">
                 <div>
                   <Label>Skicka ny inbjudningslänk</Label>
-                  <p className="text-sm text-gray-500">Skicka uppdaterad inbjudningslänk till e-postadressen</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Skicka uppdaterad inbjudningslänk till e-postadressen</p>
                 </div>
                 <Switch
                   checked={formData.send_new_invitation}
@@ -201,7 +201,7 @@ export default function TeamMemberFormModal({
               <div className="flex items-center justify-between pt-2">
                 <div>
                   <Label>Mottar notifikationsmails</Label>
-                  <p className="text-sm text-gray-500">Få mail om låneförfrågningar och statusuppdateringar</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Få mail om låneförfrågningar och statusuppdateringar</p>
                 </div>
                 <Switch
                   checked={formData.subscribed_to_emails}
@@ -226,7 +226,7 @@ export default function TeamMemberFormModal({
 
           <div className="space-y-2">
             <Label>Platser där personen arbetar</Label>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               {locations?.map((location) => {
                 const isSelected = formData.location_ids.includes(location.id);
                 return (
@@ -235,8 +235,8 @@ export default function TeamMemberFormModal({
                     type="button"
                     onClick={() => isSelected ? handleRemoveLocation(location.id) : handleAddLocation(location.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-4 py-3 text-sm border-b border-gray-100 last:border-0 transition-colors text-left",
-                      isSelected ? "bg-[#8B1E1E]/8 text-[#8B1E1E] font-medium" : "hover:bg-gray-50 text-gray-700"
+                      "w-full flex items-center justify-between px-4 py-3 text-sm border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors text-left",
+                      isSelected ? "bg-[#8B1E1E]/8 text-[#8B1E1E] font-medium" : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                     )}
                   >
                     <span>{location.name}</span>
@@ -245,7 +245,7 @@ export default function TeamMemberFormModal({
                 );
               })}
               {(!locations || locations.length === 0) && (
-                <p className="px-4 py-3 text-sm text-gray-400">Inga platser tillgängliga</p>
+                <p className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">Inga platser tillgängliga</p>
               )}
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function TeamMemberFormModal({
           <div className="flex items-center justify-between pt-2">
             <div>
               <Label>Aktiv medlem</Label>
-              <p className="text-sm text-gray-500">Inaktiva medlemmar visas inte i tilldelningar</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Inaktiva medlemmar visas inte i tilldelningar</p>
             </div>
             <Switch
               checked={formData.is_active}
