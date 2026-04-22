@@ -106,7 +106,7 @@ const BOTTOM_TABS = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Maskiner', path: '/Inventory', icon: Package },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel },
-  { name: 'Team', path: '/Team', icon: Users },
+  { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
 ];
 
 const slideVariants = {
