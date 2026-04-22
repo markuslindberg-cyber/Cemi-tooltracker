@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MobileSelect from '@/components/ui/mobile-select';
 
 export default function LokalvardNyttUttag() {
   const queryClient = useQueryClient();
@@ -174,24 +175,21 @@ export default function LokalvardNyttUttag() {
               Laddar begäranden...
             </div>
           ) : (
-            <Select value={selectedRequest?.id || ''} onValueChange={(id) => {
-              const request = approvedRequests.find(r => r.id === id);
-              setSelectedRequest(request);
-              setScannedItems([]);
-              setBarcodeInput('');
-              setError('');
-            }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sök och välj godkänd begäran..." />
-              </SelectTrigger>
-              <SelectContent>
-                {approvedRequests.map(request => (
-                  <SelectItem key={request.id} value={request.id}>
-                    {request.customer_name} - {request.requested_items.length} artikel(r)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+           <MobileSelect
+             value={selectedRequest?.id || ''}
+             onChange={(id) => {
+               const request = approvedRequests.find(r => r.id === id);
+               setSelectedRequest(request);
+               setScannedItems([]);
+               setBarcodeInput('');
+               setError('');
+             }}
+             options={approvedRequests.map(request => ({
+               value: request.id,
+               label: `${request.customer_name} - ${request.requested_items.length} artikel(r)`
+             }))}
+             placeholder="Sök och välj godkänd begäran..."
+           />
           )}
         </div>
       </Card>

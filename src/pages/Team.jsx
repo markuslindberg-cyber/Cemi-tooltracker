@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import MobileSelect from '@/components/ui/mobile-select';
 import {
   Plus,
   Search,
@@ -242,16 +243,15 @@ export default function Team() {
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <select
+            <MobileSelect
               value={roleFilter}
               onChange={e => setRoleFilter(e.target.value)}
-              className="h-9 border border-gray-200 dark:border-gray-700 rounded-lg px-3 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 focus:outline-none focus:border-gray-400"
-            >
-              <option value="all">Alla roller</option>
-              {availableRoles.map(role => (
-                <option key={role} value={role}>{roleConfig[role]?.label || role}</option>
-              ))}
-            </select>
+              options={[
+                { value: 'all', label: 'Alla roller' },
+                ...availableRoles.map(role => ({ value: role, label: roleConfig[role]?.label || role }))
+              ]}
+              placeholder="Välj roll"
+            />
             <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden ml-auto">
               <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-9 w-9 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
               <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className={`h-9 w-9 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><List className="w-4 h-4" /></Button>

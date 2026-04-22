@@ -410,10 +410,17 @@ export default function Layout({ children }) {
         >
           {BOTTOM_TABS.map((tab) => {
             const active = isActivePath(tab.path);
+            const handleTabClick = (e) => {
+              if (active) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            };
             return (
               <Link
                 key={tab.name}
                 to={tab.path}
+                onClick={handleTabClick}
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors",
                   active ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
