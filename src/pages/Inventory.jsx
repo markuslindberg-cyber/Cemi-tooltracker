@@ -497,13 +497,13 @@ export default function Inventory() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Maskiner</h1>
-            <p className="text-gray-500 mt-1 text-sm">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Maskiner</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
               {filteredTools.length} verktyg
               {(statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || conditionFilter.length > 0 || locationFilter.length > 0 || searchQuery) && ' matchar filter'}
             </p>
@@ -588,14 +588,14 @@ export default function Inventory() {
         )}
 
         {filteredTools.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Package className="w-8 h-8 text-gray-400" />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
               {tools.length === 0 ? 'Inga verktyg i inventariet' : 'Inga verktyg matchar dina filter'}
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               {tools.length === 0 
                 ? 'Lägg till ditt första verktyg för att komma igång'
                 : 'Försök justera din sökning eller dina filter'}
@@ -644,10 +644,10 @@ export default function Inventory() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto">
             <Table className="min-w-max">
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow className="bg-gray-50 dark:bg-gray-800/50">
                   <TableHead className="w-8 px-2">
                     {selectedTools.size > 0 && (
                       <button onClick={toggleSelectAll}>
@@ -671,8 +671,8 @@ export default function Inventory() {
                   const serviceCost = serviceCostsByTool[tool.id] || 0;
                   return (
                     <TableRow 
-                      key={tool.id} 
-                      className={`hover:bg-gray-50 cursor-pointer ${selectedTools.has(tool.id) ? 'bg-[#8B1E1E]/5' : ''}`}
+                     key={tool.id} 
+                     className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer ${selectedTools.has(tool.id) ? 'bg-[#8B1E1E]/5' : ''}`}
                       onClick={() => setEditTool(tool)}
                     >
                       <TableCell onClick={e => { e.stopPropagation(); toggleSelectTool(tool.id); }} className="px-2 py-1">
@@ -686,7 +686,7 @@ export default function Inventory() {
                        </TableCell>
                        <TableCell className="px-2 py-1 max-w-[160px]">
                          <div className="flex items-center gap-2">
-                           <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
+                           <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
                              {tool.image_url ? (
                                <img src={tool.image_url} alt={tool.name} className="w-full h-full object-cover rounded-lg" />
                              ) : (
@@ -694,7 +694,7 @@ export default function Inventory() {
                              )}
                            </div>
                            <div className="min-w-0">
-                             <p className="font-medium text-gray-900 text-sm truncate">{tool.name}</p>
+                             <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{tool.name}</p>
                              {tool.subcategory && (
                                <p className="text-xs text-gray-500 truncate hidden sm:block">{tool.subcategory}</p>
                              )}
@@ -707,16 +707,16 @@ export default function Inventory() {
                          </Badge>
                        </TableCell>
                        <TableCell className="px-1 py-1 text-xs hidden sm:table-cell">
-                         {tool.location_name ? (
-                           <span className="truncate text-gray-600">{tool.location_name}</span>
-                         ) : (
-                           <span className="text-gray-400">—</span>
-                         )}
-                       </TableCell>
-                       <TableCell className="font-medium text-gray-900 px-1 py-1 text-xs hidden md:table-cell">
+                          {tool.location_name ? (
+                            <span className="truncate text-gray-600 dark:text-gray-300">{tool.location_name}</span>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-600">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-medium text-gray-900 dark:text-gray-100 px-1 py-1 text-xs hidden md:table-cell">
                          {tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}
                        </TableCell>
-                       <TableCell className="font-medium text-gray-900 px-1 py-1 text-xs hidden lg:table-cell">
+                       <TableCell className="font-medium text-gray-900 dark:text-gray-100 px-1 py-1 text-xs hidden lg:table-cell">
                          {serviceCost > 0 ? (
                            <span className="text-[#8B1E1E]">{serviceCost.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr</span>
                          ) : (
@@ -831,13 +831,13 @@ export default function Inventory() {
       {/* History Modal */}
       {toolHistory && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">{toolHistory.name} - Ändringshistorik</h2>
-              <button
-                onClick={() => setToolHistory(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{toolHistory.name} - Ändringshistorik</h2>
+                 <button
+                   onClick={() => setToolHistory(null)}
+                   className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                 >
                 ✕
               </button>
             </div>

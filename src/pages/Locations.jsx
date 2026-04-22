@@ -127,13 +127,13 @@ export default function Locations() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Platser</h1>
-            <p className="text-gray-500 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Platser</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
               {locations.length} {locations.length !== 1 ? 'platser' : 'plats'}
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function Locations() {
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4">
           <div className="flex gap-3 items-center">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -158,7 +158,7 @@ export default function Locations() {
                 className="pl-10 h-11 border-gray-200"
               />
             </div>
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
               <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><List className="w-4 h-4" /></Button>
             </div>
@@ -167,14 +167,14 @@ export default function Locations() {
 
         {/* Locations */}
         {filteredLocations.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <MapPin className="w-8 h-8 text-gray-400" />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <MapPin className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
               {locations.length === 0 ? 'Inga platser ännu' : 'Inga matchande platser'}
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               {locations.length === 0 
                 ? 'Lägg till din första plats för att organisera verktyg'
                 : 'Prova ett annat sökord'}
@@ -199,7 +199,7 @@ export default function Locations() {
 
               return (
                 <div key={location.id}>
-                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                  <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-xl ${type.color.split(' ')[0]}`}>
@@ -221,17 +221,17 @@ export default function Locations() {
                           </DropdownMenu>
                         </div>
                       </div>
-                      <h3 onClick={() => navigate(`/locations/${location.id}`)} className="font-semibold text-gray-900 text-lg mb-1 cursor-pointer hover:text-[#8B1E1E] transition-colors">{location.name}</h3>
+                      <h3 onClick={() => navigate(`/locations/${location.id}`)} className="font-semibold text-gray-900 dark:text-gray-100 text-lg mb-1 cursor-pointer hover:text-[#8B1E1E] transition-colors">{location.name}</h3>
                       <Badge className={`${type.color} border-0 text-xs`}>{location.type?.replace('_', ' ')}</Badge>
                       {location.address && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>}
-                      <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2 text-gray-500"><Package className="w-4 h-4" /><span>Maskiner</span></div>
-                          <span className="font-medium text-gray-900">{toolCount}</span>
+                          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Package className="w-4 h-4" /><span>Maskiner</span></div>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{toolCount}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2 text-gray-500"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
-                          <span className="font-medium text-gray-900">{getHandToolCount(location.id)}</span>
+                          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{getHandToolCount(location.id)}</span>
                         </div>
                         {location.contacts && location.contacts.length > 0 && (
                           <div className="mt-2 space-y-1">
@@ -256,14 +256,14 @@ export default function Locations() {
                           <div
                             key={subLoc.id}
                             onClick={() => navigate(`/locations/${subLoc.id}`)}
-                            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all cursor-pointer flex items-start gap-3"
+                            className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-all cursor-pointer flex items-start gap-3"
                           >
                             <div className={`p-2 rounded-lg ${subType.color.split(' ')[0]} flex-shrink-0`}>
                               <SubIcon className={`w-4 h-4 ${subType.color.split(' ')[1]}`} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900 text-sm">{subLoc.name}</p>
-                              <p className="text-xs text-gray-500">{getToolCount(subLoc.id)} maskiner</p>
+                              <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{subLoc.name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{getToolCount(subLoc.id)} maskiner</p>
                             </div>
                           </div>
                         );
@@ -275,25 +275,25 @@ export default function Locations() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {filteredLocations.map((location) => {
                 const type = typeConfig[location.type] || typeConfig.other;
                 const Icon = type.icon;
                 const toolCount = getToolCount(location.id);
                 return (
-                  <div key={location.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                  <div key={location.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <div className={`p-2 rounded-lg ${type.color.split(' ')[0]}`}>
                       <Icon className={`w-5 h-5 ${type.color.split(' ')[1]}`} />
                     </div>
                     <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/locations/${location.id}`)}>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900 hover:text-[#8B1E1E] transition-colors">{location.name}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 hover:text-[#8B1E1E] transition-colors">{location.name}</p>
                         {!location.is_active && <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-xs">Inaktiv</Badge>}
                       </div>
-                      <p className="text-sm text-gray-500 truncate">{location.address || location.type}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{location.address || location.type}</p>
                     </div>
-                    <div className="flex items-center gap-6 text-sm text-gray-500">
+                    <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                       {location.contact_person && <span className="hidden sm:block">{location.contact_person}</span>}
                       <span className="flex items-center gap-1"><Package className="w-4 h-4" />{toolCount}</span>
                       <span className="flex items-center gap-1"><Shovel className="w-4 h-4" />{getHandToolCount(location.id)}</span>

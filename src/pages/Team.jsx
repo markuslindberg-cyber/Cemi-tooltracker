@@ -176,13 +176,13 @@ export default function Team() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Team</h1>
-            <p className="text-gray-500 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Team</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
               {teamMembers.length} {teamMembers.length !== 1 ? 'teammedlemmar' : 'teammedlem'}
             </p>
           </div>
@@ -196,7 +196,7 @@ export default function Team() {
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4">
           <div className="flex gap-3 items-center">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -210,14 +210,14 @@ export default function Team() {
             <select
               value={roleFilter}
               onChange={e => setRoleFilter(e.target.value)}
-              className="h-11 border border-gray-200 rounded-lg px-3 text-sm text-gray-700 bg-white focus:outline-none focus:border-gray-400"
+              className="h-11 border border-gray-200 dark:border-gray-700 rounded-lg px-3 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 focus:outline-none focus:border-gray-400"
             >
               <option value="all">Alla roller</option>
               {availableRoles.map(role => (
                 <option key={role} value={role}>{roleConfig[role]?.label || role}</option>
               ))}
             </select>
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-11 w-11 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
               <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')} className={`h-11 w-11 rounded-none ${viewMode === 'list' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><List className="w-4 h-4" /></Button>
             </div>
@@ -226,14 +226,14 @@ export default function Team() {
 
         {/* Team */}
         {filteredMembers.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-gray-400" />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
               {teamMembers.length === 0 ? 'Inga teammedlemmar ännu' : 'Inga matchande medlemmar'}
             </h3>
-            <p className="text-gray-500 mb-4">
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               {teamMembers.length === 0 
                 ? 'Lägg till teammedlemmar för att tilldela verktyg och spåra användning'
                 : 'Prova ett annat sökord'}
@@ -254,7 +254,7 @@ export default function Team() {
               const role = roleConfig[member.role] || { label: member.role || 'Okänd', color: 'bg-gray-100 text-gray-700' };
               const toolCount = getToolCount(member.email);
               return (
-                <div key={member.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div key={member.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <Avatar className="w-14 h-14 border-2 border-gray-100">
@@ -278,17 +278,17 @@ export default function Team() {
                         </DropdownMenu>
                       </div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 text-lg">{member.name}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{member.name}</h3>
                     <Badge className={`${role.color} border-0 text-xs mt-1`}>{role.label}</Badge>
                     <div className="mt-4 space-y-2">
-                      {member.email && <div className="flex items-center gap-2 text-sm text-gray-500"><Mail className="w-4 h-4" /><span className="truncate">{member.email}</span></div>}
-                      {member.phone && <div className="flex items-center gap-2 text-sm text-gray-500"><Phone className="w-4 h-4" /><span>{member.phone}</span></div>}
-                      {member.default_location_name && <div className="flex items-center gap-2 text-sm text-gray-500"><MapPin className="w-4 h-4" /><span className="truncate">{member.default_location_name}</span></div>}
+                      {member.email && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><Mail className="w-4 h-4" /><span className="truncate">{member.email}</span></div>}
+                      {member.phone && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><Phone className="w-4 h-4" /><span>{member.phone}</span></div>}
+                      {member.default_location_name && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><MapPin className="w-4 h-4" /><span className="truncate">{member.default_location_name}</span></div>}
                     </div>
-                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-gray-500"><Wrench className="w-4 h-4" /><span>Tilldelade verktyg</span></div>
-                        <span className="font-medium text-gray-900">{toolCount}</span>
+                        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Wrench className="w-4 h-4" /><span>Tilldelade verktyg</span></div>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">{toolCount}</span>
                       </div>
                       {(() => {
                         const userInfo = getUserInfo(member.email);
@@ -309,26 +309,26 @@ export default function Team() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-100">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {filteredMembers.map((member) => {
                 const role = roleConfig[member.role] || { label: member.role || 'Okänd', color: 'bg-gray-100 text-gray-700' };
                 const toolCount = getToolCount(member.email);
                 return (
-                  <div key={member.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                  <div key={member.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <Avatar className="w-10 h-10 border-2 border-gray-100 shrink-0">
                       <AvatarImage src={member.avatar_url} alt={member.name} />
                       <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold">{getInitials(member.name)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900">{member.name}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{member.name}</p>
                         <Badge className={`${role.color} border-0 text-xs`}>{role.label}</Badge>
                         {!member.is_active && <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-xs">Inaktiv</Badge>}
                       </div>
-                      <p className="text-sm text-gray-500 truncate">{member.email}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{member.email}</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-6 text-sm text-gray-500">
+                    <div className="hidden sm:flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                       {member.default_location_name && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{member.default_location_name}</span>}
                       <span className="flex items-center gap-1"><Wrench className="w-4 h-4" />{toolCount}</span>
                       {(() => {

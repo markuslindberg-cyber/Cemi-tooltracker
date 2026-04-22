@@ -122,13 +122,13 @@ export default function Dashboard() {
   })).filter(l => l.activeLoans > 0);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 lg:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-4 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-5 lg:space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-500 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
           </div>
           <div className="flex gap-2 shrink-0">
             <Button
@@ -265,34 +265,34 @@ export default function Dashboard() {
            {/* Sidebar First */}
            <div className="space-y-4 lg:order-2">
             {/* Loan Summary */}
-             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-               <h3 className="font-semibold text-gray-900 mb-4">Låneöversikt</h3>
+             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Låneöversikt</h3>
                <div className="space-y-3">
                  <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Aktiva lån</span>
-                   <span className="font-medium text-gray-900">{activeLoans}</span>
+                   <span className="text-sm text-gray-500 dark:text-gray-400">Aktiva lån</span>
+                   <span className="font-medium text-gray-900 dark:text-gray-100">{activeLoans}</span>
                  </div>
                  <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Väntande förfrågningar</span>
+                   <span className="text-sm text-gray-500 dark:text-gray-400">Väntande förfrågningar</span>
                    <span className="font-medium text-amber-600">{pendingRequests}</span>
                  </div>
                  <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Nekade förfrågningar</span>
+                   <span className="text-sm text-gray-500 dark:text-gray-400">Nekade förfrågningar</span>
                    <span className="font-medium text-red-600">{rejectedRequests}</span>
                  </div>
                  {(myLoans > 0 || borrowedTools > 0) && (
                    <>
-                     <div className="pt-3 border-t border-gray-100 space-y-3">
+                     <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
                        {myLoans > 0 && (
                          <div className="flex justify-between items-center">
-                           <span className="text-sm text-gray-500">Maskiner jag lånat</span>
-                           <span className="font-medium text-gray-900">{myLoans}</span>
+                           <span className="text-sm text-gray-500 dark:text-gray-400">Maskiner jag lånat</span>
+                           <span className="font-medium text-gray-900 dark:text-gray-100">{myLoans}</span>
                          </div>
                        )}
                        {borrowedTools > 0 && (
                          <div className="flex justify-between items-center">
-                           <span className="text-sm text-gray-500">Från andra platser</span>
-                           <span className="font-medium text-gray-900">{borrowedTools}</span>
+                           <span className="text-sm text-gray-500 dark:text-gray-400">Från andra platser</span>
+                           <span className="font-medium text-gray-900 dark:text-gray-100">{borrowedTools}</span>
                          </div>
                        )}
                      </div>
@@ -308,19 +308,19 @@ export default function Dashboard() {
              </div>
 
             {/* Inventory value */}
-             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-               <h3 className="font-semibold text-gray-900 mb-4">Inventarievärde</h3>
+             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+               <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Inventarievärde</h3>
                <div className="space-y-3">
                  <div className="flex justify-between items-center">
-                   <span className="text-sm text-gray-500">Maskiner ({activeTools.length})</span>
-                   <span className="font-medium text-gray-900">{totalValue.toLocaleString('sv-SE')} kr</span>
+                   <span className="text-sm text-gray-500 dark:text-gray-400">Maskiner ({activeTools.length})</span>
+                   <span className="font-medium text-gray-900 dark:text-gray-100">{totalValue.toLocaleString('sv-SE')} kr</span>
                  </div>
-                 <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                   <span className="text-sm font-semibold text-gray-700">Totalt</span>
+                 <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                   <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Totalt</span>
                    <span className="font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
                  </div>
                </div>
-               <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
                  {[
                    { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
                    { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
@@ -330,9 +330,9 @@ export default function Dashboard() {
                    <div key={label} className="flex items-center justify-between">
                      <div className="flex items-center gap-2">
                        <div className={`w-2 h-2 rounded-full ${color}`} />
-                       <span className="text-sm text-gray-600">{label}</span>
+                       <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
                      </div>
-                     <span className="text-sm font-medium text-gray-900">{count}</span>
+                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{count}</span>
                    </div>
                  ))}
                </div>
@@ -340,16 +340,16 @@ export default function Dashboard() {
 
              {/* Active Loans by Location */}
               {loansByLocation.length > 0 && (
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-100">
-                    <h3 className="font-semibold text-gray-900">Platser med aktiva lån</h3>
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">Platser med aktiva lån</h3>
                   </div>
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {loansByLocation.map(location => (
                       <Link key={location.id} to={`/locations/${location.id}`} className="block">
-                        <div className="px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
-                          <p className="font-medium text-gray-900 text-sm truncate">{location.name}</p>
-                          <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                        <div className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                          <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{location.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
                             <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
                             {location.activeLoans} aktiva lån
                           </p>
@@ -361,37 +361,37 @@ export default function Dashboard() {
               )}
 
              {/* Recent Activity */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100">
-                  <h3 className="font-semibold text-gray-900">Senaste förflyttningar</h3>
-                </div>
-               {recentTransfers.length > 0 ? (
-                 <div className="divide-y divide-gray-100">
-                   {recentTransfers.map((transfer) => (
-                     <div key={transfer.id} className="px-5 py-3">
-                       <p className="font-medium text-gray-900 text-sm truncate">{transfer.tool_name}</p>
-                       <p className="text-xs text-gray-500 mt-0.5 truncate">
-                         {transfer.from_location_name || '—'} → {transfer.to_location_name || '—'}
-                       </p>
-                       <p className="text-xs text-gray-400 mt-0.5">
-                         {transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM')}
-                       </p>
-                     </div>
-                   ))}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                 <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">Senaste förflyttningar</h3>
                  </div>
-               ) : (
-                 <div className="p-6 text-center">
-                   <Clock className="w-7 h-7 text-gray-300 mx-auto mb-2" />
-                   <p className="text-gray-400 text-sm">Inga förflyttningar</p>
-                 </div>
-               )}
-             </div>
+                {recentTransfers.length > 0 ? (
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {recentTransfers.map((transfer) => (
+                      <div key={transfer.id} className="px-5 py-3">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{transfer.tool_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                          {transfer.from_location_name || '—'} → {transfer.to_location_name || '—'}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          {transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center">
+                    <Clock className="w-7 h-7 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-400 dark:text-gray-500 text-sm">Inga förflyttningar</p>
+                  </div>
+                )}
+              </div>
            </div>
 
            {/* Recent Tools - simple list */}
            <div className="lg:col-span-2 lg:order-1 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Senaste maskiner</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Senaste maskiner</h2>
               <Link to={createPageUrl('Inventory')}>
                 <Button variant="ghost" size="sm" className="text-[#8B1E1E] hover:text-[#6B1515] hover:bg-[#8B1E1E]/10">
                   Visa alla <ArrowRight className="w-4 h-4 ml-1" />
@@ -399,47 +399,47 @@ export default function Dashboard() {
               </Link>
             </div>
             {activeTools.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-                <Wrench className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 mb-4">Inga maskiner ännu</p>
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
+                  <Wrench className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">Inga maskiner ännu</p>
                 <Button onClick={() => setShowAddTool(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
                   <Plus className="w-4 h-4 mr-2" /> Lägg till maskin
                 </Button>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="divide-y divide-gray-100">
-                  {recentlyUsedTools.map(tool => (
-                    <div key={tool.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setEditTool(tool)}>
-                      {tool.image_url ? (
-                        <img src={tool.image_url} alt={tool.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                          <Package className="w-5 h-5 text-gray-400" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{tool.name}</p>
-                        <p className="text-sm text-gray-500 truncate">{tool.manufacturer}{tool.model_number ? ` · ${tool.model_number}` : ''}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                          tool.status === 'available' ? 'bg-emerald-100 text-emerald-700' :
-                          tool.status === 'in_use' ? 'bg-blue-100 text-blue-700' :
-                          tool.status === 'maintenance' ? 'bg-amber-100 text-amber-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {tool.status === 'available' ? 'Tillgänglig' :
-                           tool.status === 'in_use' ? 'I bruk' :
-                           tool.status === 'i_lager' ? 'I lager' :
-                           tool.status === 'maintenance' ? 'Underhåll' : tool.status}
-                        </span>
-                        {tool.location_name && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[120px]">{tool.location_name}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                   {recentlyUsedTools.map(tool => (
+                     <div key={tool.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer" onClick={() => setEditTool(tool)}>
+                       {tool.image_url ? (
+                         <img src={tool.image_url} alt={tool.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                       ) : (
+                         <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                           <Package className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                         </div>
+                       )}
+                       <div className="flex-1 min-w-0">
+                         <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{tool.name}</p>
+                         <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{tool.manufacturer}{tool.model_number ? ` · ${tool.model_number}` : ''}</p>
+                       </div>
+                       <div className="text-right shrink-0">
+                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                           tool.status === 'available' ? 'bg-emerald-100 text-emerald-700' :
+                           tool.status === 'in_use' ? 'bg-blue-100 text-blue-700' :
+                           tool.status === 'maintenance' ? 'bg-amber-100 text-amber-700' :
+                           'bg-gray-100 text-gray-600'
+                         }`}>
+                           {tool.status === 'available' ? 'Tillgänglig' :
+                            tool.status === 'in_use' ? 'I bruk' :
+                            tool.status === 'i_lager' ? 'I lager' :
+                            tool.status === 'maintenance' ? 'Underhåll' : tool.status}
+                         </span>
+                         {tool.location_name && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate max-w-[120px]">{tool.location_name}</p>}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
             )}
           </div>
 
