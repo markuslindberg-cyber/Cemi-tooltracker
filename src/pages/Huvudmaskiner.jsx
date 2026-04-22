@@ -194,7 +194,7 @@ export default function Huvudmaskiner() {
                 </Select>
               </div>
               <div>
-                <Label>Namn (Projektnamn/nummer)*</Label>
+                <Label>Projektnamn *</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) =>
