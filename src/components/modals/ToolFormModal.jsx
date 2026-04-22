@@ -428,7 +428,7 @@ export default function ToolFormModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-full max-w-full sm:max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 mx-0 sm:mx-auto rounded-t-2xl sm:rounded-xl bottom-0 sm:bottom-auto fixed sm:relative sm:top-auto top-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
               {isEditing ? 'Redigera verktyg' : 'Lägg till nytt verktyg'}
