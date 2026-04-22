@@ -19,6 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
+const MASKIN_TYPER = [
+  'Traktor',
+  'Redskapsbärare',
+  'Hjullastare',
+  'Grävmaskin',
+  'Lastbil',
+  'Minidumper',
+  'Övrigt',
+];
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 
@@ -30,6 +40,7 @@ export default function Huvudmaskiner() {
   const [selectedTool, setSelectedTool] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    typ: '',
     manufacturer: '',
     model: '',
     year_model: '',
@@ -108,6 +119,7 @@ export default function Huvudmaskiner() {
   const resetForm = () => {
     setFormData({
       name: '',
+      typ: '',
       manufacturer: '',
       model: '',
       year_model: '',
@@ -165,6 +177,22 @@ export default function Huvudmaskiner() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              <div>
+                <Label>Typ</Label>
+                <Select
+                  value={formData.typ}
+                  onValueChange={(value) => setFormData({ ...formData, typ: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Välj typ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MASKIN_TYPER.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label>Namn (Projektnamn/nummer)*</Label>
                 <Input
@@ -308,6 +336,9 @@ export default function Huvudmaskiner() {
                     </button>
                     <div>
                       <h3 className="font-semibold text-lg">{maskin.name}</h3>
+                      {maskin.typ && (
+                        <span className="inline-block text-xs bg-gray-100 text-gray-600 rounded px-2 py-0.5 mb-1">{maskin.typ}</span>
+                      )}
                       {maskin.manufacturer && (
                         <p className="text-sm text-gray-600">
                           {maskin.manufacturer}

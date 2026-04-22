@@ -6,6 +6,19 @@
       "type": "string",
       "description": "Projektnamn/nummer"
     },
+    "typ": {
+      "type": "string",
+      "enum": [
+        "Traktor",
+        "Redskapsb\u00e4rare",
+        "Hjullastare",
+        "Gr\u00e4vmaskin",
+        "Lastbil",
+        "Minidumper",
+        "\u00d6vrigt"
+      ],
+      "description": "Maskintyp"
+    },
     "manufacturer": {
       "type": "string",
       "description": "Tillverkare"
