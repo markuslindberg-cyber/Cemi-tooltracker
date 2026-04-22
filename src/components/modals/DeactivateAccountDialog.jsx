@@ -101,9 +101,11 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
 
         {canSelfDeactivate ? (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className={`w-full ${user?.role === 'ägare' ? 'grid-cols-2' : 'grid-cols-1'}`}>
               <TabsTrigger value="deactivate">Inaktivera</TabsTrigger>
-              <TabsTrigger value="delete" className="text-red-600">Permanent borttagning</TabsTrigger>
+              {user?.role === 'ägare' && (
+                <TabsTrigger value="delete" className="text-red-600">Permanent borttagning</TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="deactivate" className="space-y-3 py-4">
@@ -159,6 +161,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
               </AlertDialogFooter>
             </TabsContent>
 
+            {user?.role === 'ägare' && (
             <TabsContent value="delete" className="space-y-3 py-4">
               <AlertDialogDescription asChild>
                 <div className="space-y-3 text-sm text-gray-600">
@@ -185,6 +188,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                 </Button>
               </AlertDialogFooter>
             </TabsContent>
+            )}
           </Tabs>
         ) : (
           <AlertDialogDescription asChild>
