@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 function FilterSection({ title, children, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-gray-100 last:border-0">
+    <div className="border-b border-gray-100 dark:border-gray-800 last:border-0">
       <button
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
         onClick={() => setOpen(!open)}
       >
         {title}
@@ -33,12 +33,12 @@ function FilterOption({ label, selected, onClick }) {
       onClick={onClick}
       className={cn(
         "w-full flex items-center gap-3 px-2 py-1.5 rounded-md text-sm transition-colors text-left",
-        selected ? "bg-[#8B1E1E]/10 text-[#8B1E1E] font-medium" : "text-gray-700 hover:bg-gray-100"
+        selected ? "bg-[#8B1E1E]/10 text-[#8B1E1E] font-medium" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
       )}
     >
       <span className={cn(
         "w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center",
-        selected ? "bg-[#8B1E1E] border-[#8B1E1E]" : "border-gray-300"
+        selected ? "bg-[#8B1E1E] border-[#8B1E1E]" : "border-gray-300 dark:border-gray-600"
       )}>
         {selected && <span className="w-2 h-2 bg-white rounded-sm block" />}
       </span>
@@ -110,7 +110,7 @@ export default function SearchFilterBar({
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 space-y-3">
       {/* Search row */}
       <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -142,9 +142,9 @@ export default function SearchFilterBar({
           </Button>
 
           {open && (
-            <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-[500px] overflow-y-auto">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                <span className="font-semibold text-gray-900 text-sm">Filtrera efter:</span>
+            <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-[500px] overflow-y-auto">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Filtrera efter:</span>
                 {activeCount > 0 && (
                   <button
                     onClick={() => {
@@ -281,7 +281,7 @@ export default function SearchFilterBar({
 
         {/* View toggle */}
         {showViewToggle && (
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden ml-auto">
+          <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden ml-auto">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="icon"

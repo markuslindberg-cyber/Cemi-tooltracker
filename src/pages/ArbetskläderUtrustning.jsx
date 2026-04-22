@@ -374,7 +374,7 @@ export default function ArbetskläderUtrustning() {
                           const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
                           return sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size);
                         }).map((s, idx) => (
-                          <Badge key={idx} variant="outline" className="bg-blue-50">{s.size} ({s.quantity})</Badge>
+                          <Badge key={idx} variant="outline" className="bg-blue-50 dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-700">{s.size} ({s.quantity})</Badge>
                         ))}
                       </div>
                     </div>
