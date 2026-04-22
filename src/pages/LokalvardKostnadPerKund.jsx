@@ -19,7 +19,7 @@ export default function KostnadPerKund() {
   const [selectedPeriods, setSelectedPeriods] = useState([]);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
   const [selectedCustomerTypes, setSelectedCustomerTypes] = useState([]);
-  const [selectedCustomerStatus, setSelectedCustomerStatus] = useState('aktiv');
+  const [selectedCustomerStatus, setSelectedCustomerStatus] = useState('alla');
   const [loading, setLoading] = useState(true);
   const [customerTypeMap, setCustomerTypeMap] = useState({});
   const [customerStatusMap, setCustomerStatusMap] = useState({});
@@ -118,7 +118,7 @@ export default function KostnadPerKund() {
 
   if (loading) return <div className="flex justify-center p-8">Laddar...</div>;
 
-  const hasActiveFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0 || selectedCustomerTypes.length > 0 || selectedCustomerStatus !== 'aktiv';
+  const hasActiveFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0 || selectedCustomerTypes.length > 0 || selectedCustomerStatus !== 'alla';
   const maxTotal = data.length > 0 ? Math.max(...data.map(d => d.total)) : 0;
   const chartData = data.slice(0, 10).map(d => ({ name: d.namn.length > 15 ? d.namn.slice(0, 15) + '…' : d.namn, value: Math.round(d.total) }));
 
@@ -251,7 +251,7 @@ export default function KostnadPerKund() {
                 setSelectedPeriods([]);
                 setSelectedCustomerIds([]);
                 setSelectedCustomerTypes([]);
-                setSelectedCustomerStatus('aktiv');
+                setSelectedCustomerStatus('alla');
               }}
               className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors"
             >
