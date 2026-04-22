@@ -27,6 +27,12 @@ const statusConfig = {
 export default function HandTools() {
    const queryClient = useQueryClient();
    const [search, setSearch] = useState('');
+   
+   const { data: handTools = [], isLoading } = useQuery({
+    queryKey: ['handtools'],
+    queryFn: () => base44.entities.HandTool.list('-updated_date', 1000).then(r => r.filter(t => !t.is_deleted)),
+  });
+
    const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
      () => queryClient.invalidateQueries(['handtools']),
      isLoading
@@ -51,11 +57,6 @@ export default function HandTools() {
   const [bulkStatus, setBulkStatus] = useState('');
   const [bulkLocation, setBulkLocation] = useState('');
   const [savingBulk, setSavingBulk] = useState(false);
-
-  const { data: handTools = [], isLoading } = useQuery({
-    queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.list('-updated_date', 1000).then(r => r.filter(t => !t.is_deleted)),
-  });
 
   const { data: categoryImages = [] } = useQuery({
     queryKey: ['categoryimages'],
