@@ -334,7 +334,7 @@ export default function Layout({ children }) {
           )}
 
           {/* Center: title */}
-          <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate max-w-[200px]">
+          <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate max-w-[160px]">
             {isRootPath ? (
               <Link to="/" className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
@@ -345,8 +345,17 @@ export default function Layout({ children }) {
             ) : currentPageTitle}
           </span>
 
-          {/* Right: spacer */}
-          <div className="w-10" />
+          {/* Right: menu button always visible */}
+          {!isRootPath ? (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          ) : (
+            <div className="w-10" />
+          )}
         </header>
 
         {/* Page Content with slide animation */}
