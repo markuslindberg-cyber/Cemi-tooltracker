@@ -13,6 +13,12 @@
       ],
       "default": "verktygsf\u00f6rvaltare",
       "description": "Anv\u00e4ndarens roll i systemet"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Om anv\u00e4ndaren \u00e4r aktiv eller inaktiverad"
     }
-  }
+  },
+  "required": []
 }

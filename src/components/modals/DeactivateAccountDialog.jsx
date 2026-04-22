@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -12,33 +12,46 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from '@/api/base44Client';
 
-// Roles that can self-deactivate without a replacement
+// Roles that can self-deactivate
 const SELF_SERVICE_ROLES = ['lokalvårdare', 'verktygsförvaltare'];
 
 export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('deactivate');
-  const [confirmDelete, setConfirmDelete] = useState('');
+  const [replacementUserId, setReplacementUserId] = useState('');
+  const [activeUsers, setActiveUsers] = useState([]);
 
   const canSelfDeactivate = SELF_SERVICE_ROLES.includes(user?.role);
 
+  // Fetch active users for replacement selection
+  useEffect(() => {
+    if (open && canSelfDeactivate) {
+      const fetchUsers = async () => {
+        try {
+          const users = await base44.asServiceRole.entities.User.filter({ is_active: true });
+          // Filter out current user
+          setActiveUsers(users.filter(u => u.id !== user?.id));
+        } catch (err) {
+          console.error('Error fetching users:', err);
+        }
+      };
+      fetchUsers();
+    }
+  }, [open, canSelfDeactivate, user?.id]);
+
   const handleDeactivate = async () => {
+    if (!replacementUserId) {
+      setError('Vänligen välj en ersättare');
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
-      // Find own TeamMember record
-      const members = await base44.entities.TeamMember.filter({ email: user.email });
-      const member = members[0];
-      if (!member) {
-        setError('Kunde inte hitta din teammedlemsprofil.');
-        setLoading(false);
-        return;
-      }
-
-      await base44.functions.invoke('inactivateUser', {
-        targetMemberId: member.id,
-        replacementMemberId: null,
+      await base44.functions.invoke('deactivateUserAndTransferData', {
+        deactivated_user_id: user?.id,
+        replacement_user_id: replacementUserId
       });
 
       // Log out after deactivation
@@ -50,11 +63,6 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
   };
 
   const handlePermanentDelete = async () => {
-    if (confirmDelete !== 'PERMANENT_DELETE') {
-      setError('Vänligen bekräfta genom att skriva "PERMANENT_DELETE"');
-      return;
-    }
-
     setLoading(true);
     setError('');
     try {
@@ -109,6 +117,26 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                   <p className="font-medium text-gray-700">
                     ✓ En administratör kan återaktivera ditt konto vid behov.
                   </p>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Välj ersättare för dina ansvarsområden:
+                    </label>
+                    <select
+                      value={replacementUserId}
+                      onChange={(e) => setReplacementUserId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white"
+                      disabled={loading}
+                    >
+                      <option value="">-- Välj en person --</option>
+                      {activeUsers.map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.full_name} ({u.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   {error && (
                     <p className="text-red-600 font-medium">{error}</p>
                   )}
@@ -119,7 +147,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                 <Button
                   variant="destructive"
                   onClick={handleDeactivate}
-                  disabled={loading}
+                  disabled={loading || !replacementUserId}
                 >
                   {loading ? 'Inaktiverar...' : 'Inaktivera'}
                 </Button>
@@ -136,16 +164,6 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                       Detta kan påverka rapporter och historik som är kopplad till dina åtgärder.
                     </p>
                   </div>
-                  <p>
-                    För att bekräfta permanent borttagning, vänligen skriv:
-                  </p>
-                  <input
-                    type="text"
-                    placeholder="Skriv: PERMANENT_DELETE"
-                    value={confirmDelete}
-                    onChange={(e) => setConfirmDelete(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-                  />
                   {error && (
                     <p className="text-red-600 font-medium">{error}</p>
                   )}
@@ -156,7 +174,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                 <Button
                   variant="destructive"
                   onClick={handlePermanentDelete}
-                  disabled={loading || confirmDelete !== 'PERMANENT_DELETE'}
+                  disabled={loading}
                 >
                   {loading ? 'Tar bort...' : 'Radera slutgiltigt'}
                 </Button>
