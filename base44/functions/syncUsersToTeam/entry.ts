@@ -7,7 +7,7 @@ function mapRole(userRole) {
     'admin_lokalvård': 'admin lokalvård',
     'lokalvårdare': 'lokalvårdare',
     'verktygsförvaltare': 'technician',
-    'ägare': 'manager',
+    'ägare': 'ägare',
     'user': 'lokalvårdare',
   };
   return roleMap[userRole] || 'lokalvårdare';
@@ -44,9 +44,9 @@ Deno.serve(async (req) => {
         });
         created++;
       } else {
-        // Update role if it differs
+        // Update role if it differs — but never downgrade an existing 'ägare' TeamMember
         const existing = memberByEmail[user.email];
-        if (existing.role !== mappedRole) {
+        if (existing.role !== mappedRole && existing.role !== 'ägare') {
           await base44.asServiceRole.entities.TeamMember.update(existing.id, {
             role: mappedRole,
           });
