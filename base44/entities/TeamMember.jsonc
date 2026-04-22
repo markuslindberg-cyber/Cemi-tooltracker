@@ -15,12 +15,13 @@
       "type": "string",
       "enum": [
         "technician",
-        "supervisor",
-        "manager",
         "apprentice",
         "contractor",
         "admin lokalv\u00e5rd",
-        "lokalv\u00e5rdare"
+        "lokalv\u00e5rdare",
+        "verktygsf\u00f6rvaltare",
+        "admin",
+        "\u00e4gare"
       ],
       "default": "lokalv\u00e5rdare"
     },

@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import TeamMemberFormModal from '@/components/modals/TeamMemberFormModal';
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal';
+import InactivateUserDialog from '@/components/modals/InactivateUserDialog';
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -57,6 +59,9 @@ export default function Team() {
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [memberToDelete, setMemberToDelete] = useState(null);
+  const [memberToInactivate, setMemberToInactivate] = useState(null);
+  const [inactivating, setInactivating] = useState(false);
+  const { toast } = useToast();
 
   const { data: teamMembers = [], isLoading: loadingMembers } = useQuery({
     queryKey: ['teamMembers'],
@@ -141,6 +146,25 @@ export default function Team() {
     queryClient.invalidateQueries(['tools']);
     setMemberToDelete(null);
     setIsLoading(false);
+  };
+
+  const handleInactivateMember = (member) => {
+    setMemberToInactivate(member);
+  };
+
+  const confirmInactivate = async (targetMemberId, replacementMemberId) => {
+    setInactivating(true);
+    const res = await base44.functions.invoke('inactivateUser', { targetMemberId, replacementMemberId });
+    if (res.data?.success) {
+      toast({ title: 'Användare inaktiverad', description: res.data.message });
+      queryClient.invalidateQueries(['teamMembers']);
+      queryClient.invalidateQueries(['tools']);
+      queryClient.invalidateQueries(['locations']);
+      setMemberToInactivate(null);
+    } else {
+      toast({ title: 'Fel', description: res.data?.error || 'Något gick fel', variant: 'destructive' });
+    }
+    setInactivating(false);
   };
 
   if (loadingMembers) {
@@ -243,10 +267,13 @@ export default function Team() {
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem onClick={() => setEditMember(member)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDeleteMember(member)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
+                          <DropdownMenuContent align="end" className="w-48">
+                           <DropdownMenuItem onClick={() => setEditMember(member)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
+                           {member.is_active !== false && (
+                             <DropdownMenuItem onClick={() => handleInactivateMember(member)} className="text-amber-600"><Trash2 className="w-4 h-4 mr-2" />Inaktivera</DropdownMenuItem>
+                           )}
+                           <DropdownMenuSeparator />
+                           <DropdownMenuItem onClick={() => handleDeleteMember(member)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort permanent</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -319,10 +346,13 @@ export default function Team() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem onClick={() => setEditMember(member)}><Pencil className="w-4 h-4 mr-2" />Redigera</DropdownMenuItem>
+                        {member.is_active !== false && (
+                          <DropdownMenuItem onClick={() => handleInactivateMember(member)} className="text-amber-600"><Trash2 className="w-4 h-4 mr-2" />Inaktivera</DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDeleteMember(member)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteMember(member)} className="text-red-600"><Trash2 className="w-4 h-4 mr-2" />Ta bort permanent</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -344,6 +374,14 @@ export default function Team() {
         locations={locations}
         onSubmit={handleSaveMember}
         isLoading={isLoading}
+      />
+      <InactivateUserDialog
+        isOpen={!!memberToInactivate}
+        onClose={() => setMemberToInactivate(null)}
+        member={memberToInactivate}
+        activeMembers={teamMembers}
+        onConfirm={confirmInactivate}
+        isLoading={inactivating}
       />
       <DeleteConfirmationModal
         isOpen={!!memberToDelete}
