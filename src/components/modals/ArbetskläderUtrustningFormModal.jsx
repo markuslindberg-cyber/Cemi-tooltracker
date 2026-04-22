@@ -10,13 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import MobileSelect from '@/components/ui/mobile-select';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -256,18 +250,15 @@ export default function ArbetskläderUtrustningFormModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Använd tidigare arbetskläder som mall
               </label>
-              <Select value={selectedTemplate} onValueChange={loadTemplate}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Välj arbetskläder att kopiera från" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allItems.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name} - {template.manufacturer || 'Okänd'} ({template.category})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MobileSelect
+                value={selectedTemplate}
+                onChange={loadTemplate}
+                options={allItems.map((template) => ({
+                  value: template.id,
+                  label: `${template.name} - ${template.manufacturer || 'Okänd'} (${template.category})`
+                }))}
+                placeholder="Välj arbetskläder att kopiera från"
+              />
               <p className="text-xs text-gray-600 mt-2">
                 Välj en tidigare artikel för att kopiera dess egenskaper.
               </p>
@@ -303,18 +294,15 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Kategori *
             </label>
-            <Select value={formData.category || ''} onValueChange={(v) => handleChange('category', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Välj kategori" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={formData.category || ''}
+              onChange={(v) => handleChange('category', v)}
+              options={categories.map((cat) => ({
+                value: cat,
+                label: cat
+              }))}
+              placeholder="Välj kategori"
+            />
           </div>
 
           {/* Subcategory */}
@@ -381,18 +369,17 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Storlek
             </label>
-            <Select value={formData.size || ''} onValueChange={(v) => handleChange('size', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Välj storlek" />
-              </SelectTrigger>
-              <SelectContent>
-                {(sizesByCategory[formData.subcategory] || sizesByCategory[formData.category] || sizesByCategory['Arbetskläder varsel']).map((size) => (
-                  <SelectItem key={size} value={size}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={formData.size || ''}
+              onChange={(v) => handleChange('size', v)}
+              options={
+                (sizesByCategory[formData.subcategory] || sizesByCategory[formData.category] || sizesByCategory['Arbetskläder varsel']).map((size) => ({
+                  value: size,
+                  label: size
+                }))
+              }
+              placeholder="Välj storlek"
+            />
           </div>
 
           {/* Antal */}
@@ -413,18 +400,15 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
-            <Select value={formData.status || 'i_lager'} onValueChange={(v) => handleChange('status', v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statuses.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {statusLabels[status]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={formData.status || 'i_lager'}
+              onChange={(v) => handleChange('status', v)}
+              options={statuses.map((status) => ({
+                value: status,
+                label: statusLabels[status]
+              }))}
+              placeholder="Välj status"
+            />
           </div>
 
           {/* Skick */}
@@ -432,18 +416,15 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Skick
             </label>
-            <Select value={formData.condition || 'bra'} onValueChange={(v) => handleChange('condition', v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {conditions.map((cond) => (
-                  <SelectItem key={cond} value={cond}>
-                    {conditionLabels[cond]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={formData.condition || 'bra'}
+              onChange={(v) => handleChange('condition', v)}
+              options={conditions.map((cond) => ({
+                value: cond,
+                label: conditionLabels[cond]
+              }))}
+              placeholder="Välj skick"
+            />
           </div>
 
           {/* Plats */}
@@ -451,19 +432,18 @@ export default function ArbetskläderUtrustningFormModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Plats
             </label>
-            <Select value={formData.location_id || ''} onValueChange={(v) => handleChange('location_id', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Välj plats" />
-              </SelectTrigger>
-              <SelectContent>
-                  <SelectItem value={null}>Ingen plats</SelectItem>
-                {locations.map((loc) => (
-                  <SelectItem key={loc.id} value={loc.id}>
-                    {loc.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MobileSelect
+              value={formData.location_id || ''}
+              onChange={(v) => handleChange('location_id', v)}
+              options={[
+                { value: '', label: 'Ingen plats' },
+                ...locations.map((loc) => ({
+                  value: loc.id,
+                  label: loc.name
+                }))
+              ]}
+              placeholder="Välj plats"
+            />
           </div>
 
           {/* Köpdata */}

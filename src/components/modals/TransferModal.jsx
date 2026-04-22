@@ -9,13 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import MobileSelect from "@/components/ui/mobile-select";
 import { ArrowRight, MapPin, User, Loader2, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -106,22 +100,21 @@ export default function TransferModal({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  Ny plats
-                </Label>
-                <Select value={toLocationId} onValueChange={setToLocationId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Välj destinationsplats" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations?.filter(l => l.is_active !== false).map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
-                        {location.name} ({location.type?.replace('_', ' ')})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                    <MapPin className="w-4 h-4 text-gray-400" />
+                    Ny plats
+                  </Label>
+                  <MobileSelect
+                    value={toLocationId}
+                    onChange={setToLocationId}
+                    options={
+                      locations?.filter(l => l.is_active !== false).map((location) => ({
+                        value: location.id,
+                        label: `${location.name} (${location.type?.replace('_', ' ')})`
+                      })) || []
+                    }
+                    placeholder="Välj destinationsplats"
+                  />
+                </div>
 
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">

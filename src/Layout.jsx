@@ -413,7 +413,7 @@ export default function Layout({ children }) {
             const handleTabClick = (e) => {
               if (active) {
                 e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navigate(tab.path);
               }
             };
             return (

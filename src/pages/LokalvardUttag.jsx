@@ -8,11 +8,16 @@ import { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import { useScrollRestore } from '@/hooks/useScrollRestore';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import NyttUttagModal from '@/components/lokalvard/NyttUttagModal';
 
 export default function LokalvardUttag() {
   useScrollRestore();
   const queryClient = useQueryClient();
+  const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
+    () => queryClient.invalidateQueries(['uttag']),
+    uttagLoading
+  );
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [sortBy, setSortBy] = useState('datum');
@@ -566,7 +571,18 @@ export default function LokalvardUttag() {
   if (uttagLoading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
 
   return (
-    <div className="max-w-7xl mx-auto p-4 space-y-4">
+    <div ref={containerRef} className="max-w-7xl mx-auto p-4 space-y-4 overflow-y-auto min-h-screen" style={{ transform: isPulling ? `translateY(${pullDistance * 0.5}px)` : 'translateY(0)', transition: isPulling ? 'none' : 'transform 0.3s ease-out' }}>
+      {pullDistance > 0 && (
+        <div className="fixed top-0 left-0 right-0 flex justify-center items-center h-16 pointer-events-none z-50">
+          <div style={{ opacity: Math.min(pullDistance / PULL_THRESHOLD, 1) }}>
+            {isPulling ? (
+              <Loader2 className="w-5 h-5 text-[#8B1E1E] animate-spin" />
+            ) : (
+              <div className="text-xs text-gray-500">{pullDistance >= PULL_THRESHOLD ? 'Släpp för att uppdatera' : 'Dra för att uppdatera'}</div>
+            )}
+          </div>
+        </div>
+      )}
       <NyttUttagModal
         open={showNyttUttagModal}
         onClose={() => setShowNyttUttagModal(false)}
