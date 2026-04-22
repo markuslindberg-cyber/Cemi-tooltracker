@@ -176,10 +176,10 @@ export default function Layout({ children }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 left-0 z-50 h-full w-[280px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "fixed top-0 left-0 z-50 h-screen w-[280px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'var(--sat)' }}>
             <Link to="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3">
