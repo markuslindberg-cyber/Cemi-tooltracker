@@ -19,8 +19,10 @@ export default function KostnadPerKund() {
   const [selectedPeriods, setSelectedPeriods] = useState([]);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
   const [selectedCustomerTypes, setSelectedCustomerTypes] = useState([]);
+  const [selectedCustomerStatus, setSelectedCustomerStatus] = useState('aktiv');
   const [loading, setLoading] = useState(true);
   const [customerTypeMap, setCustomerTypeMap] = useState({});
+  const [customerStatusMap, setCustomerStatusMap] = useState({});
 
   useEffect(() => {
     const loadData = async () => {
@@ -34,10 +36,13 @@ export default function KostnadPerKund() {
 
         // Create customer type map
         const typeMap = {};
+        const statusMap = {};
         kunder.forEach(k => {
           typeMap[k.id] = k.typ;
+          statusMap[k.id] = k.status || 'aktiv';
         });
         setCustomerTypeMap(typeMap);
+        setCustomerStatusMap(statusMap);
 
         const periods = [...new Set(uttag.map(u => u.manad).filter(Boolean))].sort((a, b) => b.localeCompare(a));
         setAvailablePeriods(periods);
@@ -68,6 +73,7 @@ export default function KostnadPerKund() {
               kund_id: u.kund_id, 
               namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', 
               kundtyp: kundtypForUttag,
+              kundstatus: statusMap[u.kund_id] || 'aktiv',
               personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', 
               total: 0 
             };
@@ -93,7 +99,8 @@ export default function KostnadPerKund() {
 
   const data = allData
     .filter(d => selectedCustomerIds.length === 0 || selectedCustomerIds.includes(d.kund_id))
-    .filter(d => selectedCustomerTypes.length === 0 || selectedCustomerTypes.includes(d.kundtyp));
+    .filter(d => selectedCustomerTypes.length === 0 || selectedCustomerTypes.includes(d.kundtyp))
+    .filter(d => selectedCustomerStatus === 'alla' || d.kundstatus === selectedCustomerStatus);
 
   const total = data.reduce((sum, item) => sum + item.total, 0);
 
@@ -111,7 +118,7 @@ export default function KostnadPerKund() {
 
   if (loading) return <div className="flex justify-center p-8">Laddar...</div>;
 
-  const hasActiveFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0 || selectedCustomerTypes.length > 0;
+  const hasActiveFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0 || selectedCustomerTypes.length > 0 || selectedCustomerStatus !== 'aktiv';
   const maxTotal = data.length > 0 ? Math.max(...data.map(d => d.total)) : 0;
   const chartData = data.slice(0, 10).map(d => ({ name: d.namn.length > 15 ? d.namn.slice(0, 15) + '…' : d.namn, value: Math.round(d.total) }));
 
@@ -196,6 +203,25 @@ export default function KostnadPerKund() {
             </PopoverContent>
           </FilterChip>
 
+          <FilterChip label="Status" count={selectedCustomerStatus !== 'alla' ? 1 : 0}>
+            <PopoverContent className="w-44 p-2" align="start">
+              <div className="space-y-1">
+                {[{ value: 'alla', label: 'Alla' }, { value: 'aktiv', label: 'Aktiva' }, { value: 'inaktiv', label: 'Inaktiva' }].map(opt => (
+                  <label key={opt.value} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="kundstatus"
+                      checked={selectedCustomerStatus === opt.value}
+                      onChange={() => setSelectedCustomerStatus(opt.value)}
+                      className="w-3.5 h-3.5 accent-blue-600"
+                    />
+                    <span className="text-sm">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </FilterChip>
+
           <FilterChip label="Kund" count={selectedCustomerIds.length}>
             <PopoverContent className="w-60 p-2" align="start">
               <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -225,6 +251,7 @@ export default function KostnadPerKund() {
                 setSelectedPeriods([]);
                 setSelectedCustomerIds([]);
                 setSelectedCustomerTypes([]);
+                setSelectedCustomerStatus('aktiv');
               }}
               className="text-xs text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors"
             >
