@@ -333,17 +333,13 @@ export default function Layout({ children }) {
             </button>
           )}
 
-          {/* Center: title */}
-          <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate max-w-[160px]">
-            {isRootPath ? (
-              <Link to="/" className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
-                  <Wrench className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span className="dark:text-gray-100">ToolTrack</span>
-              </Link>
-            ) : currentPageTitle}
-          </span>
+          {/* Center: always show logo linking to dashboard */}
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
+              <Wrench className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">ToolTrack</span>
+          </Link>
 
           {/* Right: menu button always visible */}
           {!isRootPath ? (
