@@ -15,25 +15,26 @@ export default function LokalvardLager() {
    useScrollRestore();
    const navigate = useNavigate();
    const queryClient = useQueryClient();
+
+   const { data: artiklar = [], isLoading: artiklarLoading } = useQuery({
+     queryKey: ['lokalvardsArtiklar'],
+     queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).then(r => r.filter(a => !a.is_deleted)).catch(() => []),
+     staleTime: 60000,
+   });
+
    const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
      () => queryClient.invalidateQueries(['lokalvardsArtiklar']),
      artiklarLoading
    );
-  const fileInputRef = useRef(null);
-  const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('benamning');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [uploading, setUploading] = useState(false);
-  const [filterTyp, setFilterTyp] = useState('aktiva');
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-
-  const { data: artiklar = [], isLoading: artiklarLoading } = useQuery({
-    queryKey: ['lokalvardsArtiklar'],
-    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).then(r => r.filter(a => !a.is_deleted)).catch(() => []),
-    staleTime: 60000,
-  });
+   const fileInputRef = useRef(null);
+   const [search, setSearch] = useState('');
+   const [sortBy, setSortBy] = useState('benamning');
+   const [sortOrder, setSortOrder] = useState('asc');
+   const [editingId, setEditingId] = useState(null);
+   const [editForm, setEditForm] = useState({});
+   const [uploading, setUploading] = useState(false);
+   const [filterTyp, setFilterTyp] = useState('aktiva');
+   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { data: uttag = [] } = useQuery({
     queryKey: ['uttag'],
