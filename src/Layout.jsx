@@ -176,28 +176,28 @@ export default function Layout({ children }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 left-0 z-50 h-full w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "fixed top-0 left-0 z-50 h-full w-[280px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 dark:border-gray-800">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
-                <Wrench className="w-5 h-5 text-white" />
+          <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'var(--sat)' }}>
+            <Link to="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
+                <Wrench className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-gray-100">ToolTrack</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">ToolTrack</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600"
+              className="lg:hidden p-2.5 -mr-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
             {navigation.filter(item => {
               if (!item.roles) return true;
               return item.roles.includes(user?.role);
@@ -211,23 +211,28 @@ export default function Layout({ children }) {
                     <button
                       onClick={() => toggleMenu(item.name)}
                       className={cn(
-                        "flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                        "flex items-center justify-between w-full px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                         isActive
                           ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
                           : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className={cn(
-                          "w-5 h-5",
-                          isActive ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
-                        )} />
-                        {item.name}
+                        <div className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                          isActive ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800"
+                        )}>
+                          <item.icon className={cn(
+                            "w-4 h-4",
+                            isActive ? "text-[#8B1E1E]" : "text-gray-500 dark:text-gray-400"
+                          )} />
+                        </div>
+                        <span>{item.name}</span>
                       </div>
-                      <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200", isOpen && "rotate-180")} />
+                      <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0", isOpen && "rotate-180")} />
                     </button>
                     {isOpen && (
-                      <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-700 pl-3">
+                      <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-gray-100 dark:border-gray-700 pl-3">
                         {item.children.filter(child => {
                           if (child.devOnly && !window.location.hostname.includes('base44.app')) return false;
                           if (child.desktopOnly && window.innerWidth < 1024) return false;
@@ -239,7 +244,7 @@ export default function Layout({ children }) {
                             to={child.path}
                             onClick={() => setSidebarOpen(false)}
                             className={cn(
-                              "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                              "flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                               child.desktopOnly ? "hidden lg:flex" : "",
                               location.pathname === child.path
                                 ? "text-[#8B1E1E] bg-[#8B1E1E]/10"
@@ -261,16 +266,21 @@ export default function Layout({ children }) {
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                     isActive
                       ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
                       : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                   )}
                 >
-                  <item.icon className={cn(
-                    "w-5 h-5",
-                    isActive ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
-                  )} />
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                    isActive ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800"
+                  )}>
+                    <item.icon className={cn(
+                      "w-4 h-4",
+                      isActive ? "text-[#8B1E1E]" : "text-gray-500 dark:text-gray-400"
+                    )} />
+                  </div>
                   {item.name}
                 </Link>
               );
@@ -313,9 +323,9 @@ export default function Layout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <div className="lg:pl-72">
+      <div className="lg:pl-[280px]">
         {/* Mobile Header */}
-        <header className="lg:hidden h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-2 sticky top-0 z-30" style={{ paddingTop: 'var(--sat)' }}>
+        <header className="lg:hidden h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sticky top-0 z-30" style={{ paddingTop: 'var(--sat)' }}>
           {/* Left: back button on child routes, menu on root routes */}
           {isRootPath ? (
             <button
