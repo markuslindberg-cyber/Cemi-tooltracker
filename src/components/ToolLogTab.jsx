@@ -32,18 +32,21 @@ export default function ToolLogTab({ toolId }) {
               {format(new Date(log.change_date), 'dd/MM/yy HH:mm', { locale: sv })}
             </p>
           </div>
-          <div className="mt-1">
+          <div className="mt-1 space-y-1">
             {log.change_type === 'created' ? (
-              <p className="text-gray-700">
-                ✓ <span className="font-medium">{log.field_name}</span> skapat: <span className="font-mono bg-green-50 px-1.5 py-0.5 rounded text-green-700">{log.new_value}</span>
-              </p>
+              <div className="text-gray-700">
+                <span className="font-medium">✓ {log.field_name}</span> skapat:
+                <span className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 ml-1 break-all">{log.new_value}</span>
+              </div>
             ) : (
-              <p className="text-gray-700">
-                <span className="font-medium">{log.field_name}</span> ändrat: 
-                <span className="font-mono bg-red-50 px-1.5 py-0.5 rounded text-red-700 ml-1">{log.old_value || '—'}</span>
-                {' → '}
-                <span className="font-mono bg-green-50 px-1.5 py-0.5 rounded text-green-700">{log.new_value || '—'}</span>
-              </p>
+              <div className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">{log.field_name}</span> ändrat:
+                <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                  <span className="font-mono bg-red-50 dark:bg-red-900/30 px-1.5 py-0.5 rounded text-red-700 dark:text-red-400 break-all">{log.old_value || '—'}</span>
+                  <span className="text-gray-400">→</span>
+                  <span className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 break-all">{log.new_value || '—'}</span>
+                </div>
+              </div>
             )}
           </div>
         </div>

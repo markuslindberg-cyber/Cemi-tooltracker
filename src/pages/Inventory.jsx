@@ -830,15 +830,18 @@ export default function Inventory() {
 
       {/* History Modal */}
       {toolHistory && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{toolHistory.name} - Ändringshistorik</h2>
-                 <button
-                   onClick={() => setToolHistory(null)}
-                   className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                 >
-                ✕
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <div className="min-w-0 pr-2">
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{toolHistory.name}</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Ändringshistorik</p>
+              </div>
+              <button
+                onClick={() => setToolHistory(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
+              >
+                <span className="text-lg leading-none">✕</span>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
