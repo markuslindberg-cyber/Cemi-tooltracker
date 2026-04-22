@@ -94,11 +94,11 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Inventeringskontroll</h1>
-          <p className="text-gray-500 mt-1">Välj hur du vill genomföra inventeringen</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Inventeringskontroll</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Välj hur du vill genomföra inventeringen</p>
         </div>
 
         {/* Paused sessions */}
@@ -129,25 +129,25 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
           <button
             onClick={() => setMode('location')}
             className={cn("p-6 rounded-2xl border-2 text-left transition-all",
-              mode === 'location' ? "border-[#8B1E1E] bg-[#8B1E1E]/5" : "border-gray-200 bg-white hover:border-gray-300")}
+              mode === 'location' ? "border-[#8B1E1E] bg-[#8B1E1E]/5" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600")}
           >
-            <MapPin className={cn("w-8 h-8 mb-3", mode === 'location' ? "text-[#8B1E1E]" : "text-gray-400")} />
-            <h3 className="font-semibold text-gray-900">Platsbaserad inventering</h3>
-            <p className="text-sm text-gray-500 mt-1">Inventera på en specifik plats</p>
+            <MapPin className={cn("w-8 h-8 mb-3", mode === 'location' ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500")} />
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">Platsbaserad inventering</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Inventera på en specifik plats</p>
           </button>
           <button
             onClick={() => setMode('open')}
             className={cn("p-6 rounded-2xl border-2 text-left transition-all",
-              mode === 'open' ? "border-[#8B1E1E] bg-[#8B1E1E]/5" : "border-gray-200 bg-white hover:border-gray-300")}
+              mode === 'open' ? "border-[#8B1E1E] bg-[#8B1E1E]/5" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600")}
           >
-            <Globe className={cn("w-8 h-8 mb-3", mode === 'open' ? "text-[#8B1E1E]" : "text-gray-400")} />
-            <h3 className="font-semibold text-gray-900">Öppen inventering</h3>
-            <p className="text-sm text-gray-500 mt-1">Skanna oberoende av plats</p>
+            <Globe className={cn("w-8 h-8 mb-3", mode === 'open' ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500")} />
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">Öppen inventering</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Skanna oberoende av plats</p>
           </button>
         </div>
 
         {mode && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm space-y-4">
             {mode === 'location' && (
               <div className="space-y-2">
                 <Label>Välj plats *</Label>
@@ -171,8 +171,8 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
                     className={cn("py-3 px-3 rounded-xl border text-sm font-medium transition-all text-center leading-tight",
                       selectedTypes.includes(opt.value)
                         ? "border-[#8B1E1E] bg-[#8B1E1E] text-white"
-                        : "border-gray-200 text-gray-700 hover:border-gray-300")}
-                  >
+                        : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600")}
+                        >
                     {opt.label}
                   </button>
                 ))}
@@ -415,16 +415,16 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const typeLabel = sessionConfig.toolType || sessionConfig.tool_type || 'Allt';
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <button onClick={() => onEnd(sessionConfig, checkedItems, scopedItems, manualCounts)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => onEnd(sessionConfig, checkedItems, scopedItems, manualCounts)} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">Inventering pågår</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Inventering pågår</h1>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline">{locationLabel}</Badge>
@@ -443,9 +443,9 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
         {/* Progress */}
         {sessionConfig.mode !== 'open' && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-600">Framsteg</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Framsteg</span>
               <span className="text-sm font-bold text-[#8B1E1E]">{checkedCount} / {totalCount}</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
@@ -462,15 +462,15 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         )}
 
         {sessionConfig.mode === 'open' && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex items-center gap-3">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 shadow-sm flex items-center gap-3">
             <CheckCircle2 className="w-6 h-6 text-[#8B1E1E]" />
-            <span className="font-medium text-gray-800">{checkedCount} föremål kontrollerade</span>
+            <span className="font-medium text-gray-800 dark:text-gray-200">{checkedCount} föremål kontrollerade</span>
           </div>
         )}
 
         {/* Scanner */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Skanna streckkod</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-4 dark:text-gray-100">Skanna streckkod</h2>
 
           {/* External scanner input — always visible, always focused */}
           {!scannerActive && (
@@ -518,8 +518,8 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
               </div>
 
               <div className="relative">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-                <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER ANVÄND KAMERA</span></div>
+               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-gray-700" /></div>
+               <div className="relative flex justify-center text-xs"><span className="bg-white dark:bg-gray-900 px-2 text-gray-500 dark:text-gray-400">ELLER ANVÄND KAMERA</span></div>
               </div>
 
               <div className="flex gap-2">
@@ -551,25 +551,25 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
         {/* Scan log */}
         {scanLog.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 dark:text-gray-100">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
               Skannade produkter ({scanLog.length})
             </h2>
             <div className="space-y-2 max-h-72 overflow-y-auto">
               {scanLog.map((entry, idx) => (
-                <div key={`${entry.id}-${idx}`} className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-lg">
+                <div key={`${entry.id}-${idx}`} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                     <div>
-                      <p className="font-medium text-gray-900 text-sm">{entry.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{entry.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}
                         {entry.manualCount !== undefined && ` · Antal: ${entry.manualCount}`}
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400">{entry.timestamp.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{entry.timestamp.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                 </div>
               ))}
             </div>
@@ -578,23 +578,23 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
         {/* Unchecked list */}
         {sessionConfig.mode !== 'open' && uncheckedItems.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 dark:text-gray-100">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
               Ej kontrollerade ({uncheckedItems.length})
             </h2>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {uncheckedItems.map(item => (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
                       {item.image_url
                         ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover rounded-lg" />
                         : <Package className="w-5 h-5 text-gray-400" />}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{item.name || item.benamning}</p>
-                      {(item.barcode || item.streckkod) && <p className="text-xs text-gray-500">Streckkod: {item.barcode || item.streckkod}</p>}
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{item.name || item.benamning}</p>
+                      {(item.barcode || item.streckkod) && <p className="text-xs text-gray-500 dark:text-gray-400">Streckkod: {item.barcode || item.streckkod}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -619,34 +619,34 @@ function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNe
   const date = new Date().toLocaleDateString('sv-SE');
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center">
             <CheckCircle2 className="w-7 h-7 text-green-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Inventering klar!</h1>
-            <p className="text-gray-500 text-sm">{date}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Inventering klar!</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">{date}</p>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
             <Badge variant="outline">{locationLabel}</Badge>
             <Badge variant="outline">{typeLabel}</Badge>
           </div>
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-4 bg-gray-50 rounded-xl">
-              <p className="text-2xl font-bold text-gray-900">{allItems.length}</p>
-              <p className="text-sm text-gray-500">Totalt</p>
+            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+              <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{allItems.length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Totalt</p>
             </div>
-            <div className="p-4 bg-green-50 rounded-xl">
-              <p className="text-2xl font-bold text-green-700">{checkedItems.size}</p>
-              <p className="text-sm text-gray-500">Kontrollerade</p>
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+              <p className="text-2xl font-bold text-green-700 dark:text-green-400">{checkedItems.size}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Kontrollerade</p>
             </div>
-            <div className="p-4 bg-amber-50 rounded-xl">
-              <p className="text-2xl font-bold text-amber-700">{allItems.length - checkedItems.size}</p>
-              <p className="text-sm text-gray-500">Ej kontrollerade</p>
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+              <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{allItems.length - checkedItems.size}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Ej kontrollerade</p>
             </div>
           </div>
         </div>
