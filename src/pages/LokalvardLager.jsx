@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useScrollRestore } from '@/hooks/useScrollRestore';
 import { base44 } from '@/api/base44Client';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
-import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
