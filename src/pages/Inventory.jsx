@@ -83,11 +83,11 @@ export default function Inventory() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState([]);
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
-  const [manufacturerFilter, setManufacturerFilter] = useState('all');
-  const [conditionFilter, setConditionFilter] = useState('all');
-  const [locationFilter, setLocationFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState([]);
+  const [subcategoryFilter, setSubcategoryFilter] = useState([]);
+  const [manufacturerFilter, setManufacturerFilter] = useState([]);
+  const [conditionFilter, setConditionFilter] = useState([]);
+  const [locationFilter, setLocationFilter] = useState([]);
   const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
@@ -186,11 +186,11 @@ export default function Inventory() {
         item.subcategory?.toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesStatus = statusFilter.length === 0 || statusFilter.includes(item.status);
-      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-      const matchesSubcategory = subcategoryFilter === 'all' || item.subcategory === subcategoryFilter;
-      const matchesManufacturer = manufacturerFilter === 'all' || item.manufacturer === manufacturerFilter;
-      const matchesCondition = conditionFilter === 'all' || item.condition === conditionFilter;
-      const matchesLocation = locationFilter === 'all' || item.location_name === locationFilter;
+      const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(item.category);
+      const matchesSubcategory = subcategoryFilter.length === 0 || subcategoryFilter.includes(item.subcategory);
+      const matchesManufacturer = manufacturerFilter.length === 0 || manufacturerFilter.includes(item.manufacturer);
+      const matchesCondition = conditionFilter.length === 0 || conditionFilter.includes(item.condition);
+      const matchesLocation = locationFilter.length === 0 || locationFilter.includes(item.location_name);
       
       return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory && 
              matchesManufacturer && matchesCondition && matchesLocation;
@@ -223,11 +223,11 @@ export default function Inventory() {
   }, [allItems]);
 
   const availableSubcategories = useMemo(() => {
-    if (categoryFilter === 'all') {
+    if (categoryFilter.length === 0) {
       return [...new Set(allItems.map(t => t.subcategory).filter(Boolean))].sort();
     }
     return [...new Set(
-      allItems.filter(t => t.category === categoryFilter).map(t => t.subcategory).filter(Boolean)
+      allItems.filter(t => categoryFilter.includes(t.category)).map(t => t.subcategory).filter(Boolean)
     )].sort();
   }, [allItems, categoryFilter]);
 
@@ -290,11 +290,11 @@ export default function Inventory() {
   const clearFilters = () => {
     setSearchQuery('');
     setStatusFilter([]);
-    setCategoryFilter('all');
-    setSubcategoryFilter('all');
-    setManufacturerFilter('all');
-    setConditionFilter('all');
-    setLocationFilter('all');
+    setCategoryFilter([]);
+    setSubcategoryFilter([]);
+    setManufacturerFilter([]);
+    setConditionFilter([]);
+    setLocationFilter([]);
   };
 
   const handleDownloadTemplate = () => {
@@ -505,7 +505,7 @@ export default function Inventory() {
             <h1 className="text-3xl font-bold text-gray-900">Maskiner</h1>
             <p className="text-gray-500 mt-1 text-sm">
               {filteredTools.length} verktyg
-              {(statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || conditionFilter !== 'all' || locationFilter !== 'all' || searchQuery) && ' matchar filter'}
+              {(statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || conditionFilter.length > 0 || locationFilter.length > 0 || searchQuery) && ' matchar filter'}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 md:gap-2 shrink-0">

@@ -81,15 +81,9 @@ export default function SearchFilterBar({
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  const activeCount = [
-    statusFilter?.length > 0 ? 1 : 0,
-    categoryFilter && categoryFilter !== 'all' ? 1 : 0,
-    subcategoryFilter && subcategoryFilter !== 'all' ? 1 : 0,
-    manufacturerFilter && manufacturerFilter !== 'all' ? 1 : 0,
-    conditionFilter && conditionFilter !== 'all' ? 1 : 0,
-    locationFilter && locationFilter !== 'all' ? 1 : 0,
-    assignedToFilter && assignedToFilter !== 'all' ? 1 : 0,
-  ].reduce((a, b) => a + b, 0);
+  // Support both array and 'all'/string for backwards compat
+  const isActive = (f) => Array.isArray(f) ? f.length > 0 : (f && f !== 'all');
+  const activeCount = [statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, assignedToFilter].filter(isActive).length;
 
   useEffect(() => {
     function handleClick(e) {
@@ -155,11 +149,11 @@ export default function SearchFilterBar({
                   <button
                     onClick={() => {
                       onStatusChange([]);
-                      onCategoryChange('all');
-                      onSubcategoryChange('all');
-                      onManufacturerChange('all');
-                      onConditionChange('all');
-                      onLocationChange('all');
+                      onCategoryChange(Array.isArray(categoryFilter) ? [] : 'all');
+                      onSubcategoryChange(Array.isArray(subcategoryFilter) ? [] : 'all');
+                      onManufacturerChange(Array.isArray(manufacturerFilter) ? [] : 'all');
+                      onConditionChange(Array.isArray(conditionFilter) ? [] : 'all');
+                      onLocationChange(Array.isArray(locationFilter) ? [] : 'all');
                       if (onAssignedToChange) onAssignedToChange('all');
                       setOpen(false);
                     }}
@@ -188,28 +182,43 @@ export default function SearchFilterBar({
               </FilterSection>
 
               {availableCategories.length > 0 && (
-                <FilterSection title="Kategori" defaultOpen={categoryFilter !== 'all'}>
-                  <FilterOption label="Alla kategorier" selected={categoryFilter === 'all'} onClick={() => onCategoryChange('all')} />
+                <FilterSection title="Kategori" defaultOpen={isActive(categoryFilter)}>
+                  <FilterOption label="Alla kategorier" selected={!isActive(categoryFilter)} onClick={() => onCategoryChange(Array.isArray(categoryFilter) ? [] : 'all')} />
                   {availableCategories.map(cat => (
-                    <FilterOption key={cat} label={cat} selected={categoryFilter === cat} onClick={() => onCategoryChange(cat)} />
+                    <FilterOption key={cat} label={cat}
+                      selected={Array.isArray(categoryFilter) ? categoryFilter.includes(cat) : categoryFilter === cat}
+                      onClick={() => {
+                        if (!Array.isArray(categoryFilter)) { onCategoryChange(cat); return; }
+                        onCategoryChange(categoryFilter.includes(cat) ? categoryFilter.filter(v => v !== cat) : [...categoryFilter, cat]);
+                      }} />
                   ))}
                 </FilterSection>
               )}
 
               {availableSubcategories.length > 0 && (
-                <FilterSection title="Underkategori" defaultOpen={subcategoryFilter !== 'all'}>
-                  <FilterOption label="Alla underkategorier" selected={subcategoryFilter === 'all'} onClick={() => onSubcategoryChange('all')} />
+                <FilterSection title="Underkategori" defaultOpen={isActive(subcategoryFilter)}>
+                  <FilterOption label="Alla underkategorier" selected={!isActive(subcategoryFilter)} onClick={() => onSubcategoryChange(Array.isArray(subcategoryFilter) ? [] : 'all')} />
                   {availableSubcategories.map(sub => (
-                    <FilterOption key={sub} label={sub} selected={subcategoryFilter === sub} onClick={() => onSubcategoryChange(sub)} />
+                    <FilterOption key={sub} label={sub}
+                      selected={Array.isArray(subcategoryFilter) ? subcategoryFilter.includes(sub) : subcategoryFilter === sub}
+                      onClick={() => {
+                        if (!Array.isArray(subcategoryFilter)) { onSubcategoryChange(sub); return; }
+                        onSubcategoryChange(subcategoryFilter.includes(sub) ? subcategoryFilter.filter(v => v !== sub) : [...subcategoryFilter, sub]);
+                      }} />
                   ))}
                 </FilterSection>
               )}
 
               {availableLocations.length > 0 && (
-                <FilterSection title="Plats" defaultOpen={locationFilter !== 'all'}>
-                  <FilterOption label="Alla platser" selected={locationFilter === 'all'} onClick={() => onLocationChange('all')} />
+                <FilterSection title="Plats" defaultOpen={isActive(locationFilter)}>
+                  <FilterOption label="Alla platser" selected={!isActive(locationFilter)} onClick={() => onLocationChange(Array.isArray(locationFilter) ? [] : 'all')} />
                   {availableLocations.map(loc => (
-                    <FilterOption key={loc} label={loc} selected={locationFilter === loc} onClick={() => onLocationChange(loc)} />
+                    <FilterOption key={loc} label={loc}
+                      selected={Array.isArray(locationFilter) ? locationFilter.includes(loc) : locationFilter === loc}
+                      onClick={() => {
+                        if (!Array.isArray(locationFilter)) { onLocationChange(loc); return; }
+                        onLocationChange(locationFilter.includes(loc) ? locationFilter.filter(v => v !== loc) : [...locationFilter, loc]);
+                      }} />
                   ))}
                 </FilterSection>
               )}
@@ -225,19 +234,29 @@ export default function SearchFilterBar({
               )}
 
               {availableManufacturers.length > 0 && (
-                <FilterSection title="Tillverkare" defaultOpen={manufacturerFilter !== 'all'}>
-                  <FilterOption label="Alla tillverkare" selected={manufacturerFilter === 'all'} onClick={() => onManufacturerChange('all')} />
+                <FilterSection title="Tillverkare" defaultOpen={isActive(manufacturerFilter)}>
+                  <FilterOption label="Alla tillverkare" selected={!isActive(manufacturerFilter)} onClick={() => onManufacturerChange(Array.isArray(manufacturerFilter) ? [] : 'all')} />
                   {availableManufacturers.map(mfr => (
-                    <FilterOption key={mfr} label={mfr} selected={manufacturerFilter === mfr} onClick={() => onManufacturerChange(mfr)} />
+                    <FilterOption key={mfr} label={mfr}
+                      selected={Array.isArray(manufacturerFilter) ? manufacturerFilter.includes(mfr) : manufacturerFilter === mfr}
+                      onClick={() => {
+                        if (!Array.isArray(manufacturerFilter)) { onManufacturerChange(mfr); return; }
+                        onManufacturerChange(manufacturerFilter.includes(mfr) ? manufacturerFilter.filter(v => v !== mfr) : [...manufacturerFilter, mfr]);
+                      }} />
                   ))}
                 </FilterSection>
               )}
 
               {conditionFilter !== undefined && (
-                <FilterSection title="Skick" defaultOpen={conditionFilter !== 'all'}>
-                  <FilterOption label="Alla skick" selected={conditionFilter === 'all'} onClick={() => onConditionChange('all')} />
+                <FilterSection title="Skick" defaultOpen={isActive(conditionFilter)}>
+                  <FilterOption label="Alla skick" selected={!isActive(conditionFilter)} onClick={() => onConditionChange(Array.isArray(conditionFilter) ? [] : 'all')} />
                   {conditionOptions.map(opt => (
-                    <FilterOption key={opt.value} label={opt.label} selected={conditionFilter === opt.value} onClick={() => onConditionChange(opt.value)} />
+                    <FilterOption key={opt.value} label={opt.label}
+                      selected={Array.isArray(conditionFilter) ? conditionFilter.includes(opt.value) : conditionFilter === opt.value}
+                      onClick={() => {
+                        if (!Array.isArray(conditionFilter)) { onConditionChange(opt.value); return; }
+                        onConditionChange(conditionFilter.includes(opt.value) ? conditionFilter.filter(v => v !== opt.value) : [...conditionFilter, opt.value]);
+                      }} />
                   ))}
                 </FilterSection>
               )}
