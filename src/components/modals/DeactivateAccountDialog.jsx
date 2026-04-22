@@ -14,6 +14,8 @@ import { base44 } from '@/api/base44Client';
 
 // Roles that can self-deactivate
 const SELF_SERVICE_ROLES = ['lokalvårdare', 'verktygsförvaltare'];
+// Roles that need to specify a replacement
+const ADMIN_ROLES = ['admin', 'admin_lokalvård', 'ägare'];
 
 export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
   const [activeUsers, setActiveUsers] = useState([]);
 
   const canSelfDeactivate = SELF_SERVICE_ROLES.includes(user?.role);
+  const needsReplacement = ADMIN_ROLES.includes(user?.role);
 
   // Fetch active users for replacement selection
   useEffect(() => {
@@ -41,8 +44,8 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
   }, [open, canSelfDeactivate, user?.id]);
 
   const handleDeactivate = async () => {
-    if (!replacementUserId) {
-      setError('Vänligen välj en ersättare');
+    if (needsReplacement && !replacementUserId) {
+      setError('Vänligen välj en ersättare för dina ansvarsområden');
       return;
     }
 
@@ -51,7 +54,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
     try {
       await base44.functions.invoke('deactivateUserAndTransferData', {
         deactivated_user_id: user?.id,
-        replacement_user_id: replacementUserId
+        replacement_user_id: needsReplacement ? replacementUserId : null
       });
 
       // Log out after deactivation
@@ -118,24 +121,26 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                     ✓ En administratör kan återaktivera ditt konto vid behov.
                   </p>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Välj ersättare för dina ansvarsområden:
-                    </label>
-                    <select
-                      value={replacementUserId}
-                      onChange={(e) => setReplacementUserId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white"
-                      disabled={loading}
-                    >
-                      <option value="">-- Välj en person --</option>
-                      {activeUsers.map(u => (
-                        <option key={u.id} value={u.id}>
-                          {u.full_name} ({u.email})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {needsReplacement && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Välj ersättare för dina ansvarsområden:
+                      </label>
+                      <select
+                        value={replacementUserId}
+                        onChange={(e) => setReplacementUserId(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white"
+                        disabled={loading}
+                      >
+                        <option value="">-- Välj en person --</option>
+                        {activeUsers.map(u => (
+                          <option key={u.id} value={u.id}>
+                            {u.full_name} ({u.email})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   {error && (
                     <p className="text-red-600 font-medium">{error}</p>
@@ -147,7 +152,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                 <Button
                   variant="destructive"
                   onClick={handleDeactivate}
-                  disabled={loading || !replacementUserId}
+                  disabled={loading || (needsReplacement && !replacementUserId)}
                 >
                   {loading ? 'Inaktiverar...' : 'Inaktivera'}
                 </Button>
