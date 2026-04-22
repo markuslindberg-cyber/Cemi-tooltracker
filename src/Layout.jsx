@@ -165,7 +165,7 @@ export default function Layout({ children }) {
   })();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -176,17 +176,17 @@ export default function Layout({ children }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "fixed top-0 left-0 z-50 h-full w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 dark:border-gray-800">
             <Link to="/" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
                 <Wrench className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">ToolTrack</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-gray-100">ToolTrack</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -214,20 +214,20 @@ export default function Layout({ children }) {
                         "flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                         isActive
                           ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                       )}
                     >
                       <div className="flex items-center gap-3">
                         <item.icon className={cn(
                           "w-5 h-5",
-                          isActive ? "text-[#8B1E1E]" : "text-gray-400"
+                          isActive ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
                         )} />
                         {item.name}
                       </div>
                       <ChevronDown className={cn("w-4 h-4 text-gray-400 transition-transform duration-200", isOpen && "rotate-180")} />
                     </button>
                     {isOpen && (
-                      <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
+                      <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-700 pl-3">
                         {item.children.filter(child => {
                           if (child.devOnly && !window.location.hostname.includes('base44.app')) return false;
                           if (child.desktopOnly && window.innerWidth < 1024) return false;
@@ -243,7 +243,7 @@ export default function Layout({ children }) {
                               child.desktopOnly ? "hidden lg:flex" : "",
                               location.pathname === child.path
                                 ? "text-[#8B1E1E] bg-[#8B1E1E]/10"
-                                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                             )}
                           >
                             {child.name}
@@ -264,12 +264,12 @@ export default function Layout({ children }) {
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                     isActive
                       ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                   )}
                 >
                   <item.icon className={cn(
                     "w-5 h-5",
-                    isActive ? "text-[#8B1E1E]" : "text-gray-400"
+                    isActive ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
                   )} />
                   {item.name}
                 </Link>
@@ -279,20 +279,20 @@ export default function Layout({ children }) {
 
           {/* User Profile */}
           {user && (
-            <div className="p-4 border-t border-gray-100">
+            <div className="p-4 border-t border-gray-100 dark:border-gray-800">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition-colors">
+                  <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <Avatar className="w-10 h-10 border-2 border-gray-100">
                       <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold">
                         {getInitials(user.full_name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {user.full_name || 'User'}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </button>
@@ -315,32 +315,32 @@ export default function Layout({ children }) {
       {/* Main Content */}
       <div className="lg:pl-72">
         {/* Mobile Header */}
-        <header className="lg:hidden h-14 bg-white border-b border-gray-200 flex items-center justify-between px-2 sticky top-0 z-30" style={{ paddingTop: 'var(--sat)' }}>
+        <header className="lg:hidden h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-2 sticky top-0 z-30" style={{ paddingTop: 'var(--sat)' }}>
           {/* Left: back button on child routes, menu on root routes */}
           {isRootPath ? (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 text-gray-600 hover:text-gray-900"
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             >
               <Menu className="w-6 h-6" />
             </button>
           ) : (
             <button
               onClick={() => navigate(-1)}
-              className="p-2 text-gray-600 hover:text-gray-900 flex items-center gap-1"
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white flex items-center gap-1"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
           )}
 
           {/* Center: title */}
-          <span className="font-semibold text-gray-900 text-sm truncate max-w-[200px]">
+          <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate max-w-[200px]">
             {isRootPath ? (
               <Link to="/" className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
                   <Wrench className="w-3.5 h-3.5 text-white" />
                 </div>
-                ToolTrack
+                <span className="dark:text-gray-100">ToolTrack</span>
               </Link>
             ) : currentPageTitle}
           </span>
@@ -367,7 +367,7 @@ export default function Layout({ children }) {
 
         {/* Mobile Bottom Tab Bar */}
         <nav
-          className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-30"
+          className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex z-30"
           style={{ paddingBottom: 'var(--sab)' }}
         >
           {BOTTOM_TABS.map((tab) => {
@@ -378,10 +378,10 @@ export default function Layout({ children }) {
                 to={tab.path}
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors",
-                  active ? "text-[#8B1E1E]" : "text-gray-400"
+                  active ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
                 )}
               >
-                <tab.icon className={cn("w-5 h-5", active ? "text-[#8B1E1E]" : "text-gray-400")} />
+                <tab.icon className={cn("w-5 h-5", active ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500")} />
                 <span>{tab.name}</span>
               </Link>
             );
