@@ -476,10 +476,10 @@ export default function ServicePage() {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <Wrench className="w-7 h-7 text-[#8B1E1E]" /> Service
         </h1>
-        <p className="text-gray-500 text-sm mt-1">Skanna eller sök maskin för att se och registrera service</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Skanna eller sök maskin för att se och registrera service</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

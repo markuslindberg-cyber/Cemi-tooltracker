@@ -310,8 +310,8 @@ export default function CategoryManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Kategorier</h1>
-          <p className="text-sm text-gray-500 mt-1">Hantera kategori- och underkategorinamn globalt i appen</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Kategorier</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Hantera kategori- och underkategorinamn globalt i appen</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setShowAddForm(v => !v)} variant="outline" className="gap-2">

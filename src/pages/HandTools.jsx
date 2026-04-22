@@ -270,8 +270,8 @@ export default function HandTools() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Handredskap</h1>
-          <p className="text-gray-500 text-sm mt-1">{handTools.length} redskap totalt</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Handredskap</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{handTools.length} redskap totalt</p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
           {import.meta.env.DEV && <>
