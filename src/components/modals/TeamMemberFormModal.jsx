@@ -229,59 +229,28 @@ export default function TeamMemberFormModal({
 
           <div className="space-y-2">
             <Label>Platser där personen arbetar</Label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {formData.location_ids.map((id) => {
-                const location = locations?.find(l => l.id === id);
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              {locations?.map((location) => {
+                const isSelected = formData.location_ids.includes(location.id);
                 return (
-                  <Badge key={id} variant="secondary" className="gap-1">
-                    {location?.name || 'Okänd'}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveLocation(id)}
-                      className="hover:text-red-600"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
+                  <button
+                    key={location.id}
+                    type="button"
+                    onClick={() => isSelected ? handleRemoveLocation(location.id) : handleAddLocation(location.id)}
+                    className={cn(
+                      "w-full flex items-center justify-between px-4 py-3 text-sm border-b border-gray-100 last:border-0 transition-colors text-left",
+                      isSelected ? "bg-[#8B1E1E]/8 text-[#8B1E1E] font-medium" : "hover:bg-gray-50 text-gray-700"
+                    )}
+                  >
+                    <span>{location.name}</span>
+                    {isSelected && <Check className="w-4 h-4 text-[#8B1E1E] flex-shrink-0" />}
+                  </button>
                 );
               })}
+              {(!locations || locations.length === 0) && (
+                <p className="px-4 py-3 text-sm text-gray-400">Inga platser tillgängliga</p>
+              )}
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between"
-                >
-                  Lägg till plats...
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Sök plats..." />
-                  <CommandEmpty>Ingen plats hittades.</CommandEmpty>
-                  <CommandGroup className="max-h-64 overflow-auto">
-                    {locations?.map((location) => (
-                      <CommandItem
-                        key={location.id}
-                        value={location.name}
-                        onSelect={() => handleAddLocation(location.id)}
-                        disabled={formData.location_ids.includes(location.id)}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            formData.location_ids.includes(location.id) ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {location.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
           </div>
 
           <div className="flex items-center justify-between pt-2">
