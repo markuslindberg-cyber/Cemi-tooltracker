@@ -110,7 +110,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
 
             <TabsContent value="deactivate" className="space-y-3 py-4">
               <AlertDialogDescription asChild>
-                <div className="space-y-3 text-sm text-gray-600">
+                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                   <p>
                     Är du säker på att du vill <strong>inaktivera</strong> ditt konto? Du kommer inte längre
                     att kunna logga in på ToolTrack.
@@ -119,13 +119,13 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
                     All din historik (ändringsloggar, lån, uttag m.m.) bevaras i systemet
                     och påverkas inte av inaktiveringen.
                   </p>
-                  <p className="font-medium text-gray-700">
+                  <p className="font-medium text-gray-700 dark:text-gray-200">
                     ✓ En administratör kan återaktivera ditt konto vid behov.
                   </p>
                   
                   {needsReplacement && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                         Välj ersättare för dina ansvarsområden:
                       </label>
                       <select
@@ -164,10 +164,10 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
             {user?.role === 'ägare' && (
             <TabsContent value="delete" className="space-y-3 py-4">
               <AlertDialogDescription asChild>
-                <div className="space-y-3 text-sm text-gray-600">
-                  <div className="bg-red-50 border border-red-200 rounded p-3">
-                    <p className="font-semibold text-red-700 mb-2">⚠️ Varning: Denna åtgärd kan inte ångras</p>
-                    <p className="text-red-600">
+                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded p-3">
+                    <p className="font-semibold text-red-700 dark:text-red-400 mb-2">⚠️ Varning: Denna åtgärd kan inte ångras</p>
+                    <p className="text-red-600 dark:text-red-300">
                       Permanent borttagning raderar ditt konto och <strong>all</strong> associerad data från systemet.
                       Detta kan påverka rapporter och historik som är kopplad till dina åtgärder.
                     </p>
@@ -192,7 +192,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
           </Tabs>
         ) : (
           <AlertDialogDescription asChild>
-            <div className="space-y-3 text-sm text-gray-600 py-4">
+            <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300 py-4">
               <p>
                 Som <strong>{user?.role}</strong> kan du inte inaktivera eller ta bort ditt konto själv.
               </p>
