@@ -111,7 +111,7 @@ export default function SearchFilterBar({
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 space-y-3">
-      {/* Search row */}
+      {/* Search row – always full width */}
       <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input
@@ -122,8 +122,8 @@ export default function SearchFilterBar({
         />
       </div>
 
-      {/* Filter row */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Filter row – always on its own line below search */}
+      <div className="flex flex-wrap items-center gap-2 w-full">
         {/* Filter button */}
         <div className="relative" ref={ref}>
           <Button
@@ -142,7 +142,7 @@ export default function SearchFilterBar({
           </Button>
 
           {open && (
-            <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-[500px] overflow-y-auto">
+            <div className="absolute top-full left-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 max-h-[500px] overflow-y-auto">
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                 <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Filtrera efter:</span>
                 {activeCount > 0 && (
