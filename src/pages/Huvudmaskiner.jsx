@@ -158,7 +158,7 @@ export default function Huvudmaskiner() {
               Ny huvudmaskin
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="w-[calc(100vw-16px)] sm:w-auto sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingId ? 'Redigera huvudmaskin' : 'Ny huvudmaskin'}
