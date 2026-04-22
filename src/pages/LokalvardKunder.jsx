@@ -102,26 +102,26 @@ export default function LokalvardKunder() {
     <div className="max-w-6xl mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">👥 Kunder – Lokalvård</h1>
-        <span className="text-sm text-gray-500 font-medium">{kunder.length} kunder</span>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">👥 Kunder – Lokalvård</h1>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">{kunder.length} kunder</span>
       </div>
 
       {/* Create Form */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="font-semibold mb-3">Lägg till ny kund</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+        <h3 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Lägg till ny kund</h3>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-6 gap-2">
            <input
              type="text"
              placeholder="Kundnamn"
              value={form.namn}
              onChange={(e) => setForm({...form, namn: e.target.value})}
-             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+             className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
              required
            />
            <select
              value={form.typ}
              onChange={(e) => setForm({...form, typ: e.target.value})}
-             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+             className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
            >
              {kundTyper.map(t => <option key={t} value={t}>{t}</option>)}
            </select>
@@ -130,12 +130,12 @@ export default function LokalvardKunder() {
              placeholder="Projektnummer"
              value={form.projektnummer}
              onChange={(e) => setForm({...form, projektnummer: e.target.value})}
-             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+             className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
            />
            <select
              value={form.status}
              onChange={(e) => setForm({...form, status: e.target.value})}
-             className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+             className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
            >
              <option value="aktiv">Aktiv</option>
              <option value="inaktiv">Inaktiv</option>
@@ -148,73 +148,73 @@ export default function LokalvardKunder() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('namn')}>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => handleSort('namn')}>
                   <div className="flex items-center gap-1">
                     Namn
                     {sortBy === 'namn' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                   </div>
                 </th>
-                <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('typ')}>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => handleSort('typ')}>
                   <div className="flex items-center gap-1">
                     Typ
                     {sortBy === 'typ' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                   </div>
                 </th>
-                <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('projektnummer')}>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => handleSort('projektnummer')}>
                    <div className="flex items-center gap-1">
                      Projektnummer
                      {sortBy === 'projektnummer' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                    </div>
                  </th>
-                 <th className="px-4 py-2 text-left font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>
+                 <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => handleSort('status')}>
                    <div className="flex items-center gap-1">
                      Status
                      {sortBy === 'status' && (sortOrder === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />)}
                    </div>
                  </th>
-                 <th className="px-4 py-2 text-left font-semibold">Åtgärd</th>
+                 <th className="px-4 py-2 text-left font-semibold text-gray-700 dark:text-gray-300">Åtgärd</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {sorted.length === 0 ? (
                 <tr>
-                      <td colSpan="5" className="px-4 py-8 text-center text-gray-500">Inga kunder ännu</td>
-                    </tr>
+                  <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Inga kunder ännu</td>
+                </tr>
               ) : (
                 sorted.map(kund => {
                   const isEditing = editingId === kund.id;
                   return (
-                    <tr key={kund.id} className={isEditing ? 'bg-blue-50' : 'hover:bg-gray-50'}>
-                      <td className="px-4 py-2">
+                    <tr key={kund.id} className={isEditing ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}>
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
                         {isEditing ? (
-                          <input type="text" value={editForm.namn} onChange={(e) => setEditForm({...editForm, namn: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-full" />
+                          <input type="text" value={editForm.namn} onChange={(e) => setEditForm({...editForm, namn: e.target.value})} className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
                         ) : kund.namn}
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
                         {isEditing ? (
-                          <select value={editForm.typ} onChange={(e) => setEditForm({...editForm, typ: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-full">
+                          <select value={editForm.typ} onChange={(e) => setEditForm({...editForm, typ: e.target.value})} className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             {kundTyper.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
                         ) : kund.typ}
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-2 text-gray-900 dark:text-gray-100">
                         {isEditing ? (
-                          <input type="text" value={editForm.projektnummer} onChange={(e) => setEditForm({...editForm, projektnummer: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-full" />
+                          <input type="text" value={editForm.projektnummer} onChange={(e) => setEditForm({...editForm, projektnummer: e.target.value})} className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
                         ) : (kund.projektnummer || '-')}
                       </td>
                       <td className="px-4 py-2">
                         {isEditing ? (
-                          <select value={editForm.status} onChange={(e) => setEditForm({...editForm, status: e.target.value})} className="px-2 py-1 border border-gray-300 rounded w-full">
+                          <select value={editForm.status} onChange={(e) => setEditForm({...editForm, status: e.target.value})} className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             <option value="aktiv">Aktiv</option>
                             <option value="inaktiv">Inaktiv</option>
                           </select>
                         ) : (
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${kund.status === 'aktiv' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${kund.status === 'aktiv' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
                             {kund.status === 'aktiv' ? 'Aktiv' : 'Inaktiv'}
                           </span>
                         )}
@@ -222,15 +222,15 @@ export default function LokalvardKunder() {
                       <td className="px-4 py-2 whitespace-nowrap">
                         {isEditing ? (
                           <div className="flex gap-1">
-                            <button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="text-green-600 hover:bg-green-50 px-2 py-1 rounded text-xs font-semibold">✓</button>
-                            <button onClick={() => setEditingId(null)} className="text-red-600 hover:bg-red-50 px-2 py-1 rounded text-xs font-semibold">✕</button>
+                            <button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 px-2 py-1 rounded text-xs font-semibold">✓</button>
+                            <button onClick={() => setEditingId(null)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-xs font-semibold">✕</button>
                           </div>
                         ) : (
                           <div className="flex gap-1">
-                            <button onClick={() => handleEditClick(kund)} className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-xs">
+                            <button onClick={() => handleEditClick(kund)} className="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-2 py-1 rounded text-xs">
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
-                            <button onClick={() => handleDelete(kund.id)} disabled={deleteMutation.isPending} className="text-red-600 hover:bg-red-50 px-2 py-1 rounded text-xs">
+                            <button onClick={() => handleDelete(kund.id)} disabled={deleteMutation.isPending} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 px-2 py-1 rounded text-xs">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
