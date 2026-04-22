@@ -22,6 +22,14 @@ export default function ToolImportPreviewTable({
   const [linkSearchQuery, setLinkSearchQuery] = useState('');
   const allFields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
 
+  const actionOptions = (row) => [
+    ...(row.matchedTool 
+      ? [{ value: 'update', label: 'Uppdatera' }] 
+      : [{ value: 'create', label: 'Skapa ny' }]),
+    { value: 'link', label: 'Länka befintlig' },
+    { value: 'ignore', label: 'Ignorera' },
+  ];
+
   return (
     <div className="space-y-2">
       {filtered.map(({ row, idx }) => {
@@ -32,7 +40,7 @@ export default function ToolImportPreviewTable({
         return (
           <div key={idx}>
             <div className={`flex items-center gap-3 p-3 rounded-lg border ${row.matchedTool ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
-              <div className="w-4 flex-shrink-0">
+              <div className="h-11 w-11 flex-shrink-0 flex items-center justify-center">
                 <input
                   type="checkbox"
                   checked={selectedRows.has(idx)}
@@ -42,10 +50,10 @@ export default function ToolImportPreviewTable({
                     else newSelected.delete(idx);
                     setSelectedRows(newSelected);
                   }}
-                  className="w-4 h-4 rounded cursor-pointer"
+                  className="w-5 h-5 rounded cursor-pointer accent-blue-600"
                 />
               </div>
-              <div className="w-24 flex-shrink-0">
+              <div className="w-28 flex-shrink-0">
                 <select
                   value={row.action || 'create'}
                   onChange={(e) => {
@@ -57,21 +65,21 @@ export default function ToolImportPreviewTable({
                     }
                     setPreviewRows(newRows);
                   }}
-                  className="border border-gray-300 rounded px-2 py-1 text-xs w-full"
+                  className="h-11 border border-gray-300 rounded px-3 py-2 text-sm w-full bg-white"
                 >
                   {row.matchedTool ? <option value="update">Uppdatera</option> : <option value="create">Skapa ny</option>}
                   <option value="link">Länka befintlig</option>
                   <option value="ignore">Ignorera</option>
                 </select>
               </div>
-              <span className="font-mono text-xs text-gray-600 flex-1">{row.barcode}</span>
+              <span className="font-mono text-sm text-gray-600 flex-1">{row.barcode}</span>
               <span className="text-sm font-medium flex-1">{row.name}</span>
               <div className="w-20 flex-shrink-0">
-                <span className="text-xs text-gray-500">{row.category}</span>
+                <span className="text-sm text-gray-500">{row.category}</span>
               </div>
               <button
                 onClick={() => setExpandedRowIdx(expandedRowIdx === idx ? null : idx)}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium text-nowrap ml-2"
+                className="h-11 px-3 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium text-nowrap ml-2 rounded hover:bg-blue-50"
               >
                 {expandedRowIdx === idx ? '▼' : '▶'} 
                 {row.matchedTool && row.changes && Object.keys(row.changes).length > 0 
@@ -82,9 +90,9 @@ export default function ToolImportPreviewTable({
               </button>
               <button
                 onClick={() => setInfoModalIdx(idx)}
-                className="text-xs text-gray-400 hover:text-blue-600 ml-1"
+                className="h-11 w-11 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded ml-1"
               >
-                <Info className="w-4 h-4" />
+                <Info className="w-5 h-5" />
               </button>
               {row.matchedTool && (
                 <button
@@ -92,7 +100,7 @@ export default function ToolImportPreviewTable({
                     setEditingRowIdx(idx);
                     setEditFormData({ ...row });
                   }}
-                  className="text-xs text-green-600 hover:text-green-800 font-medium ml-1"
+                  className="h-11 px-3 py-2 text-sm text-green-600 hover:text-green-800 font-medium ml-1 rounded hover:bg-green-50"
                 >
                   ✏️
                 </button>
@@ -102,10 +110,10 @@ export default function ToolImportPreviewTable({
                   const newRows = previewRows.filter((_, i) => i !== idx);
                   setPreviewRows(newRows);
                 }}
-                className="text-xs text-red-600 hover:text-red-800 font-medium ml-1"
+                className="h-11 w-11 flex items-center justify-center text-red-600 hover:text-red-800 hover:bg-red-50 rounded ml-1"
                 title="Ta bort denna rad"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
             {expandedRowIdx === idx && (
@@ -155,14 +163,14 @@ export default function ToolImportPreviewTable({
                                       newRows[idx][field] = e.target.value;
                                       setPreviewRows(newRows);
                                     }}
-                                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+                                    className="h-11 w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white"
                                   >
                                     <option value="">- Välj {fieldLabel} -</option>
                                     {suggestions.map(s => (
                                       <option key={s} value={s}>{s}</option>
                                     ))}
                                   </select>
-                                  {row[field] === '' && <p className="text-xs text-gray-500 italic">eller ange manuellt nedan</p>}
+                                  {row[field] === '' && <p className="text-sm text-gray-500 italic">eller ange manuellt nedan</p>}
                                 </div>
                               ) : null}
                               <input
@@ -174,7 +182,7 @@ export default function ToolImportPreviewTable({
                                   setPreviewRows(newRows);
                                 }}
                                 placeholder={`Ange ${fieldLabel}`}
-                                className="w-full border border-gray-300 rounded px-2 py-1 text-xs mt-1"
+                                className="h-11 w-full border border-gray-300 rounded px-3 py-2 text-sm mt-1"
                               />
                             </div>
                           );
@@ -205,7 +213,7 @@ export default function ToolImportPreviewTable({
                                 [key]: e.target.checked
                               }));
                             }}
-                            className="mt-1 w-4 h-4 rounded border-gray-300 cursor-pointer"
+                            className="mt-2 w-5 h-5 rounded border-gray-300 cursor-pointer accent-blue-600"
                           />
                           <div className="flex-1">
                             <div className="font-medium text-xs text-gray-700 mb-1">{field}</div>

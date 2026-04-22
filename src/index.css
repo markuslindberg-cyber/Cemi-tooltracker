@@ -34,6 +34,7 @@ nav,
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Dark mode – auto-follow system preference */

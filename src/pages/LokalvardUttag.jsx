@@ -582,29 +582,29 @@ export default function LokalvardUttag() {
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {window.location.hostname.includes('base44.app') && <>
-            <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
-              <FileDown className="w-4 h-4 mr-1" /> Mall
-            </Button>
-            <Button size="sm" onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-blue-600 hover:bg-blue-700">
-              <Upload className="w-4 h-4 mr-1" /> Importera
-            </Button>
-            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
-          </>}
-          {sorted.length > 0 && (
-            <Button size="sm" onClick={handleExport} className="hidden lg:flex bg-green-600 hover:bg-green-700">
-              <Download className="w-4 h-4 mr-1" /> CSV
-            </Button>
-          )}
-          <Button size="sm" onClick={() => setShowNyttUttagModal(true)} className="bg-green-600 hover:bg-green-700">
-            + Nytt uttag
-          </Button>
-          {window.location.hostname.includes('base44.app') && unmatchedArticles.length > 0 && !showUnmatched && (
-            <Button size="sm" onClick={() => setShowUnmatched(true)} className="bg-yellow-600 hover:bg-yellow-700">
-              ⚠️ Omatchade ({unmatchedArticles.length})
-            </Button>
-          )}
-        </div>
+           {window.location.hostname.includes('base44.app') && <>
+             <Button onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
+               <FileDown className="w-4 h-4 mr-1" /> Mall
+             </Button>
+             <Button onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-blue-600 hover:bg-blue-700">
+               <Upload className="w-4 h-4 mr-1" /> Importera
+             </Button>
+             <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
+           </>}
+           {sorted.length > 0 && (
+             <Button onClick={handleExport} className="hidden lg:flex bg-green-600 hover:bg-green-700">
+               <Download className="w-4 h-4 mr-1" /> CSV
+             </Button>
+           )}
+           <Button onClick={() => setShowNyttUttagModal(true)} className="bg-green-600 hover:bg-green-700">
+             + Nytt uttag
+           </Button>
+           {window.location.hostname.includes('base44.app') && unmatchedArticles.length > 0 && !showUnmatched && (
+             <Button onClick={() => setShowUnmatched(true)} className="bg-yellow-600 hover:bg-yellow-700">
+               ⚠️ Omatchade ({unmatchedArticles.length})
+             </Button>
+           )}
+         </div>
       </div>
 
       {/* Sökruta */}
@@ -613,34 +613,34 @@ export default function LokalvardUttag() {
         placeholder="Sök artikel eller streckkod..."
         value={searchBarcode}
         onChange={(e) => setSearchBarcode(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
+        className="w-full h-11 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
       />
 
       {/* Filter-rad */}
       <div className="flex items-center gap-2 flex-wrap">
         {/* Månad filter */}
         <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-          <Calendar className="w-4 h-4 text-gray-400" />
-          <span className="text-xs font-semibold text-gray-500 uppercase">Månad</span>
+          <Calendar className="w-5 h-5 text-gray-400" />
+          <span className="text-sm font-semibold text-gray-500 uppercase">Månad</span>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+              <button className="flex items-center gap-1 h-11 px-2 text-sm font-medium text-gray-800 hover:text-blue-600 rounded hover:bg-gray-100">
                 {selectedMonths.length === 0 ? 'Alla' : `${selectedMonths.length}`}
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDown className="w-4 h-4" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-48 p-2" align="start">
               <div className="space-y-1 max-h-60 overflow-y-auto">
                 {availableMonths.map(m => (
-                  <label key={m} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                  <label key={m} className="flex items-center gap-2 h-11 px-2 py-2 rounded hover:bg-gray-50 cursor-pointer">
                     <Checkbox checked={selectedMonths.includes(m)} onCheckedChange={(checked) => setSelectedMonths(prev => checked ? [...prev, m] : prev.filter(x => x !== m))} />
                     <span className="text-sm">{m}</span>
                   </label>
                 ))}
               </div>
               {selectedMonths.length > 0 && (
-                <button onClick={() => setSelectedMonths([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-                  <X className="w-3 h-3" /> Rensa
+                <button onClick={() => setSelectedMonths([])} className="mt-2 h-9 w-full text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1 rounded hover:bg-gray-100">
+                  <X className="w-4 h-4" /> Rensa
                 </button>
               )}
             </PopoverContent>
@@ -649,26 +649,26 @@ export default function LokalvardUttag() {
 
         {/* Personal filter */}
         <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-          <span className="text-xs font-semibold text-gray-500 uppercase">Personal</span>
+          <span className="text-sm font-semibold text-gray-500 uppercase">Personal</span>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+              <button className="flex items-center gap-1 h-11 px-2 text-sm font-medium text-gray-800 hover:text-blue-600 rounded hover:bg-gray-100">
                 {selectedPersonal.length === 0 ? 'Alla' : `${selectedPersonal.length}`}
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDown className="w-4 h-4" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-60 p-2" align="start">
               <div className="space-y-1 max-h-60 overflow-y-auto">
                 {availablePersonal.map(([pid, namn]) => (
-                  <label key={pid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                  <label key={pid} className="flex items-center gap-2 h-11 px-2 py-2 rounded hover:bg-gray-50 cursor-pointer">
                     <Checkbox checked={selectedPersonal.includes(pid)} onCheckedChange={(checked) => setSelectedPersonal(prev => checked ? [...prev, pid] : prev.filter(x => x !== pid))} />
                     <span className="text-sm">{namn}</span>
                   </label>
                 ))}
               </div>
               {selectedPersonal.length > 0 && (
-                <button onClick={() => setSelectedPersonal([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-                  <X className="w-3 h-3" /> Rensa
+                <button onClick={() => setSelectedPersonal([])} className="mt-2 h-9 w-full text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1 rounded hover:bg-gray-100">
+                  <X className="w-4 h-4" /> Rensa
                 </button>
               )}
             </PopoverContent>
@@ -677,12 +677,12 @@ export default function LokalvardUttag() {
 
         {/* Kund filter */}
         <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
-          <span className="text-xs font-semibold text-gray-500 uppercase">Kund</span>
+          <span className="text-sm font-semibold text-gray-500 uppercase">Kund</span>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-1 text-sm font-medium text-gray-800 hover:text-blue-600">
+              <button className="flex items-center gap-1 h-11 px-2 text-sm font-medium text-gray-800 hover:text-blue-600 rounded hover:bg-gray-100">
                 {selectedCustomers.length === 0 ? 'Alla' : `${selectedCustomers.length}`}
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDown className="w-4 h-4" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-60 p-2" align="start">
@@ -690,7 +690,7 @@ export default function LokalvardUttag() {
                 {customers.map(cid => {
                   const cust = uttag.find(u => u.kund_id === cid);
                   return (
-                    <label key={cid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                    <label key={cid} className="flex items-center gap-2 h-11 px-2 py-2 rounded hover:bg-gray-50 cursor-pointer">
                       <Checkbox checked={selectedCustomers.includes(cid)} onCheckedChange={(checked) => setSelectedCustomers(prev => checked ? [...prev, cid] : prev.filter(x => x !== cid))} />
                       <span className="text-sm">{cust?.kund_namn}</span>
                     </label>
@@ -698,8 +698,8 @@ export default function LokalvardUttag() {
                 })}
               </div>
               {selectedCustomers.length > 0 && (
-                <button onClick={() => setSelectedCustomers([])} className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-                  <X className="w-3 h-3" /> Rensa
+                <button onClick={() => setSelectedCustomers([])} className="mt-2 h-9 w-full text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1 rounded hover:bg-gray-100">
+                  <X className="w-4 h-4" /> Rensa
                 </button>
               )}
             </PopoverContent>
@@ -708,19 +708,18 @@ export default function LokalvardUttag() {
 
         {(selectedMonths.length > 0 || selectedCustomers.length > 0 || selectedPersonal.length > 0 || searchBarcode !== '') && (
           <Button
-            size="sm"
             variant="outline"
             onClick={() => { setSelectedMonths([]); setSelectedCustomers([]); setSelectedPersonal([]); setSearchBarcode(''); }}
-            className="gap-1 text-xs"
+            className="gap-1 text-sm"
           >
-            <RotateCcw className="w-3 h-3" /> Rensa alla
+            <RotateCcw className="w-4 h-4" /> Rensa alla
           </Button>
         )}
       </div>
 
       {showUnmatched ? (
         <div>
-          <Button size="sm" onClick={() => setShowUnmatched(false)} variant="outline">
+          <Button onClick={() => setShowUnmatched(false)} variant="outline">
             ← Tillbaka till uttag
           </Button>
         </div>
@@ -824,27 +823,25 @@ export default function LokalvardUttag() {
               </div>
 
               {/* Pagination */}
-              {sorted.length > itemsPerPage && (
-                <div className="mt-4 flex items-center justify-center gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    ← Förra
-                  </Button>
-                  <span className="text-sm text-gray-600">Sida {currentPage} av {Math.ceil(sorted.length / itemsPerPage)}</span>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(sorted.length / itemsPerPage), p + 1))}
-                    disabled={currentPage >= Math.ceil(sorted.length / itemsPerPage)}
-                  >
-                    Nästa →
-                  </Button>
-                </div>
-              )}
+                {sorted.length > itemsPerPage && (
+                  <div className="mt-4 flex items-center justify-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      ← Förra
+                    </Button>
+                    <span className="text-sm text-gray-600">Sida {currentPage} av {Math.ceil(sorted.length / itemsPerPage)}</span>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setCurrentPage(p => Math.min(Math.ceil(sorted.length / itemsPerPage), p + 1))}
+                      disabled={currentPage >= Math.ceil(sorted.length / itemsPerPage)}
+                    >
+                      Nästa →
+                    </Button>
+                  </div>
+                )}
 
               {/* Mobile view */}
               <div className="lg:hidden space-y-1">
@@ -881,13 +878,13 @@ export default function LokalvardUttag() {
           )}
 
           {window.location.hostname.includes('base44.app') && unmatchedArticles.length > 0 && showUnmatched && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-yellow-900">⚠️ Omatchade artiklar ({unmatchedArticles.length})</h2>
-            <Button size="sm" onClick={() => setShowUnmatched(false)} variant="outline">
-              Stäng
-            </Button>
-          </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-yellow-900">⚠️ Omatchade artiklar ({unmatchedArticles.length})</h2>
+                <Button onClick={() => setShowUnmatched(false)} variant="outline">
+                  Stäng
+                </Button>
+              </div>
           <p className="text-sm text-yellow-800 mb-3">Dessa streckkoder/artiklar från uttag matchar inte artiklar i lagerlistan. Lägg till dem i lagerlistan eller korrigera streckkoden:</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

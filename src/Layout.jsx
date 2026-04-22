@@ -115,6 +115,9 @@ const slideVariants = {
   exit: { x: '-4%', opacity: 0 },
 };
 
+// Cached scroll positions for each bottom tab
+const scrollPositions = {};
+
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
@@ -124,6 +127,22 @@ export default function Layout({ children }) {
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Save scroll position when leaving a tab
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      scrollPositions[location.pathname] = mainElement.scrollTop;
+    }
+  }, [location.pathname]);
+
+  // Restore scroll position when entering a tab
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+    if (mainElement && scrollPositions[location.pathname] !== undefined) {
+      mainElement.scrollTop = scrollPositions[location.pathname];
+    }
+  }, [location.pathname]);
 
   const isRootPath = ROOT_PATHS.includes(location.pathname);
 
@@ -379,20 +398,9 @@ export default function Layout({ children }) {
           )}
         </header>
 
-        {/* Page Content with slide animation */}
-        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen pb-16 lg:pb-0" style={{ paddingBottom: 'calc(4rem + var(--sab))' }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              variants={slideVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+        {/* Page Content - Preserve scroll position per tab */}
+        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen pb-16 lg:pb-0 overflow-y-auto" style={{ paddingBottom: 'calc(4rem + var(--sab))' }}>
+          {children}
         </main>
 
         {/* Mobile Bottom Tab Bar */}
