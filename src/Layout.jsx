@@ -25,6 +25,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import DeactivateAccountDialog from '@/components/modals/DeactivateAccountDialog';
 
 const LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare'];
 const NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'];
@@ -118,6 +119,7 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
   const [user, setUser] = useState(null);
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
   const location = useLocation();
@@ -165,6 +167,12 @@ export default function Layout({ children }) {
   })();
 
   return (
+    <>
+    <DeactivateAccountDialog
+      open={deactivateOpen}
+      onOpenChange={setDeactivateOpen}
+      user={user}
+    />
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
@@ -315,6 +323,13 @@ export default function Layout({ children }) {
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setDeactivateOpen(true)}
+                    className="text-red-500"
+                  >
+                    Inaktivera konto
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -404,5 +419,6 @@ export default function Layout({ children }) {
         </nav>
       </div>
     </div>
+    </>
   );
 }
