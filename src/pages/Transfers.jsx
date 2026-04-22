@@ -263,7 +263,7 @@ export default function Transfers() {
 
   if (isLoading || isLoadingLoans) {
     return (
-      <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-[#8B1E1E] animate-spin" />
       </div>
     );
@@ -278,43 +278,43 @@ export default function Transfers() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 lg:p-8">
+    <div className="min-h-screen p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Lån av utrustning</h1>
-          <p className="text-gray-500 mt-1">{transfers.length + loanRequests.length} lån totalt</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Lån av utrustning</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{transfers.length + loanRequests.length} lån totalt</p>
         </div>
 
         {/* Pending action banner */}
         {pendingForMe.length > 0 ? (
-          <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 flex items-center gap-4">
+          <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-700 rounded-2xl p-4 flex items-center gap-4">
             <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center flex-shrink-0">
               <AlertCircle className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-amber-900">
-                {pendingForMe.length === 1
-                  ? '1 förfrågan väntar på ditt svar'
-                  : `${pendingForMe.length} förfrågningar väntar på ditt svar`}
-              </p>
-              <p className="text-sm text-amber-700">Gå till fliken "Låneförfrågningar" och hantera dem.</p>
+              <p className="font-semibold text-amber-900 dark:text-amber-200">
+                  {pendingForMe.length === 1
+                    ? '1 förfrågan väntar på ditt svar'
+                    : `${pendingForMe.length} förfrågningar väntar på ditt svar`}
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-400">Gå till fliken "Låneförfrågningar" och hantera dem.</p>
             </div>
           </div>
         ) : (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-4">
-            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 bg-green-100 dark:bg-green-800/50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="font-semibold text-green-800">Inga väntande förfrågningar</p>
-              <p className="text-sm text-green-700">Du har inga förfrågningar att hantera just nu.</p>
+              <p className="font-semibold text-green-800 dark:text-green-300">Inga väntande förfrågningar</p>
+              <p className="text-sm text-green-700 dark:text-green-400">Du har inga förfrågningar att hantera just nu.</p>
             </div>
           </div>
         )}
 
         {/* Search */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
@@ -358,22 +358,22 @@ export default function Transfers() {
             </div>
 
             {filteredTransfers.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
                 <ArrowRightLeft className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500">Inga direktförflyttningar hittades</p>
+                <p className="text-gray-500 dark:text-gray-400">Inga direktförflyttningar hittades</p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('transfer_date')}>Datum {sortField === 'transfer_date' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
-                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('tool_name')}>Utrustning {sortField === 'tool_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
-                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('from_location_name')}>Från {sortField === 'from_location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
-                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('to_location_name')}>Till {sortField === 'to_location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
-                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('expected_return_date')}>Återlämning {sortField === 'expected_return_date' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
-                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>Status {sortField === 'status' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                      <TableRow className="bg-gray-50 dark:bg-gray-800/50">
+                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => handleSort('transfer_date')}>Datum {sortField === 'transfer_date' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => handleSort('tool_name')}>Utrustning {sortField === 'tool_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => handleSort('from_location_name')}>Från {sortField === 'from_location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => handleSort('to_location_name')}>Till {sortField === 'to_location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => handleSort('expected_return_date')}>Återlämning {sortField === 'expected_return_date' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
+                        <TableHead className="font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300" onClick={() => handleSort('status')}>Status {sortField === 'status' && (sortDirection === 'desc' ? '↓' : '↑')}</TableHead>
                         <TableHead></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -382,13 +382,13 @@ export default function Transfers() {
                         const isOverdue = transfer.expected_return_date && transfer.status === 'active' && new Date(transfer.expected_return_date) < new Date();
                         const daysUntilReturn = transfer.expected_return_date && transfer.status === 'active' ? differenceInDays(new Date(transfer.expected_return_date), new Date()) : null;
                         return (
-                          <TableRow key={transfer.id} className="hover:bg-gray-50">
+                          <TableRow key={transfer.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                             <TableCell>
-                              <p className="font-medium text-gray-900">{transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM yyyy')}</p>
-                              <p className="text-xs text-gray-500">{transfer.transfer_date && format(new Date(transfer.transfer_date), 'HH:mm')}</p>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">{transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM yyyy')}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{transfer.transfer_date && format(new Date(transfer.transfer_date), 'HH:mm')}</p>
                             </TableCell>
-                            <TableCell><p className="font-medium text-gray-900">{transfer.tool_name}</p></TableCell>
-                            <TableCell><span className="text-gray-600">{transfer.from_location_name || '—'}</span></TableCell>
+                            <TableCell><p className="font-medium text-gray-900 dark:text-gray-100">{transfer.tool_name}</p></TableCell>
+                            <TableCell><span className="text-gray-600 dark:text-gray-400">{transfer.from_location_name || '—'}</span></TableCell>
                             <TableCell><Badge className="bg-emerald-100 text-emerald-700 border-0">{transfer.to_location_name || '—'}</Badge></TableCell>
                             <TableCell>
                               {transfer.expected_return_date ? (
@@ -448,9 +448,9 @@ export default function Transfers() {
             </div>
 
             {filteredLoans.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">
                 <ArrowRightLeft className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500">Inga låneförfrågningar hittades</p>
+                <p className="text-gray-500 dark:text-gray-400">Inga låneförfrågningar hittades</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -458,10 +458,10 @@ export default function Transfers() {
                   const config = loanStatusConfig[loan.status] || { label: loan.status, color: 'bg-gray-100 text-gray-700' };
                   const needsMyAction = loan.status === 'pending' && currentUser && (loan.approver_email === currentUser.email || currentUser.role === 'admin' || currentUser.role === 'ägare');
                   return (
-                    <div key={loan.id} className={`bg-white rounded-2xl shadow-sm p-5 space-y-4 ${needsMyAction ? 'border-2 border-red-400 bg-red-50' : 'border border-gray-100'}`}>
+                    <div key={loan.id} className={`rounded-2xl shadow-sm p-5 space-y-4 ${needsMyAction ? 'border-2 border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-700' : 'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800'}`}>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="text-sm text-gray-500 mb-1">Utrustning</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Utrustning</p>
                           <div className="flex flex-wrap gap-1">
                             {loan.tool_names?.slice(0, 2).map((name, i) => (
                               <Badge key={i} variant="secondary">{name}</Badge>
@@ -474,58 +474,58 @@ export default function Transfers() {
                         <Badge className={`${config.color} border-0`}>{config.label}</Badge>
                       </div>
                       <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <User className="w-4 h-4" />
                           <span>{loan.requested_by_name || '—'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <MapPin className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-500">Från:</span>
+                          <span className="text-gray-500 dark:text-gray-500">Från:</span>
                           <span>{loan.tool_details?.[0]?.location_name || '—'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <MapPin className="w-4 h-4 text-emerald-500" />
-                          <span className="text-gray-500">Till:</span>
+                          <span className="text-gray-500 dark:text-gray-500">Till:</span>
                           <span>{loan.destination_location_name || '—'}</span>
                         </div>
                         {loan.default_return_date && (
-                          <div className="flex items-center gap-2 text-gray-600">
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                             <Calendar className="w-4 h-4" />
                             <span>Återlämning: {format(new Date(loan.default_return_date), 'd MMM yyyy')}</span>
                           </div>
                         )}
                       </div>
                       {/* Mailmottagare */}
-                      <div className="pt-2 border-t border-gray-100">
-                        <p className="text-xs text-gray-500 mb-1.5 flex items-center gap-1"><Mail className="w-3 h-3" /> Mailas om statusuppdateringar</p>
+                      <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 flex items-center gap-1"><Mail className="w-3 h-3" /> Mailas om statusuppdateringar</p>
                         <div className="flex flex-col gap-1">
                           {loan.requested_by_email && (
-                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                              <span className="bg-gray-100 text-gray-500 rounded px-1.5 py-0.5 font-medium">Låntagare</span>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                              <span className="bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded px-1.5 py-0.5 font-medium">Låntagare</span>
                               <span>{loan.requested_by_name || loan.requested_by_email}</span>
                             </div>
                           )}
                           {loan.approver_email && (
-                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                              <span className="bg-amber-100 text-amber-700 rounded px-1.5 py-0.5 font-medium">Godkännare (källplats)</span>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                              <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded px-1.5 py-0.5 font-medium">Godkännare (källplats)</span>
                               <span>{loan.approver_name || loan.approver_email}</span>
                             </div>
                           )}
                           {loan.destination_location_manager_email && (
-                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                              <span className="bg-blue-100 text-blue-700 rounded px-1.5 py-0.5 font-medium">Ansvarig för mottagarplats</span>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                              <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 rounded px-1.5 py-0.5 font-medium">Ansvarig för mottagarplats</span>
                               <span>{loan.destination_location_manager_name || loan.destination_location_manager_email}</span>
                             </div>
                           )}
                         </div>
                       </div>
                       {loan.approver_comment && (
-                        <div className="pt-2 border-t border-gray-100">
-                          <p className="text-xs text-gray-500 mb-1">Godkännarkommentar</p>
-                          <p className="text-sm text-gray-700">{loan.approver_comment}</p>
+                        <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Godkännarkommentar</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">{loan.approver_comment}</p>
                         </div>
                       )}
-                      <div className="pt-2 border-t border-gray-100 flex flex-wrap gap-2">
+                      <div className="pt-2 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-2">
                         {/* Godkänn/Neka för pending lån där användaren är godkännare */}
                         {loan.status === 'pending' && currentUser && (loan.approver_email === currentUser.email || currentUser.role === 'admin' || currentUser.role === 'ägare') && (
                           <Button
@@ -580,11 +580,11 @@ export default function Transfers() {
             </DialogHeader>
             <div className="space-y-5">
               {/* Info */}
-              <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
-                <p className="text-gray-600">Begärd av: <strong>{approvingLoan.requested_by_name}</strong></p>
-                <p className="text-gray-600">Destination: <strong>{approvingLoan.destination_location_name}</strong></p>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-sm space-y-1">
+                <p className="text-gray-600 dark:text-gray-400">Begärd av: <strong>{approvingLoan.requested_by_name}</strong></p>
+                <p className="text-gray-600 dark:text-gray-400">Destination: <strong>{approvingLoan.destination_location_name}</strong></p>
                 {approvingLoan.requester_comment && (
-                  <p className="text-gray-600 pt-1 border-t border-gray-200 mt-1">Anteckning: <em>{approvingLoan.requester_comment}</em></p>
+                  <p className="text-gray-600 dark:text-gray-400 pt-1 border-t border-gray-200 dark:border-gray-700 mt-1">Anteckning: <em>{approvingLoan.requester_comment}</em></p>
                 )}
               </div>
 
@@ -688,10 +688,10 @@ export default function Transfers() {
               <DialogTitle>Redigera förflyttning – {editTransfer.tool_name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
-              <div className="flex items-center gap-3 text-sm bg-gray-50 rounded-xl p-3">
-                <span className="text-gray-500">{editTransfer.from_location_name || '—'}</span>
+              <div className="flex items-center gap-3 text-sm bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+                <span className="text-gray-500 dark:text-gray-400">{editTransfer.from_location_name || '—'}</span>
                 <ArrowRight className="w-4 h-4 text-gray-400 shrink-0" />
-                <span className="font-medium text-gray-900">{editTransfer.to_location_name || '—'}</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">{editTransfer.to_location_name || '—'}</span>
               </div>
 
               <div className="space-y-2">
