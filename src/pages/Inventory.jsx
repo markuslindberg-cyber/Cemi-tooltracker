@@ -81,6 +81,12 @@ const categoryLabels = {
 
 export default function Inventory() {
    const queryClient = useQueryClient();
+   
+  const { data: tools = [], isLoading } = useQuery({
+    queryKey: ['tools'],
+    queryFn: () => base44.entities.Tool.list('-updated_date', 500).then(r => r.filter(t => !t.is_deleted)),
+  });
+
    const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
      () => queryClient.invalidateQueries(['tools']),
      isLoading
@@ -164,10 +170,7 @@ export default function Inventory() {
   const handleBulkMove = (locationId, locationName) => 
     bulkMoveMutation.mutate({ toolIds: [...selectedTools], locationId, locationName });
 
-  const { data: tools = [], isLoading } = useQuery({
-    queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500).then(r => r.filter(t => !t.is_deleted)),
-  });
+
 
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
   const HIDDEN_STATUSES = ['såld', 'retired', 'missing'];
