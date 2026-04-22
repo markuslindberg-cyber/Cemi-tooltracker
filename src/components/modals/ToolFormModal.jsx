@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ServiceHistoryPanel from '@/components/ServiceHistoryPanel';
 import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
 import ToolLogTab from '@/components/ToolLogTab';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 const defaultTool = {
 name: '',
