@@ -694,7 +694,7 @@ export default function Inventory() {
               { value: 'i_lager', label: 'I lager' },
               { value: 'maintenance', label: 'Underhåll' },
               { value: 'sålda', label: 'Såld' },
-              { value: '__no_status__', label: 'Ingen status' },
+              { value: '__no_status__', label: `Ingen status (${allItems.filter(t => !t.status || t.status === '').length})` },
             ]}
           />
         </div>
