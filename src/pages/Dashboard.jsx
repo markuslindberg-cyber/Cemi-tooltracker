@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   const { data: tools = [], refetch: refetchTools, isLoading } = useQuery({
     queryKey: ['dashboardTools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    queryFn: () => base44.entities.Tool.list('-updated_date', 500).then(r => r.filter(t => !t.is_deleted)),
     staleTime: 0,
   });
 
@@ -68,8 +68,8 @@ export default function Dashboard() {
     queryFn: () => base44.entities.LoanRequest.list(),
   });
 
-  // Stats calculations - use EXACT same filtering as Inventory (line 150-151)
-  const HIDDEN_STATUSES = ['såld', 'retired', 'missing'];
+  // Stats calculations - match Inventory page exactly
+  const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
   const activeTools = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
   const availableTools = activeTools.filter(t => t.status === 'available').length;
