@@ -278,22 +278,22 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
-                <th className="px-3 py-2 w-8">
+                <th className="px-3 py-2 w-8 text-center">
                   <button onClick={toggleAllFiltered}>
                     {allFilteredSelected
                       ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
                       : <Square className="w-4 h-4 text-gray-400" />}
                   </button>
                 </th>
-                <th className="px-3 py-2 text-left font-semibold">Åtgärd</th>
-                <th className="px-3 py-2 text-left font-semibold">Namn</th>
-                <th className="px-3 py-2 text-left font-semibold">Tillverkare</th>
-                <th className="px-3 py-2 text-left font-semibold">Modell</th>
-                <th className="px-3 py-2 text-left font-semibold">Kategori</th>
-                <th className="px-3 py-2 text-left font-semibold">Status</th>
-                <th className="px-3 py-2 text-left font-semibold">Plats</th>
-                <th className="px-3 py-2 text-right font-semibold">Pris</th>
-                {showChangedCol && <th className="px-3 py-2 text-left font-semibold">Ändrade fält</th>}
+                <th className="px-3 py-2 text-left font-semibold w-24">Åtgärd</th>
+                <th className="px-3 py-2 text-left font-semibold min-w-[120px]">Namn</th>
+                <th className="px-3 py-2 text-left font-semibold min-w-[100px]">Tillverkare</th>
+                <th className="px-3 py-2 text-left font-semibold min-w-[100px]">Modell</th>
+                <th className="px-3 py-2 text-left font-semibold min-w-[100px]">Kategori</th>
+                <th className="px-3 py-2 text-left font-semibold w-24">Status</th>
+                <th className="px-3 py-2 text-left font-semibold min-w-[100px]">Plats</th>
+                <th className="px-3 py-2 text-right font-semibold w-24">Pris</th>
+                {showChangedCol && <th className="px-3 py-2 text-left font-semibold min-w-[140px]">Ändrade fält</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -301,7 +301,7 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
                 const excluded = excludedIds.has(row._rowIdx);
                 return (
                 <tr key={idx} className={`${excluded ? 'opacity-40' : ''} ${row._action === 'update' ? 'bg-blue-50/40' : 'bg-white'}`}>
-                  <td className="px-3 py-2 w-8">
+                  <td className="px-3 py-2 w-8 text-center">
                     <button onClick={() => toggleRow(row._rowIdx)}>
                       {excluded
                         ? <Square className="w-4 h-4 text-gray-400" />
