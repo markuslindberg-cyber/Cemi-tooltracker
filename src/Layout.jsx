@@ -109,9 +109,11 @@ const ICON_MAP = {
   LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star
 };
 
+const DASHBOARD_TAB = { name: 'Dashboard', path: '/', icon: LayoutDashboard };
+
 // Default bottom tab bar items (used if user has no shortcuts set)
 const DEFAULT_BOTTOM_TABS = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  DASHBOARD_TAB,
   { name: 'Maskiner', path: '/Inventory', icon: Package },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel },
   { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
@@ -171,13 +173,14 @@ export default function Layout({ children }) {
     base44.auth.me().then(u => {
       setUser(u);
       if (u?.bottom_nav_shortcuts?.length > 0) {
-        setBottomTabs(
-          u.bottom_nav_shortcuts.map(s => ({
+        setBottomTabs([
+          DASHBOARD_TAB,
+          ...u.bottom_nav_shortcuts.map(s => ({
             name: s.label,
             path: s.path,
             icon: ICON_MAP[s.icon] || Star,
           }))
-        );
+        ]);
       }
     }).catch(() => {});
   }, []);

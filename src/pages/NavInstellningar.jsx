@@ -14,7 +14,7 @@ const ICON_MAP = {
 
 // roles: undefined = alla, array = specifika roller
 const ALL_SHORTCUTS = [
-  { path: '/', label: 'Dashboard', icon: 'LayoutDashboard' },
+  // Dashboard är fast och visas inte i listan
   { path: '/Inventory', label: 'Maskiner', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Huvudmaskiner', label: 'Huvudmaskiner', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Inventory/SaldaRedskap', label: 'Sålda & Kasserade', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
@@ -38,7 +38,7 @@ const ALL_SHORTCUTS = [
   { path: '/Administration/Kategorier', label: 'Kategorier', icon: 'Settings', roles: ['admin', 'ägare'] },
 ];
 
-const MAX = 5;
+const MAX = 4;
 
 export default function NavInstellningar() {
   const [user, setUser] = useState(null);
@@ -79,7 +79,17 @@ export default function NavInstellningar() {
   return (
     <div className="max-w-2xl mx-auto p-4 pb-32">
       <h1 className="text-2xl font-bold mb-1">Mina genvägar</h1>
-      <p className="text-gray-500 text-sm mb-6">Välj upp till {MAX} genvägar som visas i bottenmenyn.</p>
+      <p className="text-gray-500 text-sm mb-6">Dashboard är alltid fast. Välj upp till {MAX} extra genvägar.</p>
+
+      {/* Fast genväg */}
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-gray-700 mb-2">Fast genväg</h2>
+        <div className="flex items-center gap-1.5 bg-gray-100 text-gray-500 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
+          <LayoutDashboard className="w-3.5 h-3.5" />
+          Dashboard
+          <span className="ml-1 text-xs text-gray-400">(fast)</span>
+        </div>
+      </div>
 
       {/* Valda genvägar */}
       <div className="mb-6">
