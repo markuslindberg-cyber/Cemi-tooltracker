@@ -320,6 +320,7 @@ export default function ToolImport() {
   let filtered = previewRows ? previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
     if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
     if (filterMode === 'update') return row.action === 'update' && row.matchedTool;
+    if (filterMode === 'missing_barcode') return !row.barcode || row.barcode.trim() === '';
     return row.action !== 'ignore';
   }) : [];
 
@@ -520,6 +521,7 @@ export default function ToolImport() {
                 <option value="all">Alla ({previewRows.filter(r => r.action !== 'ignore').length})</option>
                 <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
                 <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
+                <option value="missing_barcode">Saknar streckkod ({previewRows.filter(r => !r.barcode || r.barcode.trim() === '').length})</option>
               </select>
 
               {allChangedFields.length > 0 && (
