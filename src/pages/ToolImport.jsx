@@ -149,7 +149,22 @@ export default function ToolImport() {
   const matchRows = (rawRows) => {
     return rawRows.map(r => {
       const barcode = String(r.barcode || '').trim();
-      const matched = barcode ? tools.find(t => t.barcode === barcode) : null;
+      const name = String(r.name || '').trim();
+      const toolNumber = String(r.tool_number || '').trim();
+      const serialNumber = String(r.serial_number || '').trim();
+      
+      // Match by barcode first, then by name+tool_number, then by name+serial_number
+      let matched = null;
+      if (barcode) {
+        matched = tools.find(t => t.barcode === barcode);
+      }
+      if (!matched && name && toolNumber) {
+        matched = tools.find(t => (t.name || '').toLowerCase() === name.toLowerCase() && (t.tool_number || '').trim() === toolNumber);
+      }
+      if (!matched && name && serialNumber) {
+        matched = tools.find(t => (t.name || '').toLowerCase() === name.toLowerCase() && (t.serial_number || '').trim() === serialNumber);
+      }
+      
       const locationMatch = locations.find(l => l.name === (r.location_name || ''));
       
       const newRow = {
