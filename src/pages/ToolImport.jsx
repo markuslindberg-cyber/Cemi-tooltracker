@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Upload, FileDown, Loader2, CheckCircle2, AlertCircle, X, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
@@ -24,6 +24,7 @@ export default function ToolImport() {
   const [bulkEditField, setBulkEditField] = useState('');
   const [bulkEditValue, setBulkEditValue] = useState('');
   const [filterMode, setFilterMode] = useState('all');
+  const [filterChangedField, setFilterChangedField] = useState('all');
   const [sortBy, setSortBy] = useState(null);
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -292,12 +293,25 @@ export default function ToolImport() {
     }
   };
 
+  // All changed fields across update rows — for filter dropdown
+  const allChangedFields = useMemo(() => {
+    if (!previewRows) return [];
+    const fields = new Set();
+    previewRows.filter(r => r.matchedTool && r.changes).forEach(r => Object.keys(r.changes).forEach(f => fields.add(f)));
+    return [...fields].sort();
+  }, [previewRows]);
+
   // Filter and sort logic
   let filtered = previewRows ? previewRows.map((row, idx) => ({ row, idx })).filter(({ row }) => {
     if (filterMode === 'new') return row.action !== 'ignore' && !row.matchedTool;
     if (filterMode === 'update') return row.action === 'update' && row.matchedTool;
     return row.action !== 'ignore';
   }) : [];
+
+  // Filter by changed field
+  if (filterChangedField !== 'all') {
+    filtered = filtered.filter(({ row }) => row.changes && row.changes[filterChangedField]);
+  }
 
   if (sortBy === 'name') {
     filtered.sort((a, b) => {
@@ -489,6 +503,7 @@ export default function ToolImport() {
                 value={filterMode}
                 onChange={(e) => {
                   setFilterMode(e.target.value);
+                  setFilterChangedField('all');
                   setSelectedRows(new Set());
                 }}
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
@@ -497,6 +512,23 @@ export default function ToolImport() {
                 <option value="new">Nya maskiner ({previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length})</option>
                 <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
               </select>
+
+              {allChangedFields.length > 0 && (filterMode === 'update' || filterMode === 'all') && (
+                <select
+                  value={filterChangedField}
+                  onChange={(e) => {
+                    setFilterChangedField(e.target.value);
+                    setSelectedRows(new Set());
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                >
+                  <option value="all">Alla fält</option>
+                  {allChangedFields.map(f => {
+                    const count = previewRows.filter(r => r.changes && r.changes[f]).length;
+                    return <option key={f} value={f}>{f} ({count})</option>;
+                  })}
+                </select>
+              )}
 
               {filtered.length > 0 && (
                 <button
