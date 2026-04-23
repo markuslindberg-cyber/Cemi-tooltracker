@@ -159,6 +159,7 @@ export default function SåldaRedskap() {
                   <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('model_number')}>Modell {sortField === 'model_number' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('status')}>Status {sortField === 'status' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('location_name')}>Plats {sortField === 'location_name' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('purchase_price')}>Värde {sortField === 'purchase_price' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-600 cursor-pointer hover:bg-gray-100" onClick={() => handleSort('barcode')}>Streckkod {sortField === 'barcode' && (sortDirection === 'desc' ? '↓' : '↑')}</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -177,6 +178,7 @@ export default function SåldaRedskap() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-600">{tool.location_name || '—'}</td>
+                      <td className="px-4 py-3 text-gray-700">{tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}</td>
                       <td className="px-4 py-3 text-gray-500 font-mono text-xs">{tool.barcode || '—'}</td>
                       <td className="px-4 py-3 text-right">
                         <Button size="sm" variant="ghost" onClick={(e) => handleDelete(e, tool.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
