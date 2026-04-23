@@ -71,7 +71,6 @@ const navigation = [
     icon: SprayCan,
     children: [
       { name: 'Begäran - lokalvårdsartiklar', path: '/LokalvardRequestArtikel' },
-      { name: 'Begäran - arbetskläder', path: '/RequestWorkwear', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Lager', path: '/Lokalvard/Lager', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Begär uttag', path: '/Lokalvard/NyttUttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['admin_lokalvård', 'ägare'] },
