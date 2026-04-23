@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, AlertCircle, X, Upload, Filter } from 'lucide-react';
+import { CheckCircle2, AlertCircle, X, Upload, Filter, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const statusLabels = {
   available: 'Tillgänglig',
@@ -41,10 +41,10 @@ function getChangedFields(row, existing) {
 
 export default function ToolImportPreviewModal({ rows, existingTools, fileName, onConfirm, onCancel }) {
   const [importing, setImporting] = useState(false);
-  const [actionFilter, setActionFilter] = useState('all'); // 'all' | 'create' | 'update'
-  const [changedFieldFilter, setChangedFieldFilter] = useState('all');
+  const [actionFilter, setActionFilter] = useState('all');
+  const [previewField, setPreviewField] = useState('all'); // which field to filter rows by in table
 
-  // Classify each row as new or update, and compute changed fields
+  // Classify each row
   const enriched = useMemo(() => rows.map(tool => {
     const existing = existingTools.find(t =>
       (tool.tool_number && t.tool_number === tool.tool_number) ||
@@ -64,26 +64,49 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
     return [...fields].sort();
   }, [enriched]);
 
+  // Which fields are enabled for update (toggled on)
+  const [enabledFields, setEnabledFields] = useState(() => new Set(Object.keys(FIELD_LABELS)));
+
+  const toggleField = (field) => {
+    setEnabledFields(prev => {
+      const next = new Set(prev);
+      if (next.has(field)) next.delete(field); else next.add(field);
+      return next;
+    });
+  };
+
+  const enableAllFields = () => setEnabledFields(new Set(Object.keys(FIELD_LABELS)));
+  const disableAllFields = () => setEnabledFields(new Set());
+
+  // Filtered rows for table display
   const filtered = useMemo(() => {
     return enriched.filter(row => {
       if (actionFilter === 'create' && row._action !== 'create') return false;
       if (actionFilter === 'update' && row._action !== 'update') return false;
-      if (changedFieldFilter !== 'all' && row._action === 'update') {
-        if (!row._changedFields.includes(changedFieldFilter)) return false;
+      if (previewField !== 'all' && row._action === 'update') {
+        if (!row._changedFields.includes(previewField)) return false;
       }
       return true;
     });
-  }, [enriched, actionFilter, changedFieldFilter]);
+  }, [enriched, actionFilter, previewField]);
 
   const handleConfirm = async () => {
     setImporting(true);
-    await onConfirm(enriched);
+    // Pass enriched rows but also communicate which fields are enabled
+    const finalRows = enriched.map(row => ({
+      ...row,
+      _enabledFields: row._action === 'update' ? [...enabledFields] : null,
+    }));
+    await onConfirm(finalRows);
     setImporting(false);
   };
+
+  const showChangedCol = actionFilter === 'update' || previewField !== 'all';
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div>
@@ -107,11 +130,53 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Field toggle section — only shown when there are updates */}
+        {updateCount > 0 && allChangedFields.length > 0 && (
+          <div className="px-6 py-3 border-b border-gray-200 bg-amber-50/60">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
+                Välj vilka fält som ska uppdateras på befintliga maskiner
+              </p>
+              <div className="flex gap-2">
+                <button onClick={enableAllFields} className="text-xs text-blue-600 hover:underline">Aktivera alla</button>
+                <span className="text-gray-300">|</span>
+                <button onClick={disableAllFields} className="text-xs text-gray-500 hover:underline">Inaktivera alla</button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {allChangedFields.map(field => {
+                const enabled = enabledFields.has(field);
+                return (
+                  <button
+                    key={field}
+                    onClick={() => toggleField(field)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                      enabled
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'bg-white text-gray-400 border-gray-300 line-through'
+                    }`}
+                  >
+                    {enabled
+                      ? <ToggleRight className="w-3.5 h-3.5" />
+                      : <ToggleLeft className="w-3.5 h-3.5" />
+                    }
+                    {FIELD_LABELS[field] || field}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-amber-700 mt-2">
+              {enabledFields.size === 0
+                ? '⚠️ Inga fält är aktiverade — befintliga maskiner uppdateras inte alls.'
+                : `${[...enabledFields].filter(f => allChangedFields.includes(f)).length} av ${allChangedFields.length} ändrade fält kommer uppdateras.`
+              }
+            </p>
+          </div>
+        )}
+
+        {/* Row filter bar */}
         <div className="flex flex-wrap items-center gap-3 px-6 py-3 border-b border-gray-200 bg-white">
           <Filter className="w-4 h-4 text-gray-400 shrink-0" />
-
-          {/* Action filter */}
           <div className="flex items-center gap-1">
             {[
               { value: 'all', label: 'Alla' },
@@ -120,7 +185,7 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
             ].map(opt => (
               <button
                 key={opt.value}
-                onClick={() => { setActionFilter(opt.value); if (opt.value !== 'update') setChangedFieldFilter('all'); }}
+                onClick={() => { setActionFilter(opt.value); if (opt.value !== 'update') setPreviewField('all'); }}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   actionFilter === opt.value
                     ? 'bg-[#8B1E1E] text-white'
@@ -132,28 +197,23 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
             ))}
           </div>
 
-          {/* Changed field filter — only shown when viewing updates */}
           {(actionFilter === 'update' || actionFilter === 'all') && allChangedFields.length > 0 && (
             <div className="flex flex-wrap items-center gap-1">
-              <span className="text-xs text-gray-400 mr-1">Ändrat fält:</span>
+              <span className="text-xs text-gray-400 mr-1">Visa rader med ändrat:</span>
               <button
-                onClick={() => setChangedFieldFilter('all')}
+                onClick={() => setPreviewField('all')}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  changedFieldFilter === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  previewField === 'all' ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                Alla fält
+                Alla
               </button>
               {allChangedFields.map(field => (
                 <button
                   key={field}
-                  onClick={() => { setChangedFieldFilter(field); setActionFilter('update'); }}
+                  onClick={() => { setPreviewField(field); setActionFilter('update'); }}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    changedFieldFilter === field
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    previewField === field ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {FIELD_LABELS[field] || field}
@@ -178,14 +238,12 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
                 <th className="px-3 py-2 text-left font-semibold">Status</th>
                 <th className="px-3 py-2 text-left font-semibold">Plats</th>
                 <th className="px-3 py-2 text-right font-semibold">Pris</th>
-                {actionFilter === 'update' || changedFieldFilter !== 'all' ? (
-                  <th className="px-3 py-2 text-left font-semibold">Ändrade fält</th>
-                ) : null}
+                {showChangedCol && <th className="px-3 py-2 text-left font-semibold">Ändrade fält</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filtered.map((row, idx) => (
-                <tr key={idx} className={row._action === 'update' ? 'bg-blue-50/50' : 'bg-white'}>
+                <tr key={idx} className={row._action === 'update' ? 'bg-blue-50/40' : 'bg-white'}>
                   <td className="px-3 py-2">
                     {row._action === 'create' ? (
                       <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ny</Badge>
@@ -202,7 +260,7 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
                   <td className="px-3 py-2 text-right text-gray-600">
                     {row.purchase_price ? `${Number(row.purchase_price).toLocaleString('sv-SE')} kr` : '—'}
                   </td>
-                  {actionFilter === 'update' || changedFieldFilter !== 'all' ? (
+                  {showChangedCol && (
                     <td className="px-3 py-2">
                       {row._action === 'update' && row._changedFields.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
@@ -210,9 +268,11 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
                             <span
                               key={f}
                               className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                                changedFieldFilter === f
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-blue-100 text-blue-700'
+                                !enabledFields.has(f)
+                                  ? 'bg-gray-100 text-gray-400 line-through'
+                                  : previewField === f
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-blue-100 text-blue-700'
                               }`}
                             >
                               {FIELD_LABELS[f] || f}
@@ -223,7 +283,7 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
                         <span className="text-xs text-gray-400">Inga ändringar</span>
                       ) : null}
                     </td>
-                  ) : null}
+                  )}
                 </tr>
               ))}
             </tbody>

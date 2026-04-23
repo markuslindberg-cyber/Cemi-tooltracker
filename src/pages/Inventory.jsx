@@ -560,7 +560,12 @@ export default function Inventory() {
       };
 
       if (tool._action === 'update') {
-        await base44.entities.Tool.update(tool._existingId, toolData);
+        // Only include fields that are enabled for update
+        const enabledFields = tool._enabledFields ? new Set(tool._enabledFields) : null;
+        const filteredToolData = enabledFields
+          ? Object.fromEntries(Object.entries(toolData).filter(([k]) => enabledFields.has(k)))
+          : toolData;
+        await base44.entities.Tool.update(tool._existingId, filteredToolData);
         updatedCount++;
         if (tool.service_cost && tool.service_cost > 0) {
           serviceRecordsToCreate.push({
