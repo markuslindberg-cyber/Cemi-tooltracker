@@ -35,6 +35,7 @@ export default function Dashboard() {
   const { data: tools = [], refetch: refetchTools, isLoading } = useQuery({
     queryKey: ['dashboardTools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    staleTime: 0,
   });
 
   const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
