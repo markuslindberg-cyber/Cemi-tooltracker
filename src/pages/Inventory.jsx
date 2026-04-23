@@ -223,7 +223,8 @@ export default function Inventory() {
         item.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.subcategory?.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesStatus = statusFilter.length === 0 || statusFilter.includes(item.status);
+      const matchesStatus = statusFilter.length === 0 || statusFilter.includes(item.status) ||
+        (statusFilter.includes('__no_status__') && !item.status);
       const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(item.category);
       const matchesSubcategory = subcategoryFilter.length === 0 || subcategoryFilter.includes(item.subcategory);
       const matchesManufacturer = manufacturerFilter.length === 0 || manufacturerFilter.includes(item.manufacturer);
@@ -691,6 +692,7 @@ export default function Inventory() {
               { value: 'i_lager', label: 'I lager' },
               { value: 'maintenance', label: 'Underhåll' },
               { value: 'sålda', label: 'Såld' },
+              { value: '__no_status__', label: 'Ingen status' },
             ]}
           />
         </div>
