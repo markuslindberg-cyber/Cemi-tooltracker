@@ -16,6 +16,10 @@ import {
   Shovel,
   Shirt,
   SprayCan,
+  MapPin,
+  Settings,
+  Star,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -101,8 +105,12 @@ const navigation = [
   },
 ];
 
-// Bottom tab bar items
-const BOTTOM_TABS = [
+const ICON_MAP = {
+  LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star
+};
+
+// Default bottom tab bar items (used if user has no shortcuts set)
+const DEFAULT_BOTTOM_TABS = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Maskiner', path: '/Inventory', icon: Package },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel },
@@ -123,6 +131,7 @@ export default function Layout({ children }) {
   const [openMenus, setOpenMenus] = useState({});
   const [user, setUser] = useState(null);
   const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [bottomTabs, setBottomTabs] = useState(DEFAULT_BOTTOM_TABS);
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
   const location = useLocation();
@@ -159,7 +168,18 @@ export default function Layout({ children }) {
   }, [location.pathname]);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
+    base44.auth.me().then(u => {
+      setUser(u);
+      if (u?.bottom_nav_shortcuts?.length > 0) {
+        setBottomTabs(
+          u.bottom_nav_shortcuts.map(s => ({
+            name: s.label,
+            path: s.path,
+            icon: ICON_MAP[s.icon] || Star,
+          }))
+        );
+      }
+    }).catch(() => {});
   }, []);
 
   const getInitials = (name) => {
@@ -408,7 +428,7 @@ export default function Layout({ children }) {
           className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex z-30"
           style={{ paddingBottom: 'var(--sab)' }}
         >
-          {BOTTOM_TABS.map((tab) => {
+          {bottomTabs.map((tab) => {
             const active = isActivePath(tab.path);
             const handleTabClick = (e) => {
               if (active) {
@@ -418,7 +438,7 @@ export default function Layout({ children }) {
             };
             return (
               <Link
-                key={tab.name}
+                key={tab.path}
                 to={tab.path}
                 onClick={handleTabClick}
                 className={cn(
@@ -427,10 +447,19 @@ export default function Layout({ children }) {
                 )}
               >
                 <tab.icon className={cn("w-5 h-5", active ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500")} />
-                <span>{tab.name}</span>
+                <span className="truncate max-w-[4rem] text-center leading-tight">{tab.name}</span>
               </Link>
             );
           })}
+          <Link
+            to="/NavInstellningar"
+            className={cn(
+              "flex-none w-12 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors",
+              location.pathname === '/NavInstellningar' ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
+            )}
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+          </Link>
         </nav>
       </div>
     </div>

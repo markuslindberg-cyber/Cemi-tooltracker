@@ -35,6 +35,7 @@ import CategoryManagement from './pages/CategoryManagement';
 import ImportHistorik from './pages/ImportHistorik';
 import ToolImport from './pages/ToolImport';
 import Papperskorg from './pages/Papperskorg';
+import NavInstellningar from './pages/NavInstellningar';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -136,6 +137,7 @@ const AuthenticatedApp = () => {
       <Route path="/Administration/Papperskorg" element={<LayoutWrapper currentPageName="Papperskorg"><Papperskorg /></LayoutWrapper>} />
       <Route path="/Lokalvard/ImportHistorik" element={<LayoutWrapper currentPageName="ImportHistorik"><ImportHistorik /></LayoutWrapper>} />
       <Route path="/Inventory/ToolImport" element={<LayoutWrapper currentPageName="ToolImport"><ToolImport /></LayoutWrapper>} />
+      <Route path="/NavInstellningar" element={<LayoutWrapper currentPageName="NavInstellningar"><NavInstellningar /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>

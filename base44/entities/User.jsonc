@@ -18,6 +18,24 @@
       "type": "boolean",
       "default": true,
       "description": "Om anv\u00e4ndaren \u00e4r aktiv eller inaktiverad"
+    },
+    "bottom_nav_shortcuts": {
+      "type": "array",
+      "description": "Anv\u00e4ndarens valda genv\u00e4gar i bottenmenyn (max 5)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "required": []
