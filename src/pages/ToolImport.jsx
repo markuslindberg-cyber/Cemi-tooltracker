@@ -408,30 +408,18 @@ export default function ToolImport() {
             {selectedRows.size > 0 && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
                 <p className="text-sm font-semibold text-blue-900 mb-3">{selectedRows.size} maskiner valda - Massuppdatering</p>
-                <div className="flex gap-3 items-end">
+                <div className="flex gap-3 items-end flex-wrap">
                   <div>
                     <label className="block text-xs font-medium text-blue-700 mb-1">Välj fält</label>
                     <select
                       value={bulkEditField}
-                      onChange={(e) => setBulkEditField(e.target.value)}
+                      onChange={(e) => { setBulkEditField(e.target.value); setBulkEditValue(''); }}
                       className="border border-blue-300 rounded px-2 py-1 text-sm bg-white"
                     >
                       <option value="">- Välj fält -</option>
-                      {(() => {
-                        const availableFields = new Set();
-                        selectedRows.forEach(idx => {
-                          if (!previewRows[idx]) return;
-                          const row = previewRows[idx];
-                          if (!row.matchedTool) {
-                            ['name', 'manufacturer', 'model_number', 'serial_number', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'].forEach(f => availableFields.add(f));
-                          } else if (row.changes) {
-                            Object.keys(row.changes).forEach(f => availableFields.add(f));
-                          }
-                        });
-                        return Array.from(availableFields).sort().map(field => (
-                          <option key={field} value={field}>{field}</option>
-                        ));
-                      })()}
+                      {['name', 'manufacturer', 'model_number', 'serial_number', 'tool_number', 'category', 'subcategory', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'notes'].map(field => (
+                        <option key={field} value={field}>{field}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
