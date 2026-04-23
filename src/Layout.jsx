@@ -72,12 +72,12 @@ const navigation = [
     children: [
       { name: 'Begäran - lokalvårdsartiklar', path: '/LokalvardRequestArtikel' },
       { name: 'Begäran - arbetskläder', path: '/RequestWorkwear' },
-      { name: 'Lager', path: '/Lokalvard/Lager' },
+      { name: 'Lager', path: '/Lokalvard/Lager', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Begär uttag', path: '/Lokalvard/NyttUttag' },
-      { name: 'Uttag', path: '/Lokalvard/Uttag' },
+      { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
-      { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund' },
-      { name: 'Kunder', path: '/Lokalvard/Kunder' },
+      { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
       { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true },
     ]
