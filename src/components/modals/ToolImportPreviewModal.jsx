@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, AlertCircle, X, Upload, Filter, ToggleLeft, ToggleRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, X, Upload, Filter, ToggleLeft, ToggleRight, Square, CheckSquare } from 'lucide-react';
 
 const statusLabels = {
   available: 'Tillgänglig',
@@ -64,16 +64,17 @@ function getChangedFields(row, existing) {
 export default function ToolImportPreviewModal({ rows, existingTools, fileName, onConfirm, onCancel }) {
   const [importing, setImporting] = useState(false);
   const [actionFilter, setActionFilter] = useState('all');
-  const [previewField, setPreviewField] = useState('all'); // which field to filter rows by in table
+  const [previewField, setPreviewField] = useState('all');
+  const [excludedIds, setExcludedIds] = useState(new Set()); // row indexes excluded from import
 
   // Classify each row
-  const enriched = useMemo(() => rows.map(tool => {
+  const enriched = useMemo(() => rows.map((tool, idx) => {
     const existing = existingTools.find(t =>
       (tool.tool_number && t.tool_number === tool.tool_number) ||
       (tool.barcode && t.barcode === tool.barcode)
     );
     const changedFields = existing ? getChangedFields(tool, existing) : [];
-    return { ...tool, _action: existing ? 'update' : 'create', _existingId: existing?.id, _existing: existing, _changedFields: changedFields };
+    return { ...tool, _rowIdx: idx, _action: existing ? 'update' : 'create', _existingId: existing?.id, _existing: existing, _changedFields: changedFields };
   }), [rows, existingTools]);
 
   const newCount = enriched.filter(r => r._action === 'create').length;
@@ -112,13 +113,38 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
     });
   }, [enriched, actionFilter, previewField]);
 
+  // Toggle a single row in/out
+  const toggleRow = (idx) => {
+    setExcludedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
+  };
+
+  // Toggle all currently filtered rows
+  const filteredIndexes = useMemo(() => filtered.map(row => row._rowIdx), [filtered]);
+  const allFilteredSelected = filteredIndexes.length > 0 && filteredIndexes.every(i => !excludedIds.has(i));
+  const toggleAllFiltered = () => {
+    setExcludedIds(prev => {
+      const next = new Set(prev);
+      if (allFilteredSelected) {
+        filteredIndexes.forEach(i => next.add(i));
+      } else {
+        filteredIndexes.forEach(i => next.delete(i));
+      }
+      return next;
+    });
+  };
+
   const handleConfirm = async () => {
     setImporting(true);
-    // Pass enriched rows but also communicate which fields are enabled
-    const finalRows = enriched.map(row => ({
-      ...row,
-      _enabledFields: row._action === 'update' ? [...enabledFields] : null,
-    }));
+    const finalRows = enriched
+      .filter(row => !excludedIds.has(row._rowIdx))
+      .map(row => ({
+        ...row,
+        _enabledFields: row._action === 'update' ? [...enabledFields] : null,
+      }));
     await onConfirm(finalRows);
     setImporting(false);
   };
@@ -252,6 +278,13 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+                <th className="px-3 py-2 w-8">
+                  <button onClick={toggleAllFiltered}>
+                    {allFilteredSelected
+                      ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                      : <Square className="w-4 h-4 text-gray-400" />}
+                  </button>
+                </th>
                 <th className="px-3 py-2 text-left font-semibold">Åtgärd</th>
                 <th className="px-3 py-2 text-left font-semibold">Namn</th>
                 <th className="px-3 py-2 text-left font-semibold">Tillverkare</th>
@@ -264,8 +297,17 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((row, idx) => (
-                <tr key={idx} className={row._action === 'update' ? 'bg-blue-50/40' : 'bg-white'}>
+              {filtered.map((row, idx) => {
+                const excluded = excludedIds.has(row._rowIdx);
+                return (
+                <tr key={idx} className={`${excluded ? 'opacity-40' : ''} ${row._action === 'update' ? 'bg-blue-50/40' : 'bg-white'}`}>
+                  <td className="px-3 py-2 w-8">
+                    <button onClick={() => toggleRow(row._rowIdx)}>
+                      {excluded
+                        ? <Square className="w-4 h-4 text-gray-400" />
+                        : <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />}
+                    </button>
+                  </td>
                   <td className="px-3 py-2">
                     {row._action === 'create' ? (
                       <Badge className="bg-green-100 text-green-700 border-0 text-xs">Ny</Badge>
@@ -307,7 +349,8 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
                     </td>
                   )}
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -323,7 +366,7 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
             {importing ? (
               <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Importerar...</>
             ) : (
-              <><Upload className="w-4 h-4" />Godkänn och importera ({enriched.length})</>
+              <><Upload className="w-4 h-4" />Godkänn och importera ({enriched.length - excludedIds.size})</>
             )}
           </Button>
         </div>
