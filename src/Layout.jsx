@@ -58,10 +58,9 @@ const navigation = [
     name: 'Arbetskläder',
     path: '/ArbetskladerUtrustning',
     icon: Shirt,
-    roles: NOT_LOKALVARDARE,
     children: [
-      { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning' },
-      { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
+      { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning', roles: NOT_LOKALVARDARE },
+      { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports', roles: NOT_LOKALVARDARE },
       { name: 'Begäran om uttag', path: '/ArbetskläderRequestWorkwear' },
       { name: 'Förfrågan', path: '/Arbetsklader/Forfragan' },
     ]
