@@ -73,7 +73,11 @@ export default function NavInstellningar() {
     setSaving(true);
     await base44.auth.updateMe({ bottom_nav_shortcuts: selected });
     setSaving(false);
-    toast({ title: 'Sparat!', description: 'Dina genvägar har uppdaterats. Ladda om appen för att se ändringarna.' });
+    toast({ 
+      title: 'Sparat!', 
+      description: 'Dina genvägar har uppdaterats. Ladda om appen för att se ändringarna.',
+      action: { label: 'Ladda om', onClick: () => window.location.reload() }
+    });
   };
 
   return (
