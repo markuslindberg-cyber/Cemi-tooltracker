@@ -61,8 +61,8 @@ const navigation = [
     children: [
       { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning', roles: NOT_LOKALVARDARE },
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports', roles: NOT_LOKALVARDARE },
-      { name: 'Begäran om uttag', path: '/ArbetskläderRequestWorkwear' },
-      { name: 'Förfrågan', path: '/Arbetsklader/Forfragan' },
+      { name: 'Begäran - arbetskläder', path: '/ArbetskläderRequestWorkwear' },
+      { name: 'Förfrågan - arbetskläder', path: '/Arbetsklader/Forfragan' },
     ]
   },
   {
