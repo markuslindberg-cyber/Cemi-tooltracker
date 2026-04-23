@@ -30,11 +30,33 @@ const FIELD_LABELS = {
   notes: 'Anteckningar',
 };
 
+// Maps both directions: english key ↔ swedish label
+const STATUS_EQUIVALENTS = {
+  available: 'tillgänglig',
+  in_use: 'i bruk',
+  i_lager: 'i lager',
+  maintenance: 'underhåll',
+  missing: 'saknas',
+  retired: 'kasserad',
+  sålda: 'såld',
+};
+
+function normalizeValue(field, val) {
+  const v = (val ?? '').toString().trim().toLowerCase();
+  if (field === 'status') {
+    // Normalize both english keys and swedish labels to the english key
+    for (const [key, label] of Object.entries(STATUS_EQUIVALENTS)) {
+      if (v === key || v === label) return key;
+    }
+  }
+  return v;
+}
+
 function getChangedFields(row, existing) {
   if (!existing) return [];
   return Object.keys(FIELD_LABELS).filter(field => {
-    const newVal = (row[field] ?? '').toString().trim();
-    const oldVal = (existing[field] ?? '').toString().trim();
+    const newVal = normalizeValue(field, row[field]);
+    const oldVal = normalizeValue(field, existing[field]);
     return newVal !== oldVal && newVal !== '';
   });
 }
