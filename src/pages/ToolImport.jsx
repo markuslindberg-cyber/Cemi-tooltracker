@@ -387,26 +387,31 @@ export default function ToolImport() {
             <h2 className="text-xl font-semibold mb-4">Förhandsgranskning ({previewRows.length} rader)</h2>
             
             {(() => {
-              const newCount = previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length;
-              const updateCount = previewRows.filter(r => r.action === 'update' && r.matchedTool && r.changes && Object.keys(r.changes).length > 0).length;
-              const noChangeCount = previewRows.filter(r => r.matchedTool && (!r.changes || Object.keys(r.changes).length === 0)).length;
-              
-              return (
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-green-700">{newCount}</div>
-                    <div className="text-sm text-green-600">Nya maskiner</div>
-                  </div>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-yellow-700">{updateCount}</div>
-                    <div className="text-sm text-yellow-600">Maskiner att uppdatera</div>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-gray-700">{noChangeCount}</div>
-                    <div className="text-sm text-gray-600">Utan förändring</div>
-                  </div>
-                </div>
-              );
+               const newCount = previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length;
+               const updateCount = previewRows.filter(r => r.action === 'update' && r.matchedTool && r.changes && Object.keys(r.changes).length > 0).length;
+               const noChangeCount = previewRows.filter(r => r.matchedTool && (!r.changes || Object.keys(r.changes).length === 0)).length;
+               const missingBarcodeCount = previewRows.filter(r => !r.barcode || r.barcode.trim() === '').length;
+
+               return (
+                 <div className="grid grid-cols-4 gap-3 mb-4">
+                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                     <div className="text-2xl font-bold text-green-700">{newCount}</div>
+                     <div className="text-sm text-green-600">Nya maskiner</div>
+                   </div>
+                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                     <div className="text-2xl font-bold text-yellow-700">{updateCount}</div>
+                     <div className="text-sm text-yellow-600">Maskiner att uppdatera</div>
+                   </div>
+                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                     <div className="text-2xl font-bold text-gray-700">{noChangeCount}</div>
+                     <div className="text-sm text-gray-600">Utan förändring</div>
+                   </div>
+                   <div className={`${missingBarcodeCount > 0 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'} border rounded-lg p-3`}>
+                     <div className={`text-2xl font-bold ${missingBarcodeCount > 0 ? 'text-red-700' : 'text-emerald-700'}`}>{missingBarcodeCount}</div>
+                     <div className={`text-sm ${missingBarcodeCount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>Saknar streckkod</div>
+                   </div>
+                 </div>
+               );
             })()}
             
             <div className="flex gap-6 text-sm mb-4">
