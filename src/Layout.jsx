@@ -58,6 +58,7 @@ const navigation = [
     name: 'Arbetskläder',
     path: '/ArbetskladerUtrustning',
     icon: Shirt,
+    roles: NOT_LOKALVARDARE,
     children: [
       { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning' },
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports' },
