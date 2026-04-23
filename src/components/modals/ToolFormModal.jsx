@@ -920,46 +920,49 @@ export default function ToolFormModal({
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                   <Label>Status</Label>
-                   <MobileSelect
-                     value={formData.status}
-                     onChange={(v) => handleChange('status', v)}
-                     options={[
-                       { value: 'available', label: 'Tillgänglig' },
-                       { value: 'in_use', label: 'I bruk' },
-                       { value: 'maintenance', label: 'Underhåll' },
-                       { value: 'missing', label: 'Saknas' },
-                       { value: 'retired', label: 'Kasserad' },
-                       { value: 'sålda', label: 'Såld' },
-                     ]}
-                     placeholder="Välj status"
-                   />
-                 </div>
+                    <div className="space-y-2">
+                       <Label>Status</Label>
+                       <MobileSelect
+                         value={formData.status}
+                         onChange={(v) => handleChange('status', v)}
+                         options={[
+                           { value: 'available', label: 'Tillgänglig' },
+                           { value: 'in_use', label: 'I bruk' },
+                           { value: 'maintenance', label: 'Underhåll' },
+                           { value: 'missing', label: 'Saknas' },
+                           { value: 'retired', label: 'Kasserad' },
+                           { value: 'sålda', label: 'Såld' },
+                         ]}
+                         placeholder="Välj status"
+                       />
+                     </div>
 
-                 <div className="space-y-2">
-                   <Label>Skick</Label>
-                   <MobileSelect
-                     value={formData.condition}
-                     onChange={(v) => handleChange('condition', v)}
-                     options={[
-                       { value: 'new', label: 'Ny' },
-                       { value: 'good', label: 'Bra' },
-                       { value: 'fair', label: 'Okej' },
-                       { value: 'poor', label: 'Dålig' },
-                     ]}
-                     placeholder="Välj skick"
-                   />
-                 </div>
-                <div className="space-y-2">
-                  <Label>Streckkod / Tag-ID</Label>
-                  <Input
-                    value={formData.barcode}
-                    onChange={(e) => handleChange('barcode', e.target.value)}
-                    placeholder="Skanna eller ange streckkod"
-                  />
-                </div>
-              </div>
+                     <div className="space-y-2">
+                       <Label>Skick</Label>
+                       <MobileSelect
+                         value={formData.condition}
+                         onChange={(v) => handleChange('condition', v)}
+                         options={[
+                           { value: 'new', label: 'Ny' },
+                           { value: 'good', label: 'Bra' },
+                           { value: 'fair', label: 'Okej' },
+                           { value: 'poor', label: 'Dålig' },
+                         ]}
+                         placeholder="Välj skick"
+                       />
+                     </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label>Streckkod / Tag-ID</Label>
+                       <Input
+                         value={formData.barcode}
+                         onChange={(e) => handleChange('barcode', e.target.value)}
+                         placeholder="Skanna eller ange streckkod"
+                       />
+                     </div>
+                   </div>
 
               {/* Purchase Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
