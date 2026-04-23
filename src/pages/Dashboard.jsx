@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   const { data: tools = [], refetch: refetchTools, isLoading } = useQuery({
     queryKey: ['dashboardTools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500).then(r => r.filter(t => !t.is_deleted)),
+    queryFn: () => base44.entities.Tool.list('-updated_date', 2000).then(r => r.filter(t => !t.is_deleted)),
     staleTime: 0,
   });
 
