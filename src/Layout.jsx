@@ -445,7 +445,7 @@ export default function Layout({ children }) {
                 to={tab.path}
                 onClick={handleTabClick}
                 className={cn(
-                  "flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors",
+                  "flex-1 flex flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors min-h-[56px]",
                   active ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
                 )}
               >
@@ -457,7 +457,7 @@ export default function Layout({ children }) {
           <Link
             to="/NavInstellningar"
             className={cn(
-              "flex-none w-12 flex flex-col items-center justify-center py-2 gap-0.5 text-xs font-medium transition-colors",
+              "flex-none w-12 flex flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors min-h-[56px]",
               location.pathname === '/NavInstellningar' ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
             )}
           >
