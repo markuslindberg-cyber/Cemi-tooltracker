@@ -73,7 +73,7 @@ const navigation = [
       { name: 'Begäran - lokalvårdsartiklar', path: '/LokalvardRequestArtikel' },
       { name: 'Begäran - arbetskläder', path: '/RequestWorkwear', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Lager', path: '/Lokalvard/Lager', roles: ['admin_lokalvård', 'ägare'] },
-      { name: 'Begär uttag', path: '/Lokalvard/NyttUttag' },
+      { name: 'Begär uttag', path: '/Lokalvard/NyttUttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
