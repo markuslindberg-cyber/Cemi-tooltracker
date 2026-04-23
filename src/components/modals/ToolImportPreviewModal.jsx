@@ -123,7 +123,7 @@ export default function ToolImportPreviewModal({ rows, existingTools, fileName, 
     setImporting(false);
   };
 
-  const showChangedCol = actionFilter === 'update' || previewField !== 'all';
+  const showChangedCol = true;
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
