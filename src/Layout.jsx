@@ -251,6 +251,8 @@ export default function Layout({ children }) {
           <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
             {navigation.filter(item => {
               if (!item.roles) return true;
+              // Lokalvård menu always visible for lokalvårdare, regardless of parent roles
+              if (item.name === 'Lokalvård' && LOKALVARDARE_ROLES.includes(user?.role)) return true;
               return item.roles.includes(user?.role);
             }).map((item) => {
               const isActive = isActivePath(item.path);
