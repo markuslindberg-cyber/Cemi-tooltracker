@@ -513,7 +513,7 @@ export default function ToolImport() {
                 <option value="update">Maskiner att uppdatera ({previewRows.filter(r => r.action === 'update' && r.matchedTool).length})</option>
               </select>
 
-              {allChangedFields.length > 0 && (filterMode === 'update' || filterMode === 'all') && (
+              {allChangedFields.length > 0 && (
                 <select
                   value={filterChangedField}
                   onChange={(e) => {
