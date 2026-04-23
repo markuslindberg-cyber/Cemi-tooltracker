@@ -85,7 +85,7 @@ export default function Inventory() {
    
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500).then(r => r.filter(t => !t.is_deleted)),
+    queryFn: () => base44.entities.Tool.list('-updated_date', 2000).then(r => r.filter(t => !t.is_deleted)),
   });
 
    const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
