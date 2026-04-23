@@ -9,11 +9,12 @@ import { Search, Tag, AlertTriangle, Trash2 } from 'lucide-react';
 
 const statusConfig = {
   såld: { label: 'Såld', color: 'bg-blue-100 text-blue-800', icon: Tag },
+  sålda: { label: 'Såld', color: 'bg-blue-100 text-blue-800', icon: Tag },
   retired: { label: 'Kasserad', color: 'bg-red-100 text-red-800', icon: Trash2 },
   missing: { label: 'Saknas', color: 'bg-yellow-100 text-yellow-800', icon: AlertTriangle },
 };
 
-const INACTIVE_STATUSES = ['såld', 'retired', 'missing'];
+const INACTIVE_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
 
 export default function SåldaRedskap() {
   const [search, setSearch] = useState('');
@@ -91,7 +92,7 @@ export default function SåldaRedskap() {
 
   const counts = {
     all: inactiveTools.length,
-    såld: inactiveTools.filter(t => t.status === 'såld').length,
+    såld: inactiveTools.filter(t => t.status === 'såld' || t.status === 'sålda').length,
     retired: inactiveTools.filter(t => t.status === 'retired').length,
     missing: inactiveTools.filter(t => t.status === 'missing').length,
   };
