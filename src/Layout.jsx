@@ -71,15 +71,15 @@ const navigation = [
     icon: SprayCan,
     roles: LOKALVARDARE_ROLES,
     children: [
+      { name: 'Begäran - lokalvårdsartiklar', path: '/LokalvardRequestArtikel' },
+      { name: 'Begäran - arbetskläder', path: '/RequestWorkwear' },
       { name: 'Lager', path: '/Lokalvard/Lager', roles: ['admin_lokalvård', 'ägare'] },
-      { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true, roles: ['admin_lokalvård', 'ägare'] },
-      { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true, roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['admin_lokalvård', 'ägare'] },
-      { name: 'Begäran - lokalvårdsartiklar', path: '/LokalvardRequestArtikel' },
-      { name: 'Begäran - arbetskläder', path: '/RequestWorkwear' },
+      { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true, roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true, roles: ['admin_lokalvård', 'ägare'] },
     ]
   },
   {
