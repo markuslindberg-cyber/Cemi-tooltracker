@@ -407,9 +407,11 @@ export default function ToolImport() {
                const updateCount = previewRows.filter(r => r.action === 'update' && r.matchedTool && r.changes && Object.keys(r.changes).length > 0).length;
                const noChangeCount = previewRows.filter(r => r.matchedTool && (!r.changes || Object.keys(r.changes).length === 0)).length;
                const missingBarcodeCount = previewRows.filter(r => !r.barcode || r.barcode.trim() === '').length;
+               const matchedToolIds = new Set(previewRows.filter(r => r.matchedTool).map(r => r.matchedTool.id));
+               const unmatchedExistingCount = tools.filter(t => !matchedToolIds.has(t.id)).length;
 
                return (
-                 <div className="grid grid-cols-4 gap-3 mb-4">
+                 <div className="grid grid-cols-5 gap-3 mb-4">
                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                      <div className="text-2xl font-bold text-green-700">{newCount}</div>
                      <div className="text-sm text-green-600">Nya maskiner</div>
@@ -425,6 +427,10 @@ export default function ToolImport() {
                    <div className={`${missingBarcodeCount > 0 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'} border rounded-lg p-3`}>
                      <div className={`text-2xl font-bold ${missingBarcodeCount > 0 ? 'text-red-700' : 'text-emerald-700'}`}>{missingBarcodeCount}</div>
                      <div className={`text-sm ${missingBarcodeCount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>Saknar streckkod</div>
+                   </div>
+                   <div className={`${unmatchedExistingCount > 0 ? 'bg-orange-50 border-orange-200' : 'bg-emerald-50 border-emerald-200'} border rounded-lg p-3`}>
+                     <div className={`text-2xl font-bold ${unmatchedExistingCount > 0 ? 'text-orange-700' : 'text-emerald-700'}`}>{unmatchedExistingCount}</div>
+                     <div className={`text-sm ${unmatchedExistingCount > 0 ? 'text-orange-600' : 'text-emerald-600'}`}>Befintliga ej matchade</div>
                    </div>
                  </div>
                );
