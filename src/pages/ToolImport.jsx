@@ -131,6 +131,21 @@ export default function ToolImport() {
       .filter(row => (row.barcode || '').trim() || (row.name || '').trim());
   };
 
+  // Recompute `changes` for a single row against its matchedTool
+  const recomputeChanges = (row) => {
+    if (!row.matchedTool) return row;
+    const fields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
+    const changes = {};
+    fields.forEach(field => {
+      const oldVal = String(row.matchedTool[field] || '').trim();
+      const newVal = String(row[field] || '').trim();
+      if (oldVal !== newVal && newVal) {
+        changes[field] = { old: oldVal || '(tom)', new: newVal };
+      }
+    });
+    return { ...row, changes };
+  };
+
   const matchRows = (rawRows) => {
     return rawRows.map(r => {
       const barcode = String(r.barcode || '').trim();
@@ -459,9 +474,10 @@ export default function ToolImport() {
                   <button
                     onClick={() => {
                       if (bulkEditField && bulkEditValue) {
-                        const newRows = [...previewRows];
-                        selectedRows.forEach(idx => {
-                          newRows[idx][bulkEditField] = bulkEditValue;
+                        const newRows = previewRows.map((row, idx) => {
+                          if (!selectedRows.has(idx)) return row;
+                          const updated = { ...row, [bulkEditField]: bulkEditValue };
+                          return recomputeChanges(updated);
                         });
                         setPreviewRows(newRows);
                         setSelectedRows(new Set());
@@ -621,23 +637,19 @@ export default function ToolImport() {
                       onClick={() => {
                         const applyToSimilar = document.getElementById('applyToSimilar').checked;
                         if (applyToSimilar) {
-                          const newRows = [...previewRows];
-                          const baseRow = newRows[editingRowIdx];
-                          newRows.forEach((row, idx) => {
-                            if (idx !== editingRowIdx && row.matchedTool && 
-                                row.name === baseRow.name && 
-                                row.manufacturer === baseRow.manufacturer && 
-                                row.model_number === baseRow.model_number) {
-                              Object.keys(editFormData).forEach(key => {
-                                row[key] = editFormData[key];
-                              });
+                          const baseRow = previewRows[editingRowIdx];
+                          const newRows = previewRows.map((row, idx) => {
+                            if (idx === editingRowIdx) return recomputeChanges({ ...row, ...editFormData });
+                            if (row.matchedTool && row.name === baseRow.name && row.manufacturer === baseRow.manufacturer && row.model_number === baseRow.model_number) {
+                              return recomputeChanges({ ...row, ...editFormData });
                             }
+                            return row;
                           });
-                          newRows[editingRowIdx] = editFormData;
                           setPreviewRows(newRows);
                         } else {
-                          const newRows = [...previewRows];
-                          newRows[editingRowIdx] = editFormData;
+                          const newRows = previewRows.map((row, idx) =>
+                            idx === editingRowIdx ? recomputeChanges({ ...row, ...editFormData }) : row
+                          );
                           setPreviewRows(newRows);
                         }
                         setEditingRowIdx(null);
