@@ -139,6 +139,7 @@ const AuthenticatedApp = () => {
       <Route path="/Lokalvard/ImportHistorik" element={<LayoutWrapper currentPageName="ImportHistorik"><ImportHistorik /></LayoutWrapper>} />
       <Route path="/Inventory/ToolImport" element={<LayoutWrapper currentPageName="ToolImport"><ToolImport /></LayoutWrapper>} />
       <Route path="/LokalvardRequestArtikel" element={<LayoutWrapper currentPageName="LokalvardRequestArtikel"><LokalvardRequestArtikel /></LayoutWrapper>} />
+      <Route path="/NavInstellningar" element={<LayoutWrapper currentPageName="NavInstellningar"><NavInstellningar /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
