@@ -11,6 +11,8 @@ const STATUS_OPTIONS = [
   { value: 'i_lager', label: 'I lager' },
   { value: 'maintenance', label: 'Underhåll' },
   { value: 'missing', label: 'Saknas' },
+  { value: 'retired', label: 'Kasserad' },
+  { value: 'sålda', label: 'Såld' },
 ];
 
 export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, locations, categories, onSubmit }) {
