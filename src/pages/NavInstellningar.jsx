@@ -12,29 +12,30 @@ const ICON_MAP = {
   LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star
 };
 
+// roles: undefined = alla, array = specifika roller
 const ALL_SHORTCUTS = [
   { path: '/', label: 'Dashboard', icon: 'LayoutDashboard' },
-  { path: '/Inventory', label: 'Maskiner', icon: 'Package' },
-  { path: '/Huvudmaskiner', label: 'Huvudmaskiner', icon: 'Package' },
-  { path: '/Inventory/SaldaRedskap', label: 'Sålda & Kasserade', icon: 'Package' },
-  { path: '/Transfers', label: 'Lån av utrustning', icon: 'Package' },
-  { path: '/Service', label: 'Service', icon: 'Wrench' },
-  { path: '/HandTools', label: 'Handredskap', icon: 'Shovel' },
+  { path: '/Inventory', label: 'Maskiner', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Huvudmaskiner', label: 'Huvudmaskiner', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Inventory/SaldaRedskap', label: 'Sålda & Kasserade', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Transfers', label: 'Lån av utrustning', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Service', label: 'Service', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/HandTools', label: 'Handredskap', icon: 'Shovel', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/ArbetskladerUtrustning', label: 'Arbetskläder & Skyddsutrustning', icon: 'Shirt' },
   { path: '/Arbetsklader/CheckoutReports', label: 'Uttagsrapporter (Kläder)', icon: 'Shirt' },
   { path: '/ArbetskläderRequestWorkwear', label: 'Begäran om uttag (Kläder)', icon: 'Shirt' },
   { path: '/Arbetsklader/Forfragan', label: 'Förfrågan (Kläder)', icon: 'Shirt' },
-  { path: '/Lokalvard/Lager', label: 'Lokalvård – Lager', icon: 'SprayCan' },
-  { path: '/Lokalvard/Uttag', label: 'Lokalvård – Uttag', icon: 'SprayCan' },
-  { path: '/Lokalvard/BegaranAttGodkanna', label: 'Lokalvård – Begäran & uttag', icon: 'SprayCan' },
-  { path: '/Lokalvard/KostnadPerKund', label: 'Lokalvård – Kostnad per kund', icon: 'SprayCan' },
-  { path: '/Lokalvard/Kunder', label: 'Lokalvård – Kunder', icon: 'SprayCan' },
-  { path: '/RequestWorkwear', label: 'Begäran lokalvårdsartiklar', icon: 'SprayCan' },
-  { path: '/InventoryCheck', label: 'Inventering', icon: 'Wrench' },
-  { path: '/InventoryReports', label: 'Inventeringsrapporter', icon: 'Wrench' },
-  { path: '/Locations', label: 'Platser', icon: 'MapPin' },
-  { path: '/Team', label: 'Personal', icon: 'Users' },
-  { path: '/Administration/Kategorier', label: 'Kategorier', icon: 'Settings' },
+  { path: '/Lokalvard/Lager', label: 'Lokalvård – Lager', icon: 'SprayCan', roles: ['lokalvårdare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/Uttag', label: 'Lokalvård – Uttag', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/BegaranAttGodkanna', label: 'Lokalvård – Begäran & uttag', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/KostnadPerKund', label: 'Lokalvård – Kostnad per kund', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/Kunder', label: 'Lokalvård – Kunder', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/RequestWorkwear', label: 'Begäran lokalvårdsartiklar', icon: 'SprayCan', roles: ['lokalvårdare', 'admin_lokalvård', 'ägare'] },
+  { path: '/InventoryCheck', label: 'Inventering', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/InventoryReports', label: 'Inventeringsrapporter', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Locations', label: 'Platser', icon: 'MapPin', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Team', label: 'Personal', icon: 'Users', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Administration/Kategorier', label: 'Kategorier', icon: 'Settings', roles: ['admin', 'ägare'] },
 ];
 
 const MAX = 5;
@@ -106,7 +107,7 @@ export default function NavInstellningar() {
       {/* Alla tillgängliga sidor */}
       <h2 className="text-sm font-semibold text-gray-700 mb-2">Tillgängliga sidor</h2>
       <div className="space-y-1">
-        {ALL_SHORTCUTS.map((shortcut) => {
+        {ALL_SHORTCUTS.filter(s => !s.roles || s.roles.includes(user?.role)).map((shortcut) => {
           const IconComp = ICON_MAP[shortcut.icon] || Star;
           const sel = isSelected(shortcut.path);
           return (
