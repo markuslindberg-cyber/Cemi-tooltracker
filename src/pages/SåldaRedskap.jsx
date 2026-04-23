@@ -80,9 +80,9 @@ export default function SåldaRedskap() {
   }).sort((a, b) => {
     let aVal = a[sortField];
     let bVal = b[sortField];
-    if (aVal === undefined || aVal === null) aVal = '';
-    if (bVal === undefined || bVal === null) bVal = '';
-    if (typeof aVal === 'string') {
+    if (aVal === undefined || aVal === null) aVal = typeof bVal === 'number' ? 0 : '';
+    if (bVal === undefined || bVal === null) bVal = typeof aVal === 'number' ? 0 : '';
+    if (typeof aVal === 'string' && typeof bVal === 'string') {
       aVal = aVal.toLowerCase();
       bVal = bVal.toLowerCase();
     }
