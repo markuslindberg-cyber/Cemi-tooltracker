@@ -8,6 +8,7 @@ import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import ToolScanModal from '@/components/modals/ToolScanModal';
 import BulkMoveModal from '@/components/modals/BulkMoveModal';
+import BulkEditToolsModal from '@/components/modals/BulkEditToolsModal';
 import ToolLogTab from '@/components/ToolLogTab';
 import ToolImportPreviewModal from '@/components/modals/ToolImportPreviewModal';
 import { Button } from '@/components/ui/button';
@@ -126,6 +127,7 @@ export default function Inventory() {
   const [showScanModal, setShowScanModal] = useState(false);
   const [selectedTools, setSelectedTools] = useState(new Set());
   const [showBulkMove, setShowBulkMove] = useState(false);
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
   const [toolHistory, setToolHistory] = useState(null);
 
   const toggleSelectTool = (id) => {
@@ -167,8 +169,20 @@ export default function Inventory() {
     },
   });
 
+  const bulkEditMutation = useMutation({
+    mutationFn: (updates) => Promise.all(
+      [...selectedTools].map(id => base44.entities.Tool.update(id, updates))
+    ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tools'] });
+      setSelectedTools(new Set());
+    },
+  });
+
   const handleBulkMove = (locationId, locationName) => 
     bulkMoveMutation.mutate({ toolIds: [...selectedTools], locationId, locationName });
+
+  const handleBulkEdit = (updates) => bulkEditMutation.mutateAsync(updates);
 
 
 
@@ -615,9 +629,14 @@ export default function Inventory() {
           </div>
           <div className="flex flex-wrap gap-1.5 md:gap-2 shrink-0">
             {selectedTools.size > 0 && (
-              <Button onClick={() => setShowBulkMove(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] md:inline-flex hidden" size="sm">
-                <MapPin className="w-4 h-4 mr-2" />Ändra plats ({selectedTools.size})
-              </Button>
+              <>
+                <Button onClick={() => setShowBulkEdit(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515]" size="sm">
+                  <CheckSquare className="w-4 h-4 mr-2" />Redigera ({selectedTools.size})
+                </Button>
+                <Button onClick={() => setShowBulkMove(true)} variant="outline" className="md:inline-flex hidden" size="sm">
+                  <MapPin className="w-4 h-4 mr-2" />Ändra plats
+                </Button>
+              </>
             )}
             <Button onClick={() => setShowScanModal(true)} variant="outline" size="sm" className="hidden sm:inline-flex">
               <ScanLine className="w-4 h-4 sm:mr-2" /><span className="hidden sm:inline">Inventera (skanna)</span>
@@ -678,7 +697,7 @@ export default function Inventory() {
 
         {/* Content */}
         {/* Select all bar */}
-        {selectedTools.size > 0 && filteredTools.length > 0 && (
+        {filteredTools.length > 0 && (
           <div className="flex items-center gap-3">
             <button onClick={toggleSelectAll} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
               {selectedTools.size === filteredTools.length && filteredTools.length > 0
@@ -754,13 +773,11 @@ export default function Inventory() {
               <TableHeader>
                 <TableRow className="bg-gray-50 dark:bg-gray-800/50">
                   <TableHead className="w-8 px-2">
-                    {selectedTools.size > 0 && (
-                      <button onClick={toggleSelectAll}>
-                        {selectedTools.size === filteredTools.length && filteredTools.length > 0
-                          ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
-                          : <Square className="w-4 h-4 text-gray-400" />}
-                      </button>
-                    )}
+                    <button onClick={toggleSelectAll}>
+                      {selectedTools.size === filteredTools.length && filteredTools.length > 0
+                        ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                        : <Square className="w-4 h-4 text-gray-400" />}
+                    </button>
                   </TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
@@ -781,14 +798,10 @@ export default function Inventory() {
                       onClick={() => setEditTool(tool)}
                     >
                       <TableCell onClick={e => { e.stopPropagation(); toggleSelectTool(tool.id); }} className="px-2 py-1">
-                         {selectedTools.size > 0 && (
-                           <>
-                             {selectedTools.has(tool.id)
-                               ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
-                               : <Square className="w-4 h-4 text-gray-400" />}
-                           </>
-                         )}
-                       </TableCell>
+                        {selectedTools.has(tool.id)
+                          ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
+                          : <Square className="w-4 h-4 text-gray-400" />}
+                      </TableCell>
                        <TableCell className="px-2 py-1 max-w-[160px]">
                          <div className="flex items-center gap-2">
                            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
@@ -893,6 +906,15 @@ export default function Inventory() {
         selectedCount={selectedTools.size}
         locations={locations}
         onSubmit={handleBulkMove}
+      />
+
+      <BulkEditToolsModal
+        isOpen={showBulkEdit}
+        onClose={() => setShowBulkEdit(false)}
+        selectedCount={selectedTools.size}
+        locations={locations}
+        categories={availableCategories}
+        onSubmit={handleBulkEdit}
       />
 
       {/* Modals */}
