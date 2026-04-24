@@ -187,8 +187,15 @@ const availableSubcategories = [...new Set([
                 const toolMap = new Map();
                 allHandTools.forEach(t => {
                   const existing = toolMap.get(t.name);
-                  if (!existing || (!existing.subcategory && t.subcategory)) {
+                  if (!existing) {
                     toolMap.set(t.name, t);
+                  } else {
+                    // Prioritera: subcategory > barcode > befintlig
+                    const betterSubcat = !existing.subcategory && t.subcategory;
+                    const betterBarcode = !existing.barcode && t.barcode;
+                    if (betterSubcat || betterBarcode) {
+                      toolMap.set(t.name, t);
+                    }
                   }
                 });
                 return [...toolMap.values()].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
