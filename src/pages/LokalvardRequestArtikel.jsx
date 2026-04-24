@@ -27,11 +27,15 @@ export default function LokalvardRequestArtikel() {
   const [formData, setFormData] = useState({
     requested_items: [],
     notes: '',
+    customer_id: '',
+    customer_name: '',
+    ordernummer: '',
   });
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedQty, setSelectedQty] = useState(1);
   const [user, setUser] = useState(null);
   const [artikelOpen, setArtikelOpen] = useState(false);
+  const [kundOpen, setKundOpen] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [activeTab, setActiveTab] = useState('form');
@@ -39,6 +43,14 @@ export default function LokalvardRequestArtikel() {
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
+
+  const { data: kunder = [] } = useQuery({
+    queryKey: ['kunder'],
+    queryFn: async () => {
+      const result = await base44.entities.Kund.list(null, 500);
+      return result.filter(k => k.status === 'aktiv');
+    },
+  });
 
   const { data: artiklar = [] } = useQuery({
     queryKey: ['lokalvardArtiklar'],
@@ -65,6 +77,9 @@ export default function LokalvardRequestArtikel() {
       setFormData({
         requested_items: [],
         notes: '',
+        customer_id: '',
+        customer_name: '',
+        ordernummer: '',
       });
       setSelectedItem(null);
       setSelectedQty(1);
@@ -113,6 +128,10 @@ export default function LokalvardRequestArtikel() {
   };
 
   const handleSubmit = () => {
+    if (!formData.customer_id) {
+      alert('Välj en kund');
+      return;
+    }
     if (formData.requested_items.length === 0) {
       alert('Lägg till minst en artikel');
       return;
@@ -121,6 +140,9 @@ export default function LokalvardRequestArtikel() {
     const submitData = {
       requested_items: formData.requested_items,
       notes: formData.notes,
+      customer_id: formData.customer_id,
+      customer_name: formData.customer_name,
+      ordernummer: formData.ordernummer || null,
       request_date: new Date().toISOString(),
       requested_by_email: user?.email || '',
       requested_by_name: user?.full_name || '',
@@ -248,6 +270,48 @@ export default function LokalvardRequestArtikel() {
            <p className="text-sm text-gray-600">Begäran från</p>
            <p className="font-semibold text-gray-900">{user?.full_name}</p>
            <p className="text-sm text-gray-600">{user?.email}</p>
+         </div>
+
+         {/* Kund */}
+         <div className="space-y-2">
+           <Label>Kund <span className="text-red-500">*</span></Label>
+           <Popover open={kundOpen} onOpenChange={setKundOpen}>
+             <PopoverTrigger asChild>
+               <Button variant="outline" className="w-full justify-start text-left font-normal">
+                 {formData.customer_name || "Välj kund..."}
+               </Button>
+             </PopoverTrigger>
+             <PopoverContent className="w-full p-0" align="start">
+               <Command>
+                 <CommandInput placeholder="Sök kund..." />
+                 <CommandEmpty>Ingen kund hittad.</CommandEmpty>
+                 <CommandGroup className="max-h-64 overflow-y-auto">
+                   {kunder.map(k => (
+                     <CommandItem
+                       key={k.id}
+                       value={`${k.namn} ${k.projektnummer || ''}`}
+                       onSelect={() => {
+                         setFormData(prev => ({ ...prev, customer_id: k.id, customer_name: k.namn }));
+                         setKundOpen(false);
+                       }}
+                     >
+                       {k.namn}{k.projektnummer ? ` (${k.projektnummer})` : ''}
+                     </CommandItem>
+                   ))}
+                 </CommandGroup>
+               </Command>
+             </PopoverContent>
+           </Popover>
+         </div>
+
+         {/* Ordernummer */}
+         <div className="space-y-2">
+           <Label>Ordernummer <span className="text-gray-400 text-xs">(frivilligt)</span></Label>
+           <Input
+             value={formData.ordernummer}
+             onChange={(e) => setFormData(prev => ({ ...prev, ordernummer: e.target.value }))}
+             placeholder="Ange ordernummer om du har ett..."
+           />
          </div>
 
          {/* Item Selection */}

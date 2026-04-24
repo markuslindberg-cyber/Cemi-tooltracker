@@ -2,6 +2,21 @@
   "name": "LokalvardArtikelRequest",
   "type": "object",
   "properties": {
+    "customer_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "Referens till Kund"
+    },
+    "customer_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Kundens namn"
+    },
+    "ordernummer": {
+      "type": "string",
+      "nullable": true,
+      "description": "Frivilligt ordernummer"
+    },
     "requested_items": {
       "type": "array",
       "description": "Lista p\u00e5 beg\u00e4rda artiklar",
