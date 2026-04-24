@@ -93,7 +93,17 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Kategori</Label>
-              <Input value={form.category || ''} onChange={e => handleChange('category', e.target.value)} />
+              <Input
+                value={form.category || ''}
+                onChange={e => handleChange('category', e.target.value)}
+                placeholder="Välj eller skriv ny"
+                list="edit-category-suggestions"
+              />
+              <datalist id="edit-category-suggestions">
+                {[...new Set(Object.keys(subcategoriesByCategory))].map(c => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </div>
             <div className="space-y-1">
               <Label>Streckkod</Label>
