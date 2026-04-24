@@ -52,6 +52,13 @@ export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
   });
 
   const PREDEFINED_CATEGORIES = {
+  'Spadar': ['Rakspad', 'Rundad', 'Fyrkantig'],
+  'Räfsor': ['Järnräfsa', 'Träräfsa', 'Bamburäfsa'],
+  'Krattor': ['Metallkratta', 'Plast-kratta', 'Bambu-kratta'],
+  'Sagar': ['Handsåg', 'Bågså', 'Nippelkätting'],
+  'Hammrar': ['Klumhugg', 'Gummihammer', 'Slägga'],
+  'Skufflar': ['Järnskuffel', 'Träskuffel', 'Plast-skuffel'],
+  'Banor': ['Järnbana', 'Träbana'],
   'Avspärrningsmaterial': ['Farthinder', 'Skyltar', 'Kravallstaketet', 'Koner', 'Markeringsskärmar'],
 };
 
@@ -60,9 +67,11 @@ const availableCategories = [...new Set([
   ...allHandTools.map(t => t.category).filter(Boolean),
 ])].sort();
 
-const availableSubcategories = form.category && PREDEFINED_CATEGORIES[form.category]
-  ? PREDEFINED_CATEGORIES[form.category]
-  : [...new Set(allHandTools.filter(t => t.category === form.category).map(t => t.subcategory).filter(Boolean))].sort();
+// Subcategories: predefined for chosen category + any from existing tools in that category
+const availableSubcategories = [...new Set([
+  ...(PREDEFINED_CATEGORIES[form.category] || []),
+  ...allHandTools.filter(t => t.category === form.category).map(t => t.subcategory).filter(Boolean),
+])].sort();
 
   // When category changes, auto-fill image from category if no custom image set
   useEffect(() => {
