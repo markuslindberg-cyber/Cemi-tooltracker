@@ -165,7 +165,15 @@ const availableSubcategories = [...new Set([
               placeholder="Sök och välj mall (valfritt)..."
               list="ht-template-suggestions"
               onChange={e => {
-                const uniqueTools = [...new Map(allHandTools.map(t => [t.name, t])).values()];
+                // Deduplicera på namn men prioritera verktyg med underkategori
+                const toolMap = new Map();
+                allHandTools.forEach(t => {
+                  const existing = toolMap.get(t.name);
+                  if (!existing || (!existing.subcategory && t.subcategory)) {
+                    toolMap.set(t.name, t);
+                  }
+                });
+                const uniqueTools = [...toolMap.values()];
                 const match = uniqueTools.find(t => {
                   const label = `${t.name}${t.category ? ` (${t.category})` : ''}`;
                   return label === e.target.value;
