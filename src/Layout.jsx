@@ -284,6 +284,37 @@ export default function Layout({ children }) {
 
               if (item.children) {
                 const isOpen = openMenus[item.name];
+
+                // Apply child order/visibility from config
+                const navGroupId = Object.entries(NAV_ID_MAP).find(([, v]) => v === item.name)?.[0];
+                const configGroup = navConfig?.config_value?.items?.find(g => g.id === navGroupId);
+                let orderedChildren = [...item.children];
+                if (configGroup?.children?.length > 0) {
+                  const childOrder = configGroup.children;
+                  // Map config child ids back to navigation children
+                  const CHILD_ID_TO_NAME = {
+                    maskiner_oversikt: 'Översikt', maskiner_huvudmaskiner: 'Huvudmaskiner',
+                    maskiner_salda: 'Sålda & Kasserade', maskiner_lan: 'Lån av utrustning',
+                    maskiner_service: 'Service',
+                    arbetsklader_utrustning: 'Arbetskläder och skyddsutrustning',
+                    arbetsklader_rapporter: 'Uttagsrapporter',
+                    arbetsklader_begaran: 'Begäran - arbetskläder',
+                    arbetsklader_forfragan: 'Förfrågan - arbetskläder',
+                    lokalvard_begaran: 'Begäran - lokalvårdsartiklar',
+                    lokalvard_lager: 'Lager', lokalvard_nyttuttag: 'Begär uttag',
+                    lokalvard_uttag: 'Uttag', lokalvard_godkanna: 'Godkänna Begäran',
+                    lokalvard_kostnad: 'Kostnad per kund', lokalvard_kunder: 'Kunder',
+                    inventering_inventering: 'Inventering', inventering_rapporter: 'Inventeringsrapporter',
+                    administration_platser: 'Platser', administration_personal: 'Personal',
+                    administration_kategorier: 'Kategorier',
+                  };
+                  const visible = childOrder.filter(c => c.visible).map(c => CHILD_ID_TO_NAME[c.id]).filter(Boolean);
+                  const reordered = visible.map(name => item.children.find(c => c.name === name)).filter(Boolean);
+                  // Add any not in config
+                  item.children.forEach(c => { if (!visible.includes(c.name)) reordered.push(c); });
+                  orderedChildren = reordered;
+                }
+
                 return (
                   <div key={item.name}>
                     <button
@@ -311,7 +342,7 @@ export default function Layout({ children }) {
                     </button>
                     {isOpen && (
                       <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-gray-100 dark:border-gray-700 pl-3">
-                        {item.children.filter(child => {
+                        {orderedChildren.filter(child => {
                           if (child.devOnly && !window.location.hostname.includes('base44.app')) return false;
                           if (child.desktopOnly && window.innerWidth < 1024) return false;
                           if (child.roles && !child.roles.includes(user?.role)) return false;

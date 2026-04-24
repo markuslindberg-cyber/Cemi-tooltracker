@@ -28,16 +28,18 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
+const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers'];
+
 const DEFAULT_WIDGETS = [
-  { id: 'stats', visible: true },
-  { id: 'loan_alert', visible: true },
-  { id: 'missing_alert', visible: true },
-  { id: 'loan_summary', visible: true },
-  { id: 'pending_chart', visible: true },
-  { id: 'inventory_value', visible: true },
-  { id: 'loans_by_location', visible: true },
-  { id: 'recent_transfers', visible: true },
-  { id: 'recent_tools', visible: true },
+  { id: 'stats', visible: true, column: 'main' },
+  { id: 'loan_alert', visible: true, column: 'main' },
+  { id: 'missing_alert', visible: true, column: 'main' },
+  { id: 'loan_summary', visible: true, column: 'sidebar' },
+  { id: 'pending_chart', visible: true, column: 'sidebar' },
+  { id: 'inventory_value', visible: true, column: 'sidebar' },
+  { id: 'loans_by_location', visible: true, column: 'sidebar' },
+  { id: 'recent_transfers', visible: true, column: 'sidebar' },
+  { id: 'recent_tools', visible: true, column: 'main' },
 ];
 
 export default function Dashboard() {
@@ -48,11 +50,21 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
 
   const { data: dashboardConfig } = useGlobalConfig('dashboard_layout');
-  const widgets = dashboardConfig?.config_value?.widgets || DEFAULT_WIDGETS;
+  const widgets = dashboardConfig?.config_value?.widgets?.length
+    ? dashboardConfig.config_value.widgets
+    : DEFAULT_WIDGETS;
+
   const isVisible = (id) => {
     const w = widgets.find(w => w.id === id);
     return w ? w.visible : true;
   };
+  const getColumn = (id) => {
+    const w = widgets.find(w => w.id === id);
+    if (w?.column) return w.column;
+    return SIDEBAR_CAPABLE.includes(id) ? 'sidebar' : 'main';
+  };
+  // Ordered widget ids
+  const orderedWidgetIds = widgets.map(w => w.id);
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['dashboardTools'],
@@ -193,13 +205,6 @@ export default function Dashboard() {
     activeLoans: loanRequests.filter(r => r.destination_location_id === location.id && r.status === 'approved').length
   })).filter(l => l.activeLoans > 0);
 
-  // Sort widgets by config order
-  const orderedWidgets = [...DEFAULT_WIDGETS].sort((a, b) => {
-    const ai = widgets.findIndex(w => w.id === a.id);
-    const bi = widgets.findIndex(w => w.id === b.id);
-    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-  });
-
   return (
     <div ref={containerRef} className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-4 lg:p-8 overflow-y-auto" style={{ transform: isPulling ? `translateY(${pullDistance * 0.5}px)` : 'translateY(0)', transition: isPulling ? 'none' : 'transform 0.3s ease-out' }}>
       {pullDistance > 0 && (
@@ -313,143 +318,134 @@ export default function Dashboard() {
         )}
 
         {/* Main content grid for non-lokalvårdare */}
-        {user?.role !== 'lokalvårdare' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-            {/* Sidebar */}
-            <div className="space-y-4 lg:order-2">
-
-              {isVisible('loan_summary') && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Låneöversikt</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Aktiva lån</span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">{activeLoans}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Väntande förfrågningar</span>
-                      <span className="font-medium text-amber-600">{pendingRequests}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Nekade förfrågningar</span>
-                      <span className="font-medium text-red-600">{rejectedRequests}</span>
-                    </div>
-                    {(myLoans > 0 || borrowedTools > 0) && (
-                      <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
-                        {myLoans > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-500 dark:text-gray-400">Maskiner jag lånat</span>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">{myLoans}</span>
-                          </div>
-                        )}
-                        {borrowedTools > 0 && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-500 dark:text-gray-400">Från andra platser</span>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">{borrowedTools}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+        {user?.role !== 'lokalvårdare' && (() => {
+          // Build widget content map
+          const widgetContent = {
+            loan_summary: isVisible('loan_summary') && (
+              <div key="loan_summary" className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Låneöversikt</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Aktiva lån</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{activeLoans}</span>
                   </div>
-                  <Link to="/Transfers" className="mt-4 block">
-                    <Button variant="outline" size="sm" className="w-full">Hantera lån <ArrowRight className="w-3 h-3 ml-1" /></Button>
-                  </Link>
-                </div>
-              )}
-
-              {isVisible('pending_chart') && (
-                <PendingRequestsChart
-                  loanCount={pendingLoanCount}
-                  workwearCount={pendingWorkwearCount}
-                  lokalvardCount={pendingLokalvardCount}
-                />
-              )}
-
-              {isVisible('inventory_value') && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Inventarievärde</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Maskiner ({activeTools.length})</span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">{totalValue.toLocaleString('sv-SE')} kr</span>
-                    </div>
-                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Totalt</span>
-                      <span className="font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Väntande förfrågningar</span>
+                    <span className="font-medium text-amber-600">{pendingRequests}</span>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
-                    {[
-                      { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
-                      { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
-                      { label: 'I lager', count: iLagerTools, color: 'bg-cyan-500' },
-                      { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
-                    ].map(({ label, count, color }) => (
-                      <div key={label} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${color}`} />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Nekade förfrågningar</span>
+                    <span className="font-medium text-red-600">{rejectedRequests}</span>
+                  </div>
+                  {(myLoans > 0 || borrowedTools > 0) && (
+                    <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                      {myLoans > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Maskiner jag lånat</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{myLoans}</span>
                         </div>
-                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {isVisible('loans_by_location') && loansByLocation.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">Platser med aktiva lån</h3>
-                  </div>
-                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {loansByLocation.map(location => (
-                      <Link key={location.id} to={`/locations/${location.id}`} className="block">
-                        <div className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
-                          <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{location.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
-                            <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
-                            {location.activeLoans} aktiva lån
-                          </p>
+                      )}
+                      {borrowedTools > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">Från andra platser</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{borrowedTools}</span>
                         </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {isVisible('recent_transfers') && (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">Senaste förflyttningar</h3>
-                  </div>
-                  {recentTransfers.length > 0 ? (
-                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                      {recentTransfers.map((transfer) => (
-                        <div key={transfer.id} className="px-5 py-3">
-                          <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{transfer.tool_name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                            {transfer.from_location_name || '—'} → {transfer.to_location_name || '—'}
-                          </p>
-                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                            {transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM')}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center">
-                      <Clock className="w-7 h-7 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                      <p className="text-gray-400 dark:text-gray-500 text-sm">Inga förflyttningar</p>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-
-            {/* Main: Recent Tools */}
-            {isVisible('recent_tools') && (
-              <div className="lg:col-span-2 lg:order-1 space-y-4">
+                <Link to="/Transfers" className="mt-4 block">
+                  <Button variant="outline" size="sm" className="w-full">Hantera lån <ArrowRight className="w-3 h-3 ml-1" /></Button>
+                </Link>
+              </div>
+            ),
+            pending_chart: isVisible('pending_chart') && (
+              <PendingRequestsChart key="pending_chart"
+                loanCount={pendingLoanCount}
+                workwearCount={pendingWorkwearCount}
+                lokalvardCount={pendingLokalvardCount}
+              />
+            ),
+            inventory_value: isVisible('inventory_value') && (
+              <div key="inventory_value" className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Inventarievärde</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Maskiner ({activeTools.length})</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{totalValue.toLocaleString('sv-SE')} kr</span>
+                  </div>
+                  <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Totalt</span>
+                    <span className="font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
+                  {[
+                    { label: 'Tillgänglig', count: availableTools, color: 'bg-emerald-500' },
+                    { label: 'I bruk', count: inUseTools, color: 'bg-blue-500' },
+                    { label: 'I lager', count: iLagerTools, color: 'bg-cyan-500' },
+                    { label: 'Underhåll', count: maintenanceTools, color: 'bg-amber-500' },
+                  ].map(({ label, count, color }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${color}`} />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ),
+            loans_by_location: isVisible('loans_by_location') && loansByLocation.length > 0 && (
+              <div key="loans_by_location" className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">Platser med aktiva lån</h3>
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {loansByLocation.map(location => (
+                    <Link key={location.id} to={`/locations/${location.id}`} className="block">
+                      <div className="px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{location.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
+                          <span className="inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+                          {location.activeLoans} aktiva lån
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ),
+            recent_transfers: isVisible('recent_transfers') && (
+              <div key="recent_transfers" className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">Senaste förflyttningar</h3>
+                </div>
+                {recentTransfers.length > 0 ? (
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {recentTransfers.map((transfer) => (
+                      <div key={transfer.id} className="px-5 py-3">
+                        <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{transfer.tool_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                          {transfer.from_location_name || '—'} → {transfer.to_location_name || '—'}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          {transfer.transfer_date && format(new Date(transfer.transfer_date), 'd MMM')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center">
+                    <Clock className="w-7 h-7 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-400 dark:text-gray-500 text-sm">Inga förflyttningar</p>
+                  </div>
+                )}
+              </div>
+            ),
+            recent_tools: isVisible('recent_tools') && (
+              <div key="recent_tools" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Senaste maskiner</h2>
                   <Link to={createPageUrl('Inventory')}>
@@ -502,9 +498,23 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
+            ),
+          };
+
+          const mainWidgets = orderedWidgetIds
+            .filter(id => getColumn(id) === 'main' && widgetContent[id])
+            .map(id => widgetContent[id]);
+          const sidebarWidgets = orderedWidgetIds
+            .filter(id => getColumn(id) === 'sidebar' && widgetContent[id])
+            .map(id => widgetContent[id]);
+
+          return (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+              <div className="lg:col-span-2 lg:order-1 space-y-4">{mainWidgets}</div>
+              <div className="space-y-4 lg:order-2">{sidebarWidgets}</div>
+            </div>
+          );
+        })()}
       </div>
 
       <TransferModal
