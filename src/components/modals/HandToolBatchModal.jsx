@@ -21,6 +21,7 @@ const defaultForm = {
   purchase_date: '',
   purchase_price: '',
   image_url: '',
+  barcode: '',
   notes: '',
 };
 
@@ -126,6 +127,7 @@ const availableSubcategories = form.category && PREDEFINED_CATEGORIES[form.categ
           image_url: form.image_url || undefined,
           purchase_date: form.purchase_date || undefined,
           purchase_price: form.purchase_price ? parseFloat(form.purchase_price) : undefined,
+          barcode: form.barcode || undefined,
           location_id: dist.location_id || undefined,
           location_name: dist.location_name || undefined,
         });
@@ -226,6 +228,15 @@ const availableSubcategories = form.category && PREDEFINED_CATEGORIES[form.categ
                 {availableSubcategories.map(s => <option key={s} value={s} />)}
               </datalist>
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Streckkod</Label>
+            <Input
+              value={form.barcode}
+              onChange={e => setForm(p => ({ ...p, barcode: e.target.value }))}
+              placeholder="Valfritt"
+            />
           </div>
 
           {/* Category image preview + upload */}
