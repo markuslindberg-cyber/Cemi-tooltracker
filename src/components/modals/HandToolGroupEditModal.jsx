@@ -5,6 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+
+const PREDEFINED_CATEGORIES = {
+  'Spadar': ['Rakspad', 'Rundad', 'Fyrkantig'],
+  'Räfsor': ['Järnräfsa', 'Träräfsa', 'Bamburäfsa'],
+  'Krattor': ['Metallkratta', 'Plast-kratta', 'Bambu-kratta'],
+  'Sagar': ['Handsåg', 'Bågså', 'Nippelkätting'],
+  'Hammrar': ['Klumhugg', 'Gummihammer', 'Slägga'],
+  'Skufflar': ['Järnskuffel', 'Träskuffel', 'Plast-skuffel'],
+  'Banor': ['Järnbana', 'Träbana'],
+  'Avspärrningsmaterial': ['Farthinder', 'Skyltar', 'Kravallstaketet', 'Koner', 'Markeringsskärmar'],
+};
 
 export default function HandToolGroupEditModal({ isOpen, onClose, group, onSuccess }) {
   const [form, setForm] = useState({
@@ -15,6 +27,22 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
     barcode: group?.items?.[0]?.barcode || '',
   });
   const [saving, setSaving] = useState(false);
+
+  const { data: allHandTools = [] } = useQuery({
+    queryKey: ['handtools'],
+    queryFn: () => base44.entities.HandTool.list('-updated_date', 200),
+    enabled: isOpen,
+  });
+
+  const availableCategories = [...new Set([
+    ...Object.keys(PREDEFINED_CATEGORIES),
+    ...allHandTools.map(t => t.category).filter(Boolean),
+  ])].sort();
+
+  const availableSubcategories = [...new Set([
+    ...(PREDEFINED_CATEGORIES[form.category] || []),
+    ...allHandTools.filter(t => t.category === form.category).map(t => t.subcategory).filter(Boolean),
+  ])].sort();
 
   const handleSave = async () => {
     setSaving(true);
@@ -50,11 +78,17 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
           </div>
           <div className="space-y-1.5">
             <Label>Kategori</Label>
-            <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} />
+            <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} list="grp-category-suggestions" />
+            <datalist id="grp-category-suggestions">
+              {availableCategories.map(c => <option key={c} value={c} />)}
+            </datalist>
           </div>
           <div className="space-y-1.5">
             <Label>Underkategori</Label>
-            <Input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} />
+            <Input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} list="grp-subcategory-suggestions" />
+            <datalist id="grp-subcategory-suggestions">
+              {availableSubcategories.map(s => <option key={s} value={s} />)}
+            </datalist>
           </div>
           <div className="space-y-1.5">
             <Label>Streckkod</Label>
