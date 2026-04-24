@@ -74,7 +74,7 @@ const navigation = [
       { name: 'Lager', path: '/Lokalvard/Lager', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Begär uttag', path: '/Lokalvard/NyttUttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['admin_lokalvård', 'ägare'] },
-      { name: 'Begäran & uttag', path: '/Lokalvard/BegaranAttGodkanna' },
+      { name: 'Godkänna Begäran', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
