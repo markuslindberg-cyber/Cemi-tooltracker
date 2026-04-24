@@ -31,7 +31,27 @@ export default function ToolImport() {
   useEffect(() => {
     const saved = localStorage.getItem('toolImportHistory');
     if (saved) setLogHistory(JSON.parse(saved));
+
+    // Restore active import state if user navigated away
+    const savedState = localStorage.getItem('toolImportActiveState');
+    if (savedState) {
+      const { previewRows: pr, importLogs: il, results: res, previewFileName: pfn } = JSON.parse(savedState);
+      if (pr) setPreviewRows(pr);
+      if (il) setImportLogs(il);
+      if (res) setResults(res);
+      if (pfn) setPreviewFileName(pfn);
+    }
   }, []);
+
+  // Persist active state to localStorage whenever it changes
+  useEffect(() => {
+    const state = { previewRows, importLogs, results, previewFileName };
+    if (previewRows || importLogs.length > 0 || results) {
+      localStorage.setItem('toolImportActiveState', JSON.stringify(state));
+    } else {
+      localStorage.removeItem('toolImportActiveState');
+    }
+  }, [previewRows, importLogs, results, previewFileName]);
 
   const { data: tools = [] } = useQuery({
     queryKey: ['tools'],
@@ -296,7 +316,10 @@ export default function ToolImport() {
     }
     setPreviewRows(null);
     setImporting(true);
-    setImportLogs([`Startar import av ${rowsToSend.length} rader från ${previewFileName}...`]);
+    setImportLogs([
+      `Startar import av ${rowsToSend.length} rader från ${previewFileName}...`,
+      `⏳ Detta kan ta en stund – du kan byta sida och komma tillbaka, resultaten sparas.`
+    ]);
     try {
       const res = await base44.functions.invoke('processToolImport', { rows: rowsToSend });
       const { results: processedResults } = res.data;
@@ -305,7 +328,7 @@ export default function ToolImport() {
       const skippedCount = processedResults.filter(r => r.status === 'skipped').length;
       const errorCount = processedResults.filter(r => r.status === 'error').length;
       setImportLogs([
-        `Import slutförd!`,
+        `✅ Import slutförd!`,
         `✓ ${successCount} maskiner tillagda/uppdaterade`,
         `⊘ ${skippedCount} hoppade över`,
         `✕ ${errorCount} fel`
@@ -797,7 +820,7 @@ export default function ToolImport() {
               </tbody>
             </table>
           </div>
-          <Button onClick={() => setResults(null)} variant="outline" className="w-full">Rensa resultat</Button>
+          <Button onClick={() => { setResults(null); setImportLogs([]); localStorage.removeItem('toolImportActiveState'); }} variant="outline" className="w-full">Rensa resultat</Button>
         </div>
       )}
 
