@@ -75,8 +75,7 @@ export default function NavInstellningar() {
     setSaving(false);
     toast({ 
       title: 'Sparat!', 
-      description: 'Dina genvägar har uppdaterats. Ladda om appen för att se ändringarna.',
-      action: { label: 'Ladda om', onClick: () => window.location.reload() }
+      description: 'Dina genvägar har uppdaterats.',
     });
   };
 
