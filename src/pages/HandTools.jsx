@@ -10,6 +10,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Plus, Package, MapPin, Edit, Trash2, Upload, FileSpreadsheet, Loader2, Check, X as XIcon, ScanLine, Image, CheckSquare } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
 import HandToolScanModal from '@/components/modals/HandToolScanModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
@@ -71,12 +72,20 @@ export default function HandTools() {
     queryFn: () => base44.entities.Location.list('name'),
   });
 
-  const categories = [...new Set(handTools.map(t => t.category).filter(Boolean))].sort();
-  const subcategories = [...new Set(handTools.map(t => t.subcategory).filter(Boolean))].sort();
-  const manufacturers = [...new Set(handTools.map(t => t.manufacturer).filter(Boolean))].sort();
-  const locationNames = [...new Set(handTools.map(t => t.location_name).filter(Boolean))].sort();
+  const AVSPARRNING_CATEGORY = 'Avspärrningsmaterial';
+  const [activeTab, setActiveTab] = useState('handredskap');
 
-  const filtered = handTools.filter(t => {
+  const mainHandTools = handTools.filter(t => t.category !== AVSPARRNING_CATEGORY);
+  const avsparrningTools = handTools.filter(t => t.category === AVSPARRNING_CATEGORY);
+
+  const activeTools = activeTab === 'avsparrning' ? avsparrningTools : mainHandTools;
+
+  const categories = [...new Set(activeTools.map(t => t.category).filter(Boolean))].sort();
+  const subcategories = [...new Set(activeTools.map(t => t.subcategory).filter(Boolean))].sort();
+  const manufacturers = [...new Set(activeTools.map(t => t.manufacturer).filter(Boolean))].sort();
+  const locationNames = [...new Set(activeTools.map(t => t.location_name).filter(Boolean))].sort();
+
+  const filtered = activeTools.filter(t => {
     const q = search.toLowerCase();
     if (q && !`${t.name} ${t.manufacturer} ${t.category} ${t.subcategory}`.toLowerCase().includes(q)) return false;
     if (statusFilter.length > 0 && !statusFilter.includes(t.status)) return false;
@@ -360,6 +369,14 @@ export default function HandTools() {
           </Button>
         </div>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-2">
+          <TabsTrigger value="handredskap">Handredskap ({mainHandTools.length})</TabsTrigger>
+          <TabsTrigger value="avsparrning">Avspärrning ({avsparrningTools.length})</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Search & Filters */}
       <SearchFilterBar
