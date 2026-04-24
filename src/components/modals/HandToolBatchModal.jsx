@@ -216,20 +216,15 @@ const availableSubcategories = form.category && PREDEFINED_CATEGORIES[form.categ
             </div>
             <div className="space-y-1">
               <Label>Underkategori</Label>
-              {availableSubcategories.length > 0 ? (
-                <Select value={form.subcategory} onValueChange={v => setForm(p => ({ ...p, subcategory: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Välj underkategori" /></SelectTrigger>
-                  <SelectContent>
-                    {availableSubcategories.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  value={form.subcategory}
-                  onChange={e => setForm(p => ({ ...p, subcategory: e.target.value }))}
-                  placeholder="Valfritt"
-                />
-              )}
+              <Input
+                value={form.subcategory}
+                onChange={e => setForm(p => ({ ...p, subcategory: e.target.value }))}
+                placeholder="Valfritt"
+                list="ht-subcategory-suggestions"
+              />
+              <datalist id="ht-subcategory-suggestions">
+                {availableSubcategories.map(s => <option key={s} value={s} />)}
+              </datalist>
             </div>
           </div>
 

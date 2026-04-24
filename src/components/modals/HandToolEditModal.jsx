@@ -28,8 +28,6 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
-  const [customSubcategory, setCustomSubcategory] = useState('');
 
   const { data: categoryImages = [] } = useQuery({
     queryKey: ['categoryimages'],
@@ -105,50 +103,17 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
 
           <div className="space-y-1">
             <Label>Underkategori</Label>
-            {!showCustomSubcategory ? (
-              <div className="flex gap-2">
-                <Input value={form.subcategory || ''} onChange={e => handleChange('subcategory', e.target.value)} />
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCustomSubcategory(true)}
-                  className="whitespace-nowrap"
-                >
-                  + Ny
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  value={customSubcategory}
-                  onChange={(e) => setCustomSubcategory(e.target.value)}
-                  placeholder="Ny underkategori"
-                  autoFocus
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    if (customSubcategory.trim()) {
-                      handleChange('subcategory', customSubcategory.trim());
-                      setShowCustomSubcategory(false);
-                      setCustomSubcategory('');
-                    }
-                  }}
-                  className="whitespace-nowrap"
-                >
-                  OK
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowCustomSubcategory(false);
-                    setCustomSubcategory('');
-                  }}
-                  className="whitespace-nowrap"
-                >
-                  Avbryt
-                </Button>
-              </div>
-            )}
+            <Input
+              value={form.subcategory || ''}
+              onChange={e => handleChange('subcategory', e.target.value)}
+              placeholder="Välj eller skriv ny"
+              list="edit-subcategory-suggestions"
+            />
+            <datalist id="edit-subcategory-suggestions">
+              {[...new Set(Object.values(subcategoriesByCategory).flat())].map(s => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
