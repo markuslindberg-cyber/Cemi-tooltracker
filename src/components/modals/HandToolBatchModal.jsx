@@ -161,27 +161,34 @@ const availableSubcategories = [...new Set([
         {allHandTools.length > 0 && (
           <div className="space-y-1">
             <Label className="flex items-center gap-1"><Copy className="w-3.5 h-3.5" />Använd befintligt redskap som mall</Label>
-            <Select onValueChange={id => {
-              const t = allHandTools.find(x => x.id === id);
-              if (t) setForm({
-                name: t.name || '',
-                manufacturer: t.manufacturer || '',
-                category: t.category || '',
-                subcategory: t.subcategory || '',
-                status: t.status || 'i_lager',
-                purchase_date: t.purchase_date || '',
-                purchase_price: t.purchase_price ? String(t.purchase_price) : '',
-                image_url: t.image_url || '',
-                notes: t.notes || '',
-              });
-            }}>
-              <SelectTrigger><SelectValue placeholder="Välj mall (valfritt)" /></SelectTrigger>
-              <SelectContent>
-                {[...new Map(allHandTools.map(t => [t.name, t])).values()].map(t => (
-                  <SelectItem key={t.id} value={t.id}>{t.name} {t.category ? `(${t.category})` : ''}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              placeholder="Sök och välj mall (valfritt)..."
+              list="ht-template-suggestions"
+              onChange={e => {
+                const uniqueTools = [...new Map(allHandTools.map(t => [t.name, t])).values()];
+                const match = uniqueTools.find(t => {
+                  const label = `${t.name}${t.category ? ` (${t.category})` : ''}`;
+                  return label === e.target.value;
+                });
+                if (match) setForm({
+                  name: match.name || '',
+                  manufacturer: match.manufacturer || '',
+                  category: match.category || '',
+                  subcategory: match.subcategory || '',
+                  status: match.status || 'i_lager',
+                  purchase_date: match.purchase_date || '',
+                  purchase_price: match.purchase_price ? String(match.purchase_price) : '',
+                  image_url: match.image_url || '',
+                  notes: match.notes || '',
+                  barcode: '',
+                });
+              }}
+            />
+            <datalist id="ht-template-suggestions">
+              {[...new Map(allHandTools.map(t => [t.name, t])).values()].map(t => (
+                <option key={t.id} value={`${t.name}${t.category ? ` (${t.category})` : ''}`} />
+              ))}
+            </datalist>
           </div>
         )}
 
