@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { base44 } from '@/api/base44Client';
@@ -128,12 +129,23 @@ const slideVariants = {
 // Cached scroll positions for each bottom tab
 const scrollPositions = {};
 
+const NAV_ID_MAP = {
+  dashboard: 'Dashboard',
+  maskiner: 'Maskiner',
+  handredskap: 'Handredskap',
+  arbetsklader: 'Arbetskläder',
+  lokalvard: 'Lokalvård',
+  inventering: 'Inventeringskontroll',
+  administration: 'Administration',
+};
+
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
   const [user, setUser] = useState(null);
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [bottomTabs, setBottomTabs] = useState(DEFAULT_BOTTOM_TABS);
+  const { data: navConfig } = useGlobalConfig('navigation_order');
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
   const location = useLocation();
@@ -248,7 +260,21 @@ export default function Layout({ children }) {
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-            {navigation.filter(item => {
+            {(() => {
+              // Apply global nav order/visibility if configured
+              let navItems = [...navigation];
+              if (navConfig?.config_value?.items?.length > 0) {
+                const order = navConfig.config_value.items;
+                navItems = order
+                  .filter(o => o.visible)
+                  .map(o => navigation.find(n => n.name === NAV_ID_MAP[o.id]))
+                  .filter(Boolean);
+                // Add any nav items not in config (new items)
+                const configured = order.map(o => NAV_ID_MAP[o.id]);
+                navigation.forEach(n => { if (!configured.includes(n.name)) navItems.push(n); });
+              }
+              return navItems;
+            })().filter(item => {
               if (!item.roles) return true;
               // Lokalvård menu always visible for lokalvårdare, regardless of parent roles
               if (item.name === 'Lokalvård' && LOKALVARDARE_ROLES.includes(user?.role)) return true;
@@ -338,6 +364,27 @@ export default function Layout({ children }) {
               );
             })}
           </nav>
+
+          {/* Layout Editor Link for ägare */}
+          {user?.role === 'ägare' && (
+            <div className="px-3 pb-1">
+              <Link
+                to="/AdminLayoutEditor"
+                onClick={() => setSidebarOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                  location.pathname === '/AdminLayoutEditor'
+                    ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                )}
+              >
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", location.pathname === '/AdminLayoutEditor' ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800")}>
+                  <SlidersHorizontal className="w-4 h-4" />
+                </div>
+                Redigera layout
+              </Link>
+            </div>
+          )}
 
           {/* User Profile */}
           {user && (

@@ -36,6 +36,7 @@ import ImportHistorik from './pages/ImportHistorik';
 import ToolImport from './pages/ToolImport';
 import Papperskorg from './pages/Papperskorg';
 import NavInstellningar from './pages/NavInstellningar';
+import AdminLayoutEditor from './pages/AdminLayoutEditor';
 import LokalvardRequestArtikel from './pages/LokalvardRequestArtikel';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -140,6 +141,7 @@ const AuthenticatedApp = () => {
       <Route path="/Inventory/ToolImport" element={<LayoutWrapper currentPageName="ToolImport"><ToolImport /></LayoutWrapper>} />
       <Route path="/LokalvardRequestArtikel" element={<LayoutWrapper currentPageName="LokalvardRequestArtikel"><LokalvardRequestArtikel /></LayoutWrapper>} />
       <Route path="/NavInstellningar" element={<LayoutWrapper currentPageName="NavInstellningar"><NavInstellningar /></LayoutWrapper>} />
+      <Route path="/AdminLayoutEditor" element={<LayoutWrapper currentPageName="AdminLayoutEditor"><AdminLayoutEditor /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
