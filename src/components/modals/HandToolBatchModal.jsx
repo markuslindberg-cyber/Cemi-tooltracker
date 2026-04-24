@@ -161,23 +161,13 @@ const availableSubcategories = [...new Set([
         {allHandTools.length > 0 && (
           <div className="space-y-1">
             <Label className="flex items-center gap-1"><Copy className="w-3.5 h-3.5" />Använd befintligt redskap som mall</Label>
-            <Input
-              placeholder="Sök och välj mall (valfritt)..."
-              list="ht-template-suggestions"
+            <select
+              className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background"
+              defaultValue=""
               onChange={e => {
-                // Deduplicera på namn men prioritera verktyg med underkategori
-                const toolMap = new Map();
-                allHandTools.forEach(t => {
-                  const existing = toolMap.get(t.name);
-                  if (!existing || (!existing.subcategory && t.subcategory)) {
-                    toolMap.set(t.name, t);
-                  }
-                });
-                const uniqueTools = [...toolMap.values()];
-                const match = uniqueTools.find(t => {
-                  const label = `${t.name}${t.category ? ` (${t.category})` : ''}`;
-                  return label === e.target.value;
-                });
+                const id = e.target.value;
+                if (!id) return;
+                const match = allHandTools.find(t => t.id === id);
                 if (match) setForm({
                   name: match.name || '',
                   manufacturer: match.manufacturer || '',
@@ -191,12 +181,23 @@ const availableSubcategories = [...new Set([
                   barcode: '',
                 });
               }}
-            />
-            <datalist id="ht-template-suggestions">
-              {[...new Map(allHandTools.map(t => [t.name, t])).values()].map(t => (
-                <option key={t.id} value={`${t.name}${t.category ? ` (${t.category})` : ''}`} />
-              ))}
-            </datalist>
+            >
+              <option value="">— Välj mall (valfritt) —</option>
+              {(() => {
+                const toolMap = new Map();
+                allHandTools.forEach(t => {
+                  const existing = toolMap.get(t.name);
+                  if (!existing || (!existing.subcategory && t.subcategory)) {
+                    toolMap.set(t.name, t);
+                  }
+                });
+                return [...toolMap.values()].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}{t.category ? ` (${t.category}${t.subcategory ? ` / ${t.subcategory}` : ''})` : ''}
+                  </option>
+                ));
+              })()}
+            </select>
           </div>
         )}
 
