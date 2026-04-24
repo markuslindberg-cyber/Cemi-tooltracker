@@ -14,8 +14,14 @@ Deno.serve(async (req) => {
     }
 
     const results = [];
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    for (const row of rows) {
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      // Throttle: pause every 10 rows to avoid rate limiting
+      if (i > 0 && i % 10 === 0) {
+        await sleep(500);
+      }
       try {
         const toolData = {
           name: row.name || '',
