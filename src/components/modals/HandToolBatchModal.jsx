@@ -178,7 +178,7 @@ const availableSubcategories = [...new Set([
                   purchase_price: match.purchase_price ? String(match.purchase_price) : '',
                   image_url: match.image_url || '',
                   notes: match.notes || '',
-                  barcode: '',
+                  barcode: match.barcode || '',
                 });
               }}
             >
