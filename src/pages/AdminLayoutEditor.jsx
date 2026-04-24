@@ -58,7 +58,7 @@ const ALL_NAV_ITEMS = [
     id: 'lokalvard', label: 'Lokalvård', children: [
       { id: 'lokalvard_begaran', label: 'Begäran - lokalvårdsartiklar' },
       { id: 'lokalvard_lager', label: 'Lager' },
-      { id: 'lokalvard_nyttuttag', label: 'Begär uttag' },
+      { id: 'lokalvard_nyttuttag', label: 'Plocka ut begärda uttag' },
       { id: 'lokalvard_uttag', label: 'Uttag' },
       { id: 'lokalvard_godkanna', label: 'Godkänna Begäran' },
       { id: 'lokalvard_kostnad', label: 'Kostnad per kund' },

@@ -73,7 +73,7 @@ const navigation = [
     children: [
       { name: 'Begäran - lokalvårdsartiklar', path: '/LokalvardRequestArtikel' },
       { name: 'Lager', path: '/Lokalvard/Lager', roles: ['admin_lokalvård', 'ägare'] },
-      { name: 'Begär uttag', path: '/Lokalvard/NyttUttag', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Plocka ut begärda uttag', path: '/Lokalvard/NyttUttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Uttag', path: '/Lokalvard/Uttag', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Godkänna Begäran', path: '/Lokalvard/BegaranAttGodkanna' },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
@@ -301,7 +301,7 @@ export default function Layout({ children }) {
                     arbetsklader_begaran: 'Begäran - arbetskläder',
                     arbetsklader_forfragan: 'Förfrågan - arbetskläder',
                     lokalvard_begaran: 'Begäran - lokalvårdsartiklar',
-                    lokalvard_lager: 'Lager', lokalvard_nyttuttag: 'Begär uttag',
+                    lokalvard_lager: 'Lager', lokalvard_nyttuttag: 'Plocka ut begärda uttag',
                     lokalvard_uttag: 'Uttag', lokalvard_godkanna: 'Godkänna Begäran',
                     lokalvard_kostnad: 'Kostnad per kund', lokalvard_kunder: 'Kunder',
                     inventering_inventering: 'Inventering', inventering_rapporter: 'Inventeringsrapporter',
