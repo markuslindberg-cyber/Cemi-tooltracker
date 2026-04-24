@@ -36,6 +36,22 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
   });
   const categoryImageMap = Object.fromEntries(categoryImages.map(ci => [ci.category, ci.image_url]));
 
+  const { data: allHandTools = [] } = useQuery({
+    queryKey: ['handtools'],
+    queryFn: () => base44.entities.HandTool.list('-updated_date', 200),
+    enabled: isOpen,
+  });
+
+  const availableCategories = [...new Set([
+    ...Object.keys(subcategoriesByCategory),
+    ...allHandTools.map(t => t.category).filter(Boolean),
+  ])].sort();
+
+  const availableSubcategories = [...new Set([
+    ...(subcategoriesByCategory[form.category] || []),
+    ...allHandTools.filter(t => t.category === form.category).map(t => t.subcategory).filter(Boolean),
+  ])].sort();
+
   useEffect(() => {
     if (tool) setForm({ ...tool });
   }, [tool]);
@@ -100,7 +116,7 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
                 list="edit-category-suggestions"
               />
               <datalist id="edit-category-suggestions">
-                {[...new Set(Object.keys(subcategoriesByCategory))].map(c => (
+                {availableCategories.map(c => (
                   <option key={c} value={c} />
                 ))}
               </datalist>
@@ -120,7 +136,7 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
               list="edit-subcategory-suggestions"
             />
             <datalist id="edit-subcategory-suggestions">
-              {[...new Set(Object.values(subcategoriesByCategory).flat())].map(s => (
+              {availableSubcategories.map(s => (
                 <option key={s} value={s} />
               ))}
             </datalist>
