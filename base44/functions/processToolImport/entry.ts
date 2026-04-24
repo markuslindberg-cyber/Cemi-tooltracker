@@ -16,11 +16,25 @@ Deno.serve(async (req) => {
     const results = [];
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+    const withRetry = async (fn, retries = 5, delay = 2000) => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          return await fn();
+        } catch (err) {
+          if (err?.status === 429 && attempt < retries) {
+            await sleep(delay * (attempt + 1));
+          } else {
+            throw err;
+          }
+        }
+      }
+    };
+
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      // Throttle: pause every 10 rows to avoid rate limiting
-      if (i > 0 && i % 10 === 0) {
-        await sleep(500);
+      // Pause after every row to stay within rate limits
+      if (i > 0) {
+        await sleep(300);
       }
       try {
         const toolData = {
@@ -55,10 +69,10 @@ Deno.serve(async (req) => {
             results.push({ barcode: row.barcode, name: row.name, action: 'update', status: 'skipped', message: 'Inga ändringar att spara' });
             continue;
           }
-          await base44.asServiceRole.entities.Tool.update(row.matchedTool.id, updateData);
+          await withRetry(() => base44.asServiceRole.entities.Tool.update(row.matchedTool.id, updateData));
           results.push({ barcode: row.barcode, name: row.name, action: 'update', status: 'success', message: `Uppdaterad: ${Object.keys(updateData).join(', ')}` });
         } else if (row.action === 'create') {
-          await base44.asServiceRole.entities.Tool.create(toolData);
+          await withRetry(() => base44.asServiceRole.entities.Tool.create(toolData));
           results.push({ barcode: row.barcode, name: row.name, action: 'create', status: 'success', message: 'Skapad' });
         } else {
           results.push({ barcode: row.barcode, name: row.name, action: row.action, status: 'skipped', message: 'Ignorerad' });
