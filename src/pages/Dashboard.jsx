@@ -5,6 +5,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatsCard from '@/components/ui/StatsCard';
+import PendingRequestsChart from '@/components/dashboard/PendingRequestsChart';
 import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import LoanRequestModal from '@/components/modals/LoanRequestModal';
@@ -66,6 +67,16 @@ export default function Dashboard() {
   const { data: loanRequests = [] } = useQuery({
     queryKey: ['loanRequests'],
     queryFn: () => base44.entities.LoanRequest.list(),
+  });
+
+  const { data: workwearRequests = [] } = useQuery({
+    queryKey: ['workwearRequestsPending'],
+    queryFn: () => base44.entities.WorkwearRequest.list(),
+  });
+
+  const { data: lokalvardRequests = [] } = useQuery({
+    queryKey: ['lokalvardRequestsPending'],
+    queryFn: () => base44.entities.LokalvardArtikelRequest.list(),
   });
 
   // Stats calculations - match Inventory page exactly
@@ -178,6 +189,10 @@ export default function Dashboard() {
   const pendingRequests = loanRequests.filter(r => r.status === 'pending').length;
   const rejectedRequests = loanRequests.filter(r => r.status === 'rejected').length;
   
+  const pendingLoanCount = loanRequests.filter(r => r.status === 'pending').length;
+  const pendingWorkwearCount = workwearRequests.filter(r => r.status === 'pending').length;
+  const pendingLokalvardCount = lokalvardRequests.filter(r => r.status === 'pending').length;
+
   const loansByLocation = locations.map(location => ({
     ...location,
     activeLoans: loanRequests.filter(r => r.destination_location_id === location.id && r.status === 'approved').length
@@ -379,6 +394,13 @@ export default function Dashboard() {
                  </Button>
                </Link>
              </div>
+
+            {/* Pending Requests Chart */}
+            <PendingRequestsChart
+              loanCount={pendingLoanCount}
+              workwearCount={pendingWorkwearCount}
+              lokalvardCount={pendingLokalvardCount}
+            />
 
             {/* Inventory value */}
              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
