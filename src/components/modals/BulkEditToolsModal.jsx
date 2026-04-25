@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { X } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 const STATUS_OPTIONS = [
@@ -15,17 +17,27 @@ const STATUS_OPTIONS = [
   { value: 'sålda', label: 'Såld' },
 ];
 
-export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, locations, categories, onSubmit }) {
+export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, locations, categories, huvudmaskiner = [], onSubmit }) {
   const [status, setStatus] = useState('');
   const [locationId, setLocationId] = useState('');
   const [category, setCategory] = useState('');
+  const [mainMachineId, setMainMachineId] = useState('');
+  const [compatibleIds, setCompatibleIds] = useState([]); // array of machine IDs
   const [saving, setSaving] = useState(false);
 
   const handleClose = () => {
     setStatus('');
     setLocationId('');
     setCategory('');
+    setMainMachineId('');
+    setCompatibleIds([]);
     onClose();
+  };
+
+  const toggleCompatible = (id) => {
+    setCompatibleIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
   const handleSubmit = async () => {
@@ -37,6 +49,19 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, loc
       updates.location_name = loc?.name || '';
     }
     if (category) updates.category = category;
+    if (mainMachineId) {
+      const machine = huvudmaskiner.find(m => m.id === mainMachineId);
+      updates.main_machine_id = mainMachineId;
+      updates.main_machine_name = machine?.name || '';
+    } else if (mainMachineId === '__clear__') {
+      updates.main_machine_id = null;
+      updates.main_machine_name = null;
+    }
+    if (compatibleIds.length > 0) {
+      const names = compatibleIds.map(id => huvudmaskiner.find(m => m.id === id)?.name || '').filter(Boolean);
+      updates.compatible_with_main_machine_ids = compatibleIds;
+      updates.compatible_with_main_machine_names = names;
+    }
 
     if (Object.keys(updates).length === 0) return;
 
@@ -46,11 +71,11 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, loc
     handleClose();
   };
 
-  const hasChanges = status || locationId || category;
+  const hasChanges = status || locationId || category || mainMachineId || compatibleIds.length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Massredigera {selectedCount} maskiner</DialogTitle>
         </DialogHeader>
@@ -98,6 +123,54 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, loc
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Huvudmaskin */}
+          <div className="space-y-2">
+            <Label>Huvudmaskin</Label>
+            <Select value={mainMachineId} onValueChange={setMainMachineId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Ändra ej" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__clear__">— Ingen huvudmaskin —</SelectItem>
+                {huvudmaskiner.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Passar till (kompatibla huvudmaskiner) */}
+          <div className="space-y-2">
+            <Label>Passar till (välj en eller flera)</Label>
+            <Select onValueChange={toggleCompatible}>
+              <SelectTrigger>
+                <SelectValue placeholder="Lägg till huvudmaskin..." />
+              </SelectTrigger>
+              <SelectContent>
+                {huvudmaskiner
+                  .filter(m => !compatibleIds.includes(m.id))
+                  .map(m => (
+                    <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {compatibleIds.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {compatibleIds.map(id => {
+                  const machine = huvudmaskiner.find(m => m.id === id);
+                  return (
+                    <Badge key={id} variant="secondary" className="gap-1 pr-1">
+                      {machine?.name || id}
+                      <button onClick={() => toggleCompatible(id)} className="ml-1 hover:text-red-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 

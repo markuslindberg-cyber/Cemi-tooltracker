@@ -195,6 +195,11 @@ export default function Inventory() {
     queryFn: () => base44.entities.Location.list(),
   });
 
+  const { data: huvudmaskiner = [] } = useQuery({
+    queryKey: ['huvudmaskiner'],
+    queryFn: () => base44.entities.Huvudmaskin.list(),
+  });
+
   const { data: teamMembers = [] } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: () => base44.entities.TeamMember.list(),
@@ -923,6 +928,7 @@ export default function Inventory() {
         selectedCount={selectedTools.size}
         locations={locations}
         categories={availableCategories}
+        huvudmaskiner={huvudmaskiner}
         onSubmit={handleBulkEdit}
       />
 
