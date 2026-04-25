@@ -115,7 +115,7 @@ export default function Dashboard() {
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
   const activeTools = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
-  const availableTools = activeTools.filter(t => t.status === 'available').length;
+  const availableTools = activeTools.filter(t => t.status === 'available' || t.status === 'Tillgänglig').length;
   const inUseTools = activeTools.filter(t => t.status === 'in_use').length;
   const missingTools = tools.filter(t => t.status === 'missing').length;
   const maintenanceTools = activeTools.filter(t => t.status === 'maintenance').length;
