@@ -15,21 +15,26 @@ const ROLES = [
 ];
 
 const ENTITIES = [
-  { id: 'Tool', label: 'Maskiner' },
-  { id: 'HandTool', label: 'Handredskap' },
-  { id: 'ArbetskläderUtrustning', label: 'Arbetskläder & Utrustning' },
-  { id: 'LokalvardsArtikel', label: 'Lokalvårdsartiklar' },
-  { id: 'Location', label: 'Platser' },
-  { id: 'TeamMember', label: 'Personal' },
-  { id: 'Huvudmaskin', label: 'Huvudmaskiner' },
-  { id: 'LoanRequest', label: 'Lånebegäran' },
-  { id: 'ServiceRecord', label: 'Service' },
-  { id: 'Transfer', label: 'Överföringar' },
-  { id: 'Kund', label: 'Kunder' },
-  { id: 'Uttag', label: 'Uttag' },
-  { id: 'WorkwearRequest', label: 'Begäran arbetskläder' },
-  { id: 'LokalvardArtikelRequest', label: 'Begäran lokalvård' },
-  { id: 'Category', label: 'Kategorier' },
+  // Maskiner
+  { id: 'Tool', label: 'Maskiner', group: 'Maskiner' },
+  { id: 'Huvudmaskin', label: 'Huvudmaskiner', group: 'Maskiner' },
+  { id: 'LoanRequest', label: 'Lån av utrustning', group: 'Maskiner' },
+  { id: 'ServiceRecord', label: 'Service', group: 'Maskiner' },
+  { id: 'Transfer', label: 'Överföringar', group: 'Maskiner' },
+  // Handredskap
+  { id: 'HandTool', label: 'Handredskap', group: 'Handredskap' },
+  // Arbetskläder
+  { id: 'ArbetskläderUtrustning', label: 'Arbetskläder & Utrustning', group: 'Arbetskläder' },
+  { id: 'WorkwearRequest', label: 'Begäran arbetskläder', group: 'Arbetskläder' },
+  // Lokalvård
+  { id: 'LokalvardsArtikel', label: 'Lokalvårdsartiklar', group: 'Lokalvård' },
+  { id: 'LokalvardArtikelRequest', label: 'Begäran lokalvård', group: 'Lokalvård' },
+  { id: 'Uttag', label: 'Uttag', group: 'Lokalvård' },
+  { id: 'Kund', label: 'Kunder', group: 'Lokalvård' },
+  // Administration
+  { id: 'Location', label: 'Platser', group: 'Administration' },
+  { id: 'TeamMember', label: 'Personal', group: 'Administration' },
+  { id: 'Category', label: 'Kategorier', group: 'Administration' },
 ];
 
 const OPERATIONS = [
@@ -242,24 +247,33 @@ export default function RollBehorigheter() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {ENTITIES.map(entity => {
+              {ENTITIES.map((entity, idx) => {
                 const key = makeKey(selectedRole, entity.id);
                 const perms = localPerms[key] || {};
+                const showGroup = idx === 0 || entity.group !== ENTITIES[idx - 1].group;
                 return (
-                  <tr key={entity.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{entity.label}</span>
-                      <span className="text-xs text-gray-400 ml-2">{entity.id}</span>
-                    </td>
-                    {OPERATIONS.map(op => (
-                      <td key={op.id} className="text-center px-4 py-3">
-                        <Checkbox
-                          checked={perms[op.id] ?? false}
-                          onCheckedChange={() => togglePerm(selectedRole, entity.id, op.id)}
-                        />
+                  <React.Fragment key={entity.id}>
+                    {showGroup && (
+                      <tr className="bg-gray-50/80 dark:bg-gray-800/40">
+                        <td colSpan={5} className="px-4 py-2">
+                          <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{entity.group}</span>
+                        </td>
+                      </tr>
+                    )}
+                    <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                      <td className="px-4 py-3 pl-6">
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{entity.label}</span>
                       </td>
-                    ))}
-                  </tr>
+                      {OPERATIONS.map(op => (
+                        <td key={op.id} className="text-center px-4 py-3">
+                          <Checkbox
+                            checked={perms[op.id] ?? false}
+                            onCheckedChange={() => togglePerm(selectedRole, entity.id, op.id)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>
