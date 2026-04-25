@@ -519,9 +519,17 @@ export default function HandTools() {
                       <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
                     ))}
                     <button
-                      onClick={() => setGroupEditTarget(group)}
+                      onClick={() => {
+                        // Only edit items that are manually selected within this group
+                        const selectedInGroup = group.items.filter(i => selectedIds.has(i.id));
+                        if (selectedInGroup.length === 0) {
+                          alert('Markera minst ett redskap i gruppen först');
+                          return;
+                        }
+                        setGroupEditTarget({ ...group, items: selectedInGroup });
+                      }}
                       className="ml-1 p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
-                      title="Redigera hela gruppen"
+                      title="Redigera markerade redskap"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
