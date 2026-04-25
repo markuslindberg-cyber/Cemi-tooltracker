@@ -786,11 +786,11 @@ export default function Inventory() {
             <Table className="min-w-max">
               <TableHeader>
                 <TableRow className="bg-gray-50 dark:bg-gray-800/50">
-                  <TableHead className="w-8 px-2">
-                    <button onClick={toggleSelectAll}>
+                  <TableHead className="w-10 px-2">
+                    <button onClick={toggleSelectAll} className="p-1">
                       {selectedTools.size === filteredTools.length && filteredTools.length > 0
-                        ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
-                        : <Square className="w-4 h-4 text-gray-400" />}
+                        ? <CheckSquare className="w-5 h-5 text-[#8B1E1E]" />
+                        : <Square className="w-5 h-5 text-gray-400" />}
                     </button>
                   </TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
@@ -813,8 +813,8 @@ export default function Inventory() {
                     >
                       <TableCell onClick={e => { e.stopPropagation(); toggleSelectTool(tool.id); }} className="px-2 py-1">
                         {selectedTools.has(tool.id)
-                          ? <CheckSquare className="w-4 h-4 text-[#8B1E1E]" />
-                          : <Square className="w-4 h-4 text-gray-400" />}
+                          ? <CheckSquare className="w-5 h-5 text-[#8B1E1E]" />
+                          : <Square className="w-5 h-5 text-gray-400" />}
                       </TableCell>
                        <TableCell className="px-2 py-1 max-w-[160px]">
                          <div className="flex items-center gap-2">
