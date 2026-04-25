@@ -638,7 +638,7 @@ export default function Inventory() {
           <div className="flex flex-wrap gap-1.5 md:gap-2 shrink-0">
             {selectedTools.size > 0 && (
               <>
-                <Button onClick={() => setShowBulkEdit(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515]" size="sm">
+                <Button onClick={() => setShowBulkEdit(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515] hidden md:inline-flex" size="sm">
                   <CheckSquare className="w-4 h-4 mr-2" />Redigera ({selectedTools.size})
                 </Button>
                 <Button onClick={() => setShowBulkMove(true)} variant="outline" className="md:inline-flex hidden" size="sm">
@@ -962,6 +962,21 @@ export default function Inventory() {
           onConfirm={handleConfirmImport}
           onCancel={() => setImportPreview(null)}
         />
+      )}
+
+      {/* Mobile bulk action bar */}
+      {selectedTools.size > 0 && (
+        <div className="fixed bottom-16 left-0 right-0 z-40 md:hidden px-4 pb-2" style={{ paddingBottom: 'calc(0.5rem + var(--sab))' }}>
+          <div className="bg-[#8B1E1E] rounded-2xl shadow-xl flex items-center gap-2 px-4 py-3">
+            <span className="text-white text-sm font-medium flex-1">{selectedTools.size} markerade</span>
+            <Button onClick={() => setShowBulkMove(true)} variant="outline" size="sm" className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:text-white">
+              <MapPin className="w-4 h-4 mr-1" />Plats
+            </Button>
+            <Button onClick={() => setShowBulkEdit(true)} size="sm" className="bg-white text-[#8B1E1E] hover:bg-white/90">
+              <CheckSquare className="w-4 h-4 mr-1" />Redigera
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* History Modal */}
