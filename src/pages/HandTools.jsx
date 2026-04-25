@@ -517,9 +517,20 @@ export default function HandTools() {
                       <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
                     ))}
                     <button
-                      onClick={() => setGroupEditTarget(group)}
+                      onClick={() => {
+                        if (activeTab === 'avsparrning') {
+                          // For avspärrning, edit ALL items in the category at once
+                          setGroupEditTarget({
+                            ...group,
+                            items: avsparrningTools,
+                            _isCategoryWide: true,
+                          });
+                        } else {
+                          setGroupEditTarget(group);
+                        }
+                      }}
                       className="ml-1 p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
-                      title="Redigera hela gruppen"
+                      title={activeTab === 'avsparrning' ? 'Redigera plats för alla avspärrning' : 'Redigera hela gruppen'}
                     >
                       <Edit className="w-4 h-4" />
                     </button>

@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, MapPin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -19,18 +20,26 @@ const PREDEFINED_CATEGORIES = {
 };
 
 export default function HandToolGroupEditModal({ isOpen, onClose, group, onSuccess }) {
+  const isCategoryWide = group?._isCategoryWide;
   const [form, setForm] = useState({
     name: group?.name || '',
     manufacturer: group?.manufacturer || '',
     category: group?.category || '',
     subcategory: group?.items?.[0]?.subcategory || '',
     barcode: group?.items?.[0]?.barcode || '',
+    location_id: '',
   });
   const [saving, setSaving] = useState(false);
 
   const { data: allHandTools = [] } = useQuery({
     queryKey: ['handtools'],
     queryFn: () => base44.entities.HandTool.list('-updated_date', 200),
+    enabled: isOpen,
+  });
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list('name'),
     enabled: isOpen,
   });
 
@@ -53,6 +62,11 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
       subcategory: form.subcategory.trim(),
       barcode: form.barcode.trim(),
     };
+    if (form.location_id) {
+      const loc = locations.find(l => l.id === form.location_id);
+      updates.location_id = form.location_id;
+      updates.location_name = loc?.name || '';
+    }
     await Promise.all(group.items.map(item => base44.entities.HandTool.update(item.id, updates)));
     setSaving(false);
     onSuccess();
@@ -63,7 +77,7 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Redigera grupp – {group?.name}</DialogTitle>
+          <DialogTitle>{isCategoryWide ? `Redigera alla ${group?.category}` : `Redigera grupp – ${group?.name}`}</DialogTitle>
           <p className="text-sm text-gray-500">{group?.items?.length} redskap kommer uppdateras</p>
         </DialogHeader>
 
@@ -93,6 +107,18 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
           <div className="space-y-1.5">
             <Label>Streckkod</Label>
             <Input value={form.barcode} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />Ändra plats för alla</Label>
+            <Select value={form.location_id} onValueChange={v => setForm(f => ({ ...f, location_id: v }))}>
+              <SelectTrigger><SelectValue placeholder="Välj ny plats (valfritt)" /></SelectTrigger>
+              <SelectContent>
+                {locations.map(loc => <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {form.location_id && (
+              <button onClick={() => setForm(f => ({ ...f, location_id: '' }))} className="text-xs text-gray-400 hover:text-gray-600">Rensa platsval</button>
+            )}
           </div>
         </div>
 
