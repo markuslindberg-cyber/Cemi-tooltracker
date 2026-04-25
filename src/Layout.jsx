@@ -153,17 +153,17 @@ export default function Layout({ children }) {
 
   // Save scroll position when leaving a tab
   useEffect(() => {
-    const mainElement = document.querySelector('main');
-    if (mainElement) {
-      scrollPositions[location.pathname] = mainElement.scrollTop;
-    }
+    return () => {
+      scrollPositions[location.pathname] = window.scrollY;
+    };
   }, [location.pathname]);
 
   // Restore scroll position when entering a tab
   useEffect(() => {
-    const mainElement = document.querySelector('main');
-    if (mainElement && scrollPositions[location.pathname] !== undefined) {
-      mainElement.scrollTop = scrollPositions[location.pathname];
+    if (scrollPositions[location.pathname] !== undefined) {
+      window.scrollTo(0, scrollPositions[location.pathname]);
+    } else {
+      window.scrollTo(0, 0);
     }
   }, [location.pathname]);
 
@@ -502,7 +502,7 @@ export default function Layout({ children }) {
         </header>
 
         {/* Page Content - Preserve scroll position per tab */}
-        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen pb-16 lg:pb-0 overflow-y-auto" style={{ paddingBottom: 'calc(4rem + var(--sab))' }}>
+        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen pb-16 lg:pb-0" style={{ paddingBottom: 'calc(4rem + var(--sab))' }}>
           {children}
         </main>
 
