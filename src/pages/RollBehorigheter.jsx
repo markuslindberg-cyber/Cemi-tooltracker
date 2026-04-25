@@ -203,7 +203,7 @@ export default function RollBehorigheter() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedRole === role.id
                 ? 'bg-[#8B1E1E] text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             {role.label}
@@ -213,7 +213,7 @@ export default function RollBehorigheter() {
 
       {/* Quick toggle row */}
       <div className="flex items-center gap-4 px-4 py-2 bg-gray-50 dark:bg-gray-900 rounded-lg border">
-        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mr-2">Markera alla:</span>
+        <span className="text-sm font-medium text-gray-600 dark:text-gray-300 mr-2">Markera alla:</span>
         {OPERATIONS.map(op => {
           const allChecked = ENTITIES.every(e => localPerms[makeKey(selectedRole, e.id)]?.[op.id]);
           return (
@@ -222,8 +222,8 @@ export default function RollBehorigheter() {
               onClick={() => toggleAllForRole(selectedRole, op.id)}
               className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
                 allChecked
-                  ? 'bg-[#8B1E1E]/10 text-[#8B1E1E]'
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-400'
+                  ? 'bg-[#8B1E1E]/10 text-[#8B1E1E] dark:bg-[#8B1E1E]/20 dark:text-red-300'
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
               }`}
             >
               {op.label}
@@ -237,10 +237,10 @@ export default function RollBehorigheter() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b bg-gray-50 dark:bg-gray-800/50">
-                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Entitet</th>
+              <tr className="border-b bg-gray-50 dark:bg-gray-800">
+                <th className="text-left px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200">Entitet</th>
                 {OPERATIONS.map(op => (
-                  <th key={op.id} className="text-center px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 w-24">
+                  <th key={op.id} className="text-center px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 w-24">
                     {op.label}
                   </th>
                 ))}
@@ -281,7 +281,7 @@ export default function RollBehorigheter() {
         </div>
       </div>
 
-      <p className="text-xs text-gray-400 text-center">
+      <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
         Obs: Ägare har alltid full behörighet och kan inte begränsas. Ändringar här påverkar appens mjuka behörighetskontroller.
       </p>
     </div>
