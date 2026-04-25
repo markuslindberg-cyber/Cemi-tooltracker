@@ -98,8 +98,11 @@ export default function HandTools() {
   });
 
   const grouped = filtered.reduce((acc, t) => {
-    const key = `${t.name}__${t.category}__${t.manufacturer || ''}`;
-    if (!acc[key]) acc[key] = { name: t.name, category: t.category, manufacturer: t.manufacturer, items: [] };
+    // For avspärrning tab, group by name + subcategory so each type shows separately
+    const key = activeTab === 'avsparrning'
+      ? `${t.name}__${t.category}__${t.subcategory || ''}__${t.manufacturer || ''}`
+      : `${t.name}__${t.category}__${t.manufacturer || ''}`;
+    if (!acc[key]) acc[key] = { name: t.name, category: t.category, manufacturer: t.manufacturer, subcategory: t.subcategory, items: [] };
     acc[key].items.push(t);
     return acc;
   }, {});
@@ -481,7 +484,7 @@ export default function HandTools() {
                       </label>
                     </div>
                     <div>
-                      <h2 className="font-semibold text-gray-900">{group.name}</h2>
+                      <h2 className="font-semibold text-gray-900">{group.name}{activeTab === 'avsparrning' && group.subcategory ? ` – ${group.subcategory}` : ''}</h2>
                       <div className="flex items-center gap-1 mt-0.5">
                         {editingCategory?.oldName === group.category ? (
                           <div className="flex items-center gap-1">
