@@ -173,9 +173,10 @@ export default function Inventory() {
     mutationFn: (updates) => Promise.all(
       [...selectedTools].map(id => base44.entities.Tool.update(id, updates))
     ),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['tools'] });
       setSelectedTools(new Set());
+      setShowBulkEdit(false);
     },
   });
 
