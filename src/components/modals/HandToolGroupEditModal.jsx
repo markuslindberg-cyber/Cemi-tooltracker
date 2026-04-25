@@ -20,7 +20,6 @@ const PREDEFINED_CATEGORIES = {
 };
 
 export default function HandToolGroupEditModal({ isOpen, onClose, group, onSuccess }) {
-  const isCategoryWide = group?._isCategoryWide;
   const [form, setForm] = useState({
     name: group?.name || '',
     manufacturer: group?.manufacturer || '',
@@ -77,7 +76,7 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isCategoryWide ? `Redigera alla ${group?.category}` : `Redigera grupp – ${group?.name}`}</DialogTitle>
+          <DialogTitle>Redigera grupp – {group?.name}</DialogTitle>
           <p className="text-sm text-gray-500">{group?.items?.length} redskap kommer uppdateras</p>
         </DialogHeader>
 
