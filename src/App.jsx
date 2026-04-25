@@ -38,6 +38,7 @@ import Papperskorg from './pages/Papperskorg';
 import NavInstellningar from './pages/NavInstellningar';
 import AdminLayoutEditor from './pages/AdminLayoutEditor';
 import LokalvardRequestArtikel from './pages/LokalvardRequestArtikel';
+import RollBehorigheter from './pages/RollBehorigheter';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -142,6 +143,7 @@ const AuthenticatedApp = () => {
       <Route path="/LokalvardRequestArtikel" element={<LayoutWrapper currentPageName="LokalvardRequestArtikel"><LokalvardRequestArtikel /></LayoutWrapper>} />
       <Route path="/NavInstellningar" element={<LayoutWrapper currentPageName="NavInstellningar"><NavInstellningar /></LayoutWrapper>} />
       <Route path="/AdminLayoutEditor" element={<LayoutWrapper currentPageName="AdminLayoutEditor"><AdminLayoutEditor /></LayoutWrapper>} />
+      <Route path="/Administration/RollBehorigheter" element={<LayoutWrapper currentPageName="RollBehorigheter"><RollBehorigheter /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
