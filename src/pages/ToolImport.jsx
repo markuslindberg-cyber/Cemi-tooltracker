@@ -176,7 +176,18 @@ export default function ToolImport() {
       // Match by barcode first, then by name+tool_number, then by name+serial_number
       let matched = null;
       if (barcode) {
-        matched = tools.find(t => t.barcode === barcode);
+        matched = tools.find(t => String(t.barcode || '').trim() === barcode);
+        if (!matched && name) {
+          // Debug: log near-misses for this barcode
+          const nearMatches = tools.filter(t => {
+            const tb = String(t.barcode || '').trim();
+            return tb === barcode || t.name?.toLowerCase().includes(name.toLowerCase().slice(0, 6));
+          });
+          if (nearMatches.length > 0) {
+            console.warn(`[ToolImport] CSV barcode="${barcode}" name="${name}" — no exact match. Near matches:`, nearMatches.map(t => ({ id: t.id, name: t.name, barcode: t.barcode, barcodeChars: [...String(t.barcode || '')].map(c => c.charCodeAt(0)) })));
+            console.warn(`[ToolImport] CSV barcode char codes:`, [...barcode].map(c => c.charCodeAt(0)));
+          }
+        }
       }
       if (!matched && name && toolNumber) {
         matched = tools.find(t => (t.name || '').toLowerCase() === name.toLowerCase() && (t.tool_number || '').trim() === toolNumber);
@@ -441,7 +452,13 @@ export default function ToolImport() {
       {previewRows && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
           <div>
-            <h2 className="text-xl font-semibold mb-4">Förhandsgranskning ({previewRows.length} rader)</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Förhandsgranskning ({previewRows.length} rader)</h2>
+              <div className="flex gap-2">
+                <Button onClick={() => setPreviewRows(null)} variant="outline" size="sm">Avbryt</Button>
+                <Button onClick={handleConfirmImport} size="sm" className="bg-green-600 hover:bg-green-700">Importera</Button>
+              </div>
+            </div>
             
             {(() => {
                const newCount = previewRows.filter(r => r.action !== 'ignore' && !r.matchedTool).length;
@@ -733,7 +750,7 @@ export default function ToolImport() {
             </div>
           )}
 
-          <div className="flex gap-3 justify-end mt-4">
+          <div className="flex gap-3 justify-end mt-4 sticky bottom-4 bg-white/90 backdrop-blur-sm p-3 rounded-lg border border-gray-200 shadow-lg z-20">
             <Button 
               onClick={() => {
                 const allRows = previewRows.map((r, idx) => ({
