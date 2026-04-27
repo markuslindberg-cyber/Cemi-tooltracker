@@ -184,6 +184,24 @@ export default function ToolImport() {
       if (!matched && name && serialNumber) {
         matched = tools.find(t => (t.name || '').toLowerCase() === name.toLowerCase() && (t.serial_number || '').trim() === serialNumber);
       }
+      // Fallback: match by name + manufacturer + model_number
+      const manufacturer = String(r.manufacturer || '').trim();
+      const modelNumber = String(r.model_number || '').trim();
+      if (!matched && name && manufacturer && modelNumber) {
+        matched = tools.find(t =>
+          (t.name || '').toLowerCase() === name.toLowerCase() &&
+          (t.manufacturer || '').toLowerCase() === manufacturer.toLowerCase() &&
+          (t.model_number || '').toLowerCase() === modelNumber.toLowerCase()
+        );
+      }
+      // Fallback: match by name + manufacturer only (if unique)
+      if (!matched && name && manufacturer) {
+        const candidates = tools.filter(t =>
+          (t.name || '').toLowerCase() === name.toLowerCase() &&
+          (t.manufacturer || '').toLowerCase() === manufacturer.toLowerCase()
+        );
+        if (candidates.length === 1) matched = candidates[0];
+      }
       
       const locationMatch = locations.find(l => l.name === (r.location_name || ''));
       
