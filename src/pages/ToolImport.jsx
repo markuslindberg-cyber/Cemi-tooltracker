@@ -417,7 +417,7 @@ export default function ToolImport() {
           <Button onClick={handleDownloadTemplate} className="bg-purple-600 hover:bg-purple-700">
             <FileDown className="w-4 h-4 mr-2" /> Ladda ned mall
           </Button>
-          <label className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-colors ${(uploading || importing || !!previewRows) ? 'opacity-50 pointer-events-none' : ''}`}>
+          <label className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-colors ${(uploading || importing) ? 'opacity-50 pointer-events-none' : ''}`}>
             {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
             <Upload className="w-4 h-4" />
             {uploading ? 'Läser fil...' : 'Välj Excel/CSV-fil'}
