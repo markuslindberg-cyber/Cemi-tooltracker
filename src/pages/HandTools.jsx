@@ -98,9 +98,7 @@ export default function HandTools() {
   });
 
   const grouped = filtered.reduce((acc, t) => {
-    const key = activeTab === 'avsparrning'
-      ? t.id
-      : `${t.name}__${t.category}__${t.manufacturer || ''}`;
+    const key = `${t.name}__${t.category}__${t.manufacturer || ''}`;
     if (!acc[key]) acc[key] = { name: t.name, category: t.category, manufacturer: t.manufacturer, items: [] };
     acc[key].items.push(t);
     return acc;
