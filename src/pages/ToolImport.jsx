@@ -160,7 +160,7 @@ export default function ToolImport() {
   // Recompute `changes` for a single row against its matchedTool
   const recomputeChanges = (row) => {
     if (!row.matchedTool) return row;
-    const fields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
+    const fields = ['name', 'manufacturer', 'model_number', 'serial_number', 'tool_number', 'category', 'subcategory', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'service_cost', 'assigned_to_name', 'notes'];
     const changes = {};
     fields.forEach(field => {
       const oldVal = String(row.matchedTool[field] || '').trim();
@@ -226,20 +226,29 @@ export default function ToolImport() {
         barcode,
         name: r.name || '',
         manufacturer: r.manufacturer || '',
+        model_number: String(r.model_number || '').trim(),
+        serial_number: String(r.serial_number || '').trim(),
+        tool_number: String(r.tool_number || '').trim(),
         category: r.category || '',
+        subcategory: r.subcategory || '',
         status: r.status || 'available',
         condition: r.condition || 'good',
         location_name: r.location_name || '',
         location_id: locationMatch?.id || '',
         purchase_date: String(r.purchase_date || '').trim(),
         purchase_price: parseFloat(r.purchase_price) || 0,
+        purchase_location: r.purchase_location || '',
+        invoice_number: r.invoice_number || '',
+        service_cost: parseFloat(r.service_cost) || 0,
+        assigned_to_name: r.assigned_to_name || '',
+        notes: r.notes || '',
         matchedTool: matched || null,
         action: matched ? 'update' : 'create',
       };
 
       if (matched) {
         const changes = {};
-        const fields = ['name', 'manufacturer', 'category', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price'];
+        const fields = ['name', 'manufacturer', 'model_number', 'serial_number', 'tool_number', 'category', 'subcategory', 'status', 'condition', 'location_name', 'purchase_date', 'purchase_price', 'purchase_location', 'invoice_number', 'service_cost', 'assigned_to_name', 'notes'];
         fields.forEach(field => {
           const oldVal = String(matched[field] || '').trim();
           const newVal = String(newRow[field] || '').trim();
@@ -292,12 +301,21 @@ export default function ToolImport() {
               barcode: { type: 'string' },
               name: { type: 'string' },
               manufacturer: { type: 'string' },
+              model_number: { type: 'string' },
+              serial_number: { type: 'string' },
+              tool_number: { type: 'string' },
               category: { type: 'string' },
+              subcategory: { type: 'string' },
               status: { type: 'string' },
               condition: { type: 'string' },
               location_name: { type: 'string' },
               purchase_date: { type: 'string', description: 'Date YYYY-MM-DD' },
-              purchase_price: { type: 'number' }
+              purchase_price: { type: 'number' },
+              purchase_location: { type: 'string' },
+              invoice_number: { type: 'string' },
+              service_cost: { type: 'number' },
+              assigned_to_name: { type: 'string' },
+              notes: { type: 'string' }
             }
           }
         });
