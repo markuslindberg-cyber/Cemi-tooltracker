@@ -601,37 +601,27 @@ export default function HandTools() {
           })}
         </div>
       ) : activeTab === 'avsparrning' ? (
-        /* Avspärrning list view – one row per unique name with count */
-        (() => {
-          const nameGroups = filtered.reduce((acc, item) => {
-            if (!acc[item.name]) acc[item.name] = { name: item.name, category: item.category, manufacturer: item.manufacturer, items: [] };
-            acc[item.name].items.push(item);
-            return acc;
-          }, {});
-          return (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="divide-y divide-gray-100">
-                {Object.values(nameGroups).map(group => {
-                  const byStatus = group.items.reduce((acc, i) => { acc[i.status] = (acc[i.status] || 0) + 1; return acc; }, {});
-                  return (
-                    <div key={group.name} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900">{group.name}</p>
-                        <p className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''}</p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-wrap justify-end">
-                        <span className="text-sm font-semibold text-gray-700">{group.items.length} st</span>
-                        {Object.entries(byStatus).map(([s, count]) => (
-                          <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="divide-y divide-gray-100">
+            {filtered.map(item => (
+              <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors group">
+                <span className={`w-3 h-3 rounded-full shrink-0 ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900">{item.name}</p>
+                  <p className="text-sm text-gray-500">{item.category}{item.manufacturer ? ` · ${item.manufacturer}` : ''}</p>
+                </div>
+                <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500">
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
+                  {item.location_name && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{item.location_name}</span>}
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-600"><Edit className="w-4 h-4" /></button>
+                  <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                </div>
               </div>
-            </div>
-          );
-        })()
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="divide-y divide-gray-100">
