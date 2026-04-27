@@ -75,6 +75,13 @@ export default function HandTools() {
   const AVSPARRNING_CATEGORY = 'Avspärrningsmaterial';
   const [activeTab, setActiveTab] = useState('handredskap');
 
+  // Default to list view for avspärrning
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'avsparrning') setViewMode('list');
+    else if (viewMode === 'list' && tab === 'handredskap') setViewMode('grid');
+  };
+
   const mainHandTools = handTools.filter(t => t.category !== AVSPARRNING_CATEGORY);
   const avsparrningTools = handTools.filter(t => t.category === AVSPARRNING_CATEGORY);
 
@@ -385,7 +392,7 @@ export default function HandTools() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-2">
           <TabsTrigger value="handredskap">Handredskap ({mainHandTools.length})</TabsTrigger>
           <TabsTrigger value="avsparrning">Avspärrning ({avsparrningTools.length})</TabsTrigger>
