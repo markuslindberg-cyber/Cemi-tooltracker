@@ -115,15 +115,21 @@ export default function ToolImport() {
     };
 
     const headerLine = lines[0];
-    const candidates = [',', ';', '\t'];
-    let sep = ',';
-    let maxFields = 0;
     
-    for (const c of candidates) {
-      const fieldCount = parseCSVLine(headerLine, c).length;
-      if (fieldCount > maxFields) {
-        maxFields = fieldCount;
-        sep = c;
+    // Prioritera semikolon som avgränsare (vanligt i svenska CSV-filer
+    // där kommatecken kan finnas i datakolumner)
+    const semicolonFields = parseCSVLine(headerLine, ';').length;
+    let sep = ';';
+    if (semicolonFields <= 1) {
+      // Semikolon gav bara 1 kolumn — fallback till automatisk detektion
+      const candidates = [',', '\t'];
+      let maxFields = 0;
+      for (const c of candidates) {
+        const fieldCount = parseCSVLine(headerLine, c).length;
+        if (fieldCount > maxFields) {
+          maxFields = fieldCount;
+          sep = c;
+        }
       }
     }
 
