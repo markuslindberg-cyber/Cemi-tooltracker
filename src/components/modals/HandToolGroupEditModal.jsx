@@ -20,6 +20,7 @@ const PREDEFINED_CATEGORIES = {
 };
 
 export default function HandToolGroupEditModal({ isOpen, onClose, group, onSuccess }) {
+  const currentCount = group?.items?.length || 0;
   const [form, setForm] = useState({
     name: group?.name || '',
     manufacturer: group?.manufacturer || '',
@@ -27,6 +28,7 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
     subcategory: group?.items?.[0]?.subcategory || '',
     barcode: group?.items?.[0]?.barcode || '',
     location_id: '',
+    quantity: currentCount,
   });
   const [saving, setSaving] = useState(false);
 
@@ -66,7 +68,32 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
       updates.location_id = form.location_id;
       updates.location_name = loc?.name || '';
     }
+    // Update existing items
     await Promise.all(group.items.map(item => base44.entities.HandTool.update(item.id, updates)));
+
+    const desiredQty = parseInt(form.quantity) || currentCount;
+    if (desiredQty > currentCount) {
+      // Add new items
+      const toAdd = desiredQty - currentCount;
+      const template = {
+        ...updates,
+        status: 'i_lager',
+      };
+      if (form.location_id) {
+        const loc = locations.find(l => l.id === form.location_id);
+        template.location_id = form.location_id;
+        template.location_name = loc?.name || '';
+      } else if (group.items[0]?.location_id) {
+        template.location_id = group.items[0].location_id;
+        template.location_name = group.items[0].location_name || '';
+      }
+      await base44.entities.HandTool.bulkCreate(Array(toAdd).fill(template));
+    } else if (desiredQty < currentCount) {
+      // Remove excess items (soft delete from the end)
+      const toRemove = group.items.slice(desiredQty);
+      await Promise.all(toRemove.map(item => base44.entities.HandTool.update(item.id, { is_deleted: true, deleted_at: new Date().toISOString() })));
+    }
+
     setSaving(false);
     onSuccess();
     onClose();
@@ -106,6 +133,21 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
           <div className="space-y-1.5">
             <Label>Streckkod</Label>
             <Input value={form.barcode} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Antal</Label>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, quantity: Math.max(1, (parseInt(f.quantity) || 1) - 1) }))}>−</Button>
+              <Input type="number" min="1" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} className="w-20 text-center" />
+              <Button type="button" variant="outline" size="sm" onClick={() => setForm(f => ({ ...f, quantity: (parseInt(f.quantity) || 0) + 1 }))}>+</Button>
+              <span className="text-sm text-gray-500">({currentCount} just nu)</span>
+            </div>
+            {parseInt(form.quantity) < currentCount && (
+              <p className="text-xs text-red-500">⚠️ {currentCount - parseInt(form.quantity)} redskap kommer att tas bort</p>
+            )}
+            {parseInt(form.quantity) > currentCount && (
+              <p className="text-xs text-green-600">+ {parseInt(form.quantity) - currentCount} nya redskap läggs till</p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" />Ändra plats för alla</Label>
