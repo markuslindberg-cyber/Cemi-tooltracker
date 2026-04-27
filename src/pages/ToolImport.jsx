@@ -831,70 +831,92 @@ export default function ToolImport() {
         </div>
       )}
 
-      {results && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Importresultat</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-              <div className="text-2xl font-bold text-green-700">{results.filter(r => r.status === 'success').length}</div>
-              <div className="text-sm text-green-600">Tillagda/Uppdaterade</div>
-            </div>
-            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-              <div className="text-2xl font-bold text-yellow-700">{results.filter(r => r.status === 'skipped').length}</div>
-              <div className="text-sm text-yellow-600">Hoppade över</div>
-            </div>
-            <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-              <div className="text-2xl font-bold text-red-700">{results.filter(r => r.status === 'error').length}</div>
-              <div className="text-sm text-red-600">Fel</div>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-2 text-left font-semibold">Status</th>
-                  <th className="px-4 py-2 text-left font-semibold">Streckkod</th>
-                  <th className="px-4 py-2 text-left font-semibold">Namn</th>
-                  <th className="px-4 py-2 text-left font-semibold">Åtgärd</th>
-                  <th className="px-4 py-2 text-left font-semibold">Meddelande</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {results.map((row, idx) => (
-                  <tr key={idx} className={row.status === 'success' ? 'bg-green-50' : row.status === 'skipped' ? 'bg-yellow-50' : 'bg-red-50'}>
-                    <td className="px-4 py-2">
-                      <div className="flex items-center gap-1">
-                        {row.status === 'success' && <CheckCircle2 className="w-4 h-4 text-green-600" />}
-                        {row.status === 'skipped' && <AlertCircle className="w-4 h-4 text-yellow-600" />}
-                        {row.status === 'error' && <X className="w-4 h-4 text-red-600" />}
-                        <span className="text-xs font-medium capitalize">{row.status}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 font-mono text-xs">{row.barcode}</td>
-                    <td className="px-4 py-2 text-xs">{row.name}</td>
-                    <td className="px-4 py-2 text-xs capitalize">{row.action}</td>
-                    <td className="px-4 py-2 text-xs text-gray-600">{row.message}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Button onClick={() => { setResults(null); setImportLogs([]); localStorage.removeItem('toolImportActiveState'); }} variant="outline" className="w-full">Rensa resultat</Button>
-        </div>
-      )}
-
-      {logHistory.length > 0 && (
+      {(results || logHistory.length > 0) && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Importhistorik</h2>
             <button
               className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
-              onClick={() => { localStorage.removeItem('toolImportHistory'); setLogHistory([]); }}
+              onClick={() => {
+                localStorage.removeItem('toolImportHistory');
+                setLogHistory([]);
+                setResults(null);
+                setImportLogs([]);
+                localStorage.removeItem('toolImportActiveState');
+              }}
             >
               <Trash2 className="w-3.5 h-3.5" /> Rensa historik
             </button>
           </div>
           <div className="divide-y border rounded-lg overflow-hidden">
+            {/* Current import result as first entry */}
+            {results && (() => {
+              const successCount = results.filter(r => r.status === 'success').length;
+              const skippedCount = results.filter(r => r.status === 'skipped').length;
+              const errorCount = results.filter(r => r.status === 'error').length;
+              const isExpanded = expandedLogIdx === 'current';
+              return (
+                <div>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left transition-colors bg-green-50/50"
+                    onClick={() => setExpandedLogIdx(isExpanded ? null : 'current')}
+                  >
+                    {isExpanded
+                      ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />}
+                    <span className="font-mono text-xs text-gray-500 w-36 flex-shrink-0">Just nu</span>
+                    <span className="text-sm text-gray-800 flex-1 truncate font-medium">{previewFileName || 'Senaste import'}</span>
+                    <div className="flex gap-3 text-xs flex-shrink-0">
+                      <span className="text-green-600 font-semibold">✓ {successCount}</span>
+                      <span className="text-yellow-600 font-semibold">⊘ {skippedCount}</span>
+                      <span className="text-red-600 font-semibold">✕ {errorCount}</span>
+                      <span className="text-gray-400">/ {results.length} rader</span>
+                    </div>
+                  </button>
+                  {isExpanded && (
+                    <div className="border-t bg-gray-50 px-4 py-3 overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-gray-500">
+                            <th className="pb-2 text-left font-semibold">Status</th>
+                            <th className="pb-2 text-left font-semibold">Streckkod</th>
+                            <th className="pb-2 text-left font-semibold">Namn</th>
+                            <th className="pb-2 text-left font-semibold">Åtgärd</th>
+                            <th className="pb-2 text-left font-semibold">Meddelande</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {results.map((row, rIdx) => (
+                            <tr key={rIdx} className={
+                              row.status === 'success' ? 'text-green-800' :
+                              row.status === 'skipped' ? 'text-yellow-700' : 'text-red-700'
+                            }>
+                              <td className="py-1.5 pr-3">
+                                <div className="flex items-center gap-1">
+                                  {row.status === 'success' && <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />}
+                                  {row.status === 'skipped' && <AlertCircle className="w-3.5 h-3.5 text-yellow-600" />}
+                                  {row.status === 'error' && <X className="w-3.5 h-3.5 text-red-600" />}
+                                  <span className="font-medium">{row.status}</span>
+                                </div>
+                              </td>
+                              <td className="py-1.5 pr-3 font-mono text-gray-600">{row.barcode}</td>
+                              <td className="py-1.5 pr-3 text-gray-800">{row.name}</td>
+                              <td className="py-1.5 pr-3 text-gray-600 capitalize">{row.action}</td>
+                              <td className="py-1.5 text-gray-500">{row.message}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div className="mt-3">
+                        <Button onClick={() => { setResults(null); setImportLogs([]); localStorage.removeItem('toolImportActiveState'); }} variant="outline" size="sm">Rensa senaste resultat</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Previous imports */}
             {logHistory.map((entry, idx) => (
               <div key={idx}>
                 <button
