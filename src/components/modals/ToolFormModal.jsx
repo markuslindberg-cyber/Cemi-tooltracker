@@ -926,12 +926,13 @@ export default function ToolFormModal({
                          value={formData.status}
                          onChange={(v) => handleChange('status', v)}
                          options={[
-                           { value: 'available', label: 'Tillgänglig' },
-                           { value: 'in_use', label: 'I bruk' },
-                           { value: 'maintenance', label: 'Underhåll' },
-                           { value: 'missing', label: 'Saknas' },
-                           { value: 'retired', label: 'Kasserad' },
-                           { value: 'sålda', label: 'Såld' },
+                          { value: 'available', label: 'Tillgänglig' },
+                          { value: 'in_use', label: 'I bruk' },
+                          { value: 'i_lager', label: 'I lager' },
+                          { value: 'maintenance', label: 'Underhåll' },
+                          { value: 'missing', label: 'Saknas' },
+                          { value: 'retired', label: 'Kasserad' },
+                          { value: 'sålda', label: 'Såld' },
                          ]}
                          placeholder="Välj status"
                        />
