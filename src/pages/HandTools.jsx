@@ -542,14 +542,14 @@ export default function HandTools() {
                 <div className="divide-y divide-gray-50">
                   {Object.entries(byLocation).map(([locName, items]) => (
                     <div key={locName}>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-50/60">
-                        <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">{locName}</span>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-100/80 border-t-2 border-b-2 border-gray-200">
+                        <MapPin className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">{locName}</span>
                         <span className="text-xs text-gray-400">({items.length} st)</span>
                         <Checkbox
                           checked={items.every(i => selectedIds.has(i.id))}
                           onCheckedChange={() => toggleSelectAll(items)}
-                          className="ml-auto"
+                          className="ml-1"
                         />
                       </div>
                       <div className="divide-y divide-gray-50">
