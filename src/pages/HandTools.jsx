@@ -593,6 +593,38 @@ export default function HandTools() {
             );
           })}
         </div>
+      ) : activeTab === 'avsparrning' ? (
+        /* Avspärrning list view – one row per unique name with count */
+        (() => {
+          const nameGroups = filtered.reduce((acc, item) => {
+            if (!acc[item.name]) acc[item.name] = { name: item.name, category: item.category, manufacturer: item.manufacturer, items: [] };
+            acc[item.name].items.push(item);
+            return acc;
+          }, {});
+          return (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="divide-y divide-gray-100">
+                {Object.values(nameGroups).map(group => {
+                  const byStatus = group.items.reduce((acc, i) => { acc[i.status] = (acc[i.status] || 0) + 1; return acc; }, {});
+                  return (
+                    <div key={group.name} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900">{group.name}</p>
+                        <p className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap justify-end">
+                        <span className="text-sm font-semibold text-gray-700">{group.items.length} st</span>
+                        {Object.entries(byStatus).map(([s, count]) => (
+                          <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="divide-y divide-gray-100">
