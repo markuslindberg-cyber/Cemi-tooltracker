@@ -539,13 +539,8 @@ export default function HandTools() {
                     ))}
                     <button
                       onClick={() => {
-                        // Only edit items that are manually selected within this group
                         const selectedInGroup = group.items.filter(i => selectedIds.has(i.id));
-                        if (selectedInGroup.length === 0) {
-                          alert('Markera minst ett redskap i gruppen först');
-                          return;
-                        }
-                        setGroupEditTarget({ ...group, items: selectedInGroup });
+                        setGroupEditTarget({ ...group, items: selectedInGroup.length > 0 ? selectedInGroup : group.items });
                       }}
                       className="ml-1 p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
                       title="Redigera markerade redskap"
