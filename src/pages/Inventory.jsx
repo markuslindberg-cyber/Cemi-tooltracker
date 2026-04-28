@@ -223,11 +223,12 @@ export default function Inventory() {
 
   const filteredTools = useMemo(() => {
     const filtered = allItems.filter(item => {
-      const matchesSearch = !searchQuery || 
-        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.model_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.barcode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.subcategory?.toLowerCase().includes(searchQuery.toLowerCase());
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch = !q || 
+        item.name?.toLowerCase().includes(q) ||
+        item.model_number?.toLowerCase().includes(q) ||
+        item.barcode?.toLowerCase().includes(q) ||
+        item.subcategory?.toLowerCase().includes(q);
       
       const hasNoStatus = !item.status || item.status === '';
       const matchesStatus = statusFilter.length === 0 ||
@@ -248,6 +249,8 @@ export default function Inventory() {
       let cmp = 0;
       if (sortBy === 'name') {
         cmp = (a.name || '').localeCompare(b.name || '');
+      } else if (sortBy === 'model_number') {
+        cmp = (a.model_number || '').localeCompare(b.model_number || '');
       } else if (sortBy === 'category') {
         cmp = (a.category || '').localeCompare(b.category || '');
       } else if (sortBy === 'status') {
@@ -796,6 +799,7 @@ export default function Inventory() {
                   </TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-2 py-2 text-xs" onClick={() => handleTableSort('name')}>Verktyg<SortIcon col="name" /></TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs" onClick={() => handleTableSort('status')}>Status<SortIcon col="status" /></TableHead>
+                  <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs hidden md:table-cell" onClick={() => handleTableSort('model_number')}>Modell<SortIcon col="model_number" /></TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs hidden sm:table-cell" onClick={() => handleTableSort('location')}>Plats<SortIcon col="location" /></TableHead>
                   <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] px-1 py-2 text-xs hidden md:table-cell" onClick={() => handleTableSort('price')}>Värde<SortIcon col="price" /></TableHead>
                   <TableHead className="font-semibold px-1 py-2 text-xs hidden lg:table-cell">Service</TableHead>
@@ -839,14 +843,17 @@ export default function Inventory() {
                            {status.label}
                          </Badge>
                        </TableCell>
+                       <TableCell className="px-1 py-1 text-xs hidden md:table-cell">
+                          <span className="truncate text-gray-600 dark:text-gray-300">{tool.model_number || '—'}</span>
+                        </TableCell>
                        <TableCell className="px-1 py-1 text-xs hidden sm:table-cell">
                           {tool.location_name ? (
                             <span className="truncate text-gray-600 dark:text-gray-300">{tool.location_name}</span>
                           ) : (
                             <span className="text-gray-400 dark:text-gray-600">—</span>
                           )}
-                        </TableCell>
-                        <TableCell className="font-medium text-gray-900 dark:text-gray-100 px-1 py-1 text-xs hidden md:table-cell">
+                         </TableCell>
+                         <TableCell className="font-medium text-gray-900 dark:text-gray-100 px-1 py-1 text-xs hidden md:table-cell">
                          {tool.purchase_price ? `${tool.purchase_price.toLocaleString('sv-SE')} kr` : '—'}
                        </TableCell>
                        <TableCell className="font-medium text-gray-900 dark:text-gray-100 px-1 py-1 text-xs hidden lg:table-cell">
