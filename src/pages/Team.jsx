@@ -115,11 +115,21 @@ export default function Team() {
         await base44.users.inviteUser(memberData.email, 'user');
       }
       const { send_invitation, send_new_invitation, ...data } = memberData;
+      let result;
       if (editMember?.id) {
-        return base44.entities.TeamMember.update(editMember.id, data);
+        result = await base44.entities.TeamMember.update(editMember.id, data);
       } else {
-        return base44.entities.TeamMember.create(data);
+        result = await base44.entities.TeamMember.create(data);
       }
+      // Sync role to User entity if email exists
+      if (data.email && data.role) {
+        try {
+          await base44.functions.invoke('setUserRole', { email: data.email, role: data.role });
+        } catch (e) {
+          console.warn('Kunde inte synka roll till User:', e);
+        }
+      }
+      return result;
     },
     onMutate: async (memberData) => {
       await queryClient.cancelQueries({ queryKey: ['teamMembers'] });
