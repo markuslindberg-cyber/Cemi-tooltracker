@@ -9,18 +9,7 @@ import { Loader2, Plus, X, Check, Copy, Clock, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Search } from 'lucide-react';
 
 export default function LokalvardRequestArtikel() {
   const queryClient = useQueryClient();
@@ -36,6 +25,8 @@ export default function LokalvardRequestArtikel() {
   const [user, setUser] = useState(null);
   const [artikelOpen, setArtikelOpen] = useState(false);
   const [kundOpen, setKundOpen] = useState(false);
+  const [kundSearch, setKundSearch] = useState('');
+  const [artikelSearch, setArtikelSearch] = useState('');
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [expandedRequest, setExpandedRequest] = useState(null);
   const [activeTab, setActiveTab] = useState('form');
@@ -275,33 +266,56 @@ export default function LokalvardRequestArtikel() {
          {/* Kund */}
          <div className="space-y-2">
            <Label>Kund <span className="text-red-500">*</span></Label>
-           <Popover open={kundOpen} onOpenChange={setKundOpen}>
-             <PopoverTrigger asChild>
-               <Button variant="outline" className="w-full justify-start text-left font-normal">
-                 {formData.customer_name || "Välj kund..."}
-               </Button>
-             </PopoverTrigger>
-             <PopoverContent className="w-full p-0" align="start">
-               <Command>
-                 <CommandInput placeholder="Sök kund..." />
-                 <CommandEmpty>Ingen kund hittad.</CommandEmpty>
-                 <CommandGroup className="max-h-64 overflow-y-auto">
-                   {kunder.map(k => (
-                     <CommandItem
-                       key={k.id}
-                       value={`${k.namn} ${k.projektnummer || ''}`}
-                       onSelect={() => {
-                         setFormData(prev => ({ ...prev, customer_id: k.id, customer_name: k.namn }));
-                         setKundOpen(false);
-                       }}
-                     >
-                       {k.namn}{k.projektnummer ? ` (${k.projektnummer})` : ''}
-                     </CommandItem>
-                   ))}
-                 </CommandGroup>
-               </Command>
-             </PopoverContent>
-           </Popover>
+           <div className="relative">
+             <Button
+               variant="outline"
+               className="w-full justify-start text-left font-normal"
+               onClick={() => { setKundOpen(!kundOpen); setKundSearch(''); }}
+             >
+               {formData.customer_name || "Välj kund..."}
+               <ChevronDown className="w-4 h-4 ml-auto opacity-50" />
+             </Button>
+             {kundOpen && (
+               <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                 <div className="flex items-center border-b px-3">
+                   <Search className="w-4 h-4 text-gray-400 shrink-0" />
+                   <input
+                     autoFocus
+                     placeholder="Sök kund..."
+                     value={kundSearch}
+                     onChange={(e) => setKundSearch(e.target.value)}
+                     className="w-full px-2 py-2.5 text-sm bg-transparent outline-none"
+                   />
+                 </div>
+                 <div className="max-h-64 overflow-y-auto p-1">
+                   {kunder
+                     .filter(k => {
+                       const s = kundSearch.toLowerCase();
+                       return !s || k.namn?.toLowerCase().includes(s) || k.projektnummer?.toLowerCase().includes(s);
+                     })
+                     .map(k => (
+                       <button
+                         key={k.id}
+                         onClick={() => {
+                           setFormData(prev => ({ ...prev, customer_id: k.id, customer_name: k.namn }));
+                           setKundOpen(false);
+                         }}
+                         className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                       >
+                         {k.namn}{k.projektnummer ? ` (${k.projektnummer})` : ''}
+                       </button>
+                     ))
+                   }
+                   {kunder.filter(k => {
+                     const s = kundSearch.toLowerCase();
+                     return !s || k.namn?.toLowerCase().includes(s) || k.projektnummer?.toLowerCase().includes(s);
+                   }).length === 0 && (
+                     <p className="text-sm text-gray-500 text-center py-4">Ingen kund hittad.</p>
+                   )}
+                 </div>
+               </div>
+             )}
+           </div>
          </div>
 
          {/* Ordernummer */}
@@ -325,34 +339,57 @@ export default function LokalvardRequestArtikel() {
            
            <div className="space-y-2">
              <Label>Välj artikel</Label>
-             <Popover open={artikelOpen} onOpenChange={setArtikelOpen}>
-               <PopoverTrigger asChild>
-                 <Button variant="outline" className="w-full justify-start text-left font-normal">
-                   {selectedItem ? selectedItem.benamning : "Sök och välj artikel..."}
-                 </Button>
-               </PopoverTrigger>
-               <PopoverContent className="w-full p-0" align="start">
-                 <Command>
-                   <CommandInput placeholder="Sök artikel..." />
-                   <CommandEmpty>Ingen artikel hittad.</CommandEmpty>
-                   <CommandGroup className="max-h-64 overflow-y-auto">
-                     {artiklar.map(item => (
-                       <CommandItem
-                         key={item.id}
-                         value={`${item.benamning} ${item.streckkod || ''}`}
-                         onSelect={() => {
-                           setSelectedItem(item);
-                           setSelectedQty(1);
-                           setArtikelOpen(false);
-                         }}
-                       >
-                         {item.benamning}
-                       </CommandItem>
-                     ))}
-                   </CommandGroup>
-                 </Command>
-               </PopoverContent>
-             </Popover>
+             <div className="relative">
+               <Button
+                 variant="outline"
+                 className="w-full justify-start text-left font-normal"
+                 onClick={() => { setArtikelOpen(!artikelOpen); setArtikelSearch(''); }}
+               >
+                 {selectedItem ? selectedItem.benamning : "Sök och välj artikel..."}
+                 <ChevronDown className="w-4 h-4 ml-auto opacity-50" />
+               </Button>
+               {artikelOpen && (
+                 <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                   <div className="flex items-center border-b px-3">
+                     <Search className="w-4 h-4 text-gray-400 shrink-0" />
+                     <input
+                       autoFocus
+                       placeholder="Sök artikel..."
+                       value={artikelSearch}
+                       onChange={(e) => setArtikelSearch(e.target.value)}
+                       className="w-full px-2 py-2.5 text-sm bg-transparent outline-none"
+                     />
+                   </div>
+                   <div className="max-h-64 overflow-y-auto p-1">
+                     {artiklar
+                       .filter(item => {
+                         const s = artikelSearch.toLowerCase();
+                         return !s || item.benamning?.toLowerCase().includes(s) || item.streckkod?.toLowerCase().includes(s);
+                       })
+                       .map(item => (
+                         <button
+                           key={item.id}
+                           onClick={() => {
+                             setSelectedItem(item);
+                             setSelectedQty(1);
+                             setArtikelOpen(false);
+                           }}
+                           className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                         >
+                           {item.benamning}
+                         </button>
+                       ))
+                     }
+                     {artiklar.filter(item => {
+                       const s = artikelSearch.toLowerCase();
+                       return !s || item.benamning?.toLowerCase().includes(s) || item.streckkod?.toLowerCase().includes(s);
+                     }).length === 0 && (
+                       <p className="text-sm text-gray-500 text-center py-4">Ingen artikel hittad.</p>
+                     )}
+                   </div>
+                 </div>
+               )}
+             </div>
            </div>
 
            {selectedItem && (
