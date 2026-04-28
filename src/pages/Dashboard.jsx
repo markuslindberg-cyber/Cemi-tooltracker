@@ -283,7 +283,7 @@ export default function Dashboard() {
 
         {/* Lokalvård shortcut for lokalvårdare */}
         {user?.role === 'lokalvårdare' && (
-          <Link to="/RequestWorkwear">
+          <Link to="/LokalvardRequestArtikel">
             <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-4 text-white shadow-lg shadow-emerald-600/25 hover:from-emerald-700 hover:to-emerald-800 transition-all">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -317,8 +317,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Main content grid for non-lokalvårdare */}
-        {user?.role !== 'lokalvårdare' && (() => {
+        {/* Main content grid */}
+        {(() => {
           // Build widget content map
           const widgetContent = {
             loan_summary: isVisible('loan_summary') && (
