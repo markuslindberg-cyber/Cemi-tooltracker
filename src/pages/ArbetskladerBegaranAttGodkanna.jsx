@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight, ChevronDown, Clock, Plus } from 'lucide-react';
+import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight, ChevronDown, Clock, Plus, Ban } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -236,6 +236,18 @@ export default function ArbetskladerBegaranAttGodkanna() {
     const s = map[status] || { label: status, cls: 'bg-gray-100 text-gray-600' };
     return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
   };
+
+  // Bara admin_lokalvård och ägare får se denna sida
+  const allowedRoles = ['admin_lokalvård', 'ägare'];
+  if (user && !allowedRoles.includes(user.role)) {
+    return (
+      <div className="max-w-5xl mx-auto p-6 text-center py-20">
+        <Ban className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <p className="text-lg font-medium text-gray-600">Du har inte behörighet att se denna sida</p>
+        <p className="text-sm text-gray-400 mt-1">Kontakta din Admin Lokalvård</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">

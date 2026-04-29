@@ -63,7 +63,7 @@ const navigation = [
       { name: 'Arbetskläder och skyddsutrustning', path: '/ArbetskladerUtrustning', roles: NOT_LOKALVARDARE },
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports', roles: NOT_LOKALVARDARE },
       { name: 'Begäran - arbetskläder', path: '/ArbetskläderRequestWorkwear' },
-      { name: 'Förfrågan - arbetskläder', path: '/Arbetsklader/Forfragan' },
+      { name: 'Förfrågan - arbetskläder', path: '/Arbetsklader/Forfragan', roles: ['admin_lokalvård', 'ägare'] },
     ]
   },
   {
