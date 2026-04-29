@@ -29,18 +29,16 @@ export default function LokalvardNyttUttag() {
   }, []);
 
   const { data: approvedRequests = [], isLoading: loadingRequests } = useQuery({
-    queryKey: ['approvedRequests'],
+    queryKey: ['approvedLokalvardRequests'],
     queryFn: async () => {
-      const requests = await base44.entities.WorkwearRequest.list('-request_date', 10000);
-      const customers = await base44.entities.Kund.list(null, 10000).catch(() => []);
-      const activeCustomerIds = customers.filter(k => k.status === 'aktiv').map(k => k.id);
-      return requests.filter(r => r.status === 'approved' && activeCustomerIds.includes(r.customer_id));
+      const requests = await base44.entities.LokalvardArtikelRequest.list('-request_date', 10000);
+      return requests.filter(r => r.status === 'approved');
     },
   });
 
   const { data: allItems = [] } = useQuery({
-    queryKey: ['lokalvardLager'],
-    queryFn: () => base44.entities.Inventarier.list('-updated_date', 500).catch(() => []),
+    queryKey: ['lokalvardArtiklar'],
+    queryFn: () => base44.entities.LokalvardsArtikel.list(null, 10000),
   });
 
   const { data: personal = [] } = useQuery({
@@ -70,7 +68,7 @@ export default function LokalvardNyttUttag() {
       const checkout = await base44.entities.LokalvardCheckout.create(data);
       // Uppdatera request status till completed
       if (selectedRequest?.id) {
-        await base44.entities.WorkwearRequest.update(selectedRequest.id, { status: 'completed' });
+        await base44.entities.LokalvardArtikelRequest.update(selectedRequest.id, { status: 'completed' });
       }
       return checkout;
     },
@@ -78,7 +76,7 @@ export default function LokalvardNyttUttag() {
       setSelectedRequest(null);
       setScannedItems([]);
       setBarcodeInput('');
-      queryClient.invalidateQueries(['approvedRequests']);
+      queryClient.invalidateQueries(['approvedLokalvardRequests']);
       setSuccess('Uttag registrerat!');
       setTimeout(() => setSuccess(''), 3000);
     },
@@ -88,17 +86,28 @@ export default function LokalvardNyttUttag() {
   });
 
   const handleBarcodeInput = (barcode) => {
-    const item = allItems.find(i => i.barcode === barcode);
+    const trimmed = barcode.trim();
+    if (!trimmed) return;
+
+    const item = allItems.find(i => 
+      i.streckkod === trimmed || 
+      i.old_streckkod === trimmed || 
+      i.artikelnummer === trimmed
+    );
     
     if (!item) {
-      setError(`Streckkod ${barcode} hittades inte i lagret`);
+      setError(`Streckkod ${trimmed} hittades inte i lagret`);
       setTimeout(() => setError(''), 3000);
       return;
     }
 
-    const requestedItem = selectedRequest?.requested_items.find(ri => ri.id === item.id);
+    const requestedItem = selectedRequest?.requested_items.find(ri => 
+      ri.id === item.id || 
+      ri.name === item.benamning ||
+      ri.name === item.name
+    );
     if (!requestedItem) {
-      setError(`${item.name} är inte på begäran`);
+      setError(`${item.benamning || item.name} är inte på begäran`);
       setTimeout(() => setError(''), 3000);
       return;
     }
@@ -106,7 +115,7 @@ export default function LokalvardNyttUttag() {
     const existingScanned = scannedItems.find(si => si.item_id === item.id);
     if (existingScanned) {
       if (existingScanned.scanned_quantity >= requestedItem.quantity) {
-        setError(`${item.name} är redan skannad i rätt mängd`);
+        setError(`${item.benamning || item.name} är redan skannad i rätt mängd`);
         setTimeout(() => setError(''), 3000);
         return;
       }
@@ -120,8 +129,8 @@ export default function LokalvardNyttUttag() {
     } else {
       setScannedItems(prev => [...prev, {
         item_id: item.id,
-        name: item.name,
-        barcode: item.barcode,
+        name: item.benamning || item.name,
+        barcode: item.streckkod,
         quantity: requestedItem.quantity,
         scanned_quantity: 1,
         replacement_items: [],

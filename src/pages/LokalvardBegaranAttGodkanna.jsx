@@ -75,12 +75,10 @@ export default function LokalvardBegaranAttGodkanna() {
   }, [personal]);
 
   const { data: allRequests = [], isLoading } = useQuery({
-    queryKey: ['workwearRequests'],
+    queryKey: ['lokalvardArtikelRequests'],
     queryFn: async () => {
-      const requests = await base44.entities.WorkwearRequest.list('-request_date', 10000);
-      const customers = await base44.entities.Kund.list(null, 10000).catch(() => []);
-      const activeCustomerIds = customers.filter(k => k.status === 'aktiv').map(k => k.id);
-      return requests.filter(r => activeCustomerIds.includes(r.customer_id));
+      const requests = await base44.entities.LokalvardArtikelRequest.list('-request_date', 10000);
+      return requests;
     },
   });
 
@@ -99,14 +97,14 @@ export default function LokalvardBegaranAttGodkanna() {
 
   const approveMutation = useMutation({
     mutationFn: (requestId) =>
-      base44.entities.WorkwearRequest.update(requestId, {
+      base44.entities.LokalvardArtikelRequest.update(requestId, {
         status: 'approved',
         approved_by_email: user?.email,
         approved_by_name: personalMap[user?.id] || user?.full_name,
         approved_date: new Date().toISOString(),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['workwearRequests']);
+      queryClient.invalidateQueries(['lokalvardArtikelRequests']);
       setStep(3);
       setScannedItems([]);
       setBarcodeInput('');
@@ -116,12 +114,12 @@ export default function LokalvardBegaranAttGodkanna() {
 
   const rejectMutation = useMutation({
     mutationFn: (requestId) =>
-      base44.entities.WorkwearRequest.update(requestId, {
+      base44.entities.LokalvardArtikelRequest.update(requestId, {
         status: 'rejected',
         notes: rejectNotes,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['workwearRequests']);
+      queryClient.invalidateQueries(['lokalvardArtikelRequests']);
       setSelectedRequest(null);
       setRejectNotes('');
       setStep(1);
@@ -131,11 +129,11 @@ export default function LokalvardBegaranAttGodkanna() {
   const createCheckoutMutation = useMutation({
     mutationFn: async (data) => {
       const checkout = await base44.entities.LokalvardCheckout.create(data);
-      await base44.entities.WorkwearRequest.update(selectedRequest.id, { status: 'completed' });
+      await base44.entities.LokalvardArtikelRequest.update(selectedRequest.id, { status: 'completed' });
       return checkout;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['workwearRequests']);
+      queryClient.invalidateQueries(['lokalvardArtikelRequests']);
       queryClient.invalidateQueries(['lokalvardCheckouts']);
       queryClient.invalidateQueries(['uttag']);
       setSuccess('Uttag registrerat!');
