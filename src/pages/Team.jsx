@@ -54,6 +54,7 @@ const roleConfig = {
 export default function Team() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('active');
   const [roleFilter, setRoleFilter] = useState('all');
   const [editMember, setEditMember] = useState(null);
   const [showAddMember, setShowAddMember] = useState(false);
@@ -88,7 +89,11 @@ export default function Team() {
     return appUsers.find(u => u.email === email);
   };
 
-  const filteredMembers = teamMembers.filter(member => {
+  const activeMembers = teamMembers.filter(m => m.is_active !== false);
+  const inactiveMembers = teamMembers.filter(m => m.is_active === false);
+  const currentTabMembers = activeTab === 'active' ? activeMembers : inactiveMembers;
+
+  const filteredMembers = currentTabMembers.filter(member => {
     const matchesSearch = member.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === 'all' || member.role === roleFilter;
@@ -239,6 +244,22 @@ export default function Team() {
             <Plus className="w-5 h-5 mr-2" />
             Lägg till medlem
           </Button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'active' ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}
+          >
+            Aktiva ({activeMembers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('inactive')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'inactive' ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}
+          >
+            Inaktiva ({inactiveMembers.length})
+          </button>
         </div>
 
         {/* Search */}
