@@ -934,6 +934,7 @@ export default function Inventory() {
         isOpen={showBulkEdit}
         onClose={() => setShowBulkEdit(false)}
         selectedCount={selectedTools.size}
+        selectedTools={tools.filter(t => selectedTools.has(t.id))}
         locations={locations}
         categories={availableCategories}
         huvudmaskiner={huvudmaskiner}

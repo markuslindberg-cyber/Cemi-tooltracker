@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,18 +19,41 @@ const STATUS_OPTIONS = [
   { value: 'sålda', label: 'Såld' },
 ];
 
-export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, locations, categories, huvudmaskiner = [], onSubmit }) {
+export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, selectedTools = [], locations, categories, huvudmaskiner = [], onSubmit }) {
   const [status, setStatus] = useState('');
   const [locationId, setLocationId] = useState('');
   const [category, setCategory] = useState('');
+  const [subcategory, setSubcategory] = useState('');
   const [mainMachineId, setMainMachineId] = useState('');
   const [compatibleIds, setCompatibleIds] = useState([]); // array of machine IDs
   const [saving, setSaving] = useState(false);
+
+  // Check if all selected tools share the same category
+  const sharedCategory = useMemo(() => {
+    if (selectedTools.length === 0) return null;
+    const cats = [...new Set(selectedTools.map(t => t.category).filter(Boolean))];
+    return cats.length === 1 ? cats[0] : null;
+  }, [selectedTools]);
+
+  // Fetch category definitions to get subcategories
+  const { data: categoryDefs = [] } = useQuery({
+    queryKey: ['categories', 'Tool'],
+    queryFn: () => base44.entities.Category.filter({ entity_type: 'Tool' }),
+    enabled: isOpen,
+  });
+
+  // Get available subcategories for the shared category
+  const availableSubcategories = useMemo(() => {
+    if (!sharedCategory) return [];
+    const catDef = categoryDefs.find(c => c.name === sharedCategory);
+    return catDef?.subcategories || [];
+  }, [sharedCategory, categoryDefs]);
 
   const handleClose = () => {
     setStatus('');
     setLocationId('');
     setCategory('');
+    setSubcategory('');
     setMainMachineId('');
     setCompatibleIds([]);
     onClose();
@@ -49,6 +74,7 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, loc
       updates.location_name = loc?.name || '';
     }
     if (category) updates.category = category;
+    if (subcategory) updates.subcategory = subcategory;
     if (mainMachineId) {
       const machine = huvudmaskiner.find(m => m.id === mainMachineId);
       updates.main_machine_id = mainMachineId;
@@ -71,7 +97,7 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, loc
     handleClose();
   };
 
-  const hasChanges = status || locationId || category || mainMachineId || compatibleIds.length > 0;
+  const hasChanges = status || locationId || category || subcategory || mainMachineId || compatibleIds.length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -124,6 +150,23 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, loc
               </SelectContent>
             </Select>
           </div>
+
+          {/* Underkategori – visas bara om alla markerade har samma kategori */}
+          {sharedCategory && availableSubcategories.length > 0 && (
+            <div className="space-y-2">
+              <Label>Underkategori <span className="text-xs text-gray-400 font-normal">(alla har kategori: {sharedCategory})</span></Label>
+              <Select value={subcategory} onValueChange={setSubcategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Ändra ej" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableSubcategories.map(sub => (
+                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Huvudmaskin */}
           <div className="space-y-2">
