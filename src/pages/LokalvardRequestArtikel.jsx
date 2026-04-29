@@ -62,7 +62,10 @@ export default function LokalvardRequestArtikel() {
 
   const createRequestMutation = useMutation({
     mutationFn: async (data) => {
-      return base44.entities.LokalvardArtikelRequest.create(data);
+      // Generera löpnummer baserat på befintliga begäranden
+      const all = await base44.entities.LokalvardArtikelRequest.list('-request_number', 1);
+      const nextNumber = all.length > 0 && all[0].request_number ? all[0].request_number + 1 : 1001;
+      return base44.entities.LokalvardArtikelRequest.create({ ...data, request_number: nextNumber });
     },
     onSuccess: () => {
       setFormData({
@@ -187,7 +190,10 @@ export default function LokalvardRequestArtikel() {
                     className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 transition-all"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-gray-400">{format(new Date(r.request_date), 'dd MMM yyyy', { locale: sv })}</span>
+                      <span className="text-xs text-gray-400">
+                        {r.request_number && <span className="font-mono font-bold text-gray-600 mr-1">#{r.request_number}</span>}
+                        {format(new Date(r.request_date), 'dd MMM yyyy', { locale: sv })}
+                      </span>
                     </div>
                     <p className="text-xs text-gray-500">{r.requested_items?.length} artikel(r): {r.requested_items?.map(i => `${i.name} (${i.quantity}st)`).join(', ')}</p>
                   </button>
@@ -225,7 +231,10 @@ export default function LokalvardRequestArtikel() {
                     <div className="flex items-center gap-3 flex-1">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>
                       <div className="flex-1">
-                        <p className="text-xs text-gray-500">{format(new Date(r.request_date), 'dd MMM yyyy HH:mm', { locale: sv })} • {r.requested_items?.length} artikel(r)</p>
+                        <div className="flex items-center gap-2">
+                          {r.request_number && <span className="text-xs font-mono font-bold text-gray-700">#{r.request_number}</span>}
+                          <p className="text-xs text-gray-500">{format(new Date(r.request_date), 'dd MMM yyyy HH:mm', { locale: sv })} • {r.requested_items?.length} artikel(r)</p>
+                        </div>
                       </div>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />

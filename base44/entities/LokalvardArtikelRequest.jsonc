@@ -2,6 +2,10 @@
   "name": "LokalvardArtikelRequest",
   "type": "object",
   "properties": {
+    "request_number": {
+      "type": "integer",
+      "description": "L\u00f6pnummer f\u00f6r beg\u00e4ran"
+    },
     "customer_id": {
       "type": "string",
       "nullable": true,

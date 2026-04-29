@@ -462,7 +462,10 @@ export default function LokalvardBegaranAttGodkanna() {
                     className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white transition-all flex items-center justify-between"
                   >
                     <div>
-                      <p className="font-semibold text-gray-900">{request.customer_name}</p>
+                      <div className="flex items-center gap-2">
+                        {request.request_number && <span className="text-xs font-mono font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">#{request.request_number}</span>}
+                        <p className="font-semibold text-gray-900">{request.customer_name}</p>
+                      </div>
                       <p className="text-sm text-gray-600 mt-0.5">
                         {request.requested_items?.length} artikel(r) • Begärd av: {request.requested_by_name || request.requested_by_email}
                       </p>
@@ -515,6 +518,7 @@ export default function LokalvardBegaranAttGodkanna() {
                           >
                             <div className="flex items-center gap-3 flex-1">
                               {statusBadge(request.status)}
+                              {request.request_number && <span className="text-xs font-mono font-bold text-gray-600">#{request.request_number}</span>}
                               <div className="flex-1">
                                 <p className="font-semibold text-gray-900">{request.customer_name}</p>
                                 <p className="text-xs text-gray-600">
@@ -596,6 +600,7 @@ export default function LokalvardBegaranAttGodkanna() {
                   >
                     <div className="flex items-center gap-3">
                       {statusBadge(request.status)}
+                      {request.request_number && <span className="text-xs font-mono font-bold text-gray-600">#{request.request_number}</span>}
                       <div>
                         <p className="font-semibold text-gray-900">{request.customer_name}</p>
                         <p className="text-sm text-gray-500">
@@ -684,7 +689,10 @@ export default function LokalvardBegaranAttGodkanna() {
           <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka</button>
 
           <div className="space-y-3">
-            <h2 className="text-xl font-semibold">Begäran detaljer</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold">Begäran detaljer</h2>
+              {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 text-gray-700 px-2 py-1 rounded">#{selectedRequest.request_number}</span>}
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">Kund</p>
@@ -762,7 +770,10 @@ export default function LokalvardBegaranAttGodkanna() {
         <Card className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold">Skanna uttag</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold">Skanna uttag</h2>
+                {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded">#{selectedRequest.request_number}</span>}
+              </div>
               <p className="text-sm text-gray-600">{selectedRequest.customer_name}</p>
             </div>
           </div>
