@@ -25,6 +25,8 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
   const [scannerActive, setScannerActive] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
   const [checkoutItems, setCheckoutItems] = useState([]);
+  const [listSearch, setListSearch] = useState('');
+  const [showList, setShowList] = useState(false);
 
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
@@ -91,8 +93,32 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
     setScannerActive(false);
     setManualBarcode('');
     setCheckoutItems([]);
+    setListSearch('');
+    setShowList(false);
     onClose();
   };
+
+  const addItemFromList = (item) => {
+    const existing = checkoutItems.find(c => c.id === item.id);
+    if (existing) {
+      setCheckoutItems(checkoutItems.map(c =>
+        c.id === item.id ? { ...c, checkoutQty: c.checkoutQty + 1 } : c
+      ));
+    } else {
+      setCheckoutItems([...checkoutItems, { ...item, checkoutQty: 1 }]);
+    }
+  };
+
+  const filteredListItems = items.filter(i => {
+    if (!listSearch.trim()) return true;
+    const q = listSearch.toLowerCase();
+    return (
+      i.name?.toLowerCase().includes(q) ||
+      i.subcategory?.toLowerCase().includes(q) ||
+      i.barcode?.toLowerCase().includes(q) ||
+      i.manufacturer?.toLowerCase().includes(q)
+    );
+  });
 
   const removeItem = (id) => {
     setCheckoutItems(checkoutItems.filter(i => i.id !== id));
@@ -169,14 +195,56 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
                     <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER</span></div>
                   </div>
                   <div className="flex gap-2">
-                    <Input placeholder="Ange streckkod manuellt" value={manualBarcode}
-                      onChange={e => setManualBarcode(e.target.value)}
-                      onKeyPress={e => e.key === 'Enter' && (handleScan(manualBarcode), setManualBarcode(''))} />
-                    <Button onClick={() => { handleScan(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode}>
-                      <Search className="w-4 h-4" />
-                    </Button>
+                   <Input placeholder="Ange streckkod manuellt" value={manualBarcode}
+                     onChange={e => setManualBarcode(e.target.value)}
+                     onKeyPress={e => e.key === 'Enter' && (handleScan(manualBarcode), setManualBarcode(''))} />
+                   <Button onClick={() => { handleScan(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode}>
+                     <Search className="w-4 h-4" />
+                   </Button>
                   </div>
-                </div>
+                  <div className="relative">
+                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+                   <div className="relative flex justify-center text-xs"><span className="bg-white px-2 text-gray-500">ELLER</span></div>
+                  </div>
+                  <Button onClick={() => setShowList(!showList)} variant="outline" className="w-full">
+                   <Package className="w-4 h-4 mr-2" />{showList ? 'Dölj lista' : 'Välj från lista'}
+                  </Button>
+                  {showList && (
+                   <div className="space-y-2">
+                     <Input
+                       placeholder="Filtrera namn, kategori, streckkod..."
+                       value={listSearch}
+                       onChange={e => setListSearch(e.target.value)}
+                     />
+                     <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
+                       {filteredListItems.length === 0 ? (
+                         <p className="text-sm text-gray-400 text-center py-4">Inga artiklar hittades</p>
+                       ) : (
+                         filteredListItems.map(item => {
+                           const alreadyAdded = checkoutItems.find(c => c.id === item.id);
+                           return (
+                             <div
+                               key={item.id}
+                               onClick={() => addItemFromList(item)}
+                               className="flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors"
+                             >
+                               <div className="min-w-0 flex-1">
+                                 <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                                 <p className="text-xs text-gray-500 truncate">{item.subcategory}{item.size ? ` • ${item.size}` : ''} • Lager: {item.quantity ?? 0}</p>
+                               </div>
+                               {alreadyAdded ? (
+                                 <Badge className="shrink-0 ml-2 bg-emerald-100 text-emerald-700">{alreadyAdded.checkoutQty} st</Badge>
+                               ) : (
+                                 <span className="text-xs text-[#8B1E1E] font-medium shrink-0 ml-2">+ Lägg till</span>
+                               )}
+                             </div>
+                           );
+                         })
+                       )}
+                     </div>
+                   </div>
+                  )}
+                  </div>
               ) : (
                 <div className="space-y-4">
                   <div id="checkout-scanner" className="rounded-lg overflow-hidden" />
