@@ -10,6 +10,7 @@ import PendingRequestsChart from '@/components/dashboard/PendingRequestsChart';
 import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import LoanRequestModal from '@/components/modals/LoanRequestModal';
+import DashboardScanSearch from '@/components/dashboard/DashboardScanSearch';
 import { Button } from '@/components/ui/button';
 import {
   Wrench,
@@ -231,6 +232,7 @@ export default function Dashboard() {
                 </Button>
               </Link>
             )}
+            <DashboardScanSearch tools={activeTools} onSelectTool={(tool) => setEditTool(tool)} />
             <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline">
               <RotateCw className="w-4 h-4 mr-1" />
               <span className="hidden sm:inline">Skicka låneförfrågan</span>
