@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import MobileSelect from '@/components/ui/mobile-select';
+import TemplateSearchSelect from '@/components/ui/TemplateSearchSelect';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
@@ -276,11 +277,11 @@ export default function ArbetskläderUtrustningFormModal({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Använd tidigare arbetskläder som mall
               </label>
-              <MobileSelect
+              <TemplateSearchSelect
+                options={templateOptions}
                 value={selectedTemplate}
                 onChange={loadTemplate}
-                options={templateOptions}
-                placeholder="Välj arbetskläder att kopiera från"
+                placeholder="Sök eller välj arbetskläder att kopiera från"
               />
               <p className="text-xs text-gray-600 mt-2">
                 Välj en tidigare artikel för att kopiera dess egenskaper.
