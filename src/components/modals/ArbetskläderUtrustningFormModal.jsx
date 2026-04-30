@@ -106,7 +106,7 @@ export default function ArbetskläderUtrustningFormModal({
   locations,
 }) {
   const { data: allItems = [] } = useQuery({
-    queryKey: ['arbetskläder-utrustning'],
+    queryKey: ['arbetskläder'],
     queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
   });
 
@@ -130,6 +130,24 @@ export default function ArbetskläderUtrustningFormModal({
   const [customSubcategory, setCustomSubcategory] = useState('');
   const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('');
+
+  // Build unique template options from existing items (exclude deleted, deduplicate by name)
+  const templateOptions = React.useMemo(() => {
+    const seen = new Set();
+    return allItems
+      .filter(t => !t.is_deleted)
+      .filter(t => {
+        const key = `${t.name}||${t.category}||${t.manufacturer || ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+      .map(t => ({
+        value: t.id,
+        label: `${t.name}${t.manufacturer ? ' - ' + t.manufacturer : ''} (${t.category})`
+      }));
+  }, [allItems]);
 
   useEffect(() => {
     if (item) {
@@ -253,7 +271,7 @@ export default function ArbetskläderUtrustningFormModal({
 
         <div className="space-y-4">
           {/* Använd som mall (endast när nya arbetskläder skapas) */}
-          {!item && allItems.length > 0 && (
+          {!item && templateOptions.length > 0 && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Använd tidigare arbetskläder som mall
@@ -261,10 +279,7 @@ export default function ArbetskläderUtrustningFormModal({
               <MobileSelect
                 value={selectedTemplate}
                 onChange={loadTemplate}
-                options={allItems.map((template) => ({
-                  value: template.id,
-                  label: `${template.name} - ${template.manufacturer || 'Okänd'} (${template.category})`
-                }))}
+                options={templateOptions}
                 placeholder="Välj arbetskläder att kopiera från"
               />
               <p className="text-xs text-gray-600 mt-2">
