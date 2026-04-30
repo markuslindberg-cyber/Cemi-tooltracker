@@ -184,7 +184,7 @@ export default function ArbetskläderUtrustningFormModal({
         condition: 'bra',
         location_id: defaultLocation?.id || '',
         location_name: defaultLocation?.name || '',
-        purchase_date: '',
+        purchase_date: new Date().toISOString().split('T')[0],
         purchase_price: '',
         barcode: '',
         notes: '',
