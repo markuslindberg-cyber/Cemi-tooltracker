@@ -413,8 +413,11 @@ export default function ArbetskläderUtrustningFormModal({
             </label>
             <Input
               type="number"
-              value={formData.quantity}
-              onChange={(e) => handleChange('quantity', parseInt(e.target.value) || 0)}
+              inputMode="numeric"
+              value={formData.quantity === 0 ? '' : formData.quantity}
+              onChange={(e) => handleChange('quantity', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
+              onFocus={(e) => { if (formData.quantity === 0) handleChange('quantity', ''); }}
+              onBlur={(e) => { if (e.target.value === '') handleChange('quantity', 0); }}
               placeholder="0"
             />
           </div>
