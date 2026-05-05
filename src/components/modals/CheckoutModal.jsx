@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import {
   Dialog,
   DialogContent,
@@ -59,7 +59,20 @@ export default function CheckoutModal({ isOpen, onClose, items }) {
 
   useEffect(() => {
     if (!scannerActive || !isOpen) return;
-    const scanner = new Html5QrcodeScanner("checkout-scanner", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+    const scanner = new Html5QrcodeScanner("checkout-scanner", { 
+      fps: 10, 
+      qrbox: { width: 350, height: 150 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+      ]
+    }, false);
     scanner.render(
       (text) => { handleScan(text); scanner.clear(); setScannerActive(false); },
       () => {}
