@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2 } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2, X } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
 import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
@@ -13,40 +12,39 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
   const queryClient = useQueryClient();
   const [scannerActive, setScannerActive] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
-  const [foundTool, setFoundTool] = useState(null);
-  const [tempStatus, setTempStatus] = useState('');
-  const [tempCondition, setTempCondition] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [checkedIds, setCheckedIds] = useState(new Set());
-  const [notFound, setNotFound] = useState(false);
+  const [scannedList, setScannedList] = useState([]); // { tool, status, condition, saved }
+  const [notFoundCode, setNotFoundCode] = useState(null);
 
   useEffect(() => {
     if (!isOpen) {
       setScannerActive(false);
-      setFoundTool(null);
       setManualBarcode('');
-      setNotFound(false);
+      setScannedList([]);
+      setNotFoundCode(null);
     }
   }, [isOpen]);
 
-  useBarcodeCamera("tool-barcode-scanner", scannerActive, (barcode) => {
-    handleScan(barcode);
-    setScannerActive(false);
-  });
+  const handleScan = useCallback((barcode) => {
+    setNotFoundCode(null);
+    // Skip if already in scanned list
+    if (scannedList.some(s => s.tool.barcode === barcode)) return;
 
-  const handleScan = (barcode) => {
-    setManualBarcode(barcode);
     const tool = tools.find(t => t.barcode === barcode);
     if (tool) {
-      setFoundTool(tool);
-      setTempStatus(tool.status || 'available');
-      setTempCondition(tool.condition || 'good');
-      setNotFound(false);
+      setScannedList(prev => [{
+        tool,
+        status: tool.status || 'available',
+        condition: tool.condition || 'good',
+        saved: false,
+        saving: false,
+      }, ...prev]);
     } else {
-      setFoundTool(null);
-      setNotFound(true);
+      setNotFoundCode(barcode);
     }
-  };
+  }, [tools, scannedList]);
+
+  // Camera stays active — no setScannerActive(false) on scan
+  useBarcodeCamera("tool-barcode-scanner", scannerActive, handleScan);
 
   const handleManualSearch = () => {
     if (!manualBarcode.trim()) return;
@@ -54,21 +52,37 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
     setManualBarcode('');
   };
 
-  const handleConfirm = async () => {
-    if (!foundTool) return;
-    setSaving(true);
-    await base44.entities.Tool.update(foundTool.id, {
-      status: tempStatus,
-      condition: tempCondition,
+  const handleSaveItem = async (index) => {
+    const item = scannedList[index];
+    if (!item || item.saved) return;
+    setScannedList(prev => prev.map((s, i) => i === index ? { ...s, saving: true } : s));
+    await base44.entities.Tool.update(item.tool.id, {
+      status: item.status,
+      condition: item.condition,
       last_seen_date: new Date().toISOString(),
     });
-    setCheckedIds(prev => new Set([...prev, foundTool.id]));
+    setScannedList(prev => prev.map((s, i) => i === index ? { ...s, saving: false, saved: true } : s));
     queryClient.invalidateQueries(['tools']);
-    setSaving(false);
-    setFoundTool(null);
   };
 
-  const unchecked = tools.filter(t => t.barcode && !checkedIds.has(t.id));
+  const handleSaveAll = async () => {
+    const unsaved = scannedList.filter(s => !s.saved);
+    await Promise.all(unsaved.map((item, _) => {
+      const idx = scannedList.indexOf(item);
+      return handleSaveItem(idx);
+    }));
+  };
+
+  const updateItem = (index, field, value) => {
+    setScannedList(prev => prev.map((s, i) => i === index ? { ...s, [field]: value } : s));
+  };
+
+  const removeItem = (index) => {
+    setScannedList(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const savedCount = scannedList.filter(s => s.saved).length;
+  const totalWithBarcode = tools.filter(t => t.barcode).length;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -83,10 +97,10 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
         {/* Progress */}
         <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between text-sm">
           <span className="text-gray-600">Kontrollerade</span>
-          <span className="font-bold text-[#8B1E1E]">{checkedIds.size} / {tools.filter(t => t.barcode).length}</span>
+          <span className="font-bold text-[#8B1E1E]">{savedCount} / {totalWithBarcode}</span>
         </div>
 
-        {/* Scanner */}
+        {/* Camera — always visible when active */}
         <div className="space-y-3">
           {!scannerActive ? (
             <div className="flex gap-2">
@@ -97,7 +111,6 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
                 <Camera className="w-5 h-5 mr-2" />
                 Kamera
               </Button>
-
               <div className="flex-1 flex gap-1">
                 <Input
                   placeholder="Streckkod"
@@ -112,97 +125,109 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <div id="tool-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '300px' }} />
-              <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">
-                Avbryt
-              </Button>
+            <div className="space-y-2">
+              <div id="tool-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+              <div className="flex gap-2">
+                <div className="flex-1 flex gap-1">
+                  <Input
+                    placeholder="Manuell streckkod"
+                    value={manualBarcode}
+                    onChange={e => setManualBarcode(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleManualSearch()}
+                    className="text-sm"
+                  />
+                  <Button onClick={handleManualSearch} disabled={!manualBarcode.trim()} size="sm">
+                    <Search className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Button onClick={() => setScannerActive(false)} variant="outline" size="sm">
+                  Stäng
+                </Button>
+              </div>
             </div>
           )}
         </div>
 
         {/* Not found */}
-        {notFound && (
+        {notFoundCode && (
           <div className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-200 text-sm text-red-700">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            Ingen maskin hittades med den streckkoden.
+            Ingen maskin med streckkod: <span className="font-mono">{notFoundCode}</span>
           </div>
         )}
 
-        {/* Found tool */}
-        {foundTool && (
-          <div className="border border-gray-200 rounded-xl p-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                {foundTool.image_url
-                  ? <img src={foundTool.image_url} alt={foundTool.name} className="w-full h-full object-cover rounded-lg" />
-                  : <Package className="w-6 h-6 text-gray-400" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900">{foundTool.name}</p>
-                <p className="text-sm text-gray-500">{foundTool.category}{foundTool.manufacturer ? ` · ${foundTool.manufacturer}` : ''}</p>
-                {foundTool.location_name && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                    <MapPin className="w-3 h-3" />{foundTool.location_name}
-                  </p>
-                )}
-              </div>
-              <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Status</Label>
-                <Select value={tempStatus} onValueChange={setTempStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="available">Tillgänglig</SelectItem>
-                    <SelectItem value="in_use">I bruk</SelectItem>
-                    <SelectItem value="maintenance">Underhåll</SelectItem>
-                    <SelectItem value="missing">Saknas</SelectItem>
-                    <SelectItem value="retired">Kasserad</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label>Skick</Label>
-                <Select value={tempCondition} onValueChange={setTempCondition}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">Ny</SelectItem>
-                    <SelectItem value="good">Bra</SelectItem>
-                    <SelectItem value="fair">Okej</SelectItem>
-                    <SelectItem value="poor">Dålig</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setFoundTool(null)}>Avbryt</Button>
-              <Button
-                onClick={handleConfirm}
-                disabled={saving}
-                className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515]"
-              >
-                {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : <><CheckCircle2 className="w-4 h-4 mr-2" />Bekräfta</>}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Unchecked with barcodes */}
-        {unchecked.length > 0 && (
+        {/* Scanned list */}
+        {scannedList.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Ej kontrollerade ({unchecked.length})
-            </p>
-            <div className="space-y-1 max-h-40 overflow-y-auto">
-              {unchecked.map(t => (
-                <div key={t.id} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg text-sm">
-                  <span className="text-gray-900">{t.name}</span>
-                  <span className="text-xs text-gray-400 font-mono">{t.barcode}</span>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-gray-700">Skannade ({scannedList.length})</p>
+              {scannedList.some(s => !s.saved) && (
+                <Button size="sm" onClick={handleSaveAll} className="bg-[#8B1E1E] hover:bg-[#6B1515] h-8 text-xs">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                  Spara alla
+                </Button>
+              )}
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {scannedList.map((item, idx) => (
+                <div key={item.tool.id} className={`rounded-xl border p-3 space-y-2 ${item.saved ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                      {item.tool.image_url
+                        ? <img src={item.tool.image_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                        : <Package className="w-4 h-4 text-gray-400" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-gray-900 truncate">{item.tool.name}</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {item.tool.manufacturer}{item.tool.location_name ? ` · ${item.tool.location_name}` : ''}
+                      </p>
+                    </div>
+                    {item.saved ? (
+                      <Badge className="bg-green-100 text-green-700 text-xs">Sparad</Badge>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        {item.saving ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                        ) : (
+                          <>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => removeItem(idx)}>
+                              <X className="w-3.5 h-3.5 text-gray-400" />
+                            </Button>
+                            <Button size="sm" className="h-7 bg-[#8B1E1E] hover:bg-[#6B1515] text-xs px-2" onClick={() => handleSaveItem(idx)}>
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {!item.saved && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        value={item.status}
+                        onChange={e => updateItem(idx, 'status', e.target.value)}
+                        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
+                      >
+                        <option value="available">Tillgänglig</option>
+                        <option value="in_use">I bruk</option>
+                        <option value="i_lager">I lager</option>
+                        <option value="maintenance">Underhåll</option>
+                        <option value="missing">Saknas</option>
+                        <option value="retired">Kasserad</option>
+                      </select>
+                      <select
+                        value={item.condition}
+                        onChange={e => updateItem(idx, 'condition', e.target.value)}
+                        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
+                      >
+                        <option value="new">Ny</option>
+                        <option value="good">Bra</option>
+                        <option value="fair">Okej</option>
+                        <option value="poor">Dålig</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

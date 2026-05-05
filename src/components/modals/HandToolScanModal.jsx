@@ -41,7 +41,6 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
 
   useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
     handleScan(barcode);
-    setScannerActive(false);
   });
 
   // Scoped tools: filter by location + typeSearch
@@ -234,9 +233,23 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '300px' }} />
-                  <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt</Button>
+                <div className="space-y-2">
+                  <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                  <div className="flex gap-2">
+                    <div className="flex-1 flex gap-1">
+                      <Input
+                        placeholder="Manuell streckkod"
+                        value={manualBarcode}
+                        onChange={e => setManualBarcode(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleManualSearch()}
+                        className="text-sm"
+                      />
+                      <Button onClick={handleManualSearch} disabled={!manualBarcode.trim()} size="sm">
+                        <Search className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <Button onClick={() => setScannerActive(false)} variant="outline" size="sm">Stäng</Button>
+                  </div>
                 </div>
               )}
             </div>

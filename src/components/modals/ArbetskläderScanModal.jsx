@@ -38,7 +38,6 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
 
   useBarcodeCamera("barcode-scanner", scannerActive && isOpen, (barcode) => {
     handleScan(barcode);
-    setScannerActive(false);
   });
 
   const handleScan = (barcode) => {
@@ -96,9 +95,21 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
                  </div>
                </div>
              ) : (
-               <div className="space-y-3">
-                 <div id="barcode-scanner" className="rounded-lg overflow-hidden bg-black" style={{ minHeight: '300px' }} />
-                 <Button onClick={() => setScannerActive(false)} variant="outline" className="w-full">Avbryt</Button>
+               <div className="space-y-2">
+                 <div id="barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                 <div className="flex gap-2">
+                   <div className="flex-1 flex gap-1">
+                     <Input placeholder="Manuell streckkod" value={manualBarcode}
+                       onChange={e => setManualBarcode(e.target.value)}
+                       onKeyPress={e => e.key === 'Enter' && (handleScan(manualBarcode), setManualBarcode(''))}
+                       className="text-sm"
+                     />
+                     <Button onClick={() => { handleScan(manualBarcode); setManualBarcode(''); }} disabled={!manualBarcode} size="sm">
+                       <Search className="w-4 h-4" />
+                     </Button>
+                   </div>
+                   <Button onClick={() => setScannerActive(false)} variant="outline" size="sm">Stäng</Button>
+                 </div>
                </div>
              )}
           </div>

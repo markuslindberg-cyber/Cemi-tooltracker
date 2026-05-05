@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 const SUPPORTED_FORMATS = [
@@ -14,9 +14,13 @@ const SUPPORTED_FORMATS = [
   Html5QrcodeSupportedFormats.ITF,
 ];
 
+// Debounce: ignore duplicate scans within this window
+const SCAN_COOLDOWN_MS = 1500;
+
 export function useBarcodeCamera(containerId, isActive, onScan) {
   const scannerRef = useRef(null);
   const onScanRef = useRef(onScan);
+  const lastScanRef = useRef({ text: '', time: 0 });
   onScanRef.current = onScan;
 
   useEffect(() => {
@@ -25,7 +29,6 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
     let stopped = false;
 
     const startScanner = async () => {
-      // Wait for the DOM element to exist
       const el = document.getElementById(containerId);
       if (!el) return;
 
@@ -36,7 +39,6 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
         });
         scannerRef.current = scanner;
 
-        // Prefer back camera on mobile
         const cameras = await Html5Qrcode.getCameras();
         if (stopped || cameras.length === 0) return;
 
@@ -46,19 +48,24 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
         await scanner.start(
           cameraId,
           {
-            fps: 15,
+            fps: 20,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-              // Use 80% width for better Code 39 reading
               const w = Math.min(Math.floor(viewfinderWidth * 0.85), 500);
-              const h = Math.min(Math.floor(viewfinderHeight * 0.3), 150);
+              const h = Math.min(Math.floor(viewfinderHeight * 0.35), 180);
               return { width: Math.max(w, 200), height: Math.max(h, 80) };
             },
             aspectRatio: 1.777,
+            disableFlip: false,
           },
           (decodedText) => {
+            const now = Date.now();
+            const last = lastScanRef.current;
+            // Ignore duplicate scans within cooldown
+            if (decodedText === last.text && now - last.time < SCAN_COOLDOWN_MS) return;
+            lastScanRef.current = { text: decodedText, time: now };
             onScanRef.current(decodedText);
           },
-          () => {} // ignore errors
+          () => {}
         );
       } catch (error) {
         console.error('Fel vid kamerastart:', error);
