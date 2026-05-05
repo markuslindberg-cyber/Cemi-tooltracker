@@ -85,10 +85,14 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
 
     return () => {
       stopped = true;
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-        scannerRef.current.clear().catch(() => {});
-        scannerRef.current = null;
+      const scanner = scannerRef.current;
+      scannerRef.current = null;
+      if (scanner) {
+        scanner.stop().then(() => {
+          try { scanner.clear(); } catch {}
+        }).catch(() => {
+          try { scanner.clear(); } catch {}
+        });
       }
     };
   }, [isActive, containerId]);
