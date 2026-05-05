@@ -9,6 +9,7 @@ import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, 
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
 import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
+import ScannerOverlay from "@/components/ScannerOverlay";
 
 export default function HandToolScanModal({ isOpen, onClose, handTools, locations = [] }) {
   const queryClient = useQueryClient();
@@ -39,7 +40,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
     }
   }, [isOpen]);
 
-  useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
+  const { scanFlash } = useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
     handleScan(barcode);
   });
 
@@ -234,7 +235,10 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                  <div className="relative">
+                    <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                    <ScannerOverlay scanFlash={scanFlash} />
+                  </div>
                   <div className="flex gap-2">
                     <div className="flex-1 flex gap-1">
                       <Input

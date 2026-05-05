@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScanLine, Search, X, Package, MapPin, ArrowRight } from 'lucide-react';
 import { useBarcodeCamera } from '@/hooks/useBarcodeCamera';
+import ScannerOverlay from '@/components/ScannerOverlay';
 
 export default function DashboardScanSearch({ tools, onSelectTool }) {
   const [open, setOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function DashboardScanSearch({ tools, onSelectTool }) {
     }
   }, [tools]);
 
-  useBarcodeCamera('dashboard-scanner', scanning, handleScan);
+  const { scanFlash } = useBarcodeCamera('dashboard-scanner', scanning, handleScan);
 
   const filteredTools = searchText.trim().length >= 2
     ? tools.filter(t => {
@@ -101,10 +102,13 @@ export default function DashboardScanSearch({ tools, onSelectTool }) {
 
             {/* Camera */}
             {scanning && (
-              <div
-                id="dashboard-scanner"
-                className="rounded-xl overflow-hidden border border-gray-200"
-              />
+              <div className="relative">
+                <div
+                  id="dashboard-scanner"
+                  className="rounded-xl overflow-hidden border border-gray-200"
+                />
+                <ScannerOverlay scanFlash={scanFlash} />
+              </div>
             )}
 
             {/* Scan result */}

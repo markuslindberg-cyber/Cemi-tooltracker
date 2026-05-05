@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
+import ScannerOverlay from "@/components/ScannerOverlay";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +37,7 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
     },
   });
 
-  useBarcodeCamera("barcode-scanner", scannerActive && isOpen, (barcode) => {
+  const { scanFlash } = useBarcodeCamera("barcode-scanner", scannerActive && isOpen, (barcode) => {
     handleScan(barcode);
   });
 
@@ -96,7 +97,10 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
                </div>
              ) : (
                <div className="space-y-2">
-                 <div id="barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                 <div className="relative">
+                   <div id="barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                   <ScannerOverlay scanFlash={scanFlash} />
+                 </div>
                  <div className="flex gap-2">
                    <div className="flex-1 flex gap-1">
                      <Input placeholder="Manuell streckkod" value={manualBarcode}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 const SUPPORTED_FORMATS = [
@@ -21,6 +21,7 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
   const scannerRef = useRef(null);
   const onScanRef = useRef(onScan);
   const lastScanRef = useRef({ text: '', time: 0 });
+  const [scanFlash, setScanFlash] = useState(false);
   onScanRef.current = onScan;
 
   useEffect(() => {
@@ -63,6 +64,9 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
             // Ignore duplicate scans within cooldown
             if (decodedText === last.text && now - last.time < SCAN_COOLDOWN_MS) return;
             lastScanRef.current = { text: decodedText, time: now };
+            // Trigger green flash
+            setScanFlash(true);
+            setTimeout(() => setScanFlash(false), 600);
             onScanRef.current(decodedText);
           },
           () => {}
@@ -84,5 +88,5 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
     };
   }, [isActive, containerId]);
 
-  return null;
+  return { scanFlash };
 }

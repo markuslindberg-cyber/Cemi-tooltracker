@@ -7,6 +7,7 @@ import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, 
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
 import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
+import ScannerOverlay from "@/components/ScannerOverlay";
 
 export default function ToolScanModal({ isOpen, onClose, tools }) {
   const queryClient = useQueryClient();
@@ -44,7 +45,7 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
   }, [tools, scannedList]);
 
   // Camera stays active — no setScannerActive(false) on scan
-  useBarcodeCamera("tool-barcode-scanner", scannerActive, handleScan);
+  const { scanFlash } = useBarcodeCamera("tool-barcode-scanner", scannerActive, handleScan);
 
   const handleManualSearch = () => {
     if (!manualBarcode.trim()) return;
@@ -126,7 +127,10 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
             </div>
           ) : (
             <div className="space-y-2">
-              <div id="tool-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+              <div className="relative">
+                <div id="tool-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                <ScannerOverlay scanFlash={scanFlash} />
+              </div>
               <div className="flex gap-2">
                 <div className="flex-1 flex gap-1">
                   <Input
