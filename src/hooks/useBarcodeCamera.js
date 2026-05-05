@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 const SUPPORTED_FORMATS = [
@@ -21,7 +21,6 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
   const scannerRef = useRef(null);
   const onScanRef = useRef(onScan);
   const lastScanRef = useRef({ text: '', time: 0 });
-  const [scanFlash, setScanFlash] = useState(false);
   onScanRef.current = onScan;
 
   useEffect(() => {
@@ -64,9 +63,15 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
             // Ignore duplicate scans within cooldown
             if (decodedText === last.text && now - last.time < SCAN_COOLDOWN_MS) return;
             lastScanRef.current = { text: decodedText, time: now };
-            // Trigger green flash
-            setScanFlash(true);
-            setTimeout(() => setScanFlash(false), 600);
+            // Trigger green flash via DOM (no re-render)
+            const container = document.getElementById(containerId);
+            if (container) {
+              const flash = container.parentElement?.querySelector('.scan-flash-overlay');
+              if (flash) {
+                flash.style.opacity = '1';
+                setTimeout(() => { flash.style.opacity = '0'; }, 500);
+              }
+            }
             onScanRef.current(decodedText);
           },
           () => {}
@@ -88,5 +93,5 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
     };
   }, [isActive, containerId]);
 
-  return { scanFlash };
+  return null;
 }

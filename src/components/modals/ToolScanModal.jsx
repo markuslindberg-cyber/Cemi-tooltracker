@@ -45,7 +45,7 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
   }, [tools, scannedList]);
 
   // Camera stays active — no setScannerActive(false) on scan
-  const { scanFlash } = useBarcodeCamera("tool-barcode-scanner", scannerActive, handleScan);
+  useBarcodeCamera("tool-barcode-scanner", scannerActive, handleScan);
 
   const handleManualSearch = () => {
     if (!manualBarcode.trim()) return;
@@ -129,7 +129,7 @@ export default function ToolScanModal({ isOpen, onClose, tools }) {
             <div className="space-y-2">
               <div className="relative">
                 <div id="tool-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
-                <ScannerOverlay scanFlash={scanFlash} />
+                <ScannerOverlay />
               </div>
               <div className="flex gap-2">
                 <div className="flex-1 flex gap-1">

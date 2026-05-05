@@ -37,7 +37,7 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
     },
   });
 
-  const { scanFlash } = useBarcodeCamera("barcode-scanner", scannerActive && isOpen, (barcode) => {
+  useBarcodeCamera("barcode-scanner", scannerActive && isOpen, (barcode) => {
     handleScan(barcode);
   });
 
@@ -99,7 +99,7 @@ export default function ArbetskläderScanModal({ isOpen, onClose, items, onRefre
                <div className="space-y-2">
                  <div className="relative">
                    <div id="barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
-                   <ScannerOverlay scanFlash={scanFlash} />
+                   <ScannerOverlay />
                  </div>
                  <div className="flex gap-2">
                    <div className="flex-1 flex gap-1">

@@ -40,7 +40,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
     }
   }, [isOpen]);
 
-  const { scanFlash } = useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
+  useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
     handleScan(barcode);
   });
 
@@ -237,7 +237,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
                 <div className="space-y-2">
                   <div className="relative">
                     <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
-                    <ScannerOverlay scanFlash={scanFlash} />
+                    <ScannerOverlay />
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1 flex gap-1">

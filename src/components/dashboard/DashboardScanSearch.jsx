@@ -25,7 +25,7 @@ export default function DashboardScanSearch({ tools, onSelectTool }) {
     }
   }, [tools]);
 
-  const { scanFlash } = useBarcodeCamera('dashboard-scanner', scanning, handleScan);
+  useBarcodeCamera('dashboard-scanner', scanning, handleScan);
 
   const filteredTools = searchText.trim().length >= 2
     ? tools.filter(t => {
@@ -107,7 +107,7 @@ export default function DashboardScanSearch({ tools, onSelectTool }) {
                   id="dashboard-scanner"
                   className="rounded-xl overflow-hidden border border-gray-200"
                 />
-                <ScannerOverlay scanFlash={scanFlash} />
+                <ScannerOverlay />
               </div>
             )}
 
