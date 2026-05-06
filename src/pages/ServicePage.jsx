@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { Html5QrcodeScanner } from 'html5-qrcode';
+import ToolFormModal from '@/components/modals/ToolFormModal';
 
 const SERVICE_TYPE_LABELS = {
   repair: 'Reparation',
@@ -318,9 +319,20 @@ function AddServiceDialog({ open, onClose, tool, prefillTemplate, suppliers = []
 // ─── Tool Service History ────────────────────────────────────────────────────
 function ToolServiceHistory({ tool, onBack }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [showToolInfo, setShowToolInfo] = useState(false);
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
+  });
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['teamMembers'],
+    queryFn: () => base44.entities.TeamMember.list(),
+  });
 
   const { data: records = [], isLoading } = useQuery({
     queryKey: ['serviceRecords', tool.id],
@@ -358,7 +370,7 @@ function ToolServiceHistory({ tool, onBack }) {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/Inventory?toolId=${tool.id}`)}>
+          <Button variant="outline" onClick={() => setShowToolInfo(true)}>
             <Info className="w-4 h-4 mr-2" /> Mer info
           </Button>
           <Button variant="outline" onClick={() => setTemplatePickerOpen(true)}>
@@ -463,6 +475,20 @@ function ToolServiceHistory({ tool, onBack }) {
         tool={tool}
         prefillTemplate={selectedTemplate}
         suppliers={suppliers}
+      />
+
+      <ToolFormModal
+        isOpen={showToolInfo}
+        onClose={() => setShowToolInfo(false)}
+        tool={tool}
+        locations={locations}
+        teamMembers={teamMembers}
+        onSubmit={(data) => {
+          base44.entities.Tool.update(tool.id, data).then(() => {
+            queryClient.invalidateQueries({ queryKey: ['tools'] });
+            setShowToolInfo(false);
+          });
+        }}
       />
     </div>
   );
