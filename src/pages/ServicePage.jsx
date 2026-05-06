@@ -37,6 +37,76 @@ const SERVICE_TYPE_COLORS = {
   annual_service: 'bg-orange-100 text-orange-700',
 };
 
+// ─── Recently Serviced Section ───────────────────────────────────────────────
+function RecentlyServicedSection({ onSelectTool }) {
+  const { data: recentRecords = [], isLoading } = useQuery({
+    queryKey: ['recentServiceRecords'],
+    queryFn: () => base44.entities.ServiceRecord.list('-service_date', 10),
+  });
+
+  const { data: tools = [] } = useQuery({
+    queryKey: ['tools'],
+    queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+  });
+
+  const toolMap = React.useMemo(() => {
+    const map = {};
+    tools.forEach(t => { map[t.id] = t; });
+    return map;
+  }, [tools]);
+
+  // Get unique tools from recent records
+  const recentTools = React.useMemo(() => {
+    const seen = new Set();
+    return recentRecords
+      .filter(r => {
+        if (seen.has(r.tool_id)) return false;
+        seen.add(r.tool_id);
+        return true;
+      })
+      .map(r => ({
+        ...r,
+        tool: toolMap[r.tool_id]
+      }))
+      .filter(r => r.tool)
+      .slice(0, 5);
+  }, [recentRecords, toolMap]);
+
+  if (isLoading || recentTools.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+        <CheckCircle2 className="w-4 h-4 text-green-500" />
+        Senast servade maskiner
+      </p>
+      <div className="space-y-2">
+        {recentTools.map(r => (
+          <button
+            key={r.id}
+            onClick={() => onSelectTool(r.tool)}
+            className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl text-left transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              {r.tool.image_url
+                ? <img src={r.tool.image_url} alt={r.tool.name} className="w-9 h-9 object-cover rounded-lg" />
+                : <div className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center"><Package className="w-4 h-4 text-gray-400" /></div>
+              }
+              <div>
+                <p className="font-medium text-gray-900 text-sm">{r.tool.name}</p>
+                <p className="text-xs text-gray-500">
+                  {SERVICE_TYPE_LABELS[r.service_type]} · {r.service_date ? format(new Date(r.service_date), 'd MMM yyyy', { locale: sv }) : ''}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Add Service Dialog ──────────────────────────────────────────────────────
 function AddServiceDialog({ open, onClose, tool, prefillTemplate, suppliers = [] }) {
   const queryClient = useQueryClient();
@@ -548,6 +618,9 @@ export default function ServicePage() {
 
         {scannerActive && <div id="service-barcode-scanner" className="rounded-xl overflow-hidden" />}
       </div>
+
+      {/* Recently serviced machines */}
+      <RecentlyServicedSection onSelectTool={(tool) => { setSelectedTool(tool); setNotFound(false); }} />
 
       {/* Recent tools shortcut */}
       {tools.length > 0 && (
