@@ -560,6 +560,15 @@ export default function LokalvardBegaranAttGodkanna() {
                                     <p className="font-medium">{request.approved_by_name}</p>
                                   </div>
                                 )}
+                                {(() => {
+                                  const checkout = checkouts.find(c => c.request_id === request.id);
+                                  return checkout?.checked_out_by_name ? (
+                                    <div>
+                                      <p className="text-gray-500 text-xs">Uttag utfört av</p>
+                                      <p className="font-medium">{checkout.checked_out_by_name}</p>
+                                    </div>
+                                  ) : null;
+                                })()}
                               </div>
                               <div>
                                 <p className="text-gray-600 font-medium mb-1">Artiklar</p>
