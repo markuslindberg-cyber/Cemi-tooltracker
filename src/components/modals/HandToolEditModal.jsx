@@ -83,6 +83,19 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
   const handleSubmit = async () => {
     setSaving(true);
     await base44.entities.HandTool.update(tool.id, form);
+
+    // If image changed, propagate to all tools with the same name+category
+    if (form.image_url && form.image_url !== tool.image_url) {
+      const siblings = allHandTools.filter(
+        t => t.id !== tool.id && t.name === form.name && t.category === form.category
+      );
+      if (siblings.length > 0) {
+        await Promise.all(
+          siblings.map(t => base44.entities.HandTool.update(t.id, { image_url: form.image_url }))
+        );
+      }
+    }
+
     setSaving(false);
     onSuccess?.();
   };
