@@ -15,6 +15,7 @@ import HandToolBatchModal from '@/components/modals/HandToolBatchModal';
 import HandToolScanModal from '@/components/modals/HandToolScanModal';
 import HandToolEditModal from '@/components/modals/HandToolEditModal';
 import HandToolGroupEditModal from '@/components/modals/HandToolGroupEditModal';
+import HandToolCard from '@/components/ui/HandToolCard';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
 
 const statusConfig = {
@@ -441,158 +442,17 @@ export default function HandTools() {
           <p className="text-sm">Klicka på "Lägg till redskap" för att börja</p>
         </div>
       ) : viewMode === 'grid' ? (
-        /* Grid view — used for both handredskap and avspärrning */
-        <div className="space-y-4">
-          {/* Bulk action bar */}
-          {selectedIds.size > 0 && (
-            <div className="sticky top-4 z-20 bg-white border border-[#8B1E1E]/30 rounded-xl p-3 shadow-lg flex flex-wrap items-center gap-3">
-              <span className="text-sm font-medium text-[#8B1E1E]">{selectedIds.size} markerade</span>
-              <Select value={bulkStatus} onValueChange={setBulkStatus}>
-                <SelectTrigger className="w-36 h-8 text-sm"><SelectValue placeholder="Ändra status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="i_lager">I lager</SelectItem>
-                  <SelectItem value="i_bruk">I bruk</SelectItem>
-                  <SelectItem value="saknas">Saknas</SelectItem>
-                  <SelectItem value="kasserad">Kasserad</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={bulkLocation} onValueChange={setBulkLocation}>
-                <SelectTrigger className="w-40 h-8 text-sm"><SelectValue placeholder="Ändra plats" /></SelectTrigger>
-                <SelectContent>
-                  {locations.map(loc => <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Button size="sm" onClick={handleBulkSave} disabled={bulkSaveMutation.isPending || (!bulkStatus && !bulkLocation)} className="bg-[#8B1E1E] hover:bg-[#6B1515] h-8">
-                {bulkSaveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                Spara
-              </Button>
-              <button onClick={() => setSelectedIds(new Set())} className="text-gray-400 hover:text-gray-600 ml-auto"><XIcon className="w-4 h-4" /></button>
-            </div>
-          )}
-
-          {Object.values(grouped).map((group) => {
-            const byLocation = group.items.reduce((acc, item) => {
-              const loc = item.location_name || 'Ingen plats';
-              if (!acc[loc]) acc[loc] = [];
-              acc[loc].push(item);
-              return acc;
-            }, {});
-            const byStatus = group.items.reduce((acc, item) => {
-              acc[item.status] = (acc[item.status] || 0) + 1;
-              return acc;
-            }, {});
-            const groupSelected = group.items.every(i => selectedIds.has(i.id));
-            return (
-              <div key={`${group.name}-${group.category}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-gray-50">
-                  {/* Left: category image + name */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative group/catimg">
-                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
-                        {categoryImageMap[group.category]?.image_url
-                          ? <img src={categoryImageMap[group.category].image_url} alt={group.category} className="w-full h-full object-cover" />
-                          : <Package className="w-6 h-6 text-gray-300" />}
-                      </div>
-                      <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 group-hover/catimg:opacity-100 cursor-pointer transition-opacity">
-                        {uploadingCategoryImage === group.category
-                          ? <Loader2 className="w-4 h-4 text-white animate-spin" />
-                          : <Image className="w-4 h-4 text-white" />}
-                        <input type="file" accept="image/*" className="hidden" onChange={e => handleCategoryImageUpload(e, group.category)} disabled={uploadingCategoryImage === group.category} />
-                      </label>
-                    </div>
-                    <div>
-                      <h2 className="font-semibold text-gray-900">{group.name}</h2>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        {editingCategory?.oldName === group.category ? (
-                          <div className="flex items-center gap-1">
-                            <input
-                              autoFocus
-                              className="text-sm border border-gray-300 rounded px-2 py-0.5 w-32"
-                              value={editingCategory.newName}
-                              onChange={e => setEditingCategory(prev => ({ ...prev, newName: e.target.value }))}
-                              onKeyDown={e => { if (e.key === 'Enter') handleRenameCategory(); if (e.key === 'Escape') setEditingCategory(null); }}
-                            />
-                            <button onClick={handleRenameCategory} disabled={renameMutation.isPending} className="text-green-600 hover:text-green-700">
-                              {renameMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                            </button>
-                            <button onClick={() => setEditingCategory(null)} className="text-gray-400 hover:text-gray-600"><XIcon className="w-3 h-3" /></button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 group/cat">
-                            <span className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''} · {group.items.length} st totalt</span>
-                            <button
-                              onClick={() => setEditingCategory({ oldName: group.category, newName: group.category })}
-                              className="opacity-0 group-hover/cat:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity ml-1"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {/* Right: status badges + group edit + checkbox */}
-                  <div className="flex items-center gap-2 flex-wrap justify-end">
-                    {Object.entries(byStatus).map(([s, count]) => (
-                      <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
-                    ))}
-                    <button
-                      onClick={() => {
-                        const selectedInGroup = group.items.filter(i => selectedIds.has(i.id));
-                        setGroupEditTarget({ ...group, items: selectedInGroup.length > 0 ? selectedInGroup : group.items });
-                      }}
-                      className="ml-1 p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
-                      title="Redigera markerade redskap"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <Checkbox
-                      checked={groupSelected}
-                      onCheckedChange={() => toggleSelectAll(group.items)}
-                      className="shrink-0"
-                    />
-                  </div>
-                </div>
-                {/* Items per location as clear rows */}
-                <div className="divide-y divide-gray-50">
-                  {Object.entries(byLocation).map(([locName, items]) => (
-                    <div key={locName}>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-100/80 border-t-2 border-b-2 border-gray-200">
-                        <MapPin className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">{locName}</span>
-                        <span className="text-xs text-gray-400">({items.length} st)</span>
-                        <Checkbox
-                          checked={items.every(i => selectedIds.has(i.id))}
-                          onCheckedChange={() => toggleSelectAll(items)}
-                          className="ml-1"
-                        />
-                      </div>
-                      <div className="divide-y divide-gray-50">
-                        {items.map((item, idx) => (
-                          <div key={item.id} className={`flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors group ${selectedIds.has(item.id) ? 'bg-blue-50/40' : ''}`}>
-                            <span className="text-xs text-gray-400 w-5 shrink-0">#{idx + 1}</span>
-                            <span className={`w-2 h-2 rounded-full shrink-0 ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
-                            {item.notes && <span className="text-xs text-gray-400 truncate max-w-[160px]">{item.notes}</span>}
-                            <div className="ml-auto flex items-center gap-2">
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"><Edit className="w-3.5 h-3.5" /></button>
-                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
-                              </div>
-                              <Checkbox
-                                checked={selectedIds.has(item.id)}
-                                onCheckedChange={() => toggleSelect(item.id)}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+        /* Card grid view — individual cards like Maskiner page */
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+          {filtered.map((tool) => (
+            <HandToolCard
+              key={tool.id}
+              tool={tool}
+              categoryImageUrl={categoryImageMap[tool.category]?.image_url}
+              onEdit={setEditTool}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
       ) : (
         /* List view — used for both handredskap and avspärrning */
