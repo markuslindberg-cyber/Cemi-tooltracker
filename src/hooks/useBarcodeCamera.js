@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 const SUPPORTED_FORMATS = [
@@ -21,6 +21,8 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
   const scannerRef = useRef(null);
   const onScanRef = useRef(onScan);
   const lastScanRef = useRef({ text: '', time: 0 });
+  const [torchOn, setTorchOn] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
   onScanRef.current = onScan;
 
   useEffect(() => {
@@ -60,10 +62,8 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
           (decodedText) => {
             const now = Date.now();
             const last = lastScanRef.current;
-            // Ignore duplicate scans within cooldown
             if (decodedText === last.text && now - last.time < SCAN_COOLDOWN_MS) return;
             lastScanRef.current = { text: decodedText, time: now };
-            // Trigger green flash via DOM (no re-render)
             const container = document.getElementById(containerId);
             if (container) {
               const flash = container.parentElement?.querySelector('.scan-flash-overlay');
@@ -76,6 +76,18 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
           },
           () => {}
         );
+
+        // Check torch/flashlight support
+        try {
+          const videoElement = el.querySelector('video');
+          if (videoElement?.srcObject) {
+            const track = videoElement.srcObject.getVideoTracks()[0];
+            const capabilities = track?.getCapabilities?.();
+            if (capabilities?.torch) {
+              setTorchSupported(true);
+            }
+          }
+        } catch {}
       } catch (error) {
         console.error('Fel vid kamerastart:', error);
       }
@@ -85,6 +97,8 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
 
     return () => {
       stopped = true;
+      setTorchOn(false);
+      setTorchSupported(false);
       const scanner = scannerRef.current;
       scannerRef.current = null;
       if (scanner) {
@@ -97,5 +111,20 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
     };
   }, [isActive, containerId]);
 
-  return null;
+  const toggleTorch = useCallback(async () => {
+    try {
+      const el = document.getElementById(containerId);
+      const videoElement = el?.querySelector('video');
+      if (videoElement?.srcObject) {
+        const track = videoElement.srcObject.getVideoTracks()[0];
+        const newState = !torchOn;
+        await track.applyConstraints({ advanced: [{ torch: newState }] });
+        setTorchOn(newState);
+      }
+    } catch (err) {
+      console.error('Torch toggle failed:', err);
+    }
+  }, [containerId, torchOn]);
+
+  return { torchOn, torchSupported, toggleTorch };
 }

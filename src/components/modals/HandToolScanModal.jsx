@@ -10,6 +10,7 @@ import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
 import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
 import ScannerOverlay from "@/components/ScannerOverlay";
+import TorchButton from "@/components/ui/TorchButton";
 
 export default function HandToolScanModal({ isOpen, onClose, handTools, locations = [] }) {
   const queryClient = useQueryClient();
@@ -40,7 +41,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
     }
   }, [isOpen]);
 
-  useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
+  const { torchOn, torchSupported, toggleTorch } = useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
     handleScan(barcode);
   });
 
@@ -252,6 +253,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
                         <Search className="w-4 h-4" />
                       </Button>
                     </div>
+                    <TorchButton torchOn={torchOn} torchSupported={torchSupported} toggleTorch={toggleTorch} />
                     <Button onClick={() => setScannerActive(false)} variant="outline" size="sm">Stäng</Button>
                   </div>
                 </div>
