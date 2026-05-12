@@ -17,7 +17,9 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { useBarcodeCamera } from '@/hooks/useBarcodeCamera';
+import ScannerOverlay from '@/components/ScannerOverlay';
+import TorchButton from '@/components/ui/TorchButton';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 
 const SERVICE_TYPE_LABELS = {
@@ -515,16 +517,10 @@ export default function ServicePage() {
     }
   }, [selectedTool, scannerActive]);
 
-  useEffect(() => {
-    if (!scannerActive) return;
-    const scanner = new Html5QrcodeScanner('service-barcode-scanner', { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-    scanner.render((text) => {
-      scanner.clear();
-      setScannerActive(false);
-      handleLookup(text);
-    }, () => {});
-    return () => { scanner.clear().catch(() => {}); };
-  }, [scannerActive, tools]);
+  const { torchOn, torchSupported, toggleTorch } = useBarcodeCamera('service-barcode-scanner', scannerActive, (code) => {
+    setScannerActive(false);
+    handleLookup(code);
+  });
 
   const handleLookup = (code) => {
     const trimmed = (code || barcode).trim();
@@ -642,7 +638,17 @@ export default function ServicePage() {
           <Camera className="w-4 h-4 mr-2" /> {scannerActive ? 'Stäng kamera' : 'Öppna kameraskanner'}
         </Button>
 
-        {scannerActive && <div id="service-barcode-scanner" className="rounded-xl overflow-hidden" />}
+        {scannerActive && (
+          <div className="space-y-2">
+            <div className="relative">
+              <div id="service-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+              <ScannerOverlay />
+            </div>
+            <div className="flex justify-end">
+              <TorchButton torchOn={torchOn} torchSupported={torchSupported} toggleTorch={toggleTorch} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Recently serviced machines */}

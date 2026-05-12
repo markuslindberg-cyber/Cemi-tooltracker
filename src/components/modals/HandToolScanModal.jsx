@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2, Plus, Minus, ArrowLeft, Zap } from 'lucide-react';
+import { Camera, CheckCircle2, Search, Package, MapPin, Loader2, AlertTriangle, BarChart2, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from '@tanstack/react-query';
 import { useBarcodeCamera } from "@/hooks/useBarcodeCamera";
@@ -41,10 +41,9 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
     }
   }, [isOpen]);
 
-  const [autoTorch, setAutoTorch] = useState(false);
   const { torchOn, torchSupported, toggleTorch } = useBarcodeCamera("ht-barcode-scanner", scannerActive, (barcode) => {
     handleScan(barcode);
-  }, { autoTorch });
+  });
 
   // Scoped tools: filter by location + typeSearch
   const scopedTools = handTools.filter(t => {
@@ -221,15 +220,6 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
                 <div className="flex gap-2">
                   <Button onClick={() => setScannerActive(true)} className="flex-1 bg-[#8B1E1E] hover:bg-[#6B1515] h-10">
                     <Camera className="w-5 h-5 mr-2" />Kamera
-                  </Button>
-                  <Button
-                    variant={autoTorch ? "default" : "outline"}
-                    size="icon"
-                    className={autoTorch ? "bg-amber-500 hover:bg-amber-600 h-10 w-10 shrink-0" : "h-10 w-10 shrink-0"}
-                    onClick={() => setAutoTorch(prev => !prev)}
-                    title="Blixt på vid kamerastart"
-                  >
-                    <Zap className={`w-4 h-4 ${autoTorch ? 'text-white' : 'text-gray-500'}`} />
                   </Button>
                   <div className="flex-1 flex gap-1">
                     <Input
