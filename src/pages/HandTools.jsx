@@ -500,8 +500,8 @@ export default function HandTools() {
                 <div className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-800">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700">
-                      {categoryImageMap[group.category]?.image_url
-                        ? <img src={categoryImageMap[group.category].image_url} alt={group.category} className="w-full h-full object-cover" />
+                      {group.items[0]?.image_url || categoryImageMap[group.category]?.image_url
+                        ? <img src={group.items[0]?.image_url || categoryImageMap[group.category]?.image_url} alt={group.name} className="w-full h-full object-cover" />
                         : <Package className="w-5 h-5 text-gray-300" />}
                     </div>
                     <div>
