@@ -421,13 +421,13 @@ export default function HandTools() {
         availableLocations={locationNames}
         availableAssignedTo={[]}
         showViewToggle={true}
+        viewModes={['grid', 'list', 'grouped']}
         statusOptions={[
           { value: 'i_lager', label: 'I lager' },
           { value: 'i_bruk', label: 'I bruk' },
           { value: 'saknas', label: 'Saknas' },
           { value: 'kasserad', label: 'Kasserad' },
         ]}
-
       />
 
       {/* Content */}
@@ -454,8 +454,124 @@ export default function HandTools() {
             />
           ))}
         </div>
+      ) : viewMode === 'grouped' ? (
+        /* Grouped view — items grouped by name/category with location sub-groups */
+        <div className="space-y-4">
+          {selectedIds.size > 0 && (
+            <div className="sticky top-4 z-20 bg-white border border-[#8B1E1E]/30 rounded-xl p-3 shadow-lg flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-[#8B1E1E]">{selectedIds.size} markerade</span>
+              <Select value={bulkStatus} onValueChange={setBulkStatus}>
+                <SelectTrigger className="w-36 h-8 text-sm"><SelectValue placeholder="Ändra status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="i_lager">I lager</SelectItem>
+                  <SelectItem value="i_bruk">I bruk</SelectItem>
+                  <SelectItem value="saknas">Saknas</SelectItem>
+                  <SelectItem value="kasserad">Kasserad</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={bulkLocation} onValueChange={setBulkLocation}>
+                <SelectTrigger className="w-40 h-8 text-sm"><SelectValue placeholder="Ändra plats" /></SelectTrigger>
+                <SelectContent>
+                  {locations.map(loc => <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button size="sm" onClick={handleBulkSave} disabled={bulkSaveMutation.isPending || (!bulkStatus && !bulkLocation)} className="bg-[#8B1E1E] hover:bg-[#6B1515] h-8">
+                {bulkSaveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                Spara
+              </Button>
+              <button onClick={() => setSelectedIds(new Set())} className="text-gray-400 hover:text-gray-600 ml-auto"><XIcon className="w-4 h-4" /></button>
+            </div>
+          )}
+
+          {Object.values(grouped).map((group) => {
+            const byLocation = group.items.reduce((acc, item) => {
+              const loc = item.location_name || 'INGEN PLATS';
+              if (!acc[loc]) acc[loc] = [];
+              acc[loc].push(item);
+              return acc;
+            }, {});
+            const byStatus = group.items.reduce((acc, item) => {
+              acc[item.status] = (acc[item.status] || 0) + 1;
+              return acc;
+            }, {});
+            const groupSelected = group.items.every(i => selectedIds.has(i.id));
+            return (
+              <div key={`${group.name}-${group.category}`} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700">
+                      {categoryImageMap[group.category]?.image_url
+                        ? <img src={categoryImageMap[group.category].image_url} alt={group.category} className="w-full h-full object-cover" />
+                        : <Package className="w-5 h-5 text-gray-300" />}
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-gray-900 dark:text-gray-100">{group.name}</h2>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''} · {group.items.length} st totalt</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    {Object.entries(byStatus).map(([s, count]) => (
+                      <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const selectedInGroup = group.items.filter(i => selectedIds.has(i.id));
+                        setGroupEditTarget({ ...group, items: selectedInGroup.length > 0 ? selectedInGroup : group.items });
+                      }}
+                      className="ml-1 p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"
+                      title="Redigera grupp"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <Checkbox
+                      checked={groupSelected}
+                      onCheckedChange={() => toggleSelectAll(group.items)}
+                      className="shrink-0"
+                    />
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {Object.entries(byLocation).map(([locName, items]) => (
+                    <div key={locName}>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-gray-100/80 dark:bg-gray-800/50 border-y border-gray-200 dark:border-gray-700">
+                        <MapPin className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{locName}</span>
+                        <span className="text-xs text-gray-400">({items.length} st)</span>
+                        <Checkbox
+                          checked={items.every(i => selectedIds.has(i.id))}
+                          onCheckedChange={() => toggleSelectAll(items)}
+                          className="ml-1"
+                        />
+                      </div>
+                      <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                        {items.map((item, idx) => (
+                          <div key={item.id} className={`flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group ${selectedIds.has(item.id) ? 'bg-blue-50/40 dark:bg-blue-900/10' : ''}`}>
+                            <span className="text-xs text-gray-400 w-5 shrink-0">#{idx + 1}</span>
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
+                            {item.notes && <span className="text-xs text-gray-400 truncate max-w-[160px]">{item.notes}</span>}
+                            <div className="ml-auto flex items-center gap-2">
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"><Edit className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
+                              </div>
+                              <Checkbox
+                                checked={selectedIds.has(item.id)}
+                                onCheckedChange={() => toggleSelect(item.id)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
-        /* List view — used for both handredskap and avspärrning */
+        /* List view — simple flat list */
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="divide-y divide-gray-100">
             {filtered.map(item => (

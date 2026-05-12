@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, SlidersHorizontal, ChevronDown, ChevronUp, Grid, List, X } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronDown, ChevronUp, Grid, List, Rows3, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function FilterSection({ title, children, defaultOpen = false }) {
@@ -77,6 +77,7 @@ export default function SearchFilterBar({
   onSortByChange,
   statusOptions: customStatusOptions,
   conditionOptions: customConditionOptions,
+  viewModes,
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -298,6 +299,16 @@ export default function SearchFilterBar({
             >
               <List className="w-4 h-4" />
             </Button>
+            {viewModes?.includes('grouped') && (
+              <Button
+                variant={viewMode === 'grouped' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => onViewModeChange('grouped')}
+                className={`h-9 w-9 rounded-none ${viewMode === 'grouped' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
+              >
+                <Rows3 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         )}
       </div>
