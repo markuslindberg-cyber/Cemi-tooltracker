@@ -76,11 +76,8 @@ export default function HandTools() {
   const AVSPARRNING_CATEGORY = 'Avspärrningsmaterial';
   const [activeTab, setActiveTab] = useState('handredskap');
 
-  // Default to list view for avspärrning
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    if (tab === 'avsparrning') setViewMode('list');
-    else if (viewMode === 'list' && tab === 'handredskap') setViewMode('grid');
   };
 
   const mainHandTools = handTools.filter(t => t.category !== AVSPARRNING_CATEGORY);
@@ -444,6 +441,7 @@ export default function HandTools() {
           <p className="text-sm">Klicka på "Lägg till redskap" för att börja</p>
         </div>
       ) : viewMode === 'grid' ? (
+        /* Grid view — used for both handredskap and avspärrning */
         <div className="space-y-4">
           {/* Bulk action bar */}
           {selectedIds.size > 0 && (
@@ -596,64 +594,8 @@ export default function HandTools() {
             );
           })}
         </div>
-      ) : activeTab === 'avsparrning' ? (
-        (() => {
-          const nameGroups = filtered.reduce((acc, item) => {
-            const key = `${item.name}__${item.category}__${item.manufacturer || ''}`;
-            if (!acc[key]) acc[key] = { name: item.name, category: item.category, manufacturer: item.manufacturer, items: [] };
-            acc[key].items.push(item);
-            return acc;
-          }, {});
-          return (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="divide-y divide-gray-100">
-                {Object.values(nameGroups).map(group => {
-                  const byStatus = group.items.reduce((acc, i) => { acc[i.status] = (acc[i.status] || 0) + 1; return acc; }, {});
-                  const isExpanded = expandedAvsparrning === `${group.name}__${group.category}`;
-                  const groupKey = `${group.name}__${group.category}`;
-                  return (
-                    <div key={groupKey}>
-                      <div className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setExpandedAvsparrning(isExpanded ? null : groupKey)}>
-                        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900">{group.name}</p>
-                          <p className="text-sm text-gray-500">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''}</p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap justify-end">
-                          <span className="text-sm font-semibold text-gray-700">{group.items.length} st</span>
-                          {Object.entries(byStatus).map(([s, count]) => (
-                            <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
-                          ))}
-                          <button onClick={(e) => { e.stopPropagation(); setGroupEditTarget({ ...group }); }} className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100" title="Redigera grupp">
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                      {isExpanded && (
-                        <div className="border-t border-gray-100 bg-gray-50/50 divide-y divide-gray-100">
-                          {group.items.map((item, idx) => (
-                            <div key={item.id} className="flex items-center gap-3 px-6 py-2.5 hover:bg-gray-100/50 transition-colors group/item">
-                              <span className="text-xs text-gray-400 w-5 shrink-0">#{idx + 1}</span>
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
-                              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
-                              {item.location_name && <span className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" />{item.location_name}</span>}
-                              {item.notes && <span className="text-xs text-gray-400 truncate max-w-[160px]">{item.notes}</span>}
-                              <div className="ml-auto flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"><Edit className="w-3.5 h-3.5" /></button>
-                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })()
       ) : (
+        /* List view — used for both handredskap and avspärrning */
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="divide-y divide-gray-100">
             {filtered.map(item => (
