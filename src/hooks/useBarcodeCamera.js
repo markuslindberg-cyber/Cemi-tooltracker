@@ -17,12 +17,14 @@ const SUPPORTED_FORMATS = [
 // Debounce: ignore duplicate scans within this window
 const SCAN_COOLDOWN_MS = 1500;
 
-export function useBarcodeCamera(containerId, isActive, onScan) {
+export function useBarcodeCamera(containerId, isActive, onScan, { autoTorch = false } = {}) {
   const scannerRef = useRef(null);
   const onScanRef = useRef(onScan);
   const lastScanRef = useRef({ text: '', time: 0 });
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
+  const autoTorchRef = useRef(autoTorch);
+  autoTorchRef.current = autoTorch;
   onScanRef.current = onScan;
 
   useEffect(() => {
@@ -77,7 +79,7 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
           () => {}
         );
 
-        // Check torch/flashlight support
+        // Check torch/flashlight support and auto-enable if requested
         try {
           const videoElement = el.querySelector('video');
           if (videoElement?.srcObject) {
@@ -85,6 +87,10 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
             const capabilities = track?.getCapabilities?.();
             if (capabilities?.torch) {
               setTorchSupported(true);
+              if (autoTorchRef.current) {
+                await track.applyConstraints({ advanced: [{ torch: true }] });
+                setTorchOn(true);
+              }
             }
           }
         } catch {}
