@@ -156,7 +156,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart2 className="w-5 h-5 text-[#8B1E1E]" />
@@ -237,7 +237,7 @@ export default function HandToolScanModal({ isOpen, onClose, handTools, location
               ) : (
                 <div className="space-y-2">
                   <div className="relative">
-                    <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                    <div id="ht-barcode-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '300px', height: '40vh' }} />
                     <ScannerOverlay />
                   </div>
                   <div className="flex gap-2">

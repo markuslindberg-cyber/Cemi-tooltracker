@@ -53,8 +53,8 @@ export function useBarcodeCamera(containerId, isActive, onScan) {
             fps: 20,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
               const w = Math.min(Math.floor(viewfinderWidth * 0.85), 500);
-              const h = Math.min(Math.floor(viewfinderHeight * 0.35), 180);
-              return { width: Math.max(w, 200), height: Math.max(h, 80) };
+              const h = Math.min(Math.floor(viewfinderHeight * 0.45), 250);
+              return { width: Math.max(w, 200), height: Math.max(h, 100) };
             },
             aspectRatio: 1.777,
             disableFlip: false,
