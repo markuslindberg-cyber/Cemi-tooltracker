@@ -383,7 +383,7 @@ export default function Dashboard() {
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Inventarievärde</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Investerat ({activeTools.length})</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Totalt inköpt värde ({activeTools.length})</span>
                     <span className="font-medium text-gray-900 dark:text-gray-100">{purchaseValue.toLocaleString('sv-SE')} kr</span>
                   </div>
                   <div className="flex justify-between items-center">
