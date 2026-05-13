@@ -387,7 +387,7 @@ export default function Dashboard() {
                     <span className="font-medium text-gray-900 dark:text-gray-100">{purchaseValue.toLocaleString('sv-SE')} kr</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Bokfört värde</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Aktuellt bokfört värde</span>
                     <span className="font-medium text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
                   </div>
                   <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
