@@ -64,6 +64,7 @@ export default function LokalvardSection() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400">Kostnad denna månad</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{monthCost.toLocaleString('sv-SE')} kr</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Summa av alla uttag till kunder under {new Date().toLocaleString('sv-SE', { month: 'long', year: 'numeric' })}</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400">Väntande begäran</p>
