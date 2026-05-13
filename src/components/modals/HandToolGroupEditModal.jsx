@@ -31,6 +31,7 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
     quantity: currentCount,
   });
   const [saving, setSaving] = useState(false);
+  const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
 
   const { data: allHandTools = [] } = useQuery({
     queryKey: ['handtools'],
@@ -125,10 +126,27 @@ export default function HandToolGroupEditModal({ isOpen, onClose, group, onSucce
           </div>
           <div className="space-y-1.5">
             <Label>Underkategori</Label>
-            <Input value={form.subcategory} onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))} list="grp-subcategory-suggestions" />
-            <datalist id="grp-subcategory-suggestions">
-              {availableSubcategories.map(s => <option key={s} value={s} />)}
-            </datalist>
+            {showCustomSubcategory ? (
+              <div className="flex gap-2">
+                <Input
+                  value={form.subcategory}
+                  onChange={e => setForm(f => ({ ...f, subcategory: e.target.value }))}
+                  placeholder="Skriv ny underkategori"
+                  autoFocus
+                />
+                <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => { setShowCustomSubcategory(false); setForm(f => ({ ...f, subcategory: '' })); }}>
+                  Avbryt
+                </Button>
+              </div>
+            ) : (
+              <Select value={form.subcategory || ''} onValueChange={v => { if (v === '__custom__') { setShowCustomSubcategory(true); setForm(f => ({ ...f, subcategory: '' })); } else { setForm(f => ({ ...f, subcategory: v })); } }}>
+                <SelectTrigger><SelectValue placeholder="Välj underkategori" /></SelectTrigger>
+                <SelectContent>
+                  {availableSubcategories.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  <SelectItem value="__custom__">+ Lägg till ny...</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label>Streckkod</Label>
