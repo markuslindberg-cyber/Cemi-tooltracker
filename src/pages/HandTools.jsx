@@ -59,6 +59,7 @@ export default function HandTools() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [bulkStatus, setBulkStatus] = useState('');
   const [bulkLocation, setBulkLocation] = useState('');
+  const [expandedGroups, setExpandedGroups] = useState(new Set());
   const [savingBulk, setSavingBulk] = useState(false);
 
   const { data: categoryImages = [] } = useQuery({
@@ -484,6 +485,8 @@ export default function HandTools() {
           )}
 
           {Object.values(grouped).map((group) => {
+            const groupKey = `${group.name}-${group.category}`;
+            const isExpanded = expandedGroups.has(groupKey);
             const byLocation = group.items.reduce((acc, item) => {
               const loc = item.location_name || 'INGEN PLATS';
               if (!acc[loc]) acc[loc] = [];
@@ -495,10 +498,21 @@ export default function HandTools() {
               return acc;
             }, {});
             const groupSelected = group.items.every(i => selectedIds.has(i.id));
+            const toggleExpand = () => {
+              setExpandedGroups(prev => {
+                const next = new Set(prev);
+                if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey);
+                return next;
+              });
+            };
             return (
-              <div key={`${group.name}-${group.category}`} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-gray-50 dark:border-gray-800">
+              <div key={groupKey} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div
+                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors"
+                  onClick={toggleExpand}
+                >
                   <div className="flex items-center gap-3">
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-0' : '-rotate-90'}`} />
                     <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700">
                       {group.items[0]?.image_url || categoryImageMap[group.category]?.image_url
                         ? <img src={group.items[0]?.image_url || categoryImageMap[group.category]?.image_url} alt={group.name} className="w-full h-full object-cover" />
@@ -509,7 +523,7 @@ export default function HandTools() {
                       <span className="text-sm text-gray-500 dark:text-gray-400">{group.category}{group.manufacturer ? ` · ${group.manufacturer}` : ''} · {group.items.length} st totalt</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <div className="flex items-center gap-2 flex-wrap justify-end" onClick={(e) => e.stopPropagation()}>
                     {Object.entries(byStatus).map(([s, count]) => (
                       <span key={s} className={`text-xs font-medium px-2 py-1 rounded-full ${statusConfig[s]?.className || 'bg-gray-100 text-gray-600'}`}>{count} {statusConfig[s]?.label || s}</span>
                     ))}
@@ -530,42 +544,17 @@ export default function HandTools() {
                     />
                   </div>
                 </div>
-                <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                {isExpanded && (
+                <div className="divide-y divide-gray-50 dark:divide-gray-800 border-t border-gray-100 dark:border-gray-800">
                   {Object.entries(byLocation).map(([locName, items]) => (
                     <div key={locName}>
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-100/80 dark:bg-gray-800/50 border-y border-gray-200 dark:border-gray-700">
-                        <MapPin className="w-3.5 h-3.5 text-gray-500" />
-                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{locName}</span>
-                        <span className="text-xs text-gray-400">({items.length} st)</span>
-                        <Checkbox
-                          checked={items.every(i => selectedIds.has(i.id))}
-                          onCheckedChange={() => toggleSelectAll(items)}
-                          className="ml-1"
-                        />
-                      </div>
-                      <div className="divide-y divide-gray-50 dark:divide-gray-800">
-                        {items.map((item, idx) => (
-                          <div key={item.id} className={`flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group ${selectedIds.has(item.id) ? 'bg-blue-50/40 dark:bg-blue-900/10' : ''}`}>
-                            <span className="text-xs text-gray-400 w-5 shrink-0">#{idx + 1}</span>
-                            <span className={`w-2 h-2 rounded-full shrink-0 ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
-                            {item.notes && <span className="text-xs text-gray-400 truncate max-w-[160px]">{item.notes}</span>}
-                            <div className="ml-auto flex items-center gap-2">
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"><Edit className="w-3.5 h-3.5" /></button>
-                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
-                              </div>
-                              <Checkbox
-                                checked={selectedIds.has(item.id)}
-                                onCheckedChange={() => toggleSelect(item.id)}
-                              />
-                            </div>
-                          </div>
-                        ))}
+...
                       </div>
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             );
           })}
