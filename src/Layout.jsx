@@ -397,9 +397,24 @@ export default function Layout({ children }) {
             })}
           </nav>
 
-          {/* Layout Editor Link for ägare */}
+          {/* Owner Overview & Layout Editor Link for ägare */}
           {user?.role === 'ägare' && (
-            <div className="px-3 pb-1">
+            <div className="px-3 pb-1 space-y-0.5">
+              <Link
+                to="/OwnerOverview"
+                onClick={() => setSidebarOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                  location.pathname === '/OwnerOverview'
+                    ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                )}
+              >
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", location.pathname === '/OwnerOverview' ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800")}>
+                  <Star className="w-4 h-4" />
+                </div>
+                Ägaröversikt
+              </Link>
               <Link
                 to="/AdminLayoutEditor"
                 onClick={() => setSidebarOpen(false)}

@@ -39,6 +39,7 @@ import NavInstellningar from './pages/NavInstellningar';
 import AdminLayoutEditor from './pages/AdminLayoutEditor';
 import LokalvardRequestArtikel from './pages/LokalvardRequestArtikel';
 import RollBehorigheter from './pages/RollBehorigheter';
+import OwnerOverview from './pages/OwnerOverview';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -144,6 +145,7 @@ const AuthenticatedApp = () => {
       <Route path="/NavInstellningar" element={<LayoutWrapper currentPageName="NavInstellningar"><NavInstellningar /></LayoutWrapper>} />
       <Route path="/AdminLayoutEditor" element={<LayoutWrapper currentPageName="AdminLayoutEditor"><AdminLayoutEditor /></LayoutWrapper>} />
       <Route path="/Administration/RollBehorigheter" element={<LayoutWrapper currentPageName="RollBehorigheter"><RollBehorigheter /></LayoutWrapper>} />
+      <Route path="/OwnerOverview" element={<LayoutWrapper currentPageName="OwnerOverview"><OwnerOverview /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
