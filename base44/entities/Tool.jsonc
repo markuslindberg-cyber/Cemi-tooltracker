@@ -61,6 +61,15 @@
     "purchase_price": {
       "type": "number"
     },
+    "depreciation_level": {
+      "type": "string",
+      "enum": [
+        "L\u00e5g",
+        "Medel",
+        "H\u00f6g"
+      ],
+      "description": "Deprecieringsniv\u00e5 f\u00f6r maskinen"
+    },
     "service_cost": {
       "type": "number",
       "description": "Servicekostnad per \u00e5r eller period"

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Package, ArrowRight, TrendingUp, Users, AlertTriangle, Wrench } from 'lucide-react';
+import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 
 export default function MaskinerSection() {
   const { data: tools = [] } = useQuery({
@@ -16,6 +17,11 @@ export default function MaskinerSection() {
     queryFn: () => base44.entities.ServiceRecord.list('-service_date', 5),
   });
 
+  const { data: depSettings = [] } = useQuery({
+    queryKey: ['depreciationSettings'],
+    queryFn: () => base44.entities.DepreciationSetting.list(),
+  });
+
   const HIDDEN = ['såld', 'sålda', 'retired'];
   const active = tools.filter(t => !HIDDEN.includes(t.status));
   const available = active.filter(t => t.status === 'available' || t.status === 'Tillgänglig').length;
@@ -23,7 +29,11 @@ export default function MaskinerSection() {
   const iLager = active.filter(t => t.status === 'i_lager').length;
   const maintenance = active.filter(t => t.status === 'maintenance').length;
   const missing = tools.filter(t => t.status === 'missing').length;
-  const totalValue = active.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const purchaseValue = active.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const totalValue = active.reduce((sum, t) => {
+    const { currentValue } = calculateDepreciatedValue(t, depSettings);
+    return sum + currentValue;
+  }, 0);
 
   const statuses = [
     { label: 'Tillgänglig', count: available, color: 'bg-emerald-500' },
@@ -61,8 +71,11 @@ export default function MaskinerSection() {
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{active.length}</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Totalvärde</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Bokfört värde</p>
           <p className="text-2xl font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</p>
+          {purchaseValue !== totalValue && (
+            <p className="text-[10px] text-gray-400 mt-0.5">Inköp: {purchaseValue.toLocaleString('sv-SE')} kr</p>
+          )}
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400">I bruk</p>

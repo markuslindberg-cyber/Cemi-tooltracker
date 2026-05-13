@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { TrendingUp, Package, Shovel, Shirt, SprayCan } from 'lucide-react';
+import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 
 export default function OwnerTotalSummary() {
   const { data: tools = [] } = useQuery({
@@ -24,17 +25,26 @@ export default function OwnerTotalSummary() {
     queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).then(r => r.filter(a => !a.is_deleted)),
   });
 
+  const { data: depSettings = [] } = useQuery({
+    queryKey: ['depreciationSettings'],
+    queryFn: () => base44.entities.DepreciationSetting.list(),
+  });
+
   const HIDDEN = ['såld', 'sålda', 'retired'];
   const activeTools = tools.filter(t => !HIDDEN.includes(t.status));
 
-  const maskinerValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const maskinerPurchaseValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const maskinerValue = activeTools.reduce((sum, t) => {
+    const { currentValue } = calculateDepreciatedValue(t, depSettings);
+    return sum + currentValue;
+  }, 0);
   const handredskapValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const workwearValue = workwear.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const lokalvardValue = articles.reduce((sum, a) => sum + (a.pris || 0) * (a.current_quantity || 0), 0);
   const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue;
 
   const sections = [
-    { label: 'Maskiner', value: maskinerValue, icon: Package, color: 'text-[#8B1E1E]', bg: 'bg-[#8B1E1E]/10' },
+    { label: 'Maskiner (bokfört)', value: maskinerValue, icon: Package, color: 'text-[#8B1E1E]', bg: 'bg-[#8B1E1E]/10', subtitle: maskinerPurchaseValue !== maskinerValue ? `Inköp: ${maskinerPurchaseValue.toLocaleString('sv-SE')} kr` : null },
     { label: 'Handredskap', value: handredskapValue, icon: Shovel, color: 'text-orange-600', bg: 'bg-orange-100 dark:bg-orange-900/30' },
     { label: 'Arbetskläder', value: workwearValue, icon: Shirt, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
     { label: 'Lokalvård (lager)', value: lokalvardValue, icon: SprayCan, color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
@@ -60,6 +70,7 @@ export default function OwnerTotalSummary() {
             <div className="min-w-0">
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{s.label}</p>
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{s.value.toLocaleString('sv-SE')} kr</p>
+              {s.subtitle && <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{s.subtitle}</p>}
             </div>
           </div>
         ))}

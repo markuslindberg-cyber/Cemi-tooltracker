@@ -103,6 +103,7 @@ const navigation = [
       { name: 'Kategorier', path: '/Administration/Kategorier' },
       { name: 'Papperskorg', path: '/Administration/Papperskorg', desktopOnly: true, devOnly: true },
       { name: 'Roller & Behörigheter', path: '/Administration/RollBehorigheter', roles: ['ägare'] },
+      { name: 'Avskrivningar', path: '/Administration/Avskrivningar', roles: ['ägare'] },
     ]
   },
 ];

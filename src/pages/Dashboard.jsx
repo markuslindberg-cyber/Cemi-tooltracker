@@ -28,6 +28,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 
 const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers'];
 
@@ -113,6 +114,11 @@ export default function Dashboard() {
     queryFn: () => base44.entities.LokalvardArtikelRequest.list(),
   });
 
+  const { data: depSettings = [] } = useQuery({
+    queryKey: ['depreciationSettings'],
+    queryFn: () => base44.entities.DepreciationSetting.list(),
+  });
+
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
   const activeTools = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
@@ -121,7 +127,11 @@ export default function Dashboard() {
   const missingTools = tools.filter(t => t.status === 'missing').length;
   const maintenanceTools = activeTools.filter(t => t.status === 'maintenance').length;
   const iLagerTools = activeTools.filter(t => t.status === 'i_lager').length;
-  const totalValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const purchaseValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const totalValue = activeTools.reduce((sum, t) => {
+    const { currentValue } = calculateDepreciatedValue(t, depSettings);
+    return sum + currentValue;
+  }, 0);
 
   const toolMutation = useMutation({
     mutationFn: async (toolData) => {
@@ -373,11 +383,17 @@ export default function Dashboard() {
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Inventarievärde</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Maskiner ({activeTools.length})</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Bokfört värde ({activeTools.length})</span>
                     <span className="font-medium text-gray-900 dark:text-gray-100">{totalValue.toLocaleString('sv-SE')} kr</span>
                   </div>
+                  {purchaseValue !== totalValue && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Inköpsvärde</span>
+                      <span className="font-medium text-gray-400">{purchaseValue.toLocaleString('sv-SE')} kr</span>
+                    </div>
+                  )}
                   <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Totalt</span>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Totalt (bokfört)</span>
                     <span className="font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
                   </div>
                 </div>
