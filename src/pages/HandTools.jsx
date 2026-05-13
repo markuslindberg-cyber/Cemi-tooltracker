@@ -32,7 +32,7 @@ export default function HandTools() {
    
    const { data: handTools = [], isLoading } = useQuery({
     queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.list('-updated_date', 1000).then(r => r.filter(t => !t.is_deleted)),
+    queryFn: () => base44.entities.HandTool.filter({ is_deleted: { $ne: true } }, '-updated_date', 1000),
   });
 
    const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
