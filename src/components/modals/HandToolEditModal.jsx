@@ -28,6 +28,7 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
 
   const { data: categoryImages = [] } = useQuery({
     queryKey: ['categoryimages'],
@@ -53,7 +54,7 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
   ])].sort();
 
   useEffect(() => {
-    if (tool) setForm({ ...tool });
+    if (tool) { setForm({ ...tool }); setShowCustomSubcategory(false); }
   }, [tool]);
 
   const handleChange = (field, value) => {
@@ -142,17 +143,31 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
 
           <div className="space-y-1">
             <Label>Underkategori</Label>
-            <Input
-              value={form.subcategory || ''}
-              onChange={e => handleChange('subcategory', e.target.value)}
-              placeholder="Välj eller skriv ny"
-              list="edit-subcategory-suggestions"
-            />
-            <datalist id="edit-subcategory-suggestions">
-              {availableSubcategories.map(s => (
-                <option key={s} value={s} />
-              ))}
-            </datalist>
+            {showCustomSubcategory ? (
+              <div className="flex gap-2">
+                <Input
+                  value={form.subcategory || ''}
+                  onChange={e => handleChange('subcategory', e.target.value)}
+                  placeholder="Skriv ny underkategori"
+                  autoFocus
+                />
+                <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => { setShowCustomSubcategory(false); handleChange('subcategory', ''); }}>
+                  Avbryt
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Select value={form.subcategory || ''} onValueChange={v => { if (v === '__custom__') { setShowCustomSubcategory(true); handleChange('subcategory', ''); } else { handleChange('subcategory', v); } }}>
+                  <SelectTrigger><SelectValue placeholder="Välj underkategori" /></SelectTrigger>
+                  <SelectContent>
+                    {availableSubcategories.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                    <SelectItem value="__custom__">+ Lägg till ny...</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
