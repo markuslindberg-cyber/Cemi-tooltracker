@@ -383,18 +383,16 @@ export default function Dashboard() {
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Inventarievärde</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Bokfört värde ({activeTools.length})</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{totalValue.toLocaleString('sv-SE')} kr</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Investerat ({activeTools.length})</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">{purchaseValue.toLocaleString('sv-SE')} kr</span>
                   </div>
-                  {purchaseValue !== totalValue && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Inköpsvärde</span>
-                      <span className="font-medium text-gray-400">{purchaseValue.toLocaleString('sv-SE')} kr</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Bokfört värde</span>
+                    <span className="font-medium text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
+                  </div>
                   <div className="pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Totalt (bokfört)</span>
-                    <span className="font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</span>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Avskrivning</span>
+                    <span className="font-bold text-gray-500">{(purchaseValue - totalValue).toLocaleString('sv-SE')} kr</span>
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">

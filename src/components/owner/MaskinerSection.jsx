@@ -65,17 +65,18 @@ export default function MaskinerSection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400">Totalt</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{active.length}</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Investerat</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{purchaseValue.toLocaleString('sv-SE')} kr</p>
+        </div>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 sm:col-span-2 lg:col-span-1">
           <p className="text-xs text-gray-500 dark:text-gray-400">Bokfört värde</p>
           <p className="text-2xl font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</p>
-          {purchaseValue !== totalValue && (
-            <p className="text-[10px] text-gray-400 mt-0.5">Inköp: {purchaseValue.toLocaleString('sv-SE')} kr</p>
-          )}
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400">I bruk</p>

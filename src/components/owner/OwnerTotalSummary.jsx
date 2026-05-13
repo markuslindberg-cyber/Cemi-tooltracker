@@ -57,8 +57,11 @@ export default function OwnerTotalSummary() {
           <TrendingUp className="w-5 h-5 text-[#8B1E1E]" />
         </div>
         <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Totalt tillgångsvärde</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Totalt bokfört värde</p>
           <p className="text-2xl lg:text-3xl font-bold text-[#8B1E1E]">{totalValue.toLocaleString('sv-SE')} kr</p>
+          {maskinerPurchaseValue !== maskinerValue && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Totalt investerat: {(maskinerPurchaseValue + handredskapValue + workwearValue + lokalvardValue).toLocaleString('sv-SE')} kr</p>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
