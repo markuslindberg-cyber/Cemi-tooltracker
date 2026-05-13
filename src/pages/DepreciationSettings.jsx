@@ -46,6 +46,7 @@ export default function DepreciationSettings() {
       const vals = {};
       settings.forEach(s => {
         vals[s.id] = {
+          level_name: s.level_name,
           annual_percentage: s.annual_percentage,
           minimum_value_percentage: s.minimum_value_percentage,
         };
@@ -65,6 +66,7 @@ export default function DepreciationSettings() {
     updateMutation.mutate({
       id: setting.id,
       data: {
+        level_name: vals.level_name,
         annual_percentage: Number(vals.annual_percentage),
         minimum_value_percentage: Number(vals.minimum_value_percentage),
       },
@@ -116,7 +118,8 @@ export default function DepreciationSettings() {
           {settings.map(setting => {
             const colors = LEVEL_COLORS[setting.level_name] || LEVEL_COLORS['Låg'];
             const vals = editValues[setting.id] || {};
-            const hasChanges = vals.annual_percentage !== setting.annual_percentage ||
+            const hasChanges = vals.level_name !== setting.level_name ||
+                               vals.annual_percentage !== setting.annual_percentage ||
                                vals.minimum_value_percentage !== setting.minimum_value_percentage;
 
             return (
@@ -125,6 +128,15 @@ export default function DepreciationSettings() {
                   <h3 className={`font-semibold ${colors.text}`}>{setting.level_name} depreciering</h3>
                 </div>
                 <div className="p-5 space-y-4">
+                  <div>
+                    <Label className="text-sm text-gray-600 dark:text-gray-400">Namn</Label>
+                    <Input
+                      type="text"
+                      value={vals.level_name ?? ''}
+                      onChange={(e) => handleChange(setting.id, 'level_name', e.target.value)}
+                      className="mt-1 max-w-xs"
+                    />
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm text-gray-600 dark:text-gray-400">Årlig avskrivning (%)</Label>
