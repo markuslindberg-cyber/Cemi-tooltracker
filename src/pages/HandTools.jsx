@@ -549,7 +549,34 @@ export default function HandTools() {
                   {Object.entries(byLocation).map(([locName, items]) => (
                     <div key={locName}>
                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-100/80 dark:bg-gray-800/50 border-y border-gray-200 dark:border-gray-700">
-...
+                        <MapPin className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{locName}</span>
+                        <span className="text-xs text-gray-400">({items.length} st)</span>
+                        <Checkbox
+                          checked={items.every(i => selectedIds.has(i.id))}
+                          onCheckedChange={() => toggleSelectAll(items)}
+                          className="ml-1"
+                        />
+                      </div>
+                      <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                        {items.map((item, idx) => (
+                          <div key={item.id} className={`flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group ${selectedIds.has(item.id) ? 'bg-blue-50/40 dark:bg-blue-900/10' : ''}`}>
+                            <span className="text-xs text-gray-400 w-5 shrink-0">#{idx + 1}</span>
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${item.status === 'i_lager' ? 'bg-green-500' : item.status === 'i_bruk' ? 'bg-blue-500' : item.status === 'saknas' ? 'bg-red-500' : 'bg-gray-400'}`} />
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusConfig[item.status]?.className || 'bg-gray-100 text-gray-600'}`}>{statusConfig[item.status]?.label || item.status}</span>
+                            {item.notes && <span className="text-xs text-gray-400 truncate max-w-[160px]">{item.notes}</span>}
+                            <div className="ml-auto flex items-center gap-2">
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => setEditTool(item)} className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100"><Edit className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
+                              </div>
+                              <Checkbox
+                                checked={selectedIds.has(item.id)}
+                                onCheckedChange={() => toggleSelect(item.id)}
+                              />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
