@@ -25,7 +25,17 @@ export function calculateDepreciatedValue(tool, settings) {
   const minimumValue = purchasePrice * minPercent;
 
   // Calculate months since purchase
-  const start = new Date(purchaseDate);
+  // Handle MM-DD-YYYY format (common in imported data)
+  let start = new Date(purchaseDate);
+  if (isNaN(start.getTime()) && typeof purchaseDate === 'string') {
+    const parts = purchaseDate.split('-');
+    if (parts.length === 3) {
+      start = new Date(`${parts[2]}-${parts[0]}-${parts[1]}`);
+    }
+  }
+  if (isNaN(start.getTime())) {
+    return { currentValue: purchasePrice, depreciationPercent: 0 };
+  }
   const now = new Date();
   const monthsDiff = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
   const months = Math.max(0, monthsDiff);
