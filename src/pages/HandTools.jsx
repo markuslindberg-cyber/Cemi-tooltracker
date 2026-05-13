@@ -46,7 +46,7 @@ export default function HandTools() {
   const [locationFilter, setLocationFilter] = useState([]);
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editTool, setEditTool] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('grouped');
   const [editingCategory, setEditingCategory] = useState(null);
   const [groupEditTarget, setGroupEditTarget] = useState(null);
   const [savingCategory, setSavingCategory] = useState(false);
