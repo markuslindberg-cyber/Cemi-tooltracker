@@ -40,11 +40,10 @@ export default function HandTools() {
      isLoading
    );
   const [statusFilter, setStatusFilter] = useState([]);
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
-  const [manufacturerFilter, setManufacturerFilter] = useState('all');
-
-  const [locationFilter, setLocationFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState([]);
+  const [subcategoryFilter, setSubcategoryFilter] = useState([]);
+  const [manufacturerFilter, setManufacturerFilter] = useState([]);
+  const [locationFilter, setLocationFilter] = useState([]);
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [editTool, setEditTool] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
@@ -96,11 +95,10 @@ export default function HandTools() {
     const q = search.toLowerCase();
     if (q && !`${t.name} ${t.manufacturer} ${t.category} ${t.subcategory}`.toLowerCase().includes(q)) return false;
     if (statusFilter.length > 0 && !statusFilter.includes(t.status)) return false;
-    if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
-    if (subcategoryFilter !== 'all' && t.subcategory !== subcategoryFilter) return false;
-    if (manufacturerFilter !== 'all' && t.manufacturer !== manufacturerFilter) return false;
-
-    if (locationFilter !== 'all' && t.location_name !== locationFilter) return false;
+    if (categoryFilter.length > 0 && !categoryFilter.includes(t.category)) return false;
+    if (subcategoryFilter.length > 0 && !subcategoryFilter.includes(t.subcategory)) return false;
+    if (manufacturerFilter.length > 0 && !manufacturerFilter.includes(t.manufacturer)) return false;
+    if (locationFilter.length > 0 && !locationFilter.includes(t.location_name)) return false;
     return true;
   });
 
@@ -220,7 +218,7 @@ export default function HandTools() {
     bulkSaveMutation.mutate({ updates, toolIds: [...selectedIds] });
   };
 
-  const hasFilters = search || statusFilter.length > 0 || categoryFilter !== 'all' || subcategoryFilter !== 'all' || manufacturerFilter !== 'all' || locationFilter !== 'all';
+  const hasFilters = search || statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || locationFilter.length > 0;
 
   const handleDownloadTemplate = () => {
     const infoRows = [
@@ -345,8 +343,8 @@ export default function HandTools() {
   };
 
   const clearFilters = () => {
-    setSearch(''); setStatusFilter([]); setCategoryFilter('all'); setSubcategoryFilter('all');
-    setManufacturerFilter('all'); setLocationFilter('all');
+    setSearch(''); setStatusFilter([]); setCategoryFilter([]); setSubcategoryFilter([]);
+    setManufacturerFilter([]); setLocationFilter([]);
   };
 
   return (
