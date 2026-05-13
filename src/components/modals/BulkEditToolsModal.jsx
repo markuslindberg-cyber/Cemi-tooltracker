@@ -26,6 +26,7 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, sel
   const [subcategory, setSubcategory] = useState('');
   const [mainMachineId, setMainMachineId] = useState('');
   const [compatibleIds, setCompatibleIds] = useState([]); // array of machine IDs
+  const [depreciationLevel, setDepreciationLevel] = useState('');
   const [saving, setSaving] = useState(false);
 
   // Check if all selected tools share the same category
@@ -56,6 +57,7 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, sel
     setSubcategory('');
     setMainMachineId('');
     setCompatibleIds([]);
+    setDepreciationLevel('');
     onClose();
   };
 
@@ -88,6 +90,9 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, sel
       updates.compatible_with_main_machine_ids = compatibleIds;
       updates.compatible_with_main_machine_names = names;
     }
+    if (depreciationLevel) {
+      updates.depreciation_level = depreciationLevel === '__clear__' ? null : depreciationLevel;
+    }
 
     if (Object.keys(updates).length === 0) return;
 
@@ -97,7 +102,7 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, sel
     handleClose();
   };
 
-  const hasChanges = status || locationId || category || subcategory || mainMachineId || compatibleIds.length > 0;
+  const hasChanges = status || locationId || category || subcategory || mainMachineId || compatibleIds.length > 0 || depreciationLevel;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -167,6 +172,22 @@ export default function BulkEditToolsModal({ isOpen, onClose, selectedCount, sel
               </Select>
             </div>
           )}
+
+          {/* Deprecieringsnivå */}
+          <div className="space-y-2">
+            <Label>Deprecieringsnivå</Label>
+            <Select value={depreciationLevel} onValueChange={setDepreciationLevel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Ändra ej" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__clear__">— Ingen depreciering —</SelectItem>
+                <SelectItem value="Låg">Låg (20%/år)</SelectItem>
+                <SelectItem value="Medel">Medel (30%/år)</SelectItem>
+                <SelectItem value="Hög">Hög (40%/år)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Huvudmaskin */}
           <div className="space-y-2">
