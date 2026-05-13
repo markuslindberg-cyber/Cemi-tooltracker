@@ -7,6 +7,7 @@ import MaskinerSection from '@/components/owner/MaskinerSection';
 import HandredskapSection from '@/components/owner/HandredskapSection';
 import ArbetskladerSection from '@/components/owner/ArbetskladerSection';
 import LokalvardSection from '@/components/owner/LokalvardSection';
+import OwnerTotalSummary from '@/components/owner/OwnerTotalSummary';
 
 export default function OwnerOverview() {
   const { data: user, isLoading } = useQuery({
@@ -41,6 +42,9 @@ export default function OwnerOverview() {
             </div>
           </div>
         </div>
+
+        {/* Total Summary */}
+        <OwnerTotalSummary />
 
         {/* Sections */}
         <div className="space-y-10">
