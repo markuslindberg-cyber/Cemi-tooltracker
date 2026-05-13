@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SprayCan, ArrowRight, AlertTriangle } from 'lucide-react';
+import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
 
 export default function LokalvardSection() {
   const { data: articles = [] } = useQuery({
@@ -18,13 +19,18 @@ export default function LokalvardSection() {
 
   const { data: uttag = [] } = useQuery({
     queryKey: ['ownerUttag'],
-    queryFn: () => base44.entities.Uttag.list('-datum', 50),
+    queryFn: () => base44.entities.Uttag.list(null, 100000).then(r => Array.isArray(r) ? r : []),
+  });
+
+  const { data: inkop = [] } = useQuery({
+    queryKey: ['ownerInkop'],
+    queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
   });
 
   const pendingRequests = requests.filter(r => r.status === 'pending').length;
   const lowStock = articles.filter(a => (a.current_quantity || 0) <= (a.lagertroskelvarde || 10)).length;
   const totalArticles = articles.length;
-  const totalLagerValue = articles.reduce((sum, a) => sum + (a.pris || 0) * (a.current_quantity || 0), 0);
+  const totalLagerValue = calculateLokalvardLagerValue(articles, uttag, inkop);
 
   // Uttag this month
   const now = new Date();

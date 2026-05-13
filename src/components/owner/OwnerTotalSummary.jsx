@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { TrendingUp, Package, Shovel, Shirt, SprayCan } from 'lucide-react';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
+import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
 
 export default function OwnerTotalSummary() {
   const { data: tools = [] } = useQuery({
@@ -30,6 +31,16 @@ export default function OwnerTotalSummary() {
     queryFn: () => base44.entities.DepreciationSetting.list(),
   });
 
+  const { data: uttag = [] } = useQuery({
+    queryKey: ['ownerUttag'],
+    queryFn: () => base44.entities.Uttag.list(null, 100000).then(r => Array.isArray(r) ? r : []),
+  });
+
+  const { data: inkop = [] } = useQuery({
+    queryKey: ['ownerInkop'],
+    queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
+  });
+
   const HIDDEN = ['såld', 'sålda', 'retired'];
   const activeTools = tools.filter(t => !HIDDEN.includes(t.status));
 
@@ -40,7 +51,7 @@ export default function OwnerTotalSummary() {
   }, 0);
   const handredskapValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const workwearValue = workwear.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
-  const lokalvardValue = articles.reduce((sum, a) => sum + (a.pris || 0) * (a.current_quantity || 0), 0);
+  const lokalvardValue = calculateLokalvardLagerValue(articles, uttag, inkop);
   const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue;
 
   const sections = [
