@@ -22,6 +22,7 @@ export default function LokalvardArtikelDetaljer() {
   const [showAddInköp, setShowAddInköp] = useState(false);
   const [newInköpForm, setNewInköpForm] = useState({ datum: new Date().toISOString().split('T')[0], antal: '', pris: '' });
   const [expandedUttag, setExpandedUttag] = useState({});
+  const [expandUttagSection, setExpandUttagSection] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -437,7 +438,18 @@ export default function LokalvardArtikelDetaljer() {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h2 className="text-lg font-semibold mb-2">Uttag av denna artikel</h2>
+        <button
+          onClick={() => setExpandUttagSection(!expandUttagSection)}
+          className="w-full flex items-center justify-between hover:bg-gray-50 p-2 -m-2 rounded"
+        >
+          <h2 className="text-lg font-semibold">Uttag av denna artikel</h2>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>({transaktioner?.length || 0})</span>
+            {expandUttagSection ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </div>
+        </button>
+        {expandUttagSection && (
+          <div className="mt-2">
         {!transaktioner || transaktioner.length === 0 ? (
           <p className="text-sm text-gray-600">Inga uttag registrerade</p>
         ) : (
@@ -491,11 +503,13 @@ export default function LokalvardArtikelDetaljer() {
                     </table>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+                })}
+                </div>
+                )}
+                </div>
+                )}
+                </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
