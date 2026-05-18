@@ -39,7 +39,7 @@ export default function LokalvardLager() {
   const { data: uttag = [] } = useQuery({
     queryKey: ['uttag'],
     queryFn: async () => {
-      const data = await base44.entities.Uttag.list(null, 100000).catch(() => []);
+      const data = await base44.entities.Uttag.list('-created_date', 100000).catch(() => []);
       return Array.isArray(data) ? data : [];
     },
     staleTime: 60000,
