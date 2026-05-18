@@ -28,7 +28,7 @@ function FilterChip({ label, count, children }) {
 
 export default function KostnadPerKund() {
   const navigate = useNavigate();
-  const [allData, setAllData] = useState([]);
+  const [allUttag, setAllUttag] = useState([]);
   const [allCustomers, setAllCustomers] = useState([]);
   const [availablePeriods, setAvailablePeriods] = useState([]);
   const [availableCustomerTypes, setAvailableCustomerTypes] = useState([]);
@@ -37,8 +37,10 @@ export default function KostnadPerKund() {
   const [selectedCustomerTypes, setSelectedCustomerTypes] = useState([]);
   const [selectedCustomerStatus, setSelectedCustomerStatus] = useState('alla');
   const [loading, setLoading] = useState(true);
-  const [customerTypeMap, setCustomerTypeMap] = useState({});
+  const [customerMap, setCustomerMap] = useState({});
+  const [customerNameToTypeMap, setCustomerNameToTypeMap] = useState({});
   const [customerStatusMap, setCustomerStatusMap] = useState({});
+  const [personalMap, setPersonalMap] = useState({});
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,16 +51,19 @@ export default function KostnadPerKund() {
           base44.entities.TeamMember.list(null, 10000)
         ]);
         setAllCustomers(kunder);
+        setAllUttag(uttag);
 
-        // Create customer type map
-        const typeMap = {};
         const statusMap = {};
+        const cMap = {};
+        const cNameToTypeMap = {};
         kunder.forEach(k => {
-          typeMap[k.id] = k.typ;
           statusMap[k.id] = k.status || 'aktiv';
+          cMap[k.id] = k.namn;
+          cNameToTypeMap[k.namn] = k.typ;
         });
-        setCustomerTypeMap(typeMap);
         setCustomerStatusMap(statusMap);
+        setCustomerMap(cMap);
+        setCustomerNameToTypeMap(cNameToTypeMap);
 
         const periods = [...new Set(uttag.map(u => u.manad).filter(Boolean))].sort((a, b) => b.localeCompare(a));
         setAvailablePeriods(periods);
@@ -66,44 +71,9 @@ export default function KostnadPerKund() {
         const types = [...new Set(kunder.map(k => k.typ).filter(Boolean))].sort();
         setAvailableCustomerTypes(types);
 
-        const customerMap = {};
-        kunder.forEach(k => {
-          customerMap[k.id] = k.namn;
-        });
-
-        const customerNameToTypeMap = {};
-        kunder.forEach(k => {
-          customerNameToTypeMap[k.namn] = k.typ;
-        });
-
-        const personalMap = {};
-        personal.forEach(p => {
-          personalMap[p.id] = p.name;
-        });
-
-        const costMap = {};
-        uttag.forEach(u => {
-          const kundtypForUttag = customerNameToTypeMap[u.kund_namn] || 'Okänd';
-          if (!costMap[u.kund_id]) {
-            costMap[u.kund_id] = { 
-              kund_id: u.kund_id, 
-              namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd', 
-              kundtyp: kundtypForUttag,
-              kundstatus: statusMap[u.kund_id] || 'aktiv',
-              personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd', 
-              total: 0 
-            };
-          }
-          costMap[u.kund_id].total += u.total_kostnad;
-        });
-
-        const sorted = Object.values(costMap).sort((a, b) => b.total - a.total);
-        
-        // Uppdatera tillgängliga kundtyper baserat på faktisk data
-        const typesFromData = [...new Set(sorted.map(item => item.kundtyp).filter(Boolean))].sort();
-        setAvailableCustomerTypes(typesFromData);
-        
-        setAllData(sorted);
+        const pMap = {};
+        personal.forEach(p => { pMap[p.id] = p.name; });
+        setPersonalMap(pMap);
       } catch (error) {
         toast.error('Kunde inte ladda kostnaddata');
       } finally {
@@ -113,7 +83,32 @@ export default function KostnadPerKund() {
     loadData();
   }, []);
 
-  const data = allData
+  // Aggregate costs reactively based on selected periods
+  const aggregatedData = (() => {
+    const filteredUttag = selectedPeriods.length > 0
+      ? allUttag.filter(u => selectedPeriods.includes(u.manad))
+      : allUttag;
+
+    const costMap = {};
+    filteredUttag.forEach(u => {
+      const kundtyp = customerNameToTypeMap[u.kund_namn] || 'Okänd';
+      if (!costMap[u.kund_id]) {
+        costMap[u.kund_id] = {
+          kund_id: u.kund_id,
+          namn: customerMap[u.kund_id] || u.kund_namn || 'Okänd',
+          kundtyp,
+          kundstatus: customerStatusMap[u.kund_id] || 'aktiv',
+          personal_namn: personalMap[u.personal_id] || u.personal_namn || 'Okänd',
+          total: 0
+        };
+      }
+      costMap[u.kund_id].total += u.total_kostnad;
+    });
+
+    return Object.values(costMap).sort((a, b) => b.total - a.total);
+  })();
+
+  const data = aggregatedData
     .filter(d => selectedCustomerIds.length === 0 || selectedCustomerIds.includes(d.kund_id))
     .filter(d => selectedCustomerTypes.length === 0 || selectedCustomerTypes.includes(d.kundtyp))
     .filter(d => selectedCustomerStatus === 'alla' || d.kundstatus === selectedCustomerStatus);
