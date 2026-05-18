@@ -266,11 +266,14 @@ export default function AdminLayoutEditor() {
 
   useEffect(() => {
     if (dashboardConfig?.config_value?.widgets) {
-      // Merge saved with defaults to handle new widgets
+      // Start from saved order, then append any new defaults
       const saved = dashboardConfig.config_value.widgets;
-      const merged = DEFAULT_WIDGET_ORDER.map(def => {
-        const found = saved.find(s => s.id === def.id);
-        return found ? { ...def, ...found } : def;
+      const merged = saved.map(s => {
+        const def = DEFAULT_WIDGET_ORDER.find(d => d.id === s.id);
+        return def ? { ...def, ...s } : s;
+      });
+      DEFAULT_WIDGET_ORDER.forEach(def => {
+        if (!merged.find(m => m.id === def.id)) merged.push(def);
       });
       setWidgetOrder(merged);
     }
@@ -279,17 +282,24 @@ export default function AdminLayoutEditor() {
   useEffect(() => {
     if (navConfig?.config_value?.items) {
       const saved = navConfig.config_value.items;
-      const merged = DEFAULT_NAV_ORDER.map(def => {
-        const found = saved.find(s => s.id === def.id);
-        if (!found) return def;
-        return {
-          ...def,
-          ...found,
-          children: def.children.map(dc => {
-            const fc = (found.children || []).find(c => c.id === dc.id);
-            return fc ? { ...dc, ...fc } : dc;
-          }),
-        };
+      // Start from saved order, then append any new defaults not yet in saved
+      const merged = saved.map(s => {
+        const def = DEFAULT_NAV_ORDER.find(d => d.id === s.id);
+        if (!def) return s;
+        // Merge children: start from saved children order, append new defaults
+        const mergedChildren = (s.children || []).map(sc => {
+          const dc = def.children.find(d => d.id === sc.id);
+          return dc ? { ...dc, ...sc } : sc;
+        });
+        // Add any new default children not in saved
+        def.children.forEach(dc => {
+          if (!mergedChildren.find(mc => mc.id === dc.id)) mergedChildren.push(dc);
+        });
+        return { ...def, ...s, children: mergedChildren };
+      });
+      // Add any new default groups not yet in saved
+      DEFAULT_NAV_ORDER.forEach(def => {
+        if (!merged.find(m => m.id === def.id)) merged.push(def);
       });
       setNavOrder(merged);
     }
