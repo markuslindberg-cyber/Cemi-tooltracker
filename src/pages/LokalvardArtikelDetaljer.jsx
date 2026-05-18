@@ -23,6 +23,7 @@ export default function LokalvardArtikelDetaljer() {
   const [newInköpForm, setNewInköpForm] = useState({ datum: new Date().toISOString().split('T')[0], antal: '', pris: '' });
   const [expandedUttag, setExpandedUttag] = useState({});
   const [expandUttagSection, setExpandUttagSection] = useState(false);
+  const [expandInkopSection, setExpandInkopSection] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -511,19 +512,29 @@ export default function LokalvardArtikelDetaljer() {
                 )}
                 </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Inköp av denna artikel</h2>
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <button
+          onClick={() => setExpandInkopSection(!expandInkopSection)}
+          className="w-full flex items-center justify-between hover:bg-gray-50 p-2 -m-2 rounded mb-2"
+        >
+          <h2 className="text-lg font-semibold">Inköp av denna artikel</h2>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>({inköp.length})</span>
+            {expandInkopSection ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          </div>
+        </button>
+
+        {expandInkopSection && (
+          <div>
           {!showAddInköp && (
             <Button
               onClick={() => setShowAddInköp(true)}
               variant="outline"
-              className="gap-2"
+              className="gap-2 mb-4"
             >
               <Plus className="w-4 h-4" /> Lägg till inköp
             </Button>
           )}
-        </div>
 
         {showAddInköp && (
           <div className="bg-gray-50 p-4 rounded-lg mb-4 space-y-3 border border-gray-200">
@@ -664,9 +675,11 @@ export default function LokalvardArtikelDetaljer() {
             </table>
           </div>
         )}
-      </div>
+          </div>
+        )}
+        </div>
 
 
-    </div>
+        </div>
   );
 }
