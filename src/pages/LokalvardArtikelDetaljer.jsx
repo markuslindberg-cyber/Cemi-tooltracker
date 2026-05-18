@@ -96,25 +96,13 @@ export default function LokalvardArtikelDetaljer() {
       const allTransactions = [...relateradeUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
       setTransaktioner(allTransactions);
       
-      // Hämta alla artiklar med samma streckkod eller old_streckkod för att visa alla relaterade inköp
-      const sammaStreckkod = artiklarData.filter(a => 
-        a.streckkod === fundArticle.streckkod || 
-        a.old_streckkod === fundArticle.streckkod ||
-        a.streckkod === fundArticle.old_streckkod ||
-        a.id === fundArticle.id
-      ).map(a => a.id);
+      // Filtrera inköp med EXAKT samma logik som Lagersidan (getInköptForArticle)
+      // Lagersidan filtrerar ENBART på all_artikel_ids.includes(i.artikel_id)
       const relateradeInköp = inköpData?.filter(i => 
-        sammaStreckkod.includes(i.artikel_id) || 
-        i.artikel_id === fundArticle.streckkod || 
-        i.artikel_id === fundArticle.old_streckkod
+        relateradeArtikelIds.includes(i.artikel_id)
       ) || [];
       
-      // Ta bort dubletter (samma artikel_id, datum, antal och pris)
-      const uniqueInköp = Array.from(new Map(
-        relateradeInköp.map(i => [`${i.artikel_id}|${i.datum}|${i.antal}|${i.pris}`, i])
-      ).values());
-      
-      setInköp(uniqueInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
+      setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
       setArtikelData(artiklarData);
     } catch (error) {
       toast.error('Kunde inte ladda data');
