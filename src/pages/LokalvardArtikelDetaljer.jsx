@@ -72,10 +72,17 @@ export default function LokalvardArtikelDetaljer() {
       const streckkod = fundArticle.streckkod;
       const oldStreckkod = fundArticle.old_streckkod;
 
+      // Samla alla artikel-IDs med samma streckkod (grupperad)
+      const relateradeArtikelIds = artiklarData
+        .filter(a => a.streckkod === streckkod || a.old_streckkod === streckkod || (oldStreckkod && (a.streckkod === oldStreckkod || a.old_streckkod === oldStreckkod)))
+        .map(a => a.id);
+
       const relateradeUttag = uttagData.filter(u => 
         u.artiklar?.some(a => 
+          (a.benamning && a.benamning.toLowerCase() === fundArticle.benamning.toLowerCase()) ||
           a.benamning === streckkod || 
           a.benamning === oldStreckkod ||
+          relateradeArtikelIds.includes(a.artikel_id) ||
           a.artikel_id === streckkod || 
           a.artikel_id === oldStreckkod
         )
@@ -231,11 +238,18 @@ export default function LokalvardArtikelDetaljer() {
 
   const totalInköpt = totalFromInköp > 0 ? totalFromInköp : artikel.antal_inkopta;
 
+  // Samla alla relaterade artikel-IDs (samma streckkod-grupp)
+  const artikelGruppIds = artikelData
+    .filter(a => a.streckkod === artikel.streckkod || a.old_streckkod === artikel.streckkod || (artikel.old_streckkod && (a.streckkod === artikel.old_streckkod || a.old_streckkod === artikel.old_streckkod)))
+    .map(a => a.id);
+
   // Räkna uttag för denna specifika artikel
   const totalUttag = transaktioner.reduce((sum, uttag) => {
     const matchingItems = uttag.artiklar.filter(item => 
+      (item.benamning && item.benamning.toLowerCase() === artikel.benamning.toLowerCase()) ||
       item.benamning === artikel.streckkod ||
       item.benamning === artikel.old_streckkod ||
+      artikelGruppIds.includes(item.artikel_id) ||
       item.artikel_id === artikel.streckkod ||
       item.artikel_id === artikel.old_streckkod
     );
@@ -430,8 +444,10 @@ export default function LokalvardArtikelDetaljer() {
           <div className="space-y-1">
             {transaktioner.map(uttag => {
                const matchingItems = uttag.artiklar.filter(item => 
+                  (item.benamning && item.benamning.toLowerCase() === artikel.benamning.toLowerCase()) ||
                   item.benamning === artikel.streckkod ||
                   item.benamning === artikel.old_streckkod ||
+                  artikelGruppIds.includes(item.artikel_id) ||
                   item.artikel_id === artikel.streckkod ||
                   item.artikel_id === artikel.old_streckkod
                 );
