@@ -39,10 +39,9 @@ export default function LokalvardArtikelDetaljer() {
 
   const loadData = async () => {
     try {
-      const [artiklarData, uttagData, checkoutData, inköpData] = await Promise.all([
+      const [artiklarData, uttagData, inköpData] = await Promise.all([
         base44.entities.LokalvardsArtikel.list(null, 10000),
         base44.entities.Uttag.list(null, 100000),
-        base44.entities.LokalvardCheckout?.list ? base44.entities.LokalvardCheckout.list(null, 100000) : Promise.resolve([]),
         base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([])
       ]);
 
@@ -90,41 +89,11 @@ export default function LokalvardArtikelDetaljer() {
         )
       );
 
-      const checkoutAsUttag = (checkoutData || []).map(co => {
-        const dateStr = co.checked_out_date || new Date().toISOString();
-        return {
-          id: co.id,
-          datum: dateStr,
-          personal_id: '',
-          personal_namn: co.checked_out_by_name,
-          kund_id: co.customer_id,
-          kund_namn: co.customer_name,
-          ordernummer: co.request_id,
-          artiklar: co.checked_out_items.map(item => {
-            // Försök matcha item_id med artikel ID
-            let matchedArtikel = artiklarData.find(a => a.id === item.item_id);
-            return {
-              artikel_id: matchedArtikel?.streckkod || matchedArtikel?.id || item.item_id,
-              benamning: matchedArtikel?.benamning || item.name,
-              antal: item.scanned_quantity || item.quantity,
-              pris_per_enhet: matchedArtikel?.pris || 0,
-              total_pris: (item.scanned_quantity || item.quantity) * (matchedArtikel?.pris || 0)
-            };
-          }),
-          total_kostnad: 0,
-          manad: dateStr.substring(0, 7)
-        };
-      }).filter(co => 
-        co.artiklar?.some(a => 
-          a.artikel_id === streckkod || 
-          a.artikel_id === oldStreckkod || 
-          a.benamning === streckkod ||
-          a.benamning === oldStreckkod ||
-          a.benamning === fundArticle.benamning
-        )
-      );
+      // OBS: LokalvardCheckout inkluderas INTE i uttagsberäkningen
+      // eftersom Lagersidan (LokalvardLager) inte räknar med dem.
+      // Checkout-data skapar redan Uttag-poster via createUttagFromCheckout.
 
-      const allTransactions = [...relateradeUttag, ...checkoutAsUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+      const allTransactions = [...relateradeUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
       setTransaktioner(allTransactions);
       
       // Hämta alla artiklar med samma streckkod eller old_streckkod för att visa alla relaterade inköp
@@ -238,7 +207,16 @@ export default function LokalvardArtikelDetaljer() {
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   if (!artikel) return null;
 
-  const totalInköpt = totalFromInköp > 0 ? totalFromInköp : artikel.antal_inkopta;
+  // Beräkna grupperad total_antal_inkopta (samma logik som Lagersidan)
+  const grupperadAntalInkopta = artikelData
+    .filter(a => 
+      a.streckkod === artikel.streckkod || 
+      a.old_streckkod === artikel.streckkod ||
+      (artikel.old_streckkod && (a.streckkod === artikel.old_streckkod || a.old_streckkod === artikel.old_streckkod))
+    )
+    .reduce((sum, a) => sum + (a.antal_inkopta || 0), 0);
+
+  const totalInköpt = totalFromInköp > 0 ? totalFromInköp : grupperadAntalInkopta;
 
   // Samla alla relaterade artikel-IDs (samma streckkod-grupp)
   const artikelGruppIds = artikelData
