@@ -10,6 +10,22 @@ import { toast } from 'sonner';
 
 const COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#84cc16', '#22c55e'];
 
+function FilterChip({ label, count, children }) {
+  return (
+    <Popover modal={false}>
+      <PopoverTrigger asChild>
+        <button className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-300 transition-colors">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:inline">{label}</span>
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide sm:hidden">{label.slice(0, 3)}</span>
+          <span className="text-gray-800">{count === 0 ? 'Alla' : `${count}`}</span>
+          <ChevronDown className="w-3 h-3 text-gray-400" />
+        </button>
+      </PopoverTrigger>
+      {children}
+    </Popover>
+  );
+}
+
 export default function KostnadPerKund() {
   const navigate = useNavigate();
   const [allData, setAllData] = useState([]);
@@ -121,20 +137,6 @@ export default function KostnadPerKund() {
   const hasActiveFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0 || selectedCustomerTypes.length > 0 || selectedCustomerStatus !== 'alla';
   const maxTotal = data.length > 0 ? Math.max(...data.map(d => d.total)) : 0;
   const chartData = data.slice(0, 10).map(d => ({ name: d.namn.length > 15 ? d.namn.slice(0, 15) + '…' : d.namn, value: Math.round(d.total) }));
-
-  const FilterChip = ({ label, count, children }) => (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:border-gray-300 transition-colors">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide hidden sm:inline">{label}</span>
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide sm:hidden">{label.slice(0, 3)}</span>
-          <span className="text-gray-800">{count === 0 ? 'Alla' : `${count}`}</span>
-          <ChevronDown className="w-3 h-3 text-gray-400" />
-        </button>
-      </PopoverTrigger>
-      {children}
-    </Popover>
-  );
 
   return (
     <div className="max-w-6xl mx-auto p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
