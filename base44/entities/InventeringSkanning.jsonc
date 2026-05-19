@@ -63,6 +63,11 @@
           "user_condition": {
             "role": "\u00e4gare"
           }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
+          }
         }
       ]
     },
@@ -76,6 +81,11 @@
         {
           "user_condition": {
             "role": "\u00e4gare"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
           }
         }
       ]
@@ -95,9 +105,18 @@
       ]
     },
     "delete": {
-      "user_condition": {
-        "role": "\u00e4gare"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
     }
   }
 }
