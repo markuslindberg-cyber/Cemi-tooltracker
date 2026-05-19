@@ -52,9 +52,21 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
     },
     "read": {
       "$or": [
