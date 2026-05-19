@@ -33,29 +33,13 @@ Deno.serve(async (req) => {
       if (allUnmatched) toDelete.push(u.id);
     }
 
-    // Radera via HTTP direkt (kringgår RLS med service role token)
-    const appId = Deno.env.get('BASE44_APP_ID');
-    const serviceToken = req.headers.get('x-service-token') || req.headers.get('authorization')?.replace('Bearer ', '');
-    
     let deleted = 0;
     const errors = [];
 
     for (const id of toDelete) {
       try {
-        // Använd entities API direkt
-        const resp = await fetch(`https://api.base44.com/api/apps/${appId}/entities/Uttag/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': req.headers.get('authorization') || '',
-            'x-user-token': req.headers.get('x-user-token') || '',
-          }
-        });
-        if (resp.ok || resp.status === 404) {
-          deleted++;
-        } else {
-          const body = await resp.text();
-          errors.push({ id, status: resp.status, body: body.slice(0, 200) });
-        }
+        await base44.asServiceRole.entities.Uttag.delete(id);
+        deleted++;
       } catch (e) {
         errors.push({ id, error: e.message });
       }
