@@ -168,6 +168,9 @@
           "user_condition": {
             "role": "\u00e4gare"
           }
+        },
+        {
+          "created_by": "{{user.email}}"
         }
       ]
     },
@@ -192,6 +195,18 @@
           "user_condition": {
             "role": "\u00e4gare"
           }
+        },
+        {
+          "requested_by_email": "{{user.email}}"
+        },
+        {
+          "assigned_to_email": "{{user.email}}"
+        },
+        {
+          "approver_email": "{{user.email}}"
+        },
+        {
+          "destination_location_manager_email": "{{user.email}}"
         }
       ]
     },
@@ -216,13 +231,28 @@
           "user_condition": {
             "role": "\u00e4gare"
           }
+        },
+        {
+          "requested_by_email": "{{user.email}}",
+          "data.status": "pending"
+        },
+        {
+          "approver_email": "{{user.email}}"
         }
       ]
     },
     "delete": {
-      "user_condition": {
-        "role": "\u00e4gare"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        },
+        {
+          "created_by": "{{user.email}}",
+          "data.status": "pending"
+        }
+      ]
     }
   }
 }
