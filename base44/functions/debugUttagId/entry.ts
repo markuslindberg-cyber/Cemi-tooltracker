@@ -6,21 +6,24 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Testa delete direkt på ett känt omatchat ID
-    const testId = '69df5f8615240df1503cdbb1';
+    const { uttaqId } = await req.json();
+    
+    if (!uttaqId) {
+      return Response.json({ error: 'Missing uttaqId in request payload' }, { status: 400 });
+    }
     
     // Verifiera att det finns
     let found = null;
     try {
-      found = await base44.asServiceRole.entities.Uttag.get(testId);
+      found = await base44.asServiceRole.entities.Uttag.get(uttaqId);
     } catch (e) {
       return Response.json({ error: 'get failed: ' + e.message });
     }
 
     // Försök radera
     try {
-      const result = await base44.asServiceRole.entities.Uttag.delete(testId);
-      return Response.json({ success: true, deleted: testId, result });
+      const result = await base44.asServiceRole.entities.Uttag.delete(uttaqId);
+      return Response.json({ success: true, deleted: uttaqId, result });
     } catch (e) {
       return Response.json({ delete_error: e.message, found_before: !!found });
     }
