@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin', 'admin_lokalvård', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const allArtiklar = await base44.entities.LokalvardsArtikel.list(null, 10000);
     
     // Hitta alla artiklar med streckkod eller artikelnummer = 71617
