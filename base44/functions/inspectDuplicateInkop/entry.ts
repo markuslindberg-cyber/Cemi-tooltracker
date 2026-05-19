@@ -9,8 +9,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const id1 = '69df38fe0571583af4633322';
-    const id2 = '69de36de586abc269e07ffb1';
+    const { id1, id2 } = await req.json();
+
+    if (!id1 || !id2) {
+      return Response.json({ error: 'Missing id1 or id2 in request payload' }, { status: 400 });
+    }
 
     const ink1 = await base44.entities.LokalvardInköp.get(id1);
     const ink2 = await base44.entities.LokalvardInköp.get(id2);
