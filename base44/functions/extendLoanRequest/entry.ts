@@ -24,6 +24,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Original loan request not found' }, { status: 404 });
     }
 
+    // Rollkontroll: tilldelad person, admin eller ägare
+    const isAssigned = user.email === originalRequest.assigned_to_email;
+    const isRequester = user.email === originalRequest.requested_by_email;
+    if (!isAssigned && !isRequester && !['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Ingen behörighet att förlänga detta lån' }, { status: 403 });
+    }
+
     const extensionRequest = await base44.entities.LoanRequest.create({
       tool_ids: originalRequest.tool_ids,
       tool_names: originalRequest.tool_names,

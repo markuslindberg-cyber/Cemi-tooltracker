@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin_lokalvård', 'admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin lokalvård, admin eller ägare krävs' }, { status: 403 });
+    }
+
     const { rows } = await req.json();
     if (!Array.isArray(rows) || rows.length === 0) {
       return Response.json({ error: 'No records provided' }, { status: 400 });

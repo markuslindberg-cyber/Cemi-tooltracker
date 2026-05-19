@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin eller ägare krävs' }, { status: 403 });
+    }
+
     // Uppdatera inköp med fel artikel_id
     await base44.entities.LokalvardInköp.update('69de36de586abc269e07ffb1', {
       artikel_id: '69de277e5aa45d46119f2176'

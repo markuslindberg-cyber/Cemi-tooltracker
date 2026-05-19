@@ -8,6 +8,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin_lokalvård', 'ägare', 'admin'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin lokalvård, admin eller ägare krävs' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
 
     // Om action=create, skapa en WorkwearRequest

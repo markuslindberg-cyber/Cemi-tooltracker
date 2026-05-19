@@ -28,6 +28,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Loan request not found' }, { status: 404 });
     }
 
+    // Rollkontroll: tilldelad person, admin eller ägare
+    const isAssigned = user.email === loanRequest.assigned_to_email;
+    if (!isAssigned && !['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Ingen behörighet att returnera dessa verktyg' }, { status: 403 });
+    }
+
     const updated = await base44.entities.LoanRequest.update(loan_request_id, {
       status: 'pending_return',
       returned_date: new Date().toISOString()

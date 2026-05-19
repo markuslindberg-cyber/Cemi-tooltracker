@@ -3,6 +3,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin eller ägare krävs' }, { status: 403 });
+    }
     
     // Get all active tools
     const allTools = await base44.asServiceRole.entities.Tool.list('-created_date', 2000);

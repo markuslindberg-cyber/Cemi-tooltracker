@@ -8,6 +8,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['verktygsförvaltare', 'admin', 'admin_lokalvård', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Verktygsförvaltare, admin eller ägare krävs' }, { status: 403 });
+    }
+
     const { rows } = await req.json();
     if (!Array.isArray(rows) || rows.length === 0) {
       return Response.json({ error: 'Inga rader att importera' }, { status: 400 });

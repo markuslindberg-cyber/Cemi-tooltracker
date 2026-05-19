@@ -82,6 +82,13 @@ Deno.serve(async (req) => {
     const { loan_request_id, approved, approver_comment, adjusted_return_date, approved_tool_ids } = await req.json();
 
     const loanRequest = await base44.entities.LoanRequest.get(loan_request_id);
+
+    // Rollkontroll: godkännaren, admin eller ägare
+    const isApprover = user.email === loanRequest.approver_email;
+    const isPrivileged = ['admin', 'ägare'].includes(user.role);
+    if (!isApprover && !isPrivileged) {
+      return Response.json({ error: 'Forbidden: Endast godkännaren, admin eller ägare kan utföra denna åtgärd' }, { status: 403 });
+    }
     if (!loanRequest) {
       return Response.json({ error: 'Loan request not found' }, { status: 404 });
     }

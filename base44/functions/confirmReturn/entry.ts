@@ -26,6 +26,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Loan request not found' }, { status: 404 });
     }
 
+    // Rollkontroll: godkännaren, admin eller ägare
+    const isApprover = user.email === loanRequest.approver_email;
+    if (!isApprover && !['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Endast godkännaren, admin eller ägare kan bekräfta mottagning' }, { status: 403 });
+    }
+
     if (loanRequest.status !== 'pending_return') {
       return Response.json({ error: 'Loan is not pending return confirmation' }, { status: 400 });
     }

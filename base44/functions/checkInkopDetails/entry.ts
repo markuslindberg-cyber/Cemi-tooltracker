@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin eller ägare krävs' }, { status: 403 });
+    }
+
     const allInkop = await base44.entities.LokalvardInköp.list(null, 10000);
     
     // Hitta två inköp med samma datum, antal men möjligt olika pris

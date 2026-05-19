@@ -16,6 +16,11 @@ function mapRole(userRole) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin eller ägare krävs' }, { status: 403 });
+    }
 
     // Fetch all platform users
     const users = await base44.asServiceRole.entities.User.list();

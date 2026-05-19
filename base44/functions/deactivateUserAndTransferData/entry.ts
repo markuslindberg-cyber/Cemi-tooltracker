@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin eller ägare krävs' }, { status: 403 });
+    }
+
     const { deactivated_user_id, replacement_user_id } = await req.json();
 
     if (!deactivated_user_id) {

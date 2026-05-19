@@ -11,6 +11,9 @@ Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!['admin', 'ägare'].includes(user.role)) {
+    return Response.json({ error: 'Forbidden: Admin eller ägare krävs' }, { status: 403 });
+  }
 
   // Fetch all relevant entity data in parallel
   const [tools, handTools, arbetsklader, lokalvard] = await Promise.all([

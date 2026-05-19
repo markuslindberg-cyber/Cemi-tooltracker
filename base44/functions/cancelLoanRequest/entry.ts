@@ -62,6 +62,12 @@ Deno.serve(async (req) => {
     const loan = await base44.entities.LoanRequest.get(loan_request_id);
     if (!loan) return Response.json({ error: 'Låneförfrågan hittades inte' }, { status: 404 });
 
+    // Rollkontroll: beställaren, godkännaren, admin eller ägare
+    const isInvolved = [loan.requested_by_email, loan.approver_email, loan.assigned_to_email].includes(user.email);
+    if (!isInvolved && !['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Ingen behörighet att avbryta denna förfrågan' }, { status: 403 });
+    }
+
     // Mark as rejected (cancelled)
     await base44.entities.LoanRequest.update(loan_request_id, {
       status: 'rejected',

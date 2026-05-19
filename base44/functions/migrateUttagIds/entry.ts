@@ -4,6 +4,10 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!['admin_lokalvård', 'admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin lokalvård, admin eller ägare krävs' }, { status: 403 });
+    }
 
     const [uttag, personal, kunder] = await Promise.all([
       base44.asServiceRole.entities.Uttag.list(null, 10000),

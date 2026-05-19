@@ -9,6 +9,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin_lokalvård', 'admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Admin lokalvård, admin eller ägare krävs' }, { status: 403 });
+    }
+
     // Hämta alla artiklar
     const allArtiklar = await base44.entities.LokalvardsArtikel.list(null, 10000);
     

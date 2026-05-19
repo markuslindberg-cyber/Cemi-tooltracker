@@ -13,6 +13,13 @@ Deno.serve(async (req) => {
     const loanRequest = await base44.entities.LoanRequest.get(loan_request_id);
     if (!loanRequest) return Response.json({ error: 'Loan request not found' }, { status: 404 });
 
+    // Rollkontroll: tilldelad person, admin eller ägare
+    const isAssigned = user.email === loanRequest.assigned_to_email;
+    const isRequester = user.email === loanRequest.requested_by_email;
+    if (!isAssigned && !isRequester && !['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden: Ingen behörighet att ändra detta datum' }, { status: 403 });
+    }
+
     await base44.entities.LoanRequest.update(loan_request_id, {
       default_return_date: new_return_date,
       requester_comment: comment || loanRequest.requester_comment || ''
