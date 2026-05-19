@@ -22,7 +22,11 @@
         "role": "\u00e4gare"
       }
     },
-    "read": {},
+    "read": {
+      "user_condition": {
+        "$exists": true
+      }
+    },
     "update": {
       "$or": [
         {
