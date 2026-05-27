@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 
 const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers'];
+const LOKALVARD_ONLY_ROLES = ['lokalvårdare', 'admin_lokalvård'];
 
 const DEFAULT_WIDGETS = [
   { id: 'stats', visible: true, column: 'main' },
@@ -41,6 +42,7 @@ const DEFAULT_WIDGETS = [
   { id: 'inventory_value', visible: true, column: 'sidebar' },
   { id: 'loans_by_location', visible: true, column: 'sidebar' },
   { id: 'recent_transfers', visible: true, column: 'sidebar' },
+  { id: 'lokalvard_pending_chart', visible: true, column: 'main' },
   { id: 'recent_tools', visible: true, column: 'main' },
 ];
 
@@ -461,6 +463,14 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+            ),
+            lokalvard_pending_chart: isVisible('lokalvard_pending_chart') && LOKALVARD_ONLY_ROLES.includes(user?.role) && (
+              <PendingRequestsChart key="lokalvard_pending_chart"
+                loanCount={pendingLoanCount}
+                workwearCount={pendingWorkwearCount}
+                lokalvardCount={pendingLokalvardCount}
+                lokalvardApprovedCount={approvedNotCheckedOutLokalvardCount}
+              />
             ),
             recent_tools: isVisible('recent_tools') && (
               <div key="recent_tools" className="space-y-4">
