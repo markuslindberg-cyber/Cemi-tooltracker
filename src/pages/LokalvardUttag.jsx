@@ -232,7 +232,8 @@ export default function LokalvardUttag() {
     const personalMatch = selectedPersonal.length === 0 || selectedPersonal.includes(u.personal_id);
     if (searchBarcode === '') return monthMatch && customerMatch && personalMatch;
     const searchLower = searchBarcode.toLowerCase();
-    const searchMatch = u.artiklar?.some(a => {
+    const ordernummerMatch = (u.ordernummer || '').toLowerCase().includes(searchLower);
+    const searchMatch = ordernummerMatch || u.artiklar?.some(a => {
       const benamning = (a.benamning || '').toLowerCase();
       const artikelNamn = (a.artikel_namn || '').toLowerCase();
       const artikelId = (a.artikel_id || '').toLowerCase();
@@ -639,7 +640,7 @@ export default function LokalvardUttag() {
       {/* Sökruta */}
       <input
         type="text"
-        placeholder="Sök artikel eller streckkod..."
+        placeholder="Sök artikel, streckkod eller ordernummer..."
         value={searchBarcode}
         onChange={(e) => setSearchBarcode(e.target.value)}
         className="w-full h-11 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:border-blue-400"
