@@ -14,6 +14,10 @@
       "type": "string",
       "description": "Kundens namn"
     },
+    "projektnummer": {
+      "type": "string",
+      "description": "Projektnummer"
+    },
     "requested_items": {
       "type": "array",
       "description": "Lista p\u00e5 beg\u00e4rda artiklar",

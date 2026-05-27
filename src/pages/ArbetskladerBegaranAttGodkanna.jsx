@@ -328,7 +328,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
                           {request.request_number ? `#${request.request_number} — ` : ''}{request.customer_name}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {request.requested_items?.length} artikel(r) • {format(new Date(request.request_date), 'dd MMM yyyy', { locale: sv })}
+                          {request.projektnummer && <span>{request.projektnummer} • </span>}{request.requested_items?.length} artikel(r) • {format(new Date(request.request_date), 'dd MMM yyyy', { locale: sv })}
                         </p>
                       </div>
                     </div>
