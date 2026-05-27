@@ -562,6 +562,12 @@ export default function LokalvardBegaranAttGodkanna() {
                                     <p className="font-medium">{request.approved_by_name}</p>
                                   </div>
                                 )}
+                                {request.ordernummer && (
+                                  <div>
+                                    <p className="text-gray-500 text-xs">Ordernummer</p>
+                                    <p className="font-medium">{request.ordernummer}</p>
+                                  </div>
+                                )}
                                 {(() => {
                                   const checkout = checkouts.find(c => c.request_id === request.id);
                                   return checkout?.checked_out_by_name ? (
@@ -637,23 +643,29 @@ export default function LokalvardBegaranAttGodkanna() {
                   {expandedHistory === request.id && (
                     <div className="border-t border-gray-100 p-4 bg-gray-50 space-y-4">
                       <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <p className="text-gray-500">Begärd av</p>
-                          <p className="font-medium">{request.requested_by_name || request.requested_by_email}</p>
-                        </div>
-                        {request.approved_by_name && (
-                          <div>
-                            <p className="text-gray-500">Godkänd av</p>
-                            <p className="font-medium">{request.approved_by_name}</p>
-                          </div>
-                        )}
-                        {request.approved_date && (
-                          <div>
-                            <p className="text-gray-500">Datum godkänd</p>
-                            <p className="font-medium">{format(new Date(request.approved_date), 'dd MMM yyyy HH:mm', { locale: sv })}</p>
-                          </div>
-                        )}
-                      </div>
+                         <div>
+                           <p className="text-gray-500">Begärd av</p>
+                           <p className="font-medium">{request.requested_by_name || request.requested_by_email}</p>
+                         </div>
+                         {request.approved_by_name && (
+                           <div>
+                             <p className="text-gray-500">Godkänd av</p>
+                             <p className="font-medium">{request.approved_by_name}</p>
+                           </div>
+                         )}
+                         {request.approved_date && (
+                           <div>
+                             <p className="text-gray-500">Datum godkänd</p>
+                             <p className="font-medium">{format(new Date(request.approved_date), 'dd MMM yyyy HH:mm', { locale: sv })}</p>
+                           </div>
+                         )}
+                         {request.ordernummer && (
+                           <div>
+                             <p className="text-gray-500">Ordernummer</p>
+                             <p className="font-medium">{request.ordernummer}</p>
+                           </div>
+                         )}
+                       </div>
 
                       <div>
                        <p className="text-sm font-medium text-gray-700 mb-2">Artiklar</p>
