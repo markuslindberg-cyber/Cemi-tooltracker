@@ -24,7 +24,7 @@ export function useSaveGlobalConfig() {
       }
     },
     onSuccess: (_, { configKey }) => {
-      queryClient.invalidateQueries(['globalConfig', configKey]);
+      queryClient.invalidateQueries({ queryKey: ['globalConfig', configKey] });
     },
   });
 }
