@@ -210,6 +210,7 @@ export default function Dashboard() {
   const pendingLoanCount = loanRequests.filter(r => r.status === 'pending').length;
   const pendingWorkwearCount = workwearRequests.filter(r => r.status === 'pending').length;
   const pendingLokalvardCount = lokalvardRequests.filter(r => r.status === 'pending').length;
+  const approvedNotCheckedOutLokalvardCount = lokalvardRequests.filter(r => r.status === 'approved').length;
 
   const loansByLocation = locations.map(location => ({
     ...location,
@@ -376,6 +377,7 @@ export default function Dashboard() {
                 loanCount={pendingLoanCount}
                 workwearCount={pendingWorkwearCount}
                 lokalvardCount={pendingLokalvardCount}
+                lokalvardApprovedCount={approvedNotCheckedOutLokalvardCount}
               />
             ),
             inventory_value: isVisible('inventory_value') && (

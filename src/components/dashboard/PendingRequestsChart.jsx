@@ -2,7 +2,7 @@ import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Link } from 'react-router-dom';
 
-const COLORS = ['#3B82F6', '#10B981', '#8B1E1E'];
+const COLORS = ['#3B82F6', '#10B981', '#8B1E1E', '#F59E0B'];
 
 const CUSTOM_LABEL = ({ cx, cy, midAngle, innerRadius, outerRadius, value }) => {
   if (value === 0) return null;
@@ -17,13 +17,14 @@ const CUSTOM_LABEL = ({ cx, cy, midAngle, innerRadius, outerRadius, value }) => 
   );
 };
 
-export default function PendingRequestsChart({ loanCount, workwearCount, lokalvardCount }) {
-  const total = loanCount + workwearCount + lokalvardCount;
+export default function PendingRequestsChart({ loanCount, workwearCount, lokalvardCount, lokalvardApprovedCount = 0 }) {
+  const total = loanCount + workwearCount + lokalvardCount + lokalvardApprovedCount;
 
   const data = [
     { name: 'Låneförfrågan maskiner', value: loanCount, path: '/Transfers' },
     { name: 'Uttag arbetskläder', value: workwearCount, path: '/Arbetsklader/Forfragan' },
-    { name: 'Uttag lokalvårdsartiklar', value: lokalvardCount, path: '/Lokalvard/BegaranAttGodkanna' },
+    { name: 'Väntande lokalvårdsartiklar', value: lokalvardCount, path: '/Lokalvard/BegaranAttGodkanna' },
+    { name: 'Godkända ej uttagna (lokalvård)', value: lokalvardApprovedCount, path: '/Lokalvard/BegaranAttGodkanna' },
   ].filter(d => d.value >= 0);
 
   return (
