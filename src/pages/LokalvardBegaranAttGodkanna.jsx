@@ -50,16 +50,27 @@ export default function LokalvardBegaranAttGodkanna() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          setScannedItems(parsed);
-        } catch (e) {}
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setScannedItems(parsed);
+            setSuccess(`Återställde ${parsed.length} sparade artikel(r) från tidigare session`);
+            setTimeout(() => setSuccess(''), 4000);
+          }
+        } catch (e) {
+          console.error('Kunde inte ladda sparade skanningar:', e);
+        }
       }
+      localStorage.setItem('lastActiveRequestId', selectedRequest.id);
     }
   }, [selectedRequest, step]);
 
-  // Spara scannedItems till localStorage när de ändras
+  // Spara scannedItems till localStorage kontinuerligt
   useEffect(() => {
-    if (selectedRequest && step === 3 && scannedItems.length > 0) {
-      localStorage.setItem(`scanned_${selectedRequest.id}`, JSON.stringify(scannedItems));
+    if (selectedRequest && step === 3) {
+      if (scannedItems.length > 0) {
+        localStorage.setItem(`scanned_${selectedRequest.id}`, JSON.stringify(scannedItems));
+      } else {
+        // Rensa inte sparade artiklar om listan är tom pga initial render
+      }
     }
   }, [scannedItems, selectedRequest, step]);
 
@@ -103,10 +114,26 @@ export default function LokalvardBegaranAttGodkanna() {
         approved_by_name: personalMap[user?.id] || user?.full_name,
         approved_date: new Date().toISOString(),
       }),
-    onSuccess: () => {
+    onSuccess: (_, requestId) => {
       queryClient.invalidateQueries(['lokalvardArtikelRequests']);
+      // Kolla om det finns sparade skanningar från en tidigare session
+      const saved = localStorage.getItem(`scanned_${requestId}`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setScannedItems(parsed);
+          } else {
+            setScannedItems([]);
+          }
+        } catch (e) {
+          setScannedItems([]);
+        }
+      } else {
+        setScannedItems([]);
+      }
+      localStorage.setItem('lastActiveRequestId', requestId);
       setStep(3);
-      setScannedItems([]);
       setBarcodeInput('');
       setError('');
     },
@@ -136,6 +163,11 @@ export default function LokalvardBegaranAttGodkanna() {
       queryClient.invalidateQueries(['lokalvardArtikelRequests']);
       queryClient.invalidateQueries(['lokalvardCheckouts']);
       queryClient.invalidateQueries(['uttag']);
+      // Rensa sparade skanningar efter lyckad registrering
+      if (selectedRequest) {
+        localStorage.removeItem(`scanned_${selectedRequest.id}`);
+      }
+      localStorage.removeItem('lastActiveRequestId');
       setSuccess('Uttag registrerat!');
       setTimeout(() => {
         setSuccess('');
@@ -145,7 +177,9 @@ export default function LokalvardBegaranAttGodkanna() {
       }, 2000);
     },
     onError: (err) => {
-      setError(err.message || 'Fel vid registrering av uttag');
+      console.error('Fel vid registrering av uttag:', err);
+      setError('Fel vid registrering: ' + (err.message || 'Okänt fel') + '. Dina skannade artiklar är sparade – försök igen.');
+      // VIKTIGT: Rensa INTE localStorage här, så användaren kan försöka igen
     },
   });
 
@@ -467,12 +501,66 @@ export default function LokalvardBegaranAttGodkanna() {
             </Card>
           ) : (
             <div className="space-y-2">
+              {/* Visa återupptagna sessioner överst */}
+              {(() => {
+                const lastActiveId = localStorage.getItem('lastActiveRequestId');
+                // Kolla både pending och godkända (approved) begäranden
+                const allActive = [...pendingRequests, ...allRequests.filter(r => r.status === 'approved')];
+                const resumeRequest = lastActiveId && allActive.find(r => r.id === lastActiveId);
+                const hasSaved = resumeRequest && localStorage.getItem(`scanned_${lastActiveId}`);
+                if (!resumeRequest || !hasSaved) return null;
+                let savedCount = 0;
+                try { savedCount = JSON.parse(hasSaved).length; } catch(e) {}
+                return (
+                  <div className="p-4 rounded-lg border-2 border-blue-400 bg-blue-50 mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="w-5 h-5 text-blue-600" />
+                      <p className="font-semibold text-blue-900">Avbruten session hittad</p>
+                    </div>
+                    <p className="text-sm text-blue-800 mb-1">
+                      Du har {savedCount} sparade skannade artikel(r) för <strong>{resumeRequest.customer_name}</strong>
+                      {resumeRequest.request_number && <span> (#{resumeRequest.request_number})</span>}.
+                    </p>
+                    <p className="text-xs text-blue-600 mb-3">Klicka nedan för att fortsätta där du slutade.</p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => { setSelectedRequest(resumeRequest); setStep(3); }}
+                        className="bg-blue-600 hover:bg-blue-700"
+                        size="sm"
+                      >
+                        ↻ Återuppta skanning
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          localStorage.removeItem(`scanned_${lastActiveId}`);
+                          localStorage.removeItem('lastActiveRequestId');
+                          setScannedItems([]);
+                        }}
+                        className="text-red-600 hover:bg-red-50"
+                      >
+                        Rensa sparad session
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })()}
               {pendingRequests.map((request) => {
                 const hasSavedScan = localStorage.getItem(`scanned_${request.id}`);
                 return (
                   <button
                     key={request.id}
-                    onClick={() => { setSelectedRequest(request); setRejectNotes(''); setStep(2); }}
+                    onClick={() => {
+                      if (hasSavedScan && request.status === 'approved') {
+                        setSelectedRequest(request);
+                        setStep(3);
+                      } else {
+                        setSelectedRequest(request);
+                        setRejectNotes('');
+                        setStep(2);
+                      }
+                    }}
                     className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white transition-all flex items-center justify-between"
                   >
                     <div>
@@ -490,7 +578,7 @@ export default function LokalvardBegaranAttGodkanna() {
                         <p className="text-xs text-gray-500 mt-1 italic">📝 {request.notes}</p>
                       )}
                       {hasSavedScan && (
-                        <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">✓ Sparad skanning</span>
+                        <span className="inline-block mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">✓ Sparad skanning finns</span>
                       )}
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -1002,6 +1090,7 @@ export default function LokalvardBegaranAttGodkanna() {
               variant="outline" 
               onClick={() => { 
                 localStorage.setItem(`scanned_${selectedRequest.id}`, JSON.stringify(scannedItems));
+                localStorage.setItem('lastActiveRequestId', selectedRequest.id);
                 setSelectedRequest(null); 
                 setScannedItems([]); 
                 setStep(1);
@@ -1014,6 +1103,7 @@ export default function LokalvardBegaranAttGodkanna() {
               variant="outline" 
               onClick={() => { 
                 localStorage.removeItem(`scanned_${selectedRequest.id}`);
+                localStorage.removeItem('lastActiveRequestId');
                 setSelectedRequest(null); 
                 setScannedItems([]); 
                 setStep(1); 
