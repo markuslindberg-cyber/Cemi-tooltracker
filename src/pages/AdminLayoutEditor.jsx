@@ -314,11 +314,13 @@ export default function AdminLayoutEditor() {
   }
 
   const handleSave = async () => {
-    await Promise.all([
-      saveConfig.mutateAsync({ configKey: 'dashboard_layout', configValue: { widgets: widgetOrder } }),
-      saveConfig.mutateAsync({ configKey: 'navigation_order', configValue: { items: navOrder } }),
-    ]);
-    toast.success('Layouten sparad för alla användare!');
+    try {
+      await saveConfig.mutateAsync({ configKey: 'dashboard_layout', configValue: { widgets: widgetOrder } });
+      await saveConfig.mutateAsync({ configKey: 'navigation_order', configValue: { items: navOrder } });
+      toast.success('Layouten sparad för alla användare!');
+    } catch (e) {
+      toast.error('Kunde inte spara. Försök igen om en stund.');
+    }
   };
 
   return (
