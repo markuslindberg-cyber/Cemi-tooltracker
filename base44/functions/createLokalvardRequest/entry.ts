@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
       ${payload.notes ? `<div style="background:#f0f4ff; border-left:4px solid #4a6cf7; border-radius:4px; padding:14px 18px; margin:20px 0; font-size:14px; color:#333; font-style:italic;"><strong>Anteckning:</strong> ${payload.notes}</div>` : ''}
 
       <div style="text-align: center; margin-top: 24px;">
-        <a href="${Deno.env.get('TOOLTRACK_APP_URL') || 'https://app.tooltrack.se'}/Lokalvard/BegaranAttGodkanna" style="${buttonStyle}">Öppna ToolTrack</a>
+        <a href="https://app.tooltrack.se/Lokalvard/BegaranAttGodkanna" style="${buttonStyle}">Öppna ToolTrack</a>
       </div>
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
