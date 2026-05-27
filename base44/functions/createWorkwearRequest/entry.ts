@@ -83,6 +83,13 @@ Deno.serve(async (req) => {
     const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/+$/, '') || '';
     const payload = await req.json();
 
+    // Generate sequential request number
+    const existingRequests = await base44.asServiceRole.entities.WorkwearRequest.list('-request_number', 1);
+    const nextNumber = existingRequests.length > 0 && existingRequests[0].request_number
+      ? existingRequests[0].request_number + 1
+      : 1;
+    payload.request_number = nextNumber;
+
     const request = await base44.entities.WorkwearRequest.create(payload);
 
     // Find all admin_lokalvård users to notify

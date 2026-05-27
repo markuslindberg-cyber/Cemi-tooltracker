@@ -284,7 +284,9 @@ export default function ArbetskladerBegaranAttGodkanna() {
                   className="w-full text-left p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white dark:bg-gray-900 transition-all flex items-center justify-between"
                 >
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{request.customer_name}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      {request.request_number ? `#${request.request_number} — ` : ''}{request.customer_name}
+                    </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
                       {request.requested_items?.length} artikel(r) • Begärd av: {request.requested_by_name || request.requested_by_email}
                     </p>
@@ -322,7 +324,9 @@ export default function ArbetskladerBegaranAttGodkanna() {
                     <div className="flex items-center gap-3">
                       {statusBadge(request.status)}
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">{request.customer_name}</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                          {request.request_number ? `#${request.request_number} — ` : ''}{request.customer_name}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {request.requested_items?.length} artikel(r) • {format(new Date(request.request_date), 'dd MMM yyyy', { locale: sv })}
                         </p>

@@ -2,6 +2,10 @@
   "name": "WorkwearRequest",
   "type": "object",
   "properties": {
+    "request_number": {
+      "type": "integer",
+      "description": "L\u00f6pnummer f\u00f6r beg\u00e4ran"
+    },
     "customer_id": {
       "type": "string",
       "description": "Referens till kund"
@@ -138,11 +142,6 @@
         },
         {
           "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
             "role": "\u00e4gare"
           }
         }
@@ -153,11 +152,6 @@
         {
           "user_condition": {
             "role": "admin_lokalv\u00e5rd"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "admin"
           }
         },
         {
