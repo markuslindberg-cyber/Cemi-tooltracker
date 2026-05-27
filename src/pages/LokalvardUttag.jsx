@@ -284,6 +284,7 @@ export default function LokalvardUttag() {
             totalAntal: 0,
             totalPrice: 0,
             isCheckout: artikel.isCheckout,
+            ordernummer: u.ordernummer,
             indices: []
           };
         }
