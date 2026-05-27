@@ -135,7 +135,7 @@ export default function LokalvardUttag() {
         personal_namn: co.checked_out_by_name,
         kund_id: co.customer_id,
         kund_namn: co.customer_name,
-        ordernummer: linkedRequest?.ordernummer || null,
+        ordernummer: co.ordernummer || linkedRequest?.ordernummer || null,
         request_id: co.request_id,
         artiklar: artiklar,
         total_kostnad: total_kostnad,
