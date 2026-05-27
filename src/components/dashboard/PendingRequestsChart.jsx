@@ -24,7 +24,7 @@ export default function PendingRequestsChart({ loanCount, workwearCount, lokalva
     { name: 'Låneförfrågan maskiner', value: loanCount, path: '/Transfers' },
     { name: 'Uttag arbetskläder', value: workwearCount, path: '/Arbetsklader/Forfragan' },
     { name: 'Väntande lokalvårdsartiklar', value: lokalvardCount, path: '/Lokalvard/BegaranAttGodkanna' },
-    { name: 'Godkända ej uttagna (lokalvård)', value: lokalvardApprovedCount, path: '/Lokalvard/BegaranAttGodkanna' },
+    { name: 'Godkända ej uttagna (lokalvård)', value: lokalvardApprovedCount, path: '/Lokalvard/NyttUttag' },
   ].filter(d => d.value >= 0);
 
   return (
