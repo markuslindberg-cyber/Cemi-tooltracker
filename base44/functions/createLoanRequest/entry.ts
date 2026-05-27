@@ -82,7 +82,7 @@ const footerStyle = `
   border-top: 1px solid #f0f0f0;
 `;
 
-function buildApproverEmail({ approver_name, tool_names, requester_name, assigned_to_name, destination, return_date, comment }) {
+function buildApproverEmail({ approver_name, tool_names, requester_name, assigned_to_name, destination, return_date, comment, origin }) {
   const toolList = tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
   const commentSection = comment
     ? `<div style="${commentBoxStyle}"><strong>Kommentar:</strong> ${comment}</div>`
@@ -124,7 +124,7 @@ function buildApproverEmail({ approver_name, tool_names, requester_name, assigne
       ${commentSection}
 
       <div style="text-align: center; margin-top: 24px;">
-        <a href="${Deno.env.get('TOOLTRACK_APP_URL') || 'https://app.tooltrack.se'}/Transfers" style="${buttonStyle}">Öppna ToolTrack</a>
+        <a href="${origin}/Transfers" style="${buttonStyle}">Öppna ToolTrack</a>
       </div>
       <p style="font-size:13px; color:#888; text-align:center; margin-top:16px;">Eller logga in för att godkänna eller neka förfrågan.</p>
     </div>
@@ -133,7 +133,7 @@ function buildApproverEmail({ approver_name, tool_names, requester_name, assigne
 </div>`;
 }
 
-function buildDestManagerEmail({ manager_name, tool_names, assigned_to_name, return_date, comment }) {
+function buildDestManagerEmail({ manager_name, tool_names, assigned_to_name, return_date, comment, origin }) {
   const toolList = tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
   const commentSection = comment
     ? `<div style="${commentBoxStyle}"><strong>Kommentar:</strong> ${comment}</div>`
@@ -167,7 +167,7 @@ function buildDestManagerEmail({ manager_name, tool_names, assigned_to_name, ret
       ${commentSection}
 
       <div style="text-align: center; margin-top: 24px;">
-        <a href="${Deno.env.get('TOOLTRACK_APP_URL') || 'https://app.tooltrack.se'}/Transfers" style="${buttonStyle}">Öppna ToolTrack</a>
+        <a href="${origin}/Transfers" style="${buttonStyle}">Öppna ToolTrack</a>
       </div>
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
@@ -184,6 +184,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/+$/, '') || '';
     const {
       tool_ids, tool_names, tool_details,
       assigned_to_email, assigned_to_name,
@@ -226,7 +227,8 @@ Deno.serve(async (req) => {
           assigned_to_name,
           destination: destination_location_name,
           return_date: default_return_date,
-          comment: requester_comment
+          comment: requester_comment,
+          origin
         })
       });
     }
@@ -240,7 +242,8 @@ Deno.serve(async (req) => {
           tool_names,
           assigned_to_name,
           return_date: default_return_date,
-          comment: requester_comment
+          comment: requester_comment,
+          origin
         })
       });
     }

@@ -80,6 +80,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/+$/, '') || '';
     const payload = await req.json();
 
     const request = await base44.entities.WorkwearRequest.create(payload);
@@ -125,7 +126,7 @@ Deno.serve(async (req) => {
       ${payload.notes ? `<div style="background:#f0f4ff; border-left:4px solid #4a6cf7; border-radius:4px; padding:14px 18px; margin:20px 0; font-size:14px; color:#333; font-style:italic;"><strong>Anteckning:</strong> ${payload.notes}</div>` : ''}
 
       <div style="text-align: center; margin-top: 24px;">
-        <a href="https://app.tooltrack.se/Arbetsklader/Forfragan" style="${buttonStyle}">Öppna ToolTrack</a>
+        <a href="${origin}/Arbetsklader/Forfragan" style="${buttonStyle}">Öppna ToolTrack</a>
       </div>
     </div>
 
