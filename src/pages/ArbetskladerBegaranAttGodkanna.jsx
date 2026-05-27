@@ -56,19 +56,8 @@ export default function ArbetskladerBegaranAttGodkanna() {
     queryFn: () => base44.entities.ArbetskläderUtrustning.list(null, 10000).catch(() => []),
   });
 
-  // Filtrera bara arbetskläder-förfrågningar (där requested_items matchar arbetskläder-artiklar)
-  const arbetskläderRequests = useMemo(() => {
-    return allRequests.filter(r => {
-      if (!r.requested_items || r.requested_items.length === 0) return false;
-      // Kolla om minst en artikel är en arbetskläder-artikel
-      return r.requested_items.some(item => 
-        allItems.some(a => a.id === item.id || a.name === item.name)
-      );
-    });
-  }, [allRequests, allItems]);
-
-  const pendingRequests = arbetskläderRequests.filter(r => r.status === 'pending');
-  const historyRequests = arbetskläderRequests.filter(r => ['approved', 'rejected', 'completed'].includes(r.status));
+  const pendingRequests = allRequests.filter(r => r.status === 'pending');
+  const historyRequests = allRequests.filter(r => ['approved', 'rejected', 'completed'].includes(r.status));
 
   const approveMutation = useMutation({
     mutationFn: (requestId) =>
