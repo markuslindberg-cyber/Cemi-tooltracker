@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
         <a href="https://app.tooltrack.se/Arbetsklader/Forfragan" style="${buttonStyle}">Öppna ToolTrack</a>
       </div>
     </div>
-    <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
+
   </div>
 </div>`;
 
