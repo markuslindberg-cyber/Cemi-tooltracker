@@ -62,10 +62,8 @@ export default function LokalvardRequestArtikel() {
 
   const createRequestMutation = useMutation({
     mutationFn: async (data) => {
-      // Generera löpnummer baserat på befintliga begäranden
-      const all = await base44.entities.LokalvardArtikelRequest.list('-request_number', 1);
-      const nextNumber = all.length > 0 && all[0].request_number ? all[0].request_number + 1 : 1001;
-      return base44.entities.LokalvardArtikelRequest.create({ ...data, request_number: nextNumber });
+      const res = await base44.functions.invoke('createLokalvardRequest', data);
+      return res.data;
     },
     onSuccess: () => {
       setFormData({

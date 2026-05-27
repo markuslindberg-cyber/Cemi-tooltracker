@@ -38,7 +38,10 @@ export default function ArbetskläderRequestWorkwear() {
   });
 
   const createRequestMutation = useMutation({
-    mutationFn: (data) => base44.entities.WorkwearRequest.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('createWorkwearRequest', data);
+      return res.data;
+    },
     onSuccess: () => {
       setFormData({
         recipient_first_name: '',
