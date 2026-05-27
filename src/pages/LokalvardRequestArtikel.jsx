@@ -47,7 +47,7 @@ export default function LokalvardRequestArtikel() {
     queryKey: ['lokalvardArtiklar'],
     queryFn: async () => {
       const result = await base44.entities.LokalvardsArtikel.list(null, 1000);
-      return result.filter(a => !a.is_deleted);
+      return result.filter(a => !a.is_deleted && !(a.current_quantity === 0 && a.utgaende));
     },
   });
 
