@@ -328,6 +328,8 @@ export default function LokalvardBegaranAttGodkanna() {
       checked_out_date: new Date().toISOString(),
       checked_out_by_email: user?.email || '',
       checked_out_by_name: personalMap[user?.id] || user?.full_name || '',
+      ordernummer: selectedRequest.ordernummer || null,
+      requested_by_name: selectedRequest.requested_by_name || '',
     });
   };
 

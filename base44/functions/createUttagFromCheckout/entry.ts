@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       personal_namn: checkout.requested_by_name || checkout.checked_out_by_name,
       kund_id: checkout.customer_id,
       kund_namn: checkout.customer_name,
-      ordernummer: checkout.request_id || null,
+      ordernummer: checkout.ordernummer || null,
       artiklar: uttagArtiklar,
       total_kostnad: totalCost,
       manad: datumStr.substring(0, 7)

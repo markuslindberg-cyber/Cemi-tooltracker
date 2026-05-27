@@ -31,10 +31,14 @@ export default function LokalvardUttag() {
          if (base44.entities.LokalvardCheckout?.list) {
            checkoutData = await base44.entities.LokalvardCheckout.list('-checked_out_date', 100000).catch(() => []);
          }
-         return { uttag: data, checkout: checkoutData };
+         let requestData = [];
+         if (base44.entities.LokalvardArtikelRequest?.list) {
+           requestData = await base44.entities.LokalvardArtikelRequest.list(null, 100000).catch(() => []);
+         }
+         return { uttag: data, checkout: checkoutData, requests: requestData };
       } catch (err) {
         console.error('Fel vid hämtning av uttag:', err);
-        return { uttag: [], checkout: [] };
+        return { uttag: [], checkout: [], requests: [] };
       }
     },
     refetchInterval: 2000,
@@ -89,6 +93,10 @@ export default function LokalvardUttag() {
       })
     }));
 
+    // Build request map for ordernummer lookup
+    const requestMap = {};
+    (uttagData.requests || []).forEach(r => { requestMap[r.id] = r; });
+
     const checkoutAsUttag = uttagData.checkout?.map(co => {
       const dateStr = co.checked_out_date || new Date().toISOString();
       const artiklar = co.checked_out_items.map(item => {
@@ -119,6 +127,7 @@ export default function LokalvardUttag() {
         };
       });
       const total_kostnad = artiklar.reduce((sum, a) => sum + a.total_pris, 0);
+      const linkedRequest = requestMap[co.request_id];
       return {
         id: co.id,
         datum: dateStr,
@@ -126,7 +135,7 @@ export default function LokalvardUttag() {
         personal_namn: co.checked_out_by_name,
         kund_id: co.customer_id,
         kund_namn: co.customer_name,
-        ordernummer: null,
+        ordernummer: linkedRequest?.ordernummer || null,
         request_id: co.request_id,
         artiklar: artiklar,
         total_kostnad: total_kostnad,
