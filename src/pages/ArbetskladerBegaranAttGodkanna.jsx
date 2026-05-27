@@ -227,7 +227,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
   };
 
   // Bara admin_lokalvård och ägare får se denna sida
-  const allowedRoles = ['admin_lokalvård', 'ägare'];
+  const allowedRoles = ['admin_lokalvård', 'ägare', 'admin'];
   if (user && !allowedRoles.includes(user.role)) {
     return (
       <div className="max-w-5xl mx-auto p-6 text-center py-20">
