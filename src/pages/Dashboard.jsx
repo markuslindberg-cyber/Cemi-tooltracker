@@ -374,7 +374,7 @@ export default function Dashboard() {
                 </Link>
               </div>
             ),
-            pending_chart: isVisible('pending_chart') && (
+            pending_chart: isVisible('pending_chart') && !LOKALVARD_ONLY_ROLES.includes(user?.role) && (
               <PendingRequestsChart key="pending_chart"
                 loanCount={pendingLoanCount}
                 workwearCount={pendingWorkwearCount}
