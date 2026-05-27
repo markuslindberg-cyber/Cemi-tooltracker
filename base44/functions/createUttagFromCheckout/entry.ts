@@ -53,6 +53,11 @@ Deno.serve(async (req) => {
       manad: datumStr.substring(0, 7)
     };
 
+    // Also save ordernummer to checkout if not already there
+    if (checkout.ordernummer && checkout.id) {
+      await base44.asServiceRole.entities.LokalvardCheckout.update(checkout.id, { ordernummer: checkout.ordernummer }).catch(() => {});
+    }
+
     const created = await base44.entities.Uttag.create(uttagRecord);
 
     return Response.json({
