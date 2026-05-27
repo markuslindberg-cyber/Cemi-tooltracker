@@ -263,6 +263,7 @@ export default function AdminLayoutEditor() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [widgetOrder, setWidgetOrder] = useState(DEFAULT_WIDGET_ORDER);
   const [navOrder, setNavOrder] = useState(DEFAULT_NAV_ORDER);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (dashboardConfig?.config_value?.widgets) {
@@ -314,12 +315,16 @@ export default function AdminLayoutEditor() {
   }
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
       await saveConfig.mutateAsync({ configKey: 'dashboard_layout', configValue: { widgets: widgetOrder } });
       await saveConfig.mutateAsync({ configKey: 'navigation_order', configValue: { items: navOrder } });
       toast.success('Layouten sparad för alla användare!');
     } catch (e) {
-      toast.error('Kunde inte spara. Försök igen om en stund.');
+      console.error('Save failed:', e);
+      toast.error('Kunde inte spara: ' + (e?.message || 'Okänt fel'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -331,9 +336,9 @@ export default function AdminLayoutEditor() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Layoutredigerare</h1>
             <p className="text-sm text-gray-500 mt-1">Ändringar gäller för alla användare i appen</p>
           </div>
-          <Button onClick={handleSave} className="bg-[#8B1E1E] hover:bg-[#6B1515]" disabled={saveConfig.isPending}>
+          <Button onClick={handleSave} className="bg-[#8B1E1E] hover:bg-[#6B1515]" disabled={isSaving}>
             <Save className="w-4 h-4 mr-2" />
-            {saveConfig.isPending ? 'Sparar...' : 'Spara'}
+            {isSaving ? 'Sparar...' : 'Spara'}
           </Button>
         </div>
 

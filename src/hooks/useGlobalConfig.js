@@ -8,7 +8,7 @@ export function useGlobalConfig(configKey) {
       const records = await base44.entities.GlobalAppConfig.filter({ config_key: configKey });
       return records[0] || null;
     },
-    staleTime: 30000,
+    staleTime: 5000,
   });
 }
 
