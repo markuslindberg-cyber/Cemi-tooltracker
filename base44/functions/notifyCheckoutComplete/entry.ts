@@ -4,7 +4,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const { event, data } = await req.json();
+    const body = await req.json();
+    // Stöd både automation-payload (event, data) och manuellt anrop (request_id, checked_out_items, ...)
+    const data = body.data || body;
     if (!data || !data.request_id) {
       return Response.json({ skipped: true, reason: 'No request_id' });
     }

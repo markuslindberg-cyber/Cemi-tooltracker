@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight, ChevronDown, Clock, Ban, Plus } from 'lucide-react';
+import { Loader2, Check, X, AlertCircle, Barcode, ChevronRight, ChevronDown, Clock, Ban, Plus, Mail } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import ManualScanDialog from '@/components/ManualScanDialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -27,6 +28,7 @@ export default function LokalvardBegaranAttGodkanna() {
   const [editedItems, setEditedItems] = useState([]);
 
   // Steg 3: skanning
+    const [notifyPersonal, setNotifyPersonal] = useState(false);
     const [scannedItems, setScannedItems] = useState([]);
     const [barcodeInput, setBarcodeInput] = useState('');
     const [error, setError] = useState('');
@@ -155,8 +157,19 @@ export default function LokalvardBegaranAttGodkanna() {
 
   const createCheckoutMutation = useMutation({
     mutationFn: async (data) => {
-      const checkout = await base44.entities.LokalvardCheckout.create(data);
+      const { notify_personal, ...checkoutData } = data;
+      const checkout = await base44.entities.LokalvardCheckout.create(checkoutData);
       await base44.entities.LokalvardArtikelRequest.update(selectedRequest.id, { status: 'completed' });
+      // Skicka meddelande till personal om kryssrutan var ikryssad
+      if (notify_personal) {
+        await base44.functions.invoke('notifyCheckoutComplete', {
+          request_id: selectedRequest.id,
+          checked_out_items: data.checked_out_items,
+          customer_name: data.customer_name,
+          checked_out_by_name: data.checked_out_by_name,
+          checked_out_date: data.checked_out_date,
+        }).catch(err => console.error('Kunde inte skicka meddelande:', err));
+      }
       return checkout;
     },
     onSuccess: () => {
@@ -168,7 +181,8 @@ export default function LokalvardBegaranAttGodkanna() {
         localStorage.removeItem(`scanned_${selectedRequest.id}`);
       }
       localStorage.removeItem('lastActiveRequestId');
-      setSuccess('Uttag registrerat!');
+      setNotifyPersonal(false);
+      setSuccess(notifyPersonal ? 'Uttag registrerat och meddelande skickat!' : 'Uttag registrerat!');
       setTimeout(() => {
         setSuccess('');
         setSelectedRequest(null);
@@ -364,6 +378,7 @@ export default function LokalvardBegaranAttGodkanna() {
       checked_out_by_name: personalMap[user?.id] || user?.full_name || '',
       ordernummer: selectedRequest.ordernummer || null,
       requested_by_name: selectedRequest.requested_by_name || '',
+      notify_personal: notifyPersonal,
     });
   };
 
@@ -1077,7 +1092,20 @@ export default function LokalvardBegaranAttGodkanna() {
             </div>
           )}
 
-          <div className="flex gap-3 pt-2 border-t">
+          {/* Kryssruta: meddela personal */}
+          <div className="flex items-center gap-3 pt-2 border-t">
+            <Checkbox
+              id="notifyPersonal"
+              checked={notifyPersonal}
+              onCheckedChange={(checked) => setNotifyPersonal(!!checked)}
+            />
+            <label htmlFor="notifyPersonal" className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
+              <Mail className="w-4 h-4 text-gray-500" />
+              Meddela personal att begäran är klar för upphämtning
+            </label>
+          </div>
+
+          <div className="flex gap-3 pt-2">
             <Button
               onClick={handleCheckoutSubmit}
               disabled={createCheckoutMutation.isPending || scannedItems.length === 0}

@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin lokalvård, admin eller ägare krävs' }, { status: 403 });
     }
 
-    const { checkout } = await req.json();
+    const { checkout, notify_personal } = await req.json();
     if (!checkout) {
       return Response.json({ error: 'No checkout data provided' }, { status: 400 });
     }
