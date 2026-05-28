@@ -59,16 +59,20 @@ Deno.serve(async (req) => {
     const oldDate = new Date(originalRequest.default_return_date).toLocaleDateString('sv-SE');
     const newDate = new Date(new_return_date).toLocaleDateString('sv-SE');
 
-    await base44.integrations.Core.SendEmail({
-      to: originalRequest.approver_email,
-      subject: `🔄 Förlängningsbegäran för lån: ${originalRequest.tool_names.join(', ')}`,
-      body: `<div style="${emailStyle}">
+    // Fetch TeamMember data to check subscriptions
+    const teamMembers = await base44.entities.TeamMember.list();
+    const getSubscriptionStatus = (email) => {
+      const member = teamMembers.find(m => m.email === email);
+      return member?.subscribed_to_emails !== false;
+    };
+
+    const buildExtensionEmail = (recipientName, isApprover) => `<div style="${emailStyle}">
   <div style="${cardStyle}">
     <div style="background: #2563eb; padding: 28px 32px; text-align: center;">
       <h2 style="margin:0; color:#fff; font-size:20px;">🔄 Förlängningsbegäran för lån</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${originalRequest.approver_name}</strong>,</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${recipientName}</strong>,</p>
       <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${user.full_name}</strong> har begärt en förlängning av lånet för följande maskiner.</p>
 
       <p style="font-size:13px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
@@ -97,12 +101,43 @@ Deno.serve(async (req) => {
 
       ${commentSection}
 
-      <p style="font-size:13px; color:#888; margin-top:24px;">Logga in i ToolTrack för att godkänna eller neka förlängningen.</p>
+      ${isApprover ? `<p style="font-size:13px; color:#888; margin-top:24px;">Logga in i ToolTrack för att godkänna eller neka förlängningen.</p>` : ''}
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
   </div>
-</div>`
-    });
+</div>`;
+
+    // Collect unique recipients
+    const sentTo = new Set();
+
+    // 1. Mail till godkännaren (ansvarig för ursprungsplatsen) – med uppmaning att godkänna
+    if (originalRequest.approver_email && getSubscriptionStatus(originalRequest.approver_email)) {
+      await base44.integrations.Core.SendEmail({
+        to: originalRequest.approver_email,
+        subject: `🔄 Förlängningsbegäran för lån: ${originalRequest.tool_names.join(', ')}`,
+        body: buildExtensionEmail(originalRequest.approver_name, true)
+      });
+      sentTo.add(originalRequest.approver_email);
+    }
+
+    // 2. Kopia till destinationsplatsens ansvarige
+    if (originalRequest.destination_location_manager_email && !sentTo.has(originalRequest.destination_location_manager_email) && getSubscriptionStatus(originalRequest.destination_location_manager_email)) {
+      await base44.integrations.Core.SendEmail({
+        to: originalRequest.destination_location_manager_email,
+        subject: `🔄 Förlängningsbegäran för lån: ${originalRequest.tool_names.join(', ')}`,
+        body: buildExtensionEmail(originalRequest.destination_location_manager_name || '', false)
+      });
+      sentTo.add(originalRequest.destination_location_manager_email);
+    }
+
+    // 3. Mail till beställaren (om inte samma som den som begär förlängningen)
+    if (originalRequest.requested_by_email && !sentTo.has(originalRequest.requested_by_email) && originalRequest.requested_by_email !== user.email && getSubscriptionStatus(originalRequest.requested_by_email)) {
+      await base44.integrations.Core.SendEmail({
+        to: originalRequest.requested_by_email,
+        subject: `🔄 Förlängningsbegäran för lån: ${originalRequest.tool_names.join(', ')}`,
+        body: buildExtensionEmail(originalRequest.requested_by_name || '', false)
+      });
+    }
 
     return Response.json({ success: true, extensionRequest });
   } catch (error) {

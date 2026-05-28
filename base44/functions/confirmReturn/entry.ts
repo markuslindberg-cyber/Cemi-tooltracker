@@ -113,19 +113,21 @@ Deno.serve(async (req) => {
 </div>`
     });
 
-    // Mail till platsansvarig för destinationsplatsen
-    if (loanRequest.destination_location_manager_email) {
-      await base44.integrations.Core.SendEmail({
-        to: loanRequest.destination_location_manager_email,
-        subject: `✅ Utrustning åter i lager: ${loanRequest.tool_names.join(', ')}`,
-        body: `<div style="${emailStyle}">
+    // Fetch TeamMember data to check subscriptions
+    const teamMembers = await base44.entities.TeamMember.list();
+    const getSubscriptionStatus = (email) => {
+      const member = teamMembers.find(m => m.email === email);
+      return member?.subscribed_to_emails !== false;
+    };
+
+    const buildConfirmReturnEmail = (recipientName) => `<div style="${emailStyle}">
   <div style="${cardStyle}">
     <div style="background: #16a34a; padding: 28px 32px; text-align: center;">
-      <h2 style="margin:0; color:#fff; font-size:20px;">✅ Utrustning tillbaka i lager</h2>
+      <h2 style="margin:0; color:#fff; font-size:20px;">✅ Återlämning bekräftad</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.destination_location_manager_name || ''}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;">Utrustning som lånades till <strong>${loanRequest.destination_location_name}</strong> har nu returnerats och bekräftats mottagen av ${user.full_name}.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${recipientName}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Utrustning som lånades till <strong>${loanRequest.destination_location_name}</strong> har nu returnerats och bekräftats mottagen av ${user.full_name}. Lånet är nu avslutat.</p>
 
       <p style="font-size:13px; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Återlämnade maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
@@ -151,7 +153,37 @@ Deno.serve(async (req) => {
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>
   </div>
-</div>`
+</div>`;
+
+    // Collect unique recipients to avoid duplicate emails
+    const sentTo = new Set();
+
+    // 1. Mail till destinationsplatsens ansvarige
+    if (loanRequest.destination_location_manager_email && getSubscriptionStatus(loanRequest.destination_location_manager_email)) {
+      await base44.integrations.Core.SendEmail({
+        to: loanRequest.destination_location_manager_email,
+        subject: `✅ Återlämning bekräftad: ${loanRequest.tool_names.join(', ')}`,
+        body: buildConfirmReturnEmail(loanRequest.destination_location_manager_name || '')
+      });
+      sentTo.add(loanRequest.destination_location_manager_email);
+    }
+
+    // 2. Mail till godkännaren (ansvarig för ursprungsplatsen) om det inte är samma person som bekräftar
+    if (loanRequest.approver_email && !sentTo.has(loanRequest.approver_email) && loanRequest.approver_email !== user.email && getSubscriptionStatus(loanRequest.approver_email)) {
+      await base44.integrations.Core.SendEmail({
+        to: loanRequest.approver_email,
+        subject: `✅ Återlämning bekräftad: ${loanRequest.tool_names.join(', ')}`,
+        body: buildConfirmReturnEmail(loanRequest.approver_name || '')
+      });
+      sentTo.add(loanRequest.approver_email);
+    }
+
+    // 3. Mail till beställaren (om inte redan fått mail)
+    if (loanRequest.requested_by_email && !sentTo.has(loanRequest.requested_by_email) && loanRequest.requested_by_email !== loanRequest.assigned_to_email && getSubscriptionStatus(loanRequest.requested_by_email)) {
+      await base44.integrations.Core.SendEmail({
+        to: loanRequest.requested_by_email,
+        subject: `✅ Återlämning bekräftad: ${loanRequest.tool_names.join(', ')}`,
+        body: buildConfirmReturnEmail(loanRequest.requested_by_name || '')
       });
     }
 
