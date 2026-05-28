@@ -190,9 +190,9 @@ export default function LokalvardNyttUttag() {
       </div>
 
       {/* Request Selection */}
-      <Card className="p-6 space-y-4">
+      <Card className="p-6 space-y-4 dark:bg-gray-900 dark:border-gray-800">
         <div className="space-y-2">
-          <Label>Välj begäran att utföra *</Label>
+          <Label className="dark:text-gray-100">Välj begäran att utföra *</Label>
           {loadingRequests ? (
             <div className="flex items-center gap-2 text-gray-500">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -219,10 +219,10 @@ export default function LokalvardNyttUttag() {
       </Card>
 
       {selectedRequest && (
-        <Card className="p-6 space-y-6">
+        <Card className="p-6 space-y-6 dark:bg-gray-900 dark:border-gray-800">
           {/* Begärad items info */}
           <div>
-            <h3 className="font-semibold text-lg mb-3">Begärda artiklar</h3>
+            <h3 className="font-semibold text-lg mb-3 dark:text-gray-100">Begärda artiklar</h3>
             <div className="space-y-2">
               {selectedRequest.requested_items.map((item) => {
                 const scanned = scannedItems.find(si => si.item_id === item.id);
@@ -230,12 +230,12 @@ export default function LokalvardNyttUttag() {
                 
                 return (
                   <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border ${
-                    isComplete ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    isComplete ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   }`}>
                     <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">{item.subcategory}</p>
-                    </div>
+                         <p className="font-medium dark:text-gray-100">{item.name}</p>
+                         <p className="text-sm text-gray-600 dark:text-gray-400">{item.subcategory}</p>
+                       </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold">
                         {scanned?.scanned_quantity || 0}/{item.quantity}
@@ -251,37 +251,37 @@ export default function LokalvardNyttUttag() {
           </div>
 
           {/* Barcode Scanner */}
-          <div className="border-t pt-6 space-y-4">
+          <div className="border-t dark:border-gray-700 pt-6 space-y-4">
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2 dark:text-gray-100">
                 <Barcode className="w-4 h-4" />
                 Skanna streckkod
               </Label>
               <Input
-                type="text"
-                placeholder="Scanna streckkod här..."
-                value={barcodeInput}
-                onChange={(e) => setBarcodeInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleBarcodeInput(barcodeInput);
-                  }
-                }}
-                autoFocus
-                className="text-lg"
+               type="text"
+               placeholder="Scanna streckkod här..."
+               value={barcodeInput}
+               onChange={(e) => setBarcodeInput(e.target.value)}
+               onKeyDown={(e) => {
+                 if (e.key === 'Enter') {
+                   handleBarcodeInput(barcodeInput);
+                 }
+               }}
+               autoFocus
+               className="text-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
 
             {/* Scanned Items */}
             {scannedItems.length > 0 && (
               <div className="space-y-2">
-                <h4 className="font-semibold">Skannde artiklar</h4>
+                <h4 className="font-semibold dark:text-gray-100">Skannde artiklar</h4>
                 <div className="space-y-2">
                   {scannedItems.map(item => (
-                    <div key={item.item_id} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div key={item.item_id} className="flex items-center justify-between bg-blue-50 dark:bg-blue-950 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
                       <div>
-                        <p className="font-medium text-blue-900">{item.name}</p>
-                        <p className="text-sm text-blue-700">Streckkod: {item.barcode} • Antal: {item.scanned_quantity}/{item.quantity}</p>
+                        <p className="font-medium text-blue-900 dark:text-blue-100">{item.name}</p>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">Streckkod: {item.barcode} • Antal: {item.scanned_quantity}/{item.quantity}</p>
                       </div>
                       <button
                         onClick={() => removeScannedItem(item.item_id)}
@@ -298,28 +298,28 @@ export default function LokalvardNyttUttag() {
 
           {/* Messages */}
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
               <AlertCircle className="w-4 h-4" />
               {error}
             </div>
           )}
 
           {success && (
-            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+            <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300">
               <Check className="w-4 h-4" />
               {success}
             </div>
           )}
 
           {/* Kryssruta: meddela personal */}
-          <div className="flex items-center gap-3 pt-4 border-t">
+          <div className="flex items-center gap-3 pt-4 border-t dark:border-gray-700">
             <Checkbox
               id="notifyPersonalNyttUttag"
               checked={notifyPersonal}
               onCheckedChange={(checked) => setNotifyPersonal(!!checked)}
             />
-            <label htmlFor="notifyPersonalNyttUttag" className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
-              <Mail className="w-4 h-4 text-gray-500" />
+            <label htmlFor="notifyPersonalNyttUttag" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+              <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               Meddela personal att begäran är klar för upphämtning
             </label>
           </div>
