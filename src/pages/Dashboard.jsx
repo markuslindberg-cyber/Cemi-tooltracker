@@ -231,36 +231,35 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto space-y-5 lg:space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            {user?.role === 'ägare' && (
-              <Link to="/AdminLayoutEditor">
-                <Button size="sm" variant="outline">
-                  <Settings className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">Redigera layout</span>
-                </Button>
-              </Link>
-            )}
-            <DashboardScanSearch tools={activeTools} onSelectTool={(tool) => setEditTool(tool)} />
-            <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline">
-              <RotateCw className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">Skicka låneförfrågan</span>
-              <span className="sm:hidden">Lån</span>
-            </Button>
-            <Button
-              onClick={() => setShowAddTool(true)}
-              size="sm"
-              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 sm:flex-none"
-            >
-              <Plus className="w-4 h-4 sm:mr-1" />
-              <span className="hidden sm:inline">Lägg till verktyg</span>
-            </Button>
-          </div>
-        </div>
+         <div className="space-y-4">
+           <div>
+             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+             <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
+           </div>
+           <div className="flex gap-2 flex-wrap">
+             {user?.role === 'ägare' && (
+               <Link to="/AdminLayoutEditor">
+                 <Button size="sm" variant="outline" className="flex-1 sm:flex-none">
+                   <Settings className="w-4 h-4 mr-1" />
+                   <span className="hidden sm:inline">Redigera layout</span>
+                 </Button>
+               </Link>
+             )}
+             <DashboardScanSearch tools={activeTools} onSelectTool={(tool) => setEditTool(tool)} />
+             <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="flex-1 sm:flex-none">
+               <RotateCw className="w-4 h-4" />
+               <span className="hidden sm:inline ml-1">Skicka låneförfrågan</span>
+             </Button>
+             <Button
+               onClick={() => setShowAddTool(true)}
+               size="sm"
+               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 sm:flex-none"
+             >
+               <Plus className="w-4 h-4 sm:mr-1" />
+               <span className="hidden sm:inline">Lägg till verktyg</span>
+             </Button>
+           </div>
+         </div>
 
         {/* Stats */}
         {isVisible('stats') && (
