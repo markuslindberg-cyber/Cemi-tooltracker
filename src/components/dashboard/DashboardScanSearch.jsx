@@ -57,15 +57,14 @@ export default function DashboardScanSearch({ tools, onSelectTool }) {
   return (
     <>
       <Button
-        onClick={() => setOpen(true)}
-        size="sm"
-        variant="outline"
-        className="gap-1.5"
-      >
-        <ScanLine className="w-4 h-4" />
-        <span className="hidden sm:inline">Sök maskin</span>
-        <span className="sm:hidden">Skanna</span>
-      </Button>
+         onClick={() => setOpen(true)}
+         size="sm"
+         variant="outline"
+         className="sm:gap-1"
+       >
+         <ScanLine className="w-4 h-4" />
+         <span className="hidden sm:inline">Sök maskin</span>
+       </Button>
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">

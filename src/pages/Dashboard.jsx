@@ -231,32 +231,32 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto space-y-5 lg:space-y-8">
         {/* Header */}
-         <div className="space-y-4">
-           <div>
+         <div className="flex items-center justify-between gap-3">
+           <div className="min-w-0">
              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
              <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
            </div>
-           <div className="flex gap-2 flex-wrap">
+           <div className="flex gap-2 shrink-0">
              {user?.role === 'ägare' && (
                <Link to="/AdminLayoutEditor">
-                 <Button size="sm" variant="outline" className="flex-1 sm:flex-none">
-                   <Settings className="w-4 h-4 mr-1" />
+                 <Button size="sm" variant="outline" className="sm:gap-1">
+                   <Settings className="w-4 h-4" />
                    <span className="hidden sm:inline">Redigera layout</span>
                  </Button>
                </Link>
              )}
              <DashboardScanSearch tools={activeTools} onSelectTool={(tool) => setEditTool(tool)} />
-             <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="flex-1 sm:flex-none">
+             <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="sm:gap-1">
                <RotateCw className="w-4 h-4" />
-               <span className="hidden sm:inline ml-1">Skicka låneförfrågan</span>
+               <span className="hidden sm:inline">Låneförfrågan</span>
              </Button>
              <Button
                onClick={() => setShowAddTool(true)}
                size="sm"
-               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 sm:flex-none"
+               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 sm:gap-1"
              >
-               <Plus className="w-4 h-4 sm:mr-1" />
-               <span className="hidden sm:inline">Lägg till verktyg</span>
+               <Plus className="w-4 h-4" />
+               <span className="hidden sm:inline">Lägg till</span>
              </Button>
            </div>
          </div>
