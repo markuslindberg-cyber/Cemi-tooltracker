@@ -50,7 +50,7 @@ export default function OwnerTotalSummary() {
     return sum + currentValue;
   }, 0);
   const handredskapValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
-  const workwearValue = workwear.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
+  const workwearValue = workwear.reduce((sum, t) => sum + (t.purchase_price || 0) * (t.quantity || 1), 0);
   const lokalvardValue = calculateLokalvardLagerValue(articles, uttag, inkop);
   const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue;
 
