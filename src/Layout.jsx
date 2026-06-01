@@ -324,19 +324,19 @@ export default function Layout({ children }) {
                     <button
                       onClick={() => toggleMenu(item.name)}
                       className={cn(
-                        "flex items-center justify-between w-full px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]",
+                        "flex items-center justify-between w-full px-3 py-2 lg:py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                         isActive
                           ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
                           : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                       )}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 lg:gap-3">
                         <div className={cn(
-                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                          "w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center shrink-0",
                           isActive ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800"
                         )}>
                           <item.icon className={cn(
-                            "w-4 h-4",
+                            "w-3.5 h-3.5 lg:w-4 lg:h-4",
                             isActive ? "text-[#8B1E1E]" : "text-gray-500 dark:text-gray-400"
                           )} />
                         </div>
@@ -357,7 +357,7 @@ export default function Layout({ children }) {
                             to={child.path}
                             onClick={() => setSidebarOpen(false)}
                             className={cn(
-                              "flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 active:scale-[0.98]",
+                              "flex items-center px-3 py-2 lg:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                               child.desktopOnly ? "hidden lg:flex" : "",
                               location.pathname === child.path
                                 ? "text-[#8B1E1E] bg-[#8B1E1E]/10"
@@ -379,18 +379,18 @@ export default function Layout({ children }) {
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]",
+                    "flex items-center gap-2 lg:gap-3 px-3 py-2 lg:py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                     isActive
                       ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
                       : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                   )}
                 >
                   <div className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                    "w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center shrink-0",
                     isActive ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800"
                   )}>
                     <item.icon className={cn(
-                      "w-4 h-4",
+                      "w-3.5 h-3.5 lg:w-4 lg:h-4",
                       isActive ? "text-[#8B1E1E]" : "text-gray-500 dark:text-gray-400"
                     )} />
                   </div>
