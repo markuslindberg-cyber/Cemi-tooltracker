@@ -422,7 +422,23 @@ export default function AdminLayoutEditor() {
                 ].map(({ value, label, icon: Icon, desc }) => (
                   <button
                     key={value}
-                    onClick={() => setThemeMode(value)}
+                    onClick={() => {
+                      setThemeMode(value);
+                      // Apply immediately for instant preview
+                      const html = document.documentElement;
+                      if (value === 'dark') {
+                        html.classList.add('dark');
+                        html.classList.remove('light');
+                      } else if (value === 'light') {
+                        html.classList.remove('dark');
+                        html.classList.add('light');
+                      } else {
+                        html.classList.remove('dark', 'light');
+                        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                          html.classList.add('dark');
+                        }
+                      }
+                    }}
                     className={cn(
                       "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
                       themeMode === value
