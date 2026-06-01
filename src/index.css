@@ -39,7 +39,7 @@ nav,
 
 /* Dark mode – auto-follow system preference */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: 0 0% 7%;
     --foreground: 0 0% 95%;
     --card: 0 0% 10%;
@@ -60,6 +60,29 @@ nav,
     --input: 0 0% 18%;
     --ring: 0 0% 70%;
   }
+}
+
+/* Dark mode – forced via class (from theme setting) */
+:root.dark {
+  --background: 0 0% 7%;
+  --foreground: 0 0% 95%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 0 0% 90%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 16%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 16%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 0 0% 16%;
+  --accent-foreground: 0 0% 90%;
+  --destructive: 0 62.8% 40%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 0 0% 70%;
 }
 
 

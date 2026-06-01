@@ -14,9 +14,12 @@ export function useTheme() {
 
     if (preference === 'dark') {
       html.classList.add('dark');
+      html.classList.remove('light');
     } else if (preference === 'light') {
       html.classList.remove('dark');
+      html.classList.add('light');
     } else {
+      html.classList.remove('light');
       // system — follow OS preference
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
       const apply = (e) => {
