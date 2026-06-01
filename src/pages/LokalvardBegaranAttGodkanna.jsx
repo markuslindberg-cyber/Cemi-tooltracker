@@ -388,7 +388,7 @@ export default function LokalvardBegaranAttGodkanna() {
       {[{ n: 1, label: 'Välj begäran' }, { n: 2, label: 'Granska' }, { n: 3, label: 'Skanna uttag' }].map(({ n, label }, i) => (
         <React.Fragment key={n}>
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-            step === n ? 'bg-[#8B1E1E] text-white' : step > n ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+            step === n ? 'bg-[#8B1E1E] text-white' : step > n ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
           }`}>
             {step > n ? <Check className="w-3.5 h-3.5" /> : <span>{n}</span>}
             {label}
@@ -425,8 +425,8 @@ export default function LokalvardBegaranAttGodkanna() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Begäran – Lokalvård</h1>
-        <p className="text-gray-600 mt-1">Granska, godkänn och registrera uttag</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Begäran – Lokalvård</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Granska, godkänn och registrera uttag</p>
       </div>
 
       {/* Flikar – visas bara när man är på steg 1 */}
@@ -576,17 +576,17 @@ export default function LokalvardBegaranAttGodkanna() {
                         setStep(2);
                       }
                     }}
-                    className="w-full text-left p-4 rounded-lg border-2 border-gray-200 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white transition-all flex items-center justify-between"
+                    className="w-full text-left p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-[#8B1E1E] hover:bg-[#8B1E1E]/5 bg-white dark:bg-gray-900 transition-all flex items-center justify-between"
                   >
                     <div>
-                      <div className="flex items-center gap-2">
-                        {request.request_number && <span className="text-xs font-mono font-bold bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">#{request.request_number}</span>}
-                        <p className="font-semibold text-gray-900">{request.customer_name}</p>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-0.5">
-                        {request.requested_items?.length} artikel(r) • Begärd av: {request.requested_by_name || request.requested_by_email}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                    <div className="flex items-center gap-2">
+                      {request.request_number && <span className="text-xs font-mono font-bold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-1.5 py-0.5 rounded">#{request.request_number}</span>}
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{request.customer_name}</p>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                      {request.requested_items?.length} artikel(r) • Begärd av: {request.requested_by_name || request.requested_by_email}
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                         {format(new Date(request.request_date), 'dd MMM HH:mm', { locale: sv })}
                       </p>
                       {request.notes && (
@@ -824,55 +824,55 @@ export default function LokalvardBegaranAttGodkanna() {
       {/* STEG 2: Granska */}
       {step === 2 && selectedRequest && (
         <Card className="p-6 space-y-6">
-          <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka</button>
+          <button onClick={() => setStep(1)} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">← Tillbaka</button>
 
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold">Begäran detaljer</h2>
-              {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 text-gray-700 px-2 py-1 rounded">#{selectedRequest.request_number}</span>}
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Begäran detaljer</h2>
+              {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-1 rounded">#{selectedRequest.request_number}</span>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600">Kund</p>
-                <p className="font-semibold">{selectedRequest.customer_name}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Kund</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRequest.customer_name}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Begärd av</p>
-                <p className="font-semibold">{selectedRequest.requested_by_name}</p>
-                <p className="text-sm text-gray-500">{selectedRequest.requested_by_email}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Begärd av</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRequest.requested_by_name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{selectedRequest.requested_by_email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Datum</p>
-                <p className="font-semibold">{format(new Date(selectedRequest.request_date), 'dd MMMM yyyy HH:mm', { locale: sv })}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Datum</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">{format(new Date(selectedRequest.request_date), 'dd MMMM yyyy HH:mm', { locale: sv })}</p>
               </div>
             </div>
           </div>
 
-          <div className="border-t pt-4">
-            <h3 className="font-semibold mb-3">Begärda artiklar</h3>
+          <div className="border-t dark:border-gray-700 pt-4">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Begärda artiklar</h3>
             <div className="space-y-2">
               {selectedRequest.requested_items?.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">{item.subcategory}</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}</p>
                   </div>
-                  <p className="font-semibold">{item.quantity} st</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{item.quantity} st</p>
                 </div>
               ))}
             </div>
           </div>
 
           {selectedRequest.notes && (
-            <div className="border-t pt-4">
-              <p className="text-sm text-gray-600 mb-1">Anteckningar</p>
-              <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedRequest.notes}</p>
+            <div className="border-t dark:border-gray-700 pt-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Anteckningar</p>
+              <p className="text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{selectedRequest.notes}</p>
             </div>
           )}
 
-          <div className="border-t pt-4 space-y-4">
+          <div className="border-t dark:border-gray-700 pt-4 space-y-4">
             <div>
-              <label className="text-sm text-gray-600 mb-1 block">Anteckningar vid avslag (valfritt)</label>
+              <label className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">Anteckningar vid avslag (valfritt)</label>
               <Textarea
                 placeholder="Förklara varför begäran avslås..."
                 value={rejectNotes}
@@ -909,16 +909,16 @@ export default function LokalvardBegaranAttGodkanna() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">Skanna uttag</h2>
-                {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded">#{selectedRequest.request_number}</span>}
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Skanna uttag</h2>
+                {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-0.5 rounded">#{selectedRequest.request_number}</span>}
               </div>
-              <p className="text-sm text-gray-600">{selectedRequest.customer_name}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{selectedRequest.customer_name}</p>
             </div>
           </div>
 
           {/* Artikellista med skanningsstatus */}
           <div>
-            <h3 className="font-semibold mb-3">Begärda artiklar</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Begärda artiklar</h3>
             <div className="space-y-2">
               {selectedRequest.requested_items?.map((item) => {
                  const scanned = scannedItems.find(si => 
@@ -929,11 +929,11 @@ export default function LokalvardBegaranAttGodkanna() {
                  const isComplete = scanned && scanned.scanned_quantity >= item.quantity;
                  return (
                   <div key={item.id} className={`flex items-center justify-between p-3 rounded-lg border ${
-                    isComplete ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                    isComplete ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   }`}>
                     <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-500">{item.subcategory}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold">{scanned?.scanned_quantity || 0}/{item.quantity}</p>
@@ -946,7 +946,7 @@ export default function LokalvardBegaranAttGodkanna() {
           </div>
 
           {/* Streckkodsskanner */}
-          <div className="border-t pt-4 space-y-3">
+          <div className="border-t dark:border-gray-700 pt-4 space-y-3">
             <Label className="flex items-center gap-2">
               <Barcode className="w-4 h-4" />
               Skanna streckkod
@@ -971,11 +971,11 @@ export default function LokalvardBegaranAttGodkanna() {
             <div className="space-y-2">
               <h4 className="font-semibold">Skannade artiklar</h4>
               {scannedItems.map(item => (
-                <div key={item.item_id} className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-medium text-blue-900">{item.name}</p>
-                      <p className="text-sm text-blue-700">Streckkod: {item.barcode} • Antal: {item.scanned_quantity}/{item.quantity}</p>
+                <div key={item.item_id} className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                 <div className="flex items-center justify-between mb-2">
+                   <div>
+                     <p className="font-medium text-blue-900 dark:text-blue-200">{item.name}</p>
+                     <p className="text-sm text-blue-700 dark:text-blue-300">Streckkod: {item.barcode} • Antal: {item.scanned_quantity}/{item.quantity}</p>
                     </div>
                     <button onClick={() => setScannedItems(prev => prev.filter(si => si.item_id !== item.item_id))} className="text-red-500 hover:text-red-700">
                       <X className="w-5 h-5" />
@@ -1093,13 +1093,13 @@ export default function LokalvardBegaranAttGodkanna() {
           )}
 
           {/* Kryssruta: meddela personal */}
-          <div className="flex items-center gap-3 pt-2 border-t">
+          <div className="flex items-center gap-3 pt-2 border-t dark:border-gray-700">
             <Checkbox
               id="notifyPersonal"
               checked={notifyPersonal}
               onCheckedChange={(checked) => setNotifyPersonal(!!checked)}
             />
-            <label htmlFor="notifyPersonal" className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
+            <label htmlFor="notifyPersonal" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
               <Mail className="w-4 h-4 text-gray-500" />
               Meddela personal att begäran är klar för upphämtning
             </label>
