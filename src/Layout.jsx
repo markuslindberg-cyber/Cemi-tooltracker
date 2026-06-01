@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from '@/hooks/useTheme';
 import { cn } from "@/lib/utils";
 import DeactivateAccountDialog from '@/components/modals/DeactivateAccountDialog';
 
@@ -148,6 +149,7 @@ export default function Layout({ children }) {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [bottomTabs, setBottomTabs] = useState(DEFAULT_BOTTOM_TABS);
   const { data: navConfig } = useGlobalConfig('navigation_order');
+  useTheme();
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
   const location = useLocation();

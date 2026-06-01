@@ -3,7 +3,7 @@ import { useGlobalConfig, useSaveGlobalConfig } from '@/hooks/useGlobalConfig';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Save, GripVertical, ArrowUp, ArrowDown, Eye, EyeOff, LayoutDashboard, Menu, ChevronRight, ChevronDown, PanelLeft, PanelRight } from 'lucide-react';
+import { Save, GripVertical, ArrowUp, ArrowDown, Eye, EyeOff, LayoutDashboard, Menu, ChevronRight, ChevronDown, PanelLeft, PanelRight, Sun, Moon, Monitor } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -260,9 +260,12 @@ export default function AdminLayoutEditor() {
   const { data: navConfig } = useGlobalConfig('navigation_order');
   const saveConfig = useSaveGlobalConfig();
 
+  const { data: themeConfig } = useGlobalConfig('theme');
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [widgetOrder, setWidgetOrder] = useState(DEFAULT_WIDGET_ORDER);
   const [navOrder, setNavOrder] = useState(DEFAULT_NAV_ORDER);
+  const [themeMode, setThemeMode] = useState('system');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -279,6 +282,12 @@ export default function AdminLayoutEditor() {
       setWidgetOrder(merged);
     }
   }, [dashboardConfig]);
+
+  useEffect(() => {
+    if (themeConfig?.config_value?.mode) {
+      setThemeMode(themeConfig.config_value.mode);
+    }
+  }, [themeConfig]);
 
   useEffect(() => {
     if (navConfig?.config_value?.items) {
@@ -319,6 +328,7 @@ export default function AdminLayoutEditor() {
     try {
       await saveConfig.mutateAsync({ configKey: 'dashboard_layout', configValue: { widgets: widgetOrder } });
       await saveConfig.mutateAsync({ configKey: 'navigation_order', configValue: { items: navOrder } });
+      await saveConfig.mutateAsync({ configKey: 'theme', configValue: { mode: themeMode } });
       toast.success('Layouten sparad för alla användare!');
     } catch (e) {
       console.error('Save failed:', e);
@@ -368,6 +378,18 @@ export default function AdminLayoutEditor() {
             <Menu className="w-4 h-4" />
             Meny
           </button>
+          <button
+            onClick={() => setActiveTab('theme')}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-colors",
+              activeTab === 'theme'
+                ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            <Sun className="w-4 h-4" />
+            Tema
+          </button>
         </div>
 
         {/* Content */}
@@ -382,11 +404,45 @@ export default function AdminLayoutEditor() {
               </div>
               <ReorderList items={widgetOrder} allItems={ALL_WIDGETS} onChange={setWidgetOrder} showColumn={true} />
             </>
-          ) : (
+          ) : activeTab === 'nav' ? (
             <>
               <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Menyordning</h2>
               <p className="text-xs text-gray-400 mb-4">Ändra ordning och synlighet. Klicka på pilen för att se undersidor.</p>
               <NavGroupList items={navOrder} onChange={setNavOrder} />
+            </>
+          ) : (
+            <>
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Tema</h2>
+              <p className="text-xs text-gray-400 mb-4">Välj om appen ska använda mörkt eller ljust tema för alla användare.</p>
+              <div className="space-y-2">
+                {[
+                  { value: 'light', label: 'Ljust tema', icon: Sun, desc: 'Alltid ljust utseende' },
+                  { value: 'dark', label: 'Mörkt tema', icon: Moon, desc: 'Alltid mörkt utseende' },
+                  { value: 'system', label: 'Systeminställning', icon: Monitor, desc: 'Följer enhetens tema' },
+                ].map(({ value, label, icon: Icon, desc }) => (
+                  <button
+                    key={value}
+                    onClick={() => setThemeMode(value)}
+                    className={cn(
+                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
+                      themeMode === value
+                        ? "border-[#8B1E1E] bg-[#8B1E1E]/5"
+                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
+                      themeMode === value ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800"
+                    )}>
+                      <Icon className={cn("w-5 h-5", themeMode === value ? "text-[#8B1E1E]" : "text-gray-500 dark:text-gray-400")} />
+                    </div>
+                    <div>
+                      <p className={cn("font-medium", themeMode === value ? "text-[#8B1E1E]" : "text-gray-900 dark:text-gray-100")}>{label}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </>
           )}
         </div>
