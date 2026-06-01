@@ -384,16 +384,16 @@ export default function LokalvardBegaranAttGodkanna() {
 
   // Stegindikator
   const StepIndicator = () => (
-    <div className="flex items-center gap-2 mb-6">
-      {[{ n: 1, label: 'Välj begäran' }, { n: 2, label: 'Granska' }, { n: 3, label: 'Skanna uttag' }].map(({ n, label }, i) => (
+    <div className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1">
+      {[{ n: 1, label: 'Välj' }, { n: 2, label: 'Granska' }, { n: 3, label: 'Skanna' }].map(({ n, label }, i) => (
         <React.Fragment key={n}>
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+          <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap shrink-0 ${
             step === n ? 'bg-[#8B1E1E] text-white' : step > n ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
           }`}>
             {step > n ? <Check className="w-3.5 h-3.5" /> : <span>{n}</span>}
             {label}
           </div>
-          {i < 2 && <ChevronRight className="w-4 h-4 text-gray-300" />}
+          {i < 2 && <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />}
         </React.Fragment>
       ))}
     </div>
@@ -423,10 +423,10 @@ export default function LokalvardBegaranAttGodkanna() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 py-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Begäran – Lokalvård</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Granska, godkänn och registrera uttag</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Begäran – Lokalvård</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">Granska, godkänn och registrera uttag</p>
       </div>
 
       {/* Flikar – visas bara när man är på steg 1 */}
@@ -449,7 +449,7 @@ export default function LokalvardBegaranAttGodkanna() {
 
       {/* REDIGERA TIDIGARE UTTAG */}
       {step === 1.5 && editingCheckout && (
-        <Card className="p-6 space-y-6">
+        <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div>
             <button onClick={() => { setEditingCheckout(null); setEditedItems([]); setStep(1); }} className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka</button>
             <h2 className="text-xl font-semibold mt-4">Redigera uttag</h2>
@@ -823,27 +823,27 @@ export default function LokalvardBegaranAttGodkanna() {
 
       {/* STEG 2: Granska */}
       {step === 2 && selectedRequest && (
-        <Card className="p-6 space-y-6">
+        <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <button onClick={() => setStep(1)} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">← Tillbaka</button>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Begäran detaljer</h2>
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Begäran detaljer</h2>
               {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-1 rounded">#{selectedRequest.request_number}</span>}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Kund</p>
-                <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRequest.customer_name}</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Kund</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base">{selectedRequest.customer_name}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Begärd av</p>
-                <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRequest.requested_by_name}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{selectedRequest.requested_by_email}</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Begärd av</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base">{selectedRequest.requested_by_name}</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{selectedRequest.requested_by_email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Datum</p>
-                <p className="font-semibold text-gray-900 dark:text-gray-100">{format(new Date(selectedRequest.request_date), 'dd MMMM yyyy HH:mm', { locale: sv })}</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Datum</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base">{format(new Date(selectedRequest.request_date), 'dd MMMM yyyy HH:mm', { locale: sv })}</p>
               </div>
             </div>
           </div>
@@ -880,7 +880,7 @@ export default function LokalvardBegaranAttGodkanna() {
                 className="text-sm"
               />
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button
                 onClick={() => approveMutation.mutate(selectedRequest.id)}
                 disabled={approveMutation.isPending}
@@ -905,11 +905,11 @@ export default function LokalvardBegaranAttGodkanna() {
 
       {/* STEG 3: Skanna uttag */}
       {step === 3 && selectedRequest && (
-        <Card className="p-6 space-y-6">
+        <Card className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Skanna uttag</h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Skanna uttag</h2>
                 {selectedRequest.request_number && <span className="text-sm font-mono font-bold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-2 py-0.5 rounded">#{selectedRequest.request_number}</span>}
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">{selectedRequest.customer_name}</p>
@@ -1036,12 +1036,12 @@ export default function LokalvardBegaranAttGodkanna() {
               <p className="text-sm text-yellow-800">Dessa artiklar var inte på originalförfrågan. Godkänn eller avvisa varje artikel:</p>
               <div className="space-y-2">
                 {extraArticlesAwaitingApproval.map((extraItem) => (
-                  <div key={extraItem.item_id} className="bg-white p-3 rounded-lg border border-yellow-200 flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">{extraItem.name}</p>
-                      <p className="text-xs text-gray-500">{extraItem.barcode} • {extraItem.quantity} st</p>
-                    </div>
-                    <div className="flex items-center gap-2">
+                  <div key={extraItem.item_id} className="bg-white p-3 rounded-lg border border-yellow-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <div className="min-w-0">
+                     <p className="font-medium text-gray-900 truncate">{extraItem.name}</p>
+                     <p className="text-xs text-gray-500">{extraItem.barcode} • {extraItem.quantity} st</p>
+                   </div>
+                   <div className="flex items-center gap-2 shrink-0">
                       <Button
                         size="sm"
                         onClick={() => {
@@ -1099,46 +1099,49 @@ export default function LokalvardBegaranAttGodkanna() {
               checked={notifyPersonal}
               onCheckedChange={(checked) => setNotifyPersonal(!!checked)}
             />
-            <label htmlFor="notifyPersonal" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
-              <Mail className="w-4 h-4 text-gray-500" />
-              Meddela personal att begäran är klar för upphämtning
+            <label htmlFor="notifyPersonal" className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+              <Mail className="w-4 h-4 text-gray-500 shrink-0" />
+              <span>Meddela personal att begäran är klar</span>
             </label>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
             <Button
               onClick={handleCheckoutSubmit}
               disabled={createCheckoutMutation.isPending || scannedItems.length === 0}
-              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] w-full sm:w-auto"
             >
               {createCheckoutMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
               Registrera uttag
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => { 
-                localStorage.setItem(`scanned_${selectedRequest.id}`, JSON.stringify(scannedItems));
-                localStorage.setItem('lastActiveRequestId', selectedRequest.id);
-                setSelectedRequest(null); 
-                setScannedItems([]); 
-                setStep(1);
-              }}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700"
-            >
-              Pausa (sparad)
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => { 
-                localStorage.removeItem(`scanned_${selectedRequest.id}`);
-                localStorage.removeItem('lastActiveRequestId');
-                setSelectedRequest(null); 
-                setScannedItems([]); 
-                setStep(1); 
-              }}
-            >
-              Avbryt & rensa
-            </Button>
+            <div className="flex gap-2 sm:gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => { 
+                  localStorage.setItem(`scanned_${selectedRequest.id}`, JSON.stringify(scannedItems));
+                  localStorage.setItem('lastActiveRequestId', selectedRequest.id);
+                  setSelectedRequest(null); 
+                  setScannedItems([]); 
+                  setStep(1);
+                }}
+                className="flex-1 sm:flex-none bg-blue-50 hover:bg-blue-100 text-blue-700"
+              >
+                Pausa
+              </Button>
+              <Button 
+                variant="outline"
+                className="flex-1 sm:flex-none"
+                onClick={() => { 
+                  localStorage.removeItem(`scanned_${selectedRequest.id}`);
+                  localStorage.removeItem('lastActiveRequestId');
+                  setSelectedRequest(null); 
+                  setScannedItems([]); 
+                  setStep(1); 
+                }}
+              >
+                Avbryt
+              </Button>
+            </div>
           </div>
         </Card>
       )}
