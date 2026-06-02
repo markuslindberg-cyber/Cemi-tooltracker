@@ -102,13 +102,81 @@
     "category"
   ],
   "rls": {
-    "read": {},
-    "create": {},
-    "update": {},
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
     "delete": {
-      "user_condition": {
-        "role": "admin_lokalv\u00e5rd"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
     }
   }
 }

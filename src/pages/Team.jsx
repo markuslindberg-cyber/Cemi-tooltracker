@@ -113,11 +113,10 @@ export default function Team() {
 
   const saveMemberMutation = useMutation({
     mutationFn: async (memberData) => {
-      if (memberData.send_new_invitation && memberData.email) {
-        await base44.users.inviteUser(memberData.email, 'user');
-      }
-      if (memberData.send_invitation && memberData.email) {
-        await base44.users.inviteUser(memberData.email, 'user');
+      const shouldInvite = (memberData.send_invitation || memberData.send_new_invitation) && memberData.email;
+      if (shouldInvite) {
+        const inviteRole = (memberData.role === 'admin' || memberData.role === 'ägare') ? 'admin' : 'user';
+        await base44.users.inviteUser(memberData.email, inviteRole);
       }
       const { send_invitation, send_new_invitation, ...data } = memberData;
       let result;
@@ -152,10 +151,23 @@ export default function Team() {
     onError: (err, newData, context) => {
       if (context?.prevMembers) queryClient.setQueryData(['teamMembers'], context.prevMembers);
     },
-    onSuccess: () => {
+    onSuccess: (_, memberData) => {
       queryClient.invalidateQueries({ queryKey: ['teamMembers'] });
+      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      const invited = (memberData.send_invitation || memberData.send_new_invitation) && memberData.email;
+      toast({
+        title: editMember ? 'Medlem uppdaterad' : 'Medlem tillagd',
+        description: invited ? `Inbjudan skickad till ${memberData.email}` : undefined,
+      });
       setEditMember(null);
       setShowAddMember(false);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Något gick fel',
+        description: error?.message || 'Kunde inte spara medlemmen',
+        variant: 'destructive',
+      });
     },
   });
 
