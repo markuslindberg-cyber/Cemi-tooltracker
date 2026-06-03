@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,19 @@ import { toast } from '@/components/ui/use-toast';
 
 const SIZE_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
+function sizeSort(a, b) {
+  const aIdx = SIZE_ORDER.indexOf(a);
+  const bIdx = SIZE_ORDER.indexOf(b);
+  if (aIdx === -1 && bIdx === -1) return (a || '').localeCompare(b || '');
+  if (aIdx === -1) return 1;
+  if (bIdx === -1) return -1;
+  return aIdx - bIdx;
+}
+
 export default function ArbetskläderStreckkodhantering() {
   const [selectedArticle, setSelectedArticle] = useState('');
-  const [barcodeEdits, setBarcodeEdits] = useState({});
-  const [savingId, setSavingId] = useState(null);
+  const [barcodeEdits, setBarcodeEdits] = useState({}); // keyed by size string
+  const [savingKey, setSavingKey] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: items = [], isLoading } = useQuery({
@@ -21,81 +30,97 @@ export default function ArbetskläderStreckkodhantering() {
     queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500),
   });
 
-  // Group items by name to get unique article names
+  const activeItems = useMemo(() => items.filter(i => !i.is_deleted), [items]);
+
+  // Unique article names
   const articleNames = useMemo(() => {
-    const names = [...new Set(items.filter(i => !i.is_deleted).map(i => i.name))].sort();
-    return names;
-  }, [items]);
+    return [...new Set(activeItems.map(i => i.name))].sort();
+  }, [activeItems]);
 
-  // Get items for the selected article, sorted by size
-  const articleItems = useMemo(() => {
+  // Group selected article's items by size
+  const sizeGroups = useMemo(() => {
     if (!selectedArticle) return [];
-    return items
-      .filter(i => i.name === selectedArticle && !i.is_deleted)
-      .sort((a, b) => {
-        const aIdx = SIZE_ORDER.indexOf(a.size);
-        const bIdx = SIZE_ORDER.indexOf(b.size);
-        if (aIdx === -1 && bIdx === -1) return (a.size || '').localeCompare(b.size || '');
-        if (aIdx === -1) return 1;
-        if (bIdx === -1) return -1;
-        return aIdx - bIdx;
-      });
-  }, [items, selectedArticle]);
+    const grouped = {};
+    activeItems.filter(i => i.name === selectedArticle).forEach(item => {
+      const key = item.size || '__none__';
+      if (!grouped[key]) {
+        grouped[key] = { size: item.size || '', items: [], barcode: item.barcode || '' };
+      }
+      grouped[key].items.push(item);
+      // Use the first non-empty barcode found
+      if (!grouped[key].barcode && item.barcode) {
+        grouped[key].barcode = item.barcode;
+      }
+    });
+    return Object.values(grouped).sort((a, b) => sizeSort(a.size, b.size));
+  }, [activeItems, selectedArticle]);
 
-  // All barcodes in the system (for duplicate detection)
-  const allBarcodes = useMemo(() => {
+  // Build a map of barcode -> article names (excluding current article) for duplicate detection
+  const barcodeToOtherArticles = useMemo(() => {
     const map = {};
-    items.filter(i => !i.is_deleted && i.barcode).forEach(i => {
-      if (!map[i.barcode]) map[i.barcode] = [];
-      map[i.barcode].push(i);
+    activeItems.filter(i => i.barcode && i.name !== selectedArticle).forEach(i => {
+      if (!map[i.barcode]) map[i.barcode] = new Set();
+      map[i.barcode].add(`${i.name}${i.size ? ` (${i.size})` : ''}`);
     });
     return map;
-  }, [items]);
+  }, [activeItems, selectedArticle]);
 
-  const getCurrentBarcode = (item) => {
-    return barcodeEdits[item.id] !== undefined ? barcodeEdits[item.id] : (item.barcode || '');
+  const getCurrentBarcode = (group) => {
+    const key = group.size || '__none__';
+    return barcodeEdits[key] !== undefined ? barcodeEdits[key] : group.barcode;
   };
 
-  const handleBarcodeChange = (itemId, value) => {
-    setBarcodeEdits(prev => ({ ...prev, [itemId]: value }));
+  const handleBarcodeChange = (size, value) => {
+    const key = size || '__none__';
+    setBarcodeEdits(prev => ({ ...prev, [key]: value }));
   };
 
-  const getDuplicateWarning = (item) => {
-    const barcode = getCurrentBarcode(item);
+  const getDuplicateWarning = (group) => {
+    const barcode = getCurrentBarcode(group);
     if (!barcode) return null;
-    const existing = allBarcodes[barcode];
-    if (existing && existing.some(e => e.id !== item.id)) {
-      const other = existing.find(e => e.id !== item.id);
-      return `Redan använd av: ${other.name}${other.size ? ` (${other.size})` : ''}`;
+    const others = barcodeToOtherArticles[barcode];
+    if (others && others.size > 0) {
+      return `Redan använd av: ${[...others].join(', ')}`;
     }
     return null;
   };
 
-  const saveBarcode = async (item) => {
-    const newBarcode = getCurrentBarcode(item);
-    setSavingId(item.id);
-    await base44.entities.ArbetskläderUtrustning.update(item.id, { barcode: newBarcode });
+  // Save barcode for one size group — updates ALL items with same name+size
+  const saveBarcode = async (group) => {
+    const key = group.size || '__none__';
+    const newBarcode = getCurrentBarcode(group);
+    setSavingKey(key);
+    for (const item of group.items) {
+      await base44.entities.ArbetskläderUtrustning.update(item.id, { barcode: newBarcode });
+    }
     queryClient.invalidateQueries({ queryKey: ['arbetskläder-streckkod'] });
     setBarcodeEdits(prev => {
       const next = { ...prev };
-      delete next[item.id];
+      delete next[key];
       return next;
     });
-    setSavingId(null);
-    toast({ title: 'Sparat', description: `Streckkod för ${item.size || 'artikeln'} uppdaterad.` });
+    setSavingKey(null);
+    toast({ title: 'Sparat', description: `Streckkod för ${group.size || 'artikeln'} uppdaterad (${group.items.length} poster).` });
   };
 
+  // Save all edited sizes
   const saveAll = async () => {
-    const editedIds = Object.keys(barcodeEdits);
-    if (editedIds.length === 0) return;
-    setSavingId('all');
-    for (const id of editedIds) {
-      await base44.entities.ArbetskläderUtrustning.update(id, { barcode: barcodeEdits[id] });
+    const editedKeys = Object.keys(barcodeEdits);
+    if (editedKeys.length === 0) return;
+    setSavingKey('all');
+    for (const group of sizeGroups) {
+      const key = group.size || '__none__';
+      if (barcodeEdits[key] !== undefined) {
+        const newBarcode = barcodeEdits[key];
+        for (const item of group.items) {
+          await base44.entities.ArbetskläderUtrustning.update(item.id, { barcode: newBarcode });
+        }
+      }
     }
     queryClient.invalidateQueries({ queryKey: ['arbetskläder-streckkod'] });
     setBarcodeEdits({});
-    setSavingId(null);
-    toast({ title: 'Allt sparat', description: `${editedIds.length} streckkoder uppdaterade.` });
+    setSavingKey(null);
+    toast({ title: 'Allt sparat', description: `Streckkoder uppdaterade.` });
   };
 
   const hasEdits = Object.keys(barcodeEdits).length > 0;
@@ -111,7 +136,6 @@ export default function ArbetskläderStreckkodhantering() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Streckkodhantering</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Hantera streckkoder per storlek för arbetskläder</p>
@@ -132,54 +156,57 @@ export default function ArbetskläderStreckkodhantering() {
           </Select>
         </div>
 
-        {/* Barcode table */}
+        {/* Barcode table grouped by size */}
         {selectedArticle && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <div>
                 <h2 className="font-semibold text-gray-900 dark:text-gray-100">{selectedArticle}</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{articleItems.length} storleksvarianter</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{sizeGroups.length} storlekar</p>
               </div>
               {hasEdits && (
-                <Button onClick={saveAll} disabled={savingId === 'all'} size="sm" className="gap-2">
-                  {savingId === 'all' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <Button onClick={saveAll} disabled={savingKey === 'all'} size="sm" className="gap-2">
+                  {savingKey === 'all' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Spara alla
                 </Button>
               )}
             </div>
 
-            {articleItems.length === 0 ? (
+            {sizeGroups.length === 0 ? (
               <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                 Inga storleksvarianter hittades för denna artikel.
               </div>
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                {articleItems.map(item => {
-                  const barcode = getCurrentBarcode(item);
-                  const isEdited = barcodeEdits[item.id] !== undefined;
-                  const duplicate = getDuplicateWarning(item);
+                {sizeGroups.map(group => {
+                  const key = group.size || '__none__';
+                  const barcode = getCurrentBarcode(group);
+                  const isEdited = barcodeEdits[key] !== undefined;
+                  const duplicate = getDuplicateWarning(group);
                   const isEmpty = !barcode;
+                  const totalQty = group.items.reduce((sum, i) => sum + (i.quantity || 0), 0);
 
                   return (
-                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4">
+                    <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4">
                       {/* Size badge */}
-                      <div className="flex items-center gap-3 sm:w-28 shrink-0">
+                      <div className="flex items-center gap-3 sm:w-32 shrink-0">
                         <Badge variant="outline" className="text-sm px-3 py-1 min-w-[3rem] justify-center">
-                          {item.size || '—'}
+                          {group.size || '—'}
                         </Badge>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">({item.quantity || 0} st)</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          {totalQty} st / {group.items.length} {group.items.length === 1 ? 'post' : 'poster'}
+                        </span>
                       </div>
 
                       {/* Barcode input */}
                       <div className="flex-1 flex items-center gap-2">
                         <Input
                           value={barcode}
-                          onChange={(e) => handleBarcodeChange(item.id, e.target.value)}
+                          onChange={(e) => handleBarcodeChange(group.size, e.target.value)}
                           placeholder="Ange streckkod..."
                           className="flex-1"
                         />
 
-                        {/* Status icon */}
                         {duplicate ? (
                           <div className="shrink-0" title={duplicate}>
                             <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -194,21 +221,19 @@ export default function ArbetskläderStreckkodhantering() {
                           </div>
                         )}
 
-                        {/* Save button per row */}
                         {isEdited && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => saveBarcode(item)}
-                            disabled={savingId === item.id}
+                            onClick={() => saveBarcode(group)}
+                            disabled={savingKey === key}
                             className="shrink-0"
                           >
-                            {savingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            {savingKey === key ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                           </Button>
                         )}
                       </div>
 
-                      {/* Duplicate warning text (mobile) */}
                       {duplicate && (
                         <p className="text-xs text-red-500 sm:hidden">{duplicate}</p>
                       )}
@@ -218,8 +243,7 @@ export default function ArbetskläderStreckkodhantering() {
               </div>
             )}
 
-            {/* Duplicate warning text (desktop) */}
-            {articleItems.some(item => getDuplicateWarning(item)) && (
+            {sizeGroups.some(g => getDuplicateWarning(g)) && (
               <div className="hidden sm:block p-3 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
                 <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
