@@ -166,7 +166,7 @@ export default function ArbetskläderRequestWorkwear() {
               <SelectContent>
                 {items.map(item => (
                   <SelectItem key={item.id} value={item.id}>
-                    {item.name}, {item.subcategory || 'Okänd'}, {item.size || '-'} (Tillgängligt: {item.quantity || 0})
+                    {item.name}, {item.subcategory || 'Okänd'}, {item.size || '-'} - {item.location_name || 'Okänd plats'} (Tillgängligt: {item.quantity || 0})
                   </SelectItem>
                 ))}
               </SelectContent>
