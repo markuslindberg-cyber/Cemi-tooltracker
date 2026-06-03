@@ -13,10 +13,16 @@ const SIZE_ORDER = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
 function sizeSort(a, b) {
   const aIdx = SIZE_ORDER.indexOf(a);
   const bIdx = SIZE_ORDER.indexOf(b);
-  if (aIdx === -1 && bIdx === -1) return (a || '').localeCompare(b || '');
-  if (aIdx === -1) return 1;
-  if (bIdx === -1) return -1;
-  return aIdx - bIdx;
+  // Both in text size order
+  if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+  // Both numeric (e.g. shoe sizes, glove sizes)
+  const aNum = parseFloat(a);
+  const bNum = parseFloat(b);
+  if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+  // Text sizes before numeric
+  if (aIdx !== -1) return -1;
+  if (bIdx !== -1) return 1;
+  return (a || '').localeCompare(b || '');
 }
 
 export default function ArbetskläderStreckkodhantering() {
