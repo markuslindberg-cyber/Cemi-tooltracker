@@ -200,16 +200,16 @@ export default function ArbetskladerBegaranAttGodkanna() {
   };
 
   const StepIndicator = () => (
-    <div className="flex items-center gap-2 mb-6">
-      {[{ n: 1, label: 'Välj begäran' }, { n: 2, label: 'Granska' }, { n: 3, label: 'Skanna uttag' }].map(({ n, label }, i) => (
+    <div className="flex items-center gap-1 sm:gap-2 mb-6 overflow-x-auto">
+      {[{ n: 1, label: 'Välj' }, { n: 2, label: 'Granska' }, { n: 3, label: 'Uttag' }].map(({ n, label }, i) => (
         <React.Fragment key={n}>
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+          <div className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${
             step === n ? 'bg-[#8B1E1E] text-white' : step > n ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
           }`}>
-            {step > n ? <Check className="w-3.5 h-3.5" /> : <span>{n}</span>}
+            {step > n ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span>{n}</span>}
             {label}
           </div>
-          {i < 2 && <ChevronRight className="w-4 h-4 text-gray-300" />}
+          {i < 2 && <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />}
         </React.Fragment>
       ))}
     </div>
@@ -239,7 +239,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-3xl font-bold dark:text-gray-100">Begäran – Arbetskläder</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">Granska, godkänn och registrera uttag</p>
@@ -363,7 +363,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
 
           <div className="space-y-3">
             <h2 className="text-xl font-semibold">Begäran detaljer</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">Person</p>
                 <p className="font-semibold">{selectedRequest.customer_name}</p>
@@ -404,11 +404,11 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 className="text-sm"
               />
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={() => approveMutation.mutate(selectedRequest.id)}
                 disabled={approveMutation.isPending}
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                className="flex-1 bg-green-600 hover:bg-green-700 h-12 text-base"
               >
                 {approveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
                 Godkänn & Gå till uttag
@@ -417,7 +417,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 onClick={() => rejectMutation.mutate(selectedRequest.id)}
                 disabled={rejectMutation.isPending}
                 variant="outline"
-                className="flex-1 text-red-600 hover:bg-red-50"
+                className="flex-1 text-red-600 hover:bg-red-50 border-red-200 h-12 text-base"
               >
                 {rejectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <X className="w-4 h-4 mr-2" />}
                 Avslå
@@ -503,11 +503,11 @@ export default function ArbetskladerBegaranAttGodkanna() {
             </div>
           )}
 
-          <div className="flex gap-3 pt-2 border-t">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t">
             <Button
               onClick={handleCheckoutSubmit}
               disabled={createCheckoutMutation.isPending || scannedItems.length === 0}
-              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] h-12 text-base"
             >
               {createCheckoutMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
               Registrera uttag
@@ -520,7 +520,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 setScannedItems([]); 
                 setStep(1);
               }}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700"
+              className="bg-blue-50 hover:bg-blue-100 text-blue-700 h-12 text-base"
             >
               Pausa (sparad)
             </Button>
@@ -532,6 +532,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 setScannedItems([]); 
                 setStep(1); 
               }}
+              className="h-12 text-base"
             >
               Avbryt & rensa
             </Button>
