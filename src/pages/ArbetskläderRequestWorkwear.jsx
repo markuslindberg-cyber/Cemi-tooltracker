@@ -5,7 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { Loader2, Plus, X, Check } from 'lucide-react';
+import { Loader2, Plus, X, Check, Camera, Search } from 'lucide-react';
+import { useBarcodeCamera } from '@/hooks/useBarcodeCamera';
+import ScannerOverlay from '@/components/ScannerOverlay';
+import TorchButton from '@/components/ui/TorchButton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Select,
@@ -27,6 +30,26 @@ export default function ArbetskläderRequestWorkwear() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedQty, setSelectedQty] = useState(1);
   const [user, setUser] = useState(null);
+  const [scannerActive, setScannerActive] = useState(false);
+  const [manualBarcode, setManualBarcode] = useState('');
+
+  const { torchOn, torchSupported, toggleTorch } = useBarcodeCamera(
+    'workwear-request-scanner',
+    scannerActive,
+    (barcode) => handleBarcodeScan(barcode)
+  );
+
+  const handleBarcodeScan = (barcode) => {
+    const found = items.find(i => i.barcode === barcode);
+    if (found) {
+      setSelectedItem(found);
+      setSelectedQty(1);
+      setScannerActive(false);
+      setManualBarcode('');
+    } else {
+      alert(`Ingen artikel hittades med streckkod: ${barcode}`);
+    }
+  };
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -172,6 +195,50 @@ export default function ArbetskläderRequestWorkwear() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Barcode Scanner */}
+          {!scannerActive ? (
+            <div className="flex gap-2">
+              <Button onClick={() => setScannerActive(true)} variant="outline" className="flex-1 h-10">
+                <Camera className="w-5 h-5 mr-2" />Skanna streckkod
+              </Button>
+              <div className="flex-1 flex gap-1">
+                <Input
+                  placeholder="Ange streckkod manuellt"
+                  value={manualBarcode}
+                  onChange={e => setManualBarcode(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && manualBarcode) { handleBarcodeScan(manualBarcode); } }}
+                  className="text-sm"
+                />
+                <Button onClick={() => handleBarcodeScan(manualBarcode)} disabled={!manualBarcode} size="sm">
+                  <Search className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="relative">
+                <div id="workwear-request-scanner" className="rounded-xl overflow-hidden bg-black" style={{ minHeight: '250px' }} />
+                <ScannerOverlay />
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1 flex gap-1">
+                  <Input
+                    placeholder="Manuell streckkod"
+                    value={manualBarcode}
+                    onChange={e => setManualBarcode(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && manualBarcode) { handleBarcodeScan(manualBarcode); } }}
+                    className="text-sm"
+                  />
+                  <Button onClick={() => handleBarcodeScan(manualBarcode)} disabled={!manualBarcode} size="sm">
+                    <Search className="w-4 h-4" />
+                  </Button>
+                </div>
+                <TorchButton torchOn={torchOn} torchSupported={torchSupported} toggleTorch={toggleTorch} />
+                <Button onClick={() => setScannerActive(false)} variant="outline" size="sm">Stäng</Button>
+              </div>
+            </div>
+          )}
 
           {selectedItem && (
             <div className="flex items-end gap-2">
