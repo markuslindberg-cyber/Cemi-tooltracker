@@ -2,7 +2,9 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Navigate } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, Download, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 import MaskinerSection from '@/components/owner/MaskinerSection';
 import HandredskapSection from '@/components/owner/HandredskapSection';
 import ArbetskladerSection from '@/components/owner/ArbetskladerSection';
@@ -10,10 +12,30 @@ import LokalvardSection from '@/components/owner/LokalvardSection';
 import OwnerTotalSummary from '@/components/owner/OwnerTotalSummary';
 
 export default function OwnerOverview() {
+  const [exporting, setExporting] = React.useState(false);
   const { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const response = await base44.functions.invoke('exportAllData', {});
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tooltrack-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Export klar', description: 'JSON-filen har laddats ned.' });
+    } catch (err) {
+      toast({ title: 'Fel', description: err.message, variant: 'destructive' });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -31,7 +53,7 @@ export default function OwnerOverview() {
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-4 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
               <Shield className="w-5 h-5 text-white" />
@@ -41,6 +63,10 @@ export default function OwnerOverview() {
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Samlad statistik för alla avdelningar</p>
             </div>
           </div>
+          <Button onClick={handleExport} disabled={exporting} variant="outline" className="gap-2 mt-4 sm:mt-0">
+            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Exportera all data (JSON)
+          </Button>
         </div>
 
         {/* Total Summary */}
