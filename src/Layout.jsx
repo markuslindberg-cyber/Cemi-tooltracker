@@ -65,6 +65,7 @@ const navigation = [
       { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports', roles: NOT_LOKALVARDARE },
       { name: 'Begäran - arbetskläder', path: '/ArbetskläderRequestWorkwear' },
       { name: 'Förfrågan - arbetskläder', path: '/Arbetsklader/Forfragan', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Streckkodhantering', path: '/Arbetsklader/Streckkodhantering', roles: ['admin_lokalvård', 'ägare'] },
     ]
   },
   {
