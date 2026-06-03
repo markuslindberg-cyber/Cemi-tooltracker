@@ -154,6 +154,8 @@ export default function ArbetskladerBegaranAttGodkanna() {
       item_id: item.id,
       name: item.name,
       barcode: item.barcode,
+      subcategory: item.subcategory || '',
+      size: item.size || '',
       quantity: requestedItem.quantity,
       scanned_quantity: 1,
     };
@@ -386,7 +388,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div>
                     <p className="font-medium dark:text-gray-100">{item.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}{item.size ? ` • Stl: ${item.size}` : ''}</p>
                   </div>
                   <p className="font-semibold">{item.quantity} st</p>
                 </div>
@@ -446,7 +448,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
                   }`}>
                     <div>
                       <p className="font-medium dark:text-gray-100">{item.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}{item.size ? ` • Stl: ${item.size}` : ''}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold">{scanned?.scanned_quantity || 0}/{item.quantity}</p>
@@ -482,7 +484,7 @@ export default function ArbetskladerBegaranAttGodkanna() {
                 <div key={item.item_id} className="bg-blue-50 p-3 rounded-lg border border-blue-200 flex items-center justify-between">
                   <div>
                     <p className="font-medium text-blue-900">{item.name}</p>
-                    <p className="text-sm text-blue-700">Antal: {item.scanned_quantity}/{item.quantity}</p>
+                    <p className="text-sm text-blue-700">{item.subcategory}{item.size ? ` • Stl: ${item.size}` : ''} • Antal: {item.scanned_quantity}/{item.quantity}</p>
                   </div>
                   <button onClick={() => setScannedItems(prev => prev.filter(si => si.item_id !== item.item_id))} className="text-red-500 hover:text-red-700">
                     <X className="w-5 h-5" />
