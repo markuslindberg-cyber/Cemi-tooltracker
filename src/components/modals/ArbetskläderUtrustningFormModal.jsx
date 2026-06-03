@@ -498,18 +498,6 @@ export default function ArbetskläderUtrustningFormModal({
             </div>
           </div>
 
-          {/* Streckkod */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Streckkod
-            </label>
-            <Input
-              value={formData.barcode}
-              onChange={(e) => handleChange('barcode', e.target.value)}
-              placeholder="Streckkod"
-            />
-          </div>
-
           {/* Anteckningar */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
