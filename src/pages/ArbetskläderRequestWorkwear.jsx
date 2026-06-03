@@ -68,15 +68,16 @@ export default function ArbetskläderRequestWorkwear() {
         )
       }));
     } else {
-      setFormData(prev => ({
-        ...prev,
-        requested_items: [...prev.requested_items, {
-          id: selectedItem.id,
-          name: selectedItem.name,
-          subcategory: selectedItem.subcategory,
-          quantity: selectedQty,
-        }]
-      }));
+     setFormData(prev => ({
+       ...prev,
+       requested_items: [...prev.requested_items, {
+         id: selectedItem.id,
+         name: selectedItem.name,
+         subcategory: selectedItem.subcategory,
+         size: selectedItem.size,
+         quantity: selectedQty,
+       }]
+     }));
     }
     setSelectedItem(null);
     setSelectedQty(1);
@@ -165,7 +166,7 @@ export default function ArbetskläderRequestWorkwear() {
               <SelectContent>
                 {items.map(item => (
                   <SelectItem key={item.id} value={item.id}>
-                    {item.name} {item.subcategory && `- ${item.subcategory}`} (Tillgängligt: {item.quantity || 0})
+                    {item.name}, {item.subcategory || 'Okänd'}, {item.size || '-'} (Tillgängligt: {item.quantity || 0})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -201,8 +202,8 @@ export default function ArbetskläderRequestWorkwear() {
                 {formData.requested_items.map(item => (
                   <div key={item.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                     <div>
-                      <p className="font-medium dark:text-gray-100">{item.name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{item.subcategory} • Antal: {item.quantity}</p>
+                      <p className="font-medium dark:text-gray-100">{item.name}, {item.subcategory || 'Okänd'}, {item.size || '-'}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Antal: {item.quantity}</p>
                     </div>
                     <button
                       onClick={() => removeItem(item.id)}
