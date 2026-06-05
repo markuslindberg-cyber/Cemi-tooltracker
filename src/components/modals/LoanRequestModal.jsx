@@ -320,7 +320,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
                   <CommandList>
                     <CommandEmpty>Ingen person hittad</CommandEmpty>
                     <CommandGroup>
-                      {teamMembers.map(member => (
+                      {teamMembers.filter(m => m.is_active !== false).map(member => (
                         <CommandItem key={member.id} onSelect={() => { setAssignedTo(member); setAssignedToOpen(false); }}>
                           {member.name}
                         </CommandItem>
@@ -364,7 +364,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
                         <CommandList>
                           <CommandEmpty>Ingen person hittad</CommandEmpty>
                           <CommandGroup>
-                            {teamMembers.filter(m => m.email).map(member => (
+                            {teamMembers.filter(m => m.email && m.is_active !== false).map(member => (
                               <CommandItem key={member.id} onSelect={() => { setSelectedApprover(member); setApproverOpen(false); }}>
                                 <div>
                                   <div className="font-medium">{member.name}</div>

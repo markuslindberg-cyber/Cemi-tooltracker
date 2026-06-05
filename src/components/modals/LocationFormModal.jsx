@@ -230,7 +230,7 @@ export default function LocationFormModal({
                       <Check className={cn("mr-2 h-4 w-4", !formData.team_member_ids[0] ? "opacity-100" : "opacity-0")} />
                       Ingen ansvarig
                     </CommandItem>
-                    {teamMembers.map((member) => (
+                    {teamMembers.filter(m => m.is_active !== false).map((member) => (
                       <CommandItem
                         key={member.id}
                         value={member.name}
@@ -291,7 +291,7 @@ export default function LocationFormModal({
                   <CommandInput placeholder="Sök personlig..." />
                   <CommandEmpty>Ingen personlig hittades.</CommandEmpty>
                   <CommandGroup className="max-h-64 overflow-auto">
-                    {teamMembers.map((member) => (
+                    {teamMembers.filter(m => m.is_active !== false).map((member) => (
                       <CommandItem
                         key={member.id}
                         value={member.name}
