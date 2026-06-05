@@ -4,9 +4,12 @@ import GraphNode from '@/components/knowledge-graph/GraphNode';
 import GraphDetailPanel from '@/components/knowledge-graph/GraphDetailPanel';
 import GraphLegend from '@/components/knowledge-graph/GraphLegend';
 import WorkflowDiagram from '@/components/knowledge-graph/WorkflowDiagram';
+import ApprovalsTab from '@/components/knowledge-graph/ApprovalsTab';
+import RolesTab from '@/components/knowledge-graph/RolesTab';
+import BackendFunctionsTab from '@/components/knowledge-graph/BackendFunctionsTab';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, GitBranch, Network } from 'lucide-react';
+import { Search, GitBranch, Network, CheckCircle, Shield, Zap } from 'lucide-react';
 
 export default function KnowledgeGraph() {
   const [selectedId, setSelectedId] = useState(null);
@@ -68,12 +71,21 @@ export default function KnowledgeGraph() {
         </div>
 
         <Tabs defaultValue="graph" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="graph" className="flex items-center gap-1.5">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5">
+            <TabsTrigger value="graph" className="flex items-center gap-1.5 text-xs">
               <Network className="w-3.5 h-3.5" /> Nodvy
             </TabsTrigger>
-            <TabsTrigger value="workflows" className="flex items-center gap-1.5">
+            <TabsTrigger value="workflows" className="flex items-center gap-1.5 text-xs">
               <GitBranch className="w-3.5 h-3.5" /> Flöden
+            </TabsTrigger>
+            <TabsTrigger value="approvals" className="flex items-center gap-1.5 text-xs">
+              <CheckCircle className="w-3.5 h-3.5" /> Godkännanden
+            </TabsTrigger>
+            <TabsTrigger value="roles" className="flex items-center gap-1.5 text-xs">
+              <Shield className="w-3.5 h-3.5" /> Roller
+            </TabsTrigger>
+            <TabsTrigger value="functions" className="flex items-center gap-1.5 text-xs">
+              <Zap className="w-3.5 h-3.5" /> Backend
             </TabsTrigger>
           </TabsList>
 
@@ -160,6 +172,18 @@ export default function KnowledgeGraph() {
 
           <TabsContent value="workflows" className="mt-6">
             <WorkflowDiagram />
+          </TabsContent>
+
+          <TabsContent value="approvals" className="mt-6">
+            <ApprovalsTab />
+          </TabsContent>
+
+          <TabsContent value="roles" className="mt-6">
+            <RolesTab />
+          </TabsContent>
+
+          <TabsContent value="functions" className="mt-6">
+            <BackendFunctionsTab />
           </TabsContent>
         </Tabs>
       </div>
