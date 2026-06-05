@@ -2,8 +2,9 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Navigate } from 'react-router-dom';
-import { Shield, Download, Loader2 } from 'lucide-react';
+import { Shield, Download, Loader2, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import MaskinerSection from '@/components/owner/MaskinerSection';
 import HandredskapSection from '@/components/owner/HandredskapSection';
@@ -63,10 +64,18 @@ export default function OwnerOverview() {
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Samlad statistik för alla avdelningar</p>
             </div>
           </div>
-          <Button onClick={handleExport} disabled={exporting} variant="outline" className="gap-2 mt-4 sm:mt-0">
-            {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            Exportera all data (JSON)
-          </Button>
+          <div className="flex flex-wrap gap-2 mt-4 sm:mt-0">
+            <Button asChild variant="outline" className="gap-2">
+              <Link to="/KnowledgeGraph">
+                <Network className="w-4 h-4" />
+                Knowledge Graph
+              </Link>
+            </Button>
+            <Button onClick={handleExport} disabled={exporting} variant="outline" className="gap-2">
+              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              Exportera all data (JSON)
+            </Button>
+          </div>
         </div>
 
         {/* Total Summary */}

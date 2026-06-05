@@ -42,6 +42,7 @@ import RollBehorigheter from './pages/RollBehorigheter';
 import OwnerOverview from './pages/OwnerOverview';
 import DepreciationSettings from './pages/DepreciationSettings';
 import ArbetskläderStreckkodhantering from './pages/ArbetskläderStreckkodhantering';
+import KnowledgeGraph from './pages/KnowledgeGraph';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -150,6 +151,7 @@ const AuthenticatedApp = () => {
       <Route path="/OwnerOverview" element={<LayoutWrapper currentPageName="OwnerOverview"><OwnerOverview /></LayoutWrapper>} />
       <Route path="/Administration/Avskrivningar" element={<LayoutWrapper currentPageName="DepreciationSettings"><DepreciationSettings /></LayoutWrapper>} />
       <Route path="/Arbetsklader/Streckkodhantering" element={<LayoutWrapper currentPageName="ArbetskläderStreckkodhantering"><ArbetskläderStreckkodhantering /></LayoutWrapper>} />
+      <Route path="/KnowledgeGraph" element={<LayoutWrapper currentPageName="KnowledgeGraph"><KnowledgeGraph /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
