@@ -9,7 +9,8 @@ import RolesTab from '@/components/knowledge-graph/RolesTab';
 import BackendFunctionsTab from '@/components/knowledge-graph/BackendFunctionsTab';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, GitBranch, Network, CheckCircle, Shield, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, GitBranch, Network, CheckCircle, Shield, Zap, Download } from 'lucide-react';
 
 export default function KnowledgeGraph() {
   const [selectedId, setSelectedId] = useState(null);
@@ -58,7 +59,7 @@ export default function KnowledgeGraph() {
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-4 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 bg-[#7c3aed] rounded-xl flex items-center justify-center shadow-lg shadow-[#7c3aed]/25">
               <Network className="w-5 h-5 text-white" />
@@ -68,6 +69,23 @@ export default function KnowledgeGraph() {
               <p className="text-gray-500 dark:text-gray-400 text-sm">Systemarkitektur – alla flöden, funktioner och kopplingar</p>
             </div>
           </div>
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => {
+              const data = { nodes: NODES, edges: EDGES, categories: CATEGORIES };
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `knowledge-graph-${new Date().toISOString().split('T')[0]}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download className="w-4 h-4" />
+            Ladda ned JSON
+          </Button>
         </div>
 
         <Tabs defaultValue="graph" className="w-full">
