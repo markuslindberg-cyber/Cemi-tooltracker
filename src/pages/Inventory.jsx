@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -129,6 +129,20 @@ export default function Inventory() {
   const [showBulkMove, setShowBulkMove] = useState(false);
   const [showBulkEdit, setShowBulkEdit] = useState(false);
   const [toolHistory, setToolHistory] = useState(null);
+
+  // Open tool from URL param (e.g. ?toolId=xxx from Huvudmaskiner)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const toolId = params.get('toolId');
+    if (toolId && tools.length > 0) {
+      const found = tools.find(t => t.id === toolId);
+      if (found) {
+        setEditTool(found);
+        // Clean URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [tools]);
 
   const toggleSelectTool = (id) => {
     setSelectedTools(prev => {
