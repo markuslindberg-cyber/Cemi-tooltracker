@@ -304,7 +304,7 @@ export default function InventoryReports() {
                 <span className="text-xs text-gray-400">({grouped[key].length})</span>
               </div>
               <div className="space-y-3">
-                {grouped[key].map(report => (
+                {[...grouped[key]].sort((a, b) => new Date(b.performed_at) - new Date(a.performed_at)).map(report => (
                   <ReportCard key={report.id} report={report} isAdmin={isAdmin} onDelete={handleDelete} />
                 ))}
               </div>
