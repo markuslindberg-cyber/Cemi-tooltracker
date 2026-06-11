@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, Plus, Calendar, ChevronDown, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Loader2, Plus, Calendar, ChevronDown, X, RotateCcw } from 'lucide-react';
 import NyttInköpModal from '@/components/lokalvard/NyttInköpModal';
+import InkopshistorikTable from '@/components/lokalvard/InkopshistorikTable';
 
 export default function LokalvardInkopshistorik() {
   const [search, setSearch] = useState('');
@@ -14,6 +14,7 @@ export default function LokalvardInkopshistorik() {
   const [showModal, setShowModal] = useState(false);
   const [sortBy, setSortBy] = useState('datum');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [activeTab, setActiveTab] = useState('manuella');
 
   const { data: inköp = [], isLoading: inkopLoading } = useQuery({
     queryKey: ['lokalvardInkop'],
@@ -27,7 +28,7 @@ export default function LokalvardInkopshistorik() {
     staleTime: 60000,
   });
 
-  // Build a lookup map: id → artikel, streckkod → artikel
+  // Build lookup maps
   const artikelMap = useMemo(() => {
     const map = {};
     artiklar.forEach(a => {
@@ -38,10 +39,13 @@ export default function LokalvardInkopshistorik() {
     return map;
   }, [artiklar]);
 
-  // Resolve article name for each inköp
+  const artikelIdSet = useMemo(() => new Set(artiklar.map(a => a.id)), [artiklar]);
+
+  // Resolve and tag each inköp as manual or imported
   const resolvedInköp = useMemo(() => {
     return inköp.map(i => {
       const artikel = artikelMap[i.artikel_id];
+      const isManual = artikelIdSet.has(i.artikel_id);
       return {
         ...i,
         benamning: artikel?.benamning || i.artikel_id || 'Okänd artikel',
@@ -49,19 +53,25 @@ export default function LokalvardInkopshistorik() {
         artikelLink: artikel?.artikelnummer || artikel?.id || i.artikel_id,
         total_kostnad: (i.antal || 0) * (i.pris || 0),
         manad: i.datum ? i.datum.substring(0, 7) : '',
+        source: isManual ? 'manuella' : 'importerade',
       };
     });
-  }, [inköp, artikelMap]);
+  }, [inköp, artikelMap, artikelIdSet]);
 
-  // Available months for filter
+  // Split by tab
+  const tabFiltered = useMemo(() => {
+    return resolvedInköp.filter(i => i.source === activeTab);
+  }, [resolvedInköp, activeTab]);
+
+  // Available months for current tab
   const availableMonths = useMemo(() => {
-    const months = [...new Set(resolvedInköp.map(i => i.manad).filter(Boolean))];
+    const months = [...new Set(tabFiltered.map(i => i.manad).filter(Boolean))];
     return months.sort().reverse();
-  }, [resolvedInköp]);
+  }, [tabFiltered]);
 
   // Filter and search
   const filtered = useMemo(() => {
-    return resolvedInköp.filter(i => {
+    return tabFiltered.filter(i => {
       const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(i.manad);
       if (!monthMatch) return false;
       if (!search) return true;
@@ -70,7 +80,7 @@ export default function LokalvardInkopshistorik() {
         i.streckkod.toLowerCase().includes(s) ||
         (i.artikel_id || '').toLowerCase().includes(s);
     });
-  }, [resolvedInköp, selectedMonths, search]);
+  }, [tabFiltered, selectedMonths, search]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -95,12 +105,8 @@ export default function LokalvardInkopshistorik() {
 
   const totalKostnad = filtered.reduce((sum, i) => sum + i.total_kostnad, 0);
 
-  const SortIcon = ({ col }) => {
-    if (sortBy !== col) return <ArrowUp className="w-3 h-3 text-gray-300 inline ml-1" />;
-    return sortOrder === 'asc'
-      ? <ArrowUp className="w-3 h-3 text-blue-600 inline ml-1" />
-      : <ArrowDown className="w-3 h-3 text-blue-600 inline ml-1" />;
-  };
+  const manuellaCount = resolvedInköp.filter(i => i.source === 'manuella').length;
+  const importeradeCount = resolvedInköp.filter(i => i.source === 'importerade').length;
 
   if (inkopLoading || artiklarLoading) {
     return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
@@ -116,6 +122,30 @@ export default function LokalvardInkopshistorik() {
         <Button onClick={() => setShowModal(true)} className="bg-green-600 hover:bg-green-700">
           <Plus className="w-4 h-4 mr-1" /> Nytt inköp
         </Button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <button
+          onClick={() => { setActiveTab('manuella'); setSelectedMonths([]); }}
+          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            activeTab === 'manuella'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Inköp ({manuellaCount})
+        </button>
+        <button
+          onClick={() => { setActiveTab('importerade'); setSelectedMonths([]); }}
+          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            activeTab === 'importerade'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Importerade / Inventering ({importeradeCount})
+        </button>
       </div>
 
       {/* Search */}
@@ -175,78 +205,13 @@ export default function LokalvardInkopshistorik() {
         )}
       </div>
 
-      {/* Desktop table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hidden lg:block">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="px-3 py-2 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap text-xs" onClick={() => handleSort('datum')}>
-                Datum <SortIcon col="datum" />
-              </th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 text-xs" onClick={() => handleSort('benamning')}>
-                Artikel <SortIcon col="benamning" />
-              </th>
-              <th className="px-3 py-2 text-left font-semibold text-gray-600 text-xs">Streckkod</th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 text-xs" onClick={() => handleSort('antal')}>
-                Antal <SortIcon col="antal" />
-              </th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 text-xs" onClick={() => handleSort('pris')}>
-                Pris/st <SortIcon col="pris" />
-              </th>
-              <th className="px-3 py-2 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 text-xs" onClick={() => handleSort('total_kostnad')}>
-                Totalt <SortIcon col="total_kostnad" />
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {sorted.map(row => (
-              <tr key={row.id} className="hover:bg-gray-50">
-                <td className="px-3 py-2 text-gray-900 whitespace-nowrap text-xs">{row.datum}</td>
-                <td className="px-3 py-2 font-medium text-xs">
-                  <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.artikelLink)}`} className="text-blue-600 hover:text-blue-800 hover:underline">
-                    {row.benamning}
-                  </Link>
-                </td>
-                <td className="px-3 py-2 text-gray-500 text-xs font-mono">{row.streckkod}</td>
-                <td className="px-3 py-2 text-right text-gray-900 text-xs">{row.antal}</td>
-                <td className="px-3 py-2 text-right text-gray-900 text-xs whitespace-nowrap">
-                  {row.pris?.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr
-                </td>
-                <td className="px-3 py-2 text-right font-semibold text-gray-900 text-xs whitespace-nowrap">
-                  {row.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="lg:hidden space-y-2">
-        {sorted.map(row => (
-          <div key={row.id} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-start justify-between">
-              <div className="min-w-0">
-                <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.artikelLink)}`} className="font-semibold text-sm text-blue-600 hover:text-blue-800 hover:underline truncate block">
-                  {row.benamning}
-                </Link>
-                <p className="text-xs text-gray-500 mt-0.5">{row.streckkod}</p>
-              </div>
-              <p className="text-sm font-bold text-gray-900 whitespace-nowrap ml-3">
-                {row.total_kostnad.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr
-              </p>
-            </div>
-            <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
-              <span>{row.datum}</span>
-              <span>{row.antal} st × {row.pris?.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} kr</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {sorted.length === 0 && (
-        <div className="text-center py-8 text-gray-500">Inga inköp att visa</div>
-      )}
+      {/* Table / Cards */}
+      <InkopshistorikTable
+        rows={sorted}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
+      />
     </div>
   );
 }
