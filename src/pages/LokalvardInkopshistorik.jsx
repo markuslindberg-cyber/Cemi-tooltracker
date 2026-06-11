@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -10,6 +10,7 @@ import InkopshistorikTable from '@/components/lokalvard/InkopshistorikTable';
 import DubblettInkopTab from '@/components/lokalvard/DubblettInkopTab';
 
 export default function LokalvardInkopshistorik() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -232,7 +233,7 @@ export default function LokalvardInkopshistorik() {
 
       {/* Table / Cards */}
       {activeTab === 'dubbletter' ? (
-        <DubblettInkopTab resolvedInköp={resolvedInköp} />
+        <DubblettInkopTab resolvedInköp={resolvedInköp} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['lokalvardInkop'] })} />
       ) : (
         <InkopshistorikTable
           rows={sorted}

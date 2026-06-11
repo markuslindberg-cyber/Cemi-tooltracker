@@ -1,13 +1,155 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Check, Trash2, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
 
-/**
- * Visar potentiella dubbletter: inköp på samma dag, antal & pris
- * men med olika artikel_id (dvs olika artikelnamn/streckkod).
- */
-export default function DubblettInkopTab({ resolvedInköp }) {
-  // Gruppera på datum + antal + pris (ignorerar artikel_id)
+function DubblettGroup({ group, onResolved }) {
+  const [selected, setSelected] = useState(null); // id of item to keep
+  const [processing, setProcessing] = useState(false);
+  const [resolved, setResolved] = useState(false);
+
+  const first = group[0];
+
+  const handleKeepSelected = async () => {
+    if (!selected) return;
+    setProcessing(true);
+    const toDelete = group.filter(i => i.id !== selected);
+    for (const item of toDelete) {
+      await base44.entities.LokalvardInköp.delete(item.id);
+    }
+    setProcessing(false);
+    setResolved(true);
+    onResolved();
+  };
+
+  const handleDeleteSingle = async (id) => {
+    setProcessing(true);
+    await base44.entities.LokalvardInköp.delete(id);
+    setProcessing(false);
+    setResolved(true);
+    onResolved();
+  };
+
+  if (resolved) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center gap-2 text-sm text-green-700">
+        <Check className="w-4 h-4" />
+        <span>Grupp hanterad – dubbletter borttagna.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      {/* Header */}
+      <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-3 text-sm">
+          <span className="font-semibold text-gray-800">{first.datum}</span>
+          <span className="text-gray-500">Antal: <span className="font-medium text-gray-700">{first.antal}</span></span>
+          <span className="text-gray-500">Pris: <span className="font-medium text-gray-700">{first.pris} kr</span></span>
+          {first.ordernummer && <span className="text-gray-500">Order: <span className="font-medium text-gray-700">{first.ordernummer}</span></span>}
+        </div>
+        <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+          {group.length} poster
+        </span>
+      </div>
+
+      {/* Info */}
+      <div className="px-4 py-2 bg-amber-50/50 border-b border-amber-100 text-xs text-amber-700">
+        <span className="font-medium">Gemensamt:</span> datum {first.datum}, antal {first.antal}, pris {first.pris} kr
+        {' · '}<span className="font-medium">Skiljer sig:</span> {group.length} olika artiklar ({[...new Set(group.map(g => g.benamning))].join(' / ')})
+      </div>
+
+      {/* Instruction */}
+      <div className="px-4 py-2 bg-blue-50 border-b border-blue-100 text-xs text-blue-700">
+        Välj den post som är korrekt och ska behållas, eller ta bort enskilda poster med papperskorgen.
+      </div>
+
+      {/* Items */}
+      <div className="divide-y divide-gray-100">
+        {group.map(item => {
+          const isSelected = selected === item.id;
+          return (
+            <div
+              key={item.id}
+              onClick={() => !processing && setSelected(item.id)}
+              className={`px-4 py-3 flex items-center justify-between text-sm cursor-pointer transition-colors ${
+                isSelected ? 'bg-green-50 ring-1 ring-inset ring-green-300' : 'hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {/* Radio indicator */}
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                  isSelected ? 'border-green-600 bg-green-600' : 'border-gray-300'
+                }`}>
+                  {isSelected && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Link
+                    to={`/Lokalvard/Artikel/${item.artikelLink}`}
+                    className="font-medium text-blue-600 hover:underline truncate block"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {item.benamning}
+                  </Link>
+                  <span className="text-xs text-gray-400">{item.streckkod || item.artikel_id}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0 ml-4">
+                <span className="text-gray-500">{item.antal} st</span>
+                <div className="text-right">
+                  <span className="font-medium text-gray-700">{((item.antal || 0) * (item.pris || 0)).toLocaleString('sv-SE')} kr</span>
+                  <div className="text-xs text-gray-400">{item.source === 'manuella' ? 'Manuell' : 'Import'}</div>
+                </div>
+                {/* Delete single */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-red-400 hover:text-red-600 hover:bg-red-50 h-8 w-8 p-0"
+                  disabled={processing}
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (confirm(`Ta bort inköpsposten för "${item.benamning}"?`)) {
+                      handleDeleteSingle(item.id);
+                    }
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Action bar */}
+      {selected && (
+        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3">
+          <p className="text-xs text-gray-500">
+            Behåll vald post och ta bort {group.length - 1} övriga?
+          </p>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setSelected(null)} disabled={processing}>
+              Avbryt
+            </Button>
+            <Button
+              size="sm"
+              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+              disabled={processing}
+              onClick={handleKeepSelected}
+            >
+              {processing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+              Behåll & ta bort resten
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
   const groups = React.useMemo(() => {
     const map = {};
     resolvedInköp.forEach(i => {
@@ -15,7 +157,6 @@ export default function DubblettInkopTab({ resolvedInköp }) {
       if (!map[key]) map[key] = [];
       map[key].push(i);
     });
-    // Behåll bara grupper med >1 post OCH >1 unika artikel_id
     return Object.values(map)
       .filter(group => {
         if (group.length < 2) return false;
@@ -35,6 +176,10 @@ export default function DubblettInkopTab({ resolvedInköp }) {
     );
   }
 
+  const handleResolved = () => {
+    if (onRefresh) onRefresh();
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 space-y-1.5">
@@ -45,55 +190,13 @@ export default function DubblettInkopTab({ resolvedInköp }) {
           </span>
         </div>
         <p className="text-xs text-amber-700 ml-7">
-          Dessa inköp har grupperats ihop eftersom de har <strong>samma datum</strong>, <strong>samma antal</strong> och <strong>samma pris</strong> — men är registrerade mot <strong>olika artiklar</strong> (olika artikel-ID/namn/streckkod). Det kan bero på att samma inköp importerats eller registrerats flera gånger mot olika varianter av samma produkt.
+          Dessa inköp har grupperats ihop eftersom de har <strong>samma datum</strong>, <strong>samma antal</strong> och <strong>samma pris</strong> — men är registrerade mot <strong>olika artiklar</strong> (olika artikel-ID/namn/streckkod). Välj vilken post som ska behållas i varje grupp.
         </p>
       </div>
 
-      {groups.map((group, idx) => {
-        const first = group[0];
-        const totalKostnad = (first.antal || 0) * (first.pris || 0);
-        return (
-          <div key={idx} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-3 text-sm">
-                <span className="font-semibold text-gray-800">{first.datum}</span>
-                <span className="text-gray-500">Antal: <span className="font-medium text-gray-700">{first.antal}</span></span>
-                <span className="text-gray-500">Pris: <span className="font-medium text-gray-700">{first.pris} kr</span></span>
-                {first.ordernummer && <span className="text-gray-500">Order: <span className="font-medium text-gray-700">{first.ordernummer}</span></span>}
-              </div>
-              <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                {group.length} poster
-              </span>
-            </div>
-            <div className="px-4 py-2 bg-amber-50/50 border-b border-amber-100 text-xs text-amber-700">
-              <span className="font-medium">Gemensamt:</span> datum {first.datum}, antal {first.antal}, pris {first.pris} kr
-              {' · '}<span className="font-medium">Skiljer sig:</span> {group.length} olika artiklar ({[...new Set(group.map(g => g.benamning))].join(' / ')})
-            </div>
-            <div className="divide-y divide-gray-100">
-              {group.map(item => (
-                <div key={item.id} className="px-4 py-2.5 flex items-center justify-between text-sm">
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      to={`/Lokalvard/Artikel/${item.artikelLink}`}
-                      className="font-medium text-blue-600 hover:underline truncate block"
-                    >
-                      {item.benamning}
-                    </Link>
-                    <span className="text-xs text-gray-400">{item.streckkod || item.artikel_id}</span>
-                  </div>
-                  <div className="text-right shrink-0 ml-4 flex items-center gap-4">
-                    <span className="text-gray-500">{item.antal} st</span>
-                    <div>
-                      <span className="font-medium text-gray-700">{((item.antal || 0) * (item.pris || 0)).toLocaleString('sv-SE')} kr</span>
-                      <div className="text-xs text-gray-400">{item.source === 'manuella' ? 'Manuell' : 'Import'}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
+      {groups.map((group, idx) => (
+        <DubblettGroup key={idx} group={group} onResolved={handleResolved} />
+      ))}
     </div>
   );
 }
