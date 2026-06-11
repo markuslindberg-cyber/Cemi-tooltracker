@@ -45,6 +45,12 @@ export default function BeställningslistaTable({ items }) {
         cmp = (order[a.trend] || 0) - (order[b.trend] || 0);
       } else if (sortBy === 'avgQty') {
         cmp = (a.avgQtyPerPurchase || 0) - (b.avgQtyPerPurchase || 0);
+      } else if (sortBy === 'lastPurchase') {
+        const aVal = a.lastPurchaseDate || '';
+        const bVal = b.lastPurchaseDate || '';
+        cmp = aVal.localeCompare(bVal);
+      } else if (sortBy === 'lastPurchaseQty') {
+        cmp = (a.lastPurchaseQty || 0) - (b.lastPurchaseQty || 0);
       } else if (sortBy === 'suggested') {
         cmp = (calcSuggestedQty(a) || 0) - (calcSuggestedQty(b) || 0);
       }
@@ -93,6 +99,12 @@ export default function BeställningslistaTable({ items }) {
               <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap hidden sm:table-cell" onClick={() => handleSort('avgQty')}>
                 Snitt qty/inköp<SortIcon col="avgQty" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap hidden sm:table-cell" onClick={() => handleSort('lastPurchase')}>
+                Senaste inköp<SortIcon col="lastPurchase" sortBy={sortBy} sortDir={sortDir} />
+              </TableHead>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[70px] px-2 hidden sm:table-cell" onClick={() => handleSort('lastPurchaseQty')}>
+                Antal sen.<SortIcon col="lastPurchaseQty" sortBy={sortBy} sortDir={sortDir} />
+              </TableHead>
               <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap" onClick={() => handleSort('suggested')}>
                 Föreslagen best.<SortIcon col="suggested" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
@@ -101,7 +113,7 @@ export default function BeställningslistaTable({ items }) {
           <TableBody>
             {sorted.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-500 py-12">
+                <TableCell colSpan={8} className="text-center text-gray-500 py-12">
                   Inga produkter behöver beställas just nu 🎉
                 </TableCell>
               </TableRow>
@@ -147,6 +159,14 @@ export default function BeställningslistaTable({ items }) {
                   </TableCell>
                   <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
                     {item.avgQtyPerPurchase != null ? `${Math.round(item.avgQtyPerPurchase)} st` : '–'}
+                  </TableCell>
+                  <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                    {item.lastPurchaseDate
+                      ? new Date(item.lastPurchaseDate).toLocaleDateString('sv-SE')
+                      : '–'}
+                  </TableCell>
+                  <TableCell className="text-right text-sm tabular-nums px-2 w-[70px] hidden sm:table-cell">
+                    {item.lastPurchaseQty != null ? item.lastPurchaseQty : '–'}
                   </TableCell>
                   <TableCell className="text-right text-sm tabular-nums font-semibold">
                     {suggested != null ? (
