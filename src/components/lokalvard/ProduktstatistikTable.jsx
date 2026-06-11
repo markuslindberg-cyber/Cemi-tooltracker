@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -36,6 +37,7 @@ const TrendBadge = ({ trend }) => {
 };
 
 export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }) {
+  const navigate = useNavigate();
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto">
       <Table>
@@ -53,6 +55,9 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden md:table-cell" onClick={() => onSort('avg12')}>
               Snitt/mån (12m)<SortIcon col="avg12" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('purchaseCount')}>
+              Inköpstillfällen<SortIcon col="purchaseCount" sortBy={sortBy} sortDir={sortDir} />
+            </TableHead>
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs" onClick={() => onSort('trend')}>
               Trend<SortIcon col="trend" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
@@ -64,7 +69,7 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-gray-500 py-12">
+              <TableCell colSpan={7} className="text-center text-gray-500 py-12">
                 Inga produkter matchar sökningen
               </TableCell>
             </TableRow>
@@ -80,8 +85,13 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
                   isLowStock && 'bg-orange-50 dark:bg-orange-950/30',
                 )}
               >
-                <TableCell className="font-medium text-gray-900 dark:text-gray-100 text-sm max-w-[200px] truncate">
-                  {item.name}
+                <TableCell className="font-medium text-sm max-w-[200px] truncate">
+                  <button
+                    onClick={() => navigate(`/Lokalvard/Artikel/${item.artikelnummer || item.streckkod || item.id}`)}
+                    className="text-blue-600 hover:underline text-left truncate"
+                  >
+                    {item.name}
+                  </button>
                 </TableCell>
                 <TableCell className="text-right text-sm tabular-nums">
                   <span className={cn(
@@ -96,6 +106,9 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
                 </TableCell>
                 <TableCell className="text-right text-sm tabular-nums hidden md:table-cell">
                   {item.avg12.toFixed(1)}
+                </TableCell>
+                <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                  {item.purchaseCount}
                 </TableCell>
                 <TableCell className="text-sm">
                   <TrendBadge trend={item.trend} />

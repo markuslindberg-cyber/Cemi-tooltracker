@@ -45,6 +45,8 @@ export default function LokalvardProduktstatistik() {
         groupedByStreckkod[streckkod] = {
           id: artikel.id,
           benamning: artikel.benamning,
+          artikelnummer: artikel.artikelnummer,
+          inkopsdatum: artikel.inkopsdatum,
           streckkod: artikel.streckkod,
           old_streckkod: artikel.old_streckkod,
           lagertroskelvarde: artikel.lagertroskelvarde,
@@ -142,14 +144,20 @@ export default function LokalvardProduktstatistik() {
           ? Math.round(Math.max(saldo, 0) / avgPerDay)
           : saldo > 0 ? Infinity : 0;
 
+        // Count purchase occasions (distinct LokalvardInköp records for this group)
+        const purchaseCount = inköp.filter(i => group.all_artikel_ids.includes(i.artikel_id)).length;
+
         return {
           id: group.id,
           name: group.benamning,
+          artikelnummer: group.artikelnummer,
+          streckkod: group.streckkod,
           currentStock: saldo,
           avg3,
           avg12,
           trend,
           daysLeft,
+          purchaseCount,
         };
       });
   }, [artiklar, uttag, inköp]);
@@ -168,6 +176,8 @@ export default function LokalvardProduktstatistik() {
       else if (sortBy === 'trend') {
         const order = { up: 2, stable: 1, down: 0 };
         cmp = (order[a.trend] || 0) - (order[b.trend] || 0);
+      } else if (sortBy === 'purchaseCount') {
+        cmp = (a.purchaseCount || 0) - (b.purchaseCount || 0);
       } else if (sortBy === 'days') {
         const aVal = a.daysLeft === Infinity ? 999999 : a.daysLeft;
         const bVal = b.daysLeft === Infinity ? 999999 : b.daysLeft;
