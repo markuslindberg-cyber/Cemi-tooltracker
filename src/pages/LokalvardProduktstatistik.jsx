@@ -2,8 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2, Search } from 'lucide-react';
 import ProduktstatistikTable from '@/components/lokalvard/ProduktstatistikTable';
+import BeställningslistaTable from '@/components/lokalvard/BeställningslistaTable';
 
 export default function LokalvardProduktstatistik() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -171,6 +173,7 @@ export default function LokalvardProduktstatistik() {
           purchaseCount,
           avgPurchaseIntervalDays,
           avgQtyPerPurchase,
+          utgaende: group.utgaende,
         };
       });
   }, [artiklar, uttag, inköp]);
@@ -219,6 +222,10 @@ export default function LokalvardProduktstatistik() {
     );
   }
 
+  const orderItems = useMemo(() => {
+    return stats.filter(s => s.daysLeft !== Infinity && s.daysLeft <= 45 && !s.utgaende);
+  }, [stats]);
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
@@ -228,51 +235,71 @@ export default function LokalvardProduktstatistik() {
         </p>
       </div>
 
-      {/* Färgförklaring */}
-      <div className="flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <span className="w-4 h-4 rounded bg-red-50 border border-red-200" />
-          <span className="text-gray-600 dark:text-gray-400">Slut i lager (saldo 0)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-4 h-4 rounded bg-orange-50 border border-orange-200" />
-          <span className="text-gray-600 dark:text-gray-400">Lågt lager (&lt;14 dagar kvar)</span>
-        </div>
-      </div>
+      <Tabs defaultValue="statistik" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="statistik">Statistik</TabsTrigger>
+          <TabsTrigger value="bestallning" className="gap-2">
+            Beställningslista
+            {orderItems.length > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold bg-red-500 text-white">
+                {orderItems.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Kolumnförklaring */}
-      <details className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
-        <summary className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
-          ℹ️ Kolumnförklaring
-        </summary>
-        <ul className="mt-3 space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
-          <li><strong>Lagersaldo</strong> – Beräknat saldo (totalt inköpt − totalt uttaget).</li>
-          <li><strong>Snitt/mån (3m)</strong> – Genomsnittlig förbrukning per månad senaste 3 månaderna.</li>
-          <li><strong>Snitt/mån (12m)</strong> – Genomsnittlig förbrukning per månad senaste 12 månaderna.</li>
-          <li><strong>Inköpstillfällen</strong> – Antal registrerade inköp för produkten.</li>
-          <li><strong>Snittintervall inköp</strong> – Genomsnittligt antal dagar mellan varje inköp.</li>
-          <li><strong>Snitt qty/inköp</strong> – Genomsnittligt antal enheter per inköpstillfälle. Trendtips visas om förbrukningen ökar (↑ köp mer) eller minskar (↓ köp mindre).</li>
-          <li><strong>Trend</strong> – Jämför 3-månaders- och 12-månaderssnittet: Ökande, Minskande eller Stabil.</li>
-          <li><strong>Räcker (dagar)</strong> – Uppskattat antal dagar lagret räcker baserat på nuvarande förbrukningstakt.</li>
-        </ul>
-      </details>
+        <TabsContent value="statistik" className="space-y-6">
+          {/* Färgförklaring */}
+          <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded bg-red-50 border border-red-200" />
+              <span className="text-gray-600 dark:text-gray-400">Slut i lager (saldo 0)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded bg-orange-50 border border-orange-200" />
+              <span className="text-gray-600 dark:text-gray-400">Lågt lager (&lt;14 dagar kvar)</span>
+            </div>
+          </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <Input
-          placeholder="Sök produkt..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="pl-9"
-        />
-      </div>
+          {/* Kolumnförklaring */}
+          <details className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+            <summary className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+              ℹ️ Kolumnförklaring
+            </summary>
+            <ul className="mt-3 space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
+              <li><strong>Lager</strong> – Beräknat saldo (totalt inköpt − totalt uttaget).</li>
+              <li><strong>3m</strong> – Genomsnittlig förbrukning per månad senaste 3 månaderna.</li>
+              <li><strong>12m</strong> – Genomsnittlig förbrukning per månad senaste 12 månaderna.</li>
+              <li><strong>Inköp</strong> – Antal registrerade inköpstillfällen.</li>
+              <li><strong>Snittintervall inköp</strong> – Genomsnittligt antal dagar mellan varje inköp.</li>
+              <li><strong>Snitt qty/inköp</strong> – Genomsnittligt antal enheter per inköpstillfälle.</li>
+              <li><strong>Trend</strong> – Jämför 3- och 12-månaderssnittet: Ökande, Minskande eller Stabil.</li>
+              <li><strong>Räcker (dagar)</strong> – Uppskattat antal dagar lagret räcker.</li>
+            </ul>
+          </details>
 
-      <ProduktstatistikTable
-        items={filtered}
-        sortBy={sortBy}
-        sortDir={sortDir}
-        onSort={handleSort}
-      />
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Sök produkt..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          <ProduktstatistikTable
+            items={filtered}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
+          />
+        </TabsContent>
+
+        <TabsContent value="bestallning">
+          <BeställningslistaTable items={orderItems} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
