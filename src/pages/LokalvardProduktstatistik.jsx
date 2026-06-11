@@ -64,7 +64,8 @@ export default function LokalvardProduktstatistik() {
           streckkod: artikel.streckkod,
           old_streckkod: artikel.old_streckkod,
           lagertroskelvarde: artikel.lagertroskelvarde,
-          utgaende: artikel.utgaende,
+          utgaende: !!artikel.utgaende,
+          pris: artikel.pris || 0,
           total_antal_inkopta: 0,
           all_artikel_ids: [],
         };
@@ -76,6 +77,7 @@ export default function LokalvardProduktstatistik() {
         currentGroup.benamning = artikel.benamning;
         currentGroup.lagertroskelvarde = artikel.lagertroskelvarde;
         currentGroup.utgaende = !!artikel.utgaende;
+        currentGroup.pris = artikel.pris || currentGroup.pris;
         if (artikel.old_streckkod) currentGroup.old_streckkod = artikel.old_streckkod;
       } else if (!currentGroup.old_streckkod && artikel.old_streckkod) {
         currentGroup.old_streckkod = artikel.old_streckkod;
@@ -202,6 +204,7 @@ export default function LokalvardProduktstatistik() {
           avgPurchaseIntervalDays,
           avgQtyPerPurchase,
           utgaende: group.utgaende,
+          pris: group.pris || 0,
           lastPurchaseDate,
           lastPurchaseQty,
         };

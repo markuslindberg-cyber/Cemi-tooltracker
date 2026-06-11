@@ -64,6 +64,10 @@ export default function BeställningslistaTable({ items }) {
   };
 
   const totalSuggested = items.reduce((s, i) => s + (calcSuggestedQty(i) || 0), 0);
+  const totalCost = items.reduce((s, i) => {
+    const qty = calcSuggestedQty(i) || 0;
+    return s + qty * (i.pris || 0);
+  }, 0);
 
   return (
     <div className="space-y-4">
@@ -104,6 +108,11 @@ export default function BeställningslistaTable({ items }) {
         <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3">
           <p className="text-sm text-blue-700 dark:text-blue-400">
             Total föreslagen volym: <strong>{totalSuggested} st</strong>
+          </p>
+        </div>
+        <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3">
+          <p className="text-sm text-green-700 dark:text-green-400">
+            Beräknad kostnad: <strong>{Math.round(totalCost).toLocaleString('sv-SE')} kr</strong>
           </p>
         </div>
       </div>
