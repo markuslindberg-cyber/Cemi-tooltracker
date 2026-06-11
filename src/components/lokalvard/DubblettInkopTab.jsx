@@ -4,9 +4,9 @@ import { AlertTriangle, Check, Trash2, Loader2, CheckCheck, Search, X, Replace }
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-function DubblettGroup({ group, allArtiklar, onResolved }) {
+function DubblettGroup({ group, allArtiklar, onResolved, onDismiss }) {
   const [selected, setSelected] = useState(null); // id of item to keep
   const [processing, setProcessing] = useState(false);
   const [resolved, setResolved] = useState(false);
@@ -87,7 +87,10 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
 
   const [dismissReason, setDismissReason] = useState('');
 
-  const handleKeepAll = () => {
+  const handleKeepAll = async () => {
+    setProcessing(true);
+    if (onDismiss) await onDismiss();
+    setProcessing(false);
     setDismissReason('Alla poster behålls som separata artiklar.');
     setResolved(true);
     onResolved();
@@ -314,14 +317,52 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
   );
 }
 
+// Generate a stable key for a duplicate group
+function groupKey(group) {
+  const ids = group.map(i => i.id).sort().join(',');
+  return `${group[0].datum}|${group[0].antal}|${group[0].pris}|${ids}`;
+}
+
 export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
+  const queryClient = useQueryClient();
+
   const { data: allArtiklar = [] } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
     queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).catch(() => []),
     staleTime: 60000,
   });
 
-  const groups = React.useMemo(() => {
+  // Load dismissed group keys from GlobalAppConfig
+  const { data: dismissedConfig } = useQuery({
+    queryKey: ['dismissedDuplicates'],
+    queryFn: async () => {
+      const configs = await base44.entities.GlobalAppConfig.filter({ config_key: 'dismissed_duplicate_groups' });
+      return configs[0] || null;
+    },
+    staleTime: 30000,
+  });
+
+  const dismissedKeys = useMemo(() => {
+    if (!dismissedConfig?.config_value?.keys) return new Set();
+    return new Set(dismissedConfig.config_value.keys);
+  }, [dismissedConfig]);
+
+  const saveDismissedKey = async (key) => {
+    const newKeys = [...dismissedKeys, key];
+    if (dismissedConfig) {
+      await base44.entities.GlobalAppConfig.update(dismissedConfig.id, {
+        config_value: { keys: newKeys },
+      });
+    } else {
+      await base44.entities.GlobalAppConfig.create({
+        config_key: 'dismissed_duplicate_groups',
+        config_value: { keys: newKeys },
+      });
+    }
+    queryClient.invalidateQueries({ queryKey: ['dismissedDuplicates'] });
+  };
+
+  const groups = useMemo(() => {
     const map = {};
     resolvedInköp.forEach(i => {
       const key = `${i.datum}|${i.antal}|${i.pris}`;
@@ -332,10 +373,12 @@ export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
       .filter(group => {
         if (group.length < 2) return false;
         const uniqueIds = new Set(group.map(g => g.artikel_id));
-        return uniqueIds.size > 1;
+        if (uniqueIds.size <= 1) return false;
+        // Filter out dismissed groups
+        return !dismissedKeys.has(groupKey(group));
       })
       .sort((a, b) => (b[0].datum || '').localeCompare(a[0].datum || ''));
-  }, [resolvedInköp]);
+  }, [resolvedInköp, dismissedKeys]);
 
   if (groups.length === 0) {
     return (
@@ -366,7 +409,7 @@ export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
       </div>
 
       {groups.map((group, idx) => (
-        <DubblettGroup key={idx} group={group} allArtiklar={allArtiklar} onResolved={handleResolved} />
+        <DubblettGroup key={idx} group={group} allArtiklar={allArtiklar} onResolved={handleResolved} onDismiss={() => saveDismissedKey(groupKey(group))} />
       ))}
     </div>
   );
