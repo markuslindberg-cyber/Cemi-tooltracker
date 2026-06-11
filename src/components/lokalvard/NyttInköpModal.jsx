@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -9,38 +10,36 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
   const queryClient = useQueryClient();
-  const activeArtiklar = useMemo(() => artiklar.filter(a => !a.is_deleted), [artiklar]);
-
   const [form, setForm] = useState({
     streckkod: '',
     benamning: '',
-    artikel_id: '',
-    antal: '',
+    artikelnummer: '',
     pris: '',
+    antal: '',
     datum: new Date().toISOString().split('T')[0],
+    lagertroskelvarde: '10',
+    utgaende: false,
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [addedItems, setAddedItems] = useState([]);
+  const [matchedArtikel, setMatchedArtikel] = useState(null);
 
-  const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.LokalvardInköp.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['lokalvardInkop']);
-      queryClient.invalidateQueries(['lokalvardsArtiklar']);
-    },
-  });
+  const getTodayDate = () => new Date().toISOString().split('T')[0];
 
   const resetForm = () => {
     setForm({
       streckkod: '',
       benamning: '',
-      artikel_id: '',
-      antal: '',
+      artikelnummer: '',
       pris: '',
-      datum: new Date().toISOString().split('T')[0],
+      antal: '',
+      datum: getTodayDate(),
+      lagertroskelvarde: '10',
+      utgaende: false,
     });
     setErrors({});
+    setMatchedArtikel(null);
   };
 
   useEffect(() => {
@@ -54,26 +53,32 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
     setForm(prev => ({ ...prev, streckkod: value }));
 
     if (value.trim()) {
-      const match = activeArtiklar.find(a => a.streckkod === value || a.old_streckkod === value);
+      const match = artiklar.find(a => a.streckkod === value && !a.is_deleted);
       if (match) {
+        setMatchedArtikel(match);
         setForm(prev => ({
           ...prev,
           streckkod: value,
           benamning: match.benamning,
-          artikel_id: match.id,
+          artikelnummer: match.artikelnummer || '',
           pris: match.pris?.toString() || '',
-          datum: new Date().toISOString().split('T')[0],
+          lagertroskelvarde: match.lagertroskelvarde?.toString() || '10',
+          datum: getTodayDate(),
         }));
+      } else {
+        setMatchedArtikel(null);
       }
+    } else {
+      setMatchedArtikel(null);
     }
   };
 
   const validate = () => {
     const newErrors = {};
     if (!form.streckkod.trim()) newErrors.streckkod = 'Streckkod är obligatorisk';
-    if (!form.antal) newErrors.antal = 'Antal är obligatoriskt';
+    if (!form.benamning.trim()) newErrors.benamning = 'Benämning är obligatorisk';
     if (!form.pris) newErrors.pris = 'Pris är obligatoriskt';
-    if (!form.artikel_id) newErrors.streckkod = 'Streckkoden matchar ingen artikel';
+    if (!form.antal) newErrors.antal = 'Antal är obligatoriskt';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -83,13 +88,54 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
 
     setLoading(true);
     try {
-      await createMutation.mutateAsync({
-        artikel_id: form.artikel_id,
-        datum: form.datum,
-        antal: parseFloat(form.antal),
-        pris: parseFloat(form.pris),
-      });
-      setAddedItems(prev => [{ ...form, id: Date.now().toString() }, ...prev]);
+      const antal = parseFloat(form.antal);
+      const pris = parseFloat(form.pris);
+
+      if (matchedArtikel) {
+        // Existing article → create inköp record + update artikel antal_inkopta
+        await base44.entities.LokalvardInköp.create({
+          artikel_id: matchedArtikel.id,
+          datum: form.datum,
+          antal,
+          pris,
+        });
+        // Update the artikel's antal_inkopta
+        await base44.entities.LokalvardsArtikel.update(matchedArtikel.id, {
+          antal_inkopta: (matchedArtikel.antal_inkopta || 0) + antal,
+          pris: pris,
+          inkopsdatum: form.datum,
+        });
+      } else {
+        // New article → create LokalvardsArtikel + inköp record
+        const newArtikel = await base44.entities.LokalvardsArtikel.create({
+          streckkod: form.streckkod,
+          benamning: form.benamning,
+          artikelnummer: form.artikelnummer || null,
+          pris,
+          antal_inkopta: parseInt(form.antal),
+          inkopsdatum: form.datum,
+          lagertroskelvarde: parseInt(form.lagertroskelvarde) || 10,
+          utgaende: form.utgaende,
+          current_quantity: parseInt(form.antal),
+        });
+        await base44.entities.LokalvardInköp.create({
+          artikel_id: newArtikel.id,
+          datum: form.datum,
+          antal,
+          pris,
+        });
+      }
+
+      queryClient.invalidateQueries(['lokalvardsArtiklar']);
+      queryClient.invalidateQueries(['lokalvardInkop']);
+      setAddedItems(prev => [{
+        id: Date.now(),
+        benamning: form.benamning,
+        streckkod: form.streckkod,
+        antal: form.antal,
+        pris: form.pris,
+        isNew: !matchedArtikel,
+      }, ...prev]);
       resetForm();
     } catch (err) {
       setErrors({ submit: err.message || 'Ett fel inträffade' });
@@ -102,17 +148,17 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
     setAddedItems(prev => prev.filter(item => item.id !== id));
   };
 
-  const totalKostnad = (parseFloat(form.antal) || 0) * (parseFloat(form.pris) || 0);
+  const isExisting = !!matchedArtikel;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nytt inköp</DialogTitle>
+          <DialogTitle>Registrera inköp</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Formulär */}
+          {/* Form */}
           <div className="space-y-4">
             {errors.submit && (
               <Alert variant="destructive">
@@ -121,9 +167,20 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
               </Alert>
             )}
 
+            {isExisting && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm text-blue-700">
+                ✅ Befintlig artikel hittad – inköpet registreras på denna artikel
+              </div>
+            )}
+            {form.streckkod.trim() && !isExisting && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-700">
+                🆕 Ny streckkod – en ny artikel skapas automatiskt
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Streckkod */}
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Streckkod *</label>
                 <Input
                   type="text"
@@ -134,26 +191,34 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
                   className={errors.streckkod ? 'border-red-500' : ''}
                 />
                 {errors.streckkod && <p className="text-xs text-red-500 mt-1">{errors.streckkod}</p>}
-                {form.benamning && (
-                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> {form.benamning}
-                  </p>
-                )}
               </div>
 
-              {/* Antal */}
+              {/* Benämning */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Antal *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Benämning *</label>
                 <Input
-                  type="number"
-                  min="1"
-                  value={form.antal}
-                  onChange={(e) => setForm(prev => ({ ...prev, antal: e.target.value }))}
-                  placeholder="0"
-                  className={errors.antal ? 'border-red-500' : ''}
+                  type="text"
+                  value={form.benamning}
+                  onChange={(e) => setForm({ ...form, benamning: e.target.value })}
+                  placeholder="T.ex. Rengöringsduk"
+                  className={errors.benamning ? 'border-red-500' : ''}
+                  disabled={isExisting}
                 />
-                {errors.antal && <p className="text-xs text-red-500 mt-1">{errors.antal}</p>}
+                {errors.benamning && <p className="text-xs text-red-500 mt-1">{errors.benamning}</p>}
               </div>
+
+              {/* Artikelnummer – only for new */}
+              {!isExisting && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Artikelnummer</label>
+                  <Input
+                    type="text"
+                    value={form.artikelnummer}
+                    onChange={(e) => setForm({ ...form, artikelnummer: e.target.value })}
+                    placeholder="T.ex. ART-001"
+                  />
+                </div>
+              )}
 
               {/* Pris */}
               <div>
@@ -161,42 +226,69 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
                 <Input
                   type="number"
                   step="0.01"
-                  min="0"
                   value={form.pris}
-                  onChange={(e) => setForm(prev => ({ ...prev, pris: e.target.value }))}
+                  onChange={(e) => setForm({ ...form, pris: e.target.value })}
                   placeholder="0.00"
                   className={errors.pris ? 'border-red-500' : ''}
                 />
                 {errors.pris && <p className="text-xs text-red-500 mt-1">{errors.pris}</p>}
               </div>
 
+              {/* Antal */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Antal inköpt *</label>
+                <Input
+                  type="number"
+                  value={form.antal}
+                  onChange={(e) => setForm({ ...form, antal: e.target.value })}
+                  placeholder="0"
+                  className={errors.antal ? 'border-red-500' : ''}
+                />
+                {errors.antal && <p className="text-xs text-red-500 mt-1">{errors.antal}</p>}
+              </div>
+
               {/* Datum */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Datum</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Inköpsdatum</label>
                 <Input
                   type="date"
                   value={form.datum}
-                  onChange={(e) => setForm(prev => ({ ...prev, datum: e.target.value }))}
+                  onChange={(e) => setForm({ ...form, datum: e.target.value })}
                 />
               </div>
-            </div>
 
-            {totalKostnad > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 text-sm">
-                <span className="text-blue-700">Totalkostnad: </span>
-                <span className="font-bold text-blue-900">
-                  {totalKostnad.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr
-                </span>
-              </div>
-            )}
+              {/* Only show for new articles */}
+              {!isExisting && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Lagertröskelvärde</label>
+                    <Input
+                      type="number"
+                      value={form.lagertroskelvarde}
+                      onChange={(e) => setForm({ ...form, lagertroskelvarde: e.target.value })}
+                      placeholder="10"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={form.utgaende}
+                        onCheckedChange={(checked) => setForm({ ...form, utgaende: !!checked })}
+                      />
+                      <span className="text-sm font-medium text-gray-700">Utgående artikel</span>
+                    </label>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
-          {/* Nyligen tillagda */}
+          {/* Recently added */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Nyligen tillagda ({addedItems.length})</h3>
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {addedItems.length === 0 ? (
-                <p className="text-xs text-gray-500 py-4 text-center">Inga inköp tillagda än</p>
+                <p className="text-xs text-gray-500 py-4 text-center">Inga inköp registrerade än</p>
               ) : (
                 addedItems.map((item) => (
                   <div key={item.id} className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start justify-between gap-2">
@@ -204,17 +296,18 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
                       <div className="flex items-center gap-2 mb-1">
                         <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                         <p className="text-sm font-medium text-gray-900 truncate">{item.benamning}</p>
+                        {item.isNew && (
+                          <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Ny</span>
+                        )}
                       </div>
                       <div className="text-xs text-gray-600 space-y-0.5">
                         <p>Streckkod: {item.streckkod}</p>
-                        <p>{item.antal} st × {parseFloat(item.pris).toLocaleString('sv-SE')} kr = {(parseFloat(item.antal) * parseFloat(item.pris)).toLocaleString('sv-SE', { minimumFractionDigits: 2 })} kr</p>
-                        <p>Datum: {item.datum}</p>
+                        <p>{item.antal} st × {parseFloat(item.pris).toLocaleString('sv-SE')} kr</p>
                       </div>
                     </div>
                     <button
                       onClick={() => handleRemoveAdded(item.id)}
                       className="text-gray-400 hover:text-red-600 flex-shrink-0"
-                      title="Ta bort från listan"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -229,10 +322,10 @@ export default function NyttInköpModal({ open, onClose, artiklar = [] }) {
           <Button variant="outline" onClick={() => onClose(false)}>Stäng</Button>
           <Button
             onClick={handleSave}
-            disabled={loading || createMutation.isPending}
+            disabled={loading}
             className="bg-green-600 hover:bg-green-700"
           >
-            {loading ? 'Sparar...' : 'Lägg till nästa inköp'}
+            {loading ? 'Sparar...' : 'Registrera & nästa'}
           </Button>
         </DialogFooter>
       </DialogContent>
