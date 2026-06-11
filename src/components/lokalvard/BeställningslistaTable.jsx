@@ -67,6 +67,34 @@ export default function BeställningslistaTable({ items }) {
 
   return (
     <div className="space-y-4">
+      <details className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+        <summary className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+          ℹ️ Om beställningslistan
+        </summary>
+        <div className="mt-3 space-y-2 text-xs text-gray-600 dark:text-gray-400">
+          <p>Listan visar alla produkter (ej utgående) vars beräknade lagersaldo räcker <strong>45 dagar eller mindre</strong>, baserat på genomsnittlig förbrukning de senaste 3 månaderna.</p>
+          <ul className="space-y-1.5 mt-2">
+            <li><strong>Lager</strong> – Beräknat saldo (totalt inköpt − totalt uttaget).</li>
+            <li><strong>Räcker (dagar)</strong> – Uppskattat antal dagar lagret räcker med nuvarande förbrukningstakt.</li>
+            <li><strong>Trend</strong> – Jämför 3- och 12-månaderssnittet: Ökande (+10%), Minskande (−10%) eller Stabil.</li>
+            <li><strong>Snitt qty/inköp</strong> – Genomsnittligt antal enheter per tidigare inköpstillfälle.</li>
+            <li><strong>Senaste inköp</strong> – Datum för det senaste registrerade inköpet.</li>
+            <li><strong>Antal sen.</strong> – Antal enheter vid det senaste inköpet.</li>
+            <li><strong>Föreslagen best.</strong> – Rekommenderat antal att beställa, baserat på snittvolym per inköp justerat ±30% beroende på trend.</li>
+          </ul>
+          <div className="flex flex-wrap gap-3 mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded bg-red-50 border border-red-200" />
+              <span>Slut i lager (0 dagar kvar)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded bg-orange-50 border border-orange-200" />
+              <span>Lågt lager (≤14 dagar kvar)</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
       <div className="flex flex-wrap gap-4 items-center">
         <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
           <p className="text-sm font-semibold text-red-700 dark:text-red-400">
