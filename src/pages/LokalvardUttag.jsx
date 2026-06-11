@@ -2,9 +2,9 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Loader2, Calendar, ChevronDown, ChevronRight, X, Upload, FileDown, Download, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
+import { Loader2, Calendar, ChevronDown, ChevronRight, X, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useRef, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import { useScrollRestore } from '@/hooks/useScrollRestore';
@@ -15,7 +15,7 @@ export default function LokalvardUttag() {
   useScrollRestore();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
+
 
   const { data: artiklar = [] } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
@@ -57,7 +57,7 @@ export default function LokalvardUttag() {
   const [editForm, setEditForm] = useState({});
   const [editingArticleId, setEditingArticleId] = useState(null);
   const [editArticleForm, setEditArticleForm] = useState({});
-  const [uploading, setUploading] = useState(false);
+
   const [expandedRows, setExpandedRows] = useState({});
   const [searchBarcode, setSearchBarcode] = useState('');
   const [showUnmatched, setShowUnmatched] = useState(false);
@@ -335,6 +335,49 @@ export default function LokalvardUttag() {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const total = useMemo(() => sorted.reduce((sum, u) => sum + (u.total_kostnad || 0), 0), [sorted]);
+
+  const handleEditArticle = (uttagId, artikel, idx) => {
+    setEditingArticleId(`${uttagId}-${idx}`);
+    setEditArticleForm({
+      antal: artikel.antal,
+      pris_per_enhet: artikel.pris_per_enhet,
+    });
+  };
+
+  const handleCancelArticleEdit = () => {
+    setEditingArticleId(null);
+    setEditArticleForm({});
+  };
+
+  const handleSaveArticle = async (uttagId, artikelIdx) => {
+    const u = uttag.find(x => x.id === uttagId);
+    if (!u) return;
+    const updatedArtiklar = [...u.artiklar];
+    const antal = parseFloat(editArticleForm.antal) || 0;
+    const pris = parseFloat(editArticleForm.pris_per_enhet) || 0;
+    updatedArtiklar[artikelIdx] = {
+      ...updatedArtiklar[artikelIdx],
+      antal,
+      pris_per_enhet: pris,
+      total_pris: antal * pris,
+    };
+    const total_kostnad = updatedArtiklar.reduce((s, a) => s + (a.antal * (a.pris_per_enhet || 0)), 0);
+    await updateMutation.mutateAsync({ id: uttagId, data: { artiklar: updatedArtiklar, total_kostnad } });
+    setEditingArticleId(null);
+    setEditArticleForm({});
+  };
+
+  const handleDeleteUttag = async (id, isCheckout) => {
+    if (!confirm('Är du säker på att du vill ta bort detta uttag?')) return;
+    if (isCheckout) {
+      await base44.entities.LokalvardCheckout.delete(id);
+      queryClient.invalidateQueries(['uttag']);
+    } else {
+      await deleteMutation.mutateAsync(id);
+    }
+  };
+
   const SortIcon = ({ col }) => {
     if (sortBy !== col) return <ArrowUp className="w-3 h-3 text-gray-300 inline ml-1" />;
     return sortOrder === 'asc'
@@ -342,252 +385,7 @@ export default function LokalvardUttag() {
       : <ArrowDown className="w-3 h-3 text-blue-600 inline ml-1" />;
   };
 
-  const handleDownloadTemplate = () => {
-    const headers = ['datum', 'personal', 'kund', 'ordernummer', 'streckkod', 'antal', 'pris', 'månad'];
-    const infoRows = [
-      ['=== IMPORTMALL FÖR UTTAG ===', '', '', '', '', '', '', ''],
-      headers,
-      ['2026-01-15', 'Anna Andersson', 'Företag AB', 'ORD-001', '71617', '5', '49.99', '2026-01'],
-    ];
-    const csv = [...infoRows.map(r => r.map(c => `"${c}"`).join(',')), ...Array(19).fill(Array(8).fill('')).map(r => r.join(','))].join('\n');
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'lokalvard_uttag_mall.csv';
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleExcelUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: 'object',
-          properties: {
-            datum: { type: 'string' },
-            personal_namn: { type: 'string' },
-            kund_namn: { type: 'string' },
-            ordernummer: { type: 'string' },
-            artikel_benamning: { type: 'string' },
-            antal: { type: 'number' },
-            pris_per_enhet: { type: 'number' },
-            manad: { type: 'string' }
-          }
-        }
-      });
-      if (result.status === 'success' && Array.isArray(result.output)) {
-      const valid = result.output.filter(r => r.datum && r.personal_namn && r.kund_namn && r.artikel_benamning && r.antal && r.pris_per_enhet);
-      if (valid.length > 0) {
-        await base44.entities.Uttag.bulkCreate(valid.map(r => {
-          const matchedArtikel = artiklar.find(a => a.benamning?.toLowerCase() === r.artikel_benamning?.toLowerCase());
-          return {
-            datum: r.datum,
-            personal_id: personalNameToId[r.personal_namn] || '',
-            personal_namn: r.personal_namn,
-            kund_id: kundeNameToId[r.kund_namn] || '',
-            kund_namn: r.kund_namn,
-            ordernummer: r.ordernummer || null,
-            artiklar: [{
-              artikel_id: matchedArtikel?.streckkod || matchedArtikel?.id || '',
-              benamning: r.artikel_benamning,
-              antal: r.antal,
-              pris_per_enhet: r.pris_per_enhet,
-              total_pris: r.antal * r.pris_per_enhet,
-            }],
-            total_kostnad: r.antal * r.pris_per_enhet,
-            manad: r.manad,
-          };
-        }));
-        setLoadAllUttag(true);
-        alert(`${valid.length} uttag importerade! Laddar alla uttag...`);
-      } else {
-        alert('Inga giltiga rader hittades.');
-      }
-      } else {
-      alert('Importfel: ' + (result.details || 'Okänt fel'));
-      }
-    } catch (err) {
-      alert('Importfel: ' + (err.message || 'Okänt fel'));
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
-  };
-
-  const handleEditClick = (item) => {
-    setEditingId(item.id);
-    setEditForm({
-      personal_namn: item.personal_namn,
-      kund_namn: item.kund_namn,
-      ordernummer: item.ordernummer || '',
-      total_kostnad: item.total_kostnad,
-      antal: item.artiklar[0]?.antal || 0
-    });
-  };
-
-  const handleEditArticle = (uttagId, artikel, articleIndex) => {
-    setEditingArticleId(`${uttagId}-${articleIndex}`);
-    let pris = artikel.pris_per_enhet;
-    
-    // Om pris är 0, försök hämta från artikellistan
-    if (pris === 0 || pris === undefined) {
-      const foundArtikel = artikelMap[artikel.artikel_id] || artikelMap[artikel.benamning];
-      pris = foundArtikel?.pris || 0;
-    }
-    
-    setEditArticleForm({
-      antal: artikel.antal,
-      pris_per_enhet: pris
-    });
-  };
-
-  const handleSaveArticle = (uttagId, articleIndex) => {
-    const editingItem = uttag.find(u => u.id === uttagId);
-    const updatedArtiklar = editingItem.artiklar.map((a, idx) => 
-      idx === articleIndex 
-        ? { ...a, antal: parseInt(editArticleForm.antal) || 0, pris_per_enhet: parseFloat(editArticleForm.pris_per_enhet) || 0, total_pris: (parseInt(editArticleForm.antal) || 0) * (parseFloat(editArticleForm.pris_per_enhet) || 0) }
-        : a
-    );
-    const newTotal = updatedArtiklar.reduce((sum, a) => sum + a.total_pris, 0);
-    updateMutation.mutate({
-      id: uttagId,
-      data: {
-        artiklar: updatedArtiklar,
-        total_kostnad: newTotal
-      }
-    });
-    setEditingArticleId(null);
-  };
-
-  const handleCancelArticleEdit = () => {
-    setEditingArticleId(null);
-  };
-
-  const groupArticles = (artiklar) => {
-    const grouped = {};
-    artiklar.forEach((artikel, idx) => {
-      let name = '';
-      let barcode = '';
-
-      // Försök först söka i lagerlistan med artikel_id
-      if (artikel.artikel_id) {
-        const found = artikelMap[artikel.artikel_id];
-        if (found) {
-          name = found.benamning;
-          barcode = found.streckkod;
-        }
-      }
-
-      // Försök sedan söka med streckkod
-      if (!name && artikel.streckkod) {
-        const foundByBarcode = artikelMap[artikel.streckkod];
-        if (foundByBarcode) {
-          name = foundByBarcode.benamning;
-          barcode = foundByBarcode.streckkod;
-        }
-      }
-
-      // Försök söka med benamning som streckkod
-      if (!name && artikel.benamning) {
-        const foundByBarcode = artikelMap[artikel.benamning];
-        if (foundByBarcode) {
-          name = foundByBarcode.benamning;
-          barcode = foundByBarcode.streckkod;
-        }
-      }
-
-      // Om ännu ingen namn, använd benamning från artikel
-      if (!name) name = artikel.benamning || 'Okänd artikel';
-      if (!barcode) barcode = '';
-
-      const key = `${name}|${barcode}`;
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push({ ...artikel, originalIndex: idx });
-    });
-    return Object.entries(grouped).map(([key, items]) => {
-      const [name, barcode] = key.split('|');
-      return {
-        name,
-        barcode,
-        items,
-        totalAntal: items.reduce((sum, item) => sum + item.antal, 0),
-        totalPrice: items.reduce((sum, item) => sum + item.total_pris, 0)
-      };
-    });
-  };
-
-  const handleSaveEdit = () => {
-    const editingItem = uttag.find(u => u.id === editingId);
-    updateMutation.mutate({
-      id: editingId,
-      data: {
-        personal_namn: editForm.personal_namn,
-        kund_namn: editForm.kund_namn,
-        ordernummer: editForm.ordernummer || null,
-        total_kostnad: parseFloat(editForm.total_kostnad) || 0,
-        artiklar: editingItem.artiklar.map((a, idx) => idx === 0 ? { ...a, antal: parseInt(editForm.antal) || 0 } : a)
-      }
-    });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-  };
-
-  const handleDeleteUttag = (id, isCheckout) => {
-    if (window.confirm('Är du säker på att du vill ta bort detta uttag?')) {
-      if (isCheckout && base44.entities.LokalvardCheckout?.delete) {
-        base44.entities.LokalvardCheckout.delete(id);
-      } else {
-        deleteMutation.mutate(id);
-      }
-    }
-  };
-
-  // Calculate total from all grouped rows (all filtered pages)
-  const allGroupedRows = useMemo(() => {
-    const grouped = {};
-    const searchLower = searchBarcode.trim().toLowerCase();
-    sorted.forEach(u => {
-      const ordernummerMatch = searchLower && (u.ordernummer || '').toLowerCase().includes(searchLower);
-      (u.artiklar || []).forEach((artikel) => {
-        if (searchLower && !ordernummerMatch && !artikelMatchesSearch(artikel, searchLower)) return;
-        const key = `${artikel.artikel_id}-${u.datum}-${u.kund_id}`;
-        if (!grouped[key]) {
-          grouped[key] = {
-            totalPrice: 0
-          };
-        }
-        grouped[key].totalPrice += artikel.total_pris;
-      });
-    });
-    return Object.values(grouped);
-  }, [sorted, searchBarcode, artikelMap]);
-
-  const total = allGroupedRows.reduce((sum, row) => sum + row.totalPrice, 0);
-
-  const handleExport = () => {
-    const csv = [
-      'Datum,Personal,Kund,Artikel,Antal,Pris,Ordernummer',
-      ...sorted.map(u => `${u.datum},${u.personal_namn},${u.kund_namn},"${u.artiklar[0]?.benamning || ''}",${u.artiklar[0]?.antal || 0},${u.total_kostnad.toFixed(2)},${u.ordernummer || ''}`)
-    ].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `uttag_${selectedMonths.length > 0 ? selectedMonths.join('_') : 'alla'}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
   const customers = [...new Set(uttag.map(u => u.kund_id).filter(Boolean))];
 
   const unmatchedArticles = useMemo(() => {
@@ -640,20 +438,6 @@ export default function LokalvardUttag() {
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-           {window.location.hostname.includes('base44.app') && <>
-             <Button onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
-               <FileDown className="w-4 h-4 mr-1" /> Mall
-             </Button>
-             <Button onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-blue-600 hover:bg-blue-700">
-               <Upload className="w-4 h-4 mr-1" /> Importera
-             </Button>
-             <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
-           </>}
-           {sorted.length > 0 && (
-             <Button onClick={handleExport} className="hidden lg:flex bg-green-600 hover:bg-green-700">
-               <Download className="w-4 h-4 mr-1" /> CSV
-             </Button>
-           )}
            <Button onClick={() => setShowNyttUttagModal(true)} className="bg-green-600 hover:bg-green-700">
              + Nytt uttag
            </Button>
