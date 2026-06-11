@@ -150,7 +150,7 @@ export default function LokalvardProduktstatistik() {
         const groupInköp = inköp.filter(i => group.all_artikel_ids.includes(i.artikel_id));
         const purchaseCount = groupInköp.length;
         const totalInköptQty = groupInköp.reduce((s, i) => s + (i.antal || 0), 0);
-        const avgQtyPerPurchase = purchaseCount > 0 ? totalInköptQty / purchaseCount : null;
+        const avgQtyPerPurchase = purchaseCount > 0 ? totalInköptQty / purchaseCount : (group.total_antal_inkopta > 0 ? group.total_antal_inkopta : null);
 
         // Average interval between purchases
         let avgPurchaseIntervalDays = null;
