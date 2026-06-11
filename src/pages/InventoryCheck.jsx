@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import LagerkorrigeringSection from '@/components/inventory/LagerkorrigeringSection.jsx';
+import LagerkorrigeringSection from '@/components/inventory/LagerkorrigeringSection';
 
 // ─── CSV export ─────────────────────────────────────────────────────────────────
 function exportToCSV(sessionConfig, checkedItems, allItems, manualCounts) {
