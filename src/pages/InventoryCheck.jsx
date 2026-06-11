@@ -202,14 +202,15 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
   const [antal, setAntal] = useState('1');
   const [foundItem, setFoundItem] = useState(null);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen) { setQuery(''); setAntal('1'); setFoundItem(null); setError(''); }
+    if (!isOpen) { setQuery(''); setAntal('1'); setFoundItem(null); setError(''); setSuccessMsg(''); }
     else if (preselectedItem) { setFoundItem(preselectedItem); setQuery(preselectedItem.name || preselectedItem.benamning || ''); }
   }, [isOpen, preselectedItem]);
 
   const searchItem = (trimmed) => {
-    // Same search logic as main scanner: barcode → artikelnummer → name
     let item = scopedItems.find(i => (i.barcode || i.streckkod) === trimmed);
     if (!item) item = scopedItems.find(i => i.artikelnummer === trimmed);
     if (!item) item = scopedItems.find(i => (i.name || i.benamning || '').toLowerCase().includes(trimmed.toLowerCase()));
@@ -219,6 +220,7 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
   const handleSearch = () => {
     setError('');
     setFoundItem(null);
+    setSuccessMsg('');
     const trimmed = query.trim();
     if (!trimmed) { setError('Ange streckkod eller namn.'); return; }
     const item = searchItem(trimmed);
@@ -229,8 +231,16 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
   const handleAdd = () => {
     const q = parseInt(antal, 10);
     if (isNaN(q) || q < 0) { setError('Antal måste vara ett positivt nummer.'); return; }
+    const itemName = foundItem.name || foundItem.benamning;
     onConfirm(foundItem, q);
-    onClose();
+    // Stay open — reset for next article
+    setSuccessMsg(`✓ ${itemName} — ${q} st registrerad`);
+    setQuery('');
+    setAntal('1');
+    setFoundItem(null);
+    setError('');
+    // Re-focus search input for next article
+    setTimeout(() => searchInputRef.current?.focus(), 50);
   };
 
   return (
@@ -238,15 +248,21 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Manuell inmatning</DialogTitle>
-          <DialogDescription>Sök på streckkod, artikelnummer eller namn och ange antal i lager.</DialogDescription>
+          <DialogDescription>Sök på streckkod, artikelnummer eller namn och ange antal i lager. Dialogen stannar öppen så du kan fortsätta med nästa artikel.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {successMsg && (
+            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm font-medium">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />{successMsg}
+            </div>
+          )}
           <div className="grid gap-2">
             <Label>Streckkod / Artikelnummer / Namn</Label>
             <div className="flex gap-2">
               <Input
+                ref={searchInputRef}
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={e => { setQuery(e.target.value); setSuccessMsg(''); }}
                 onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
                 placeholder="Sök artikel..."
                 autoFocus
@@ -272,11 +288,12 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
               min="0"
               value={antal}
               onChange={e => setAntal(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && foundItem && antal !== '') handleAdd(); }}
             />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Avbryt</Button>
+          <Button variant="outline" onClick={onClose}>Stäng</Button>
           <Button
             onClick={handleAdd}
             disabled={!foundItem || antal === ''}
