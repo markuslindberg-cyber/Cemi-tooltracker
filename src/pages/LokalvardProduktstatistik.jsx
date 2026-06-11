@@ -75,7 +75,7 @@ export default function LokalvardProduktstatistik() {
         currentGroup.id = artikel.id;
         currentGroup.benamning = artikel.benamning;
         currentGroup.lagertroskelvarde = artikel.lagertroskelvarde;
-        currentGroup.utgaende = artikel.utgaende;
+        currentGroup.utgaende = !!artikel.utgaende;
         if (artikel.old_streckkod) currentGroup.old_streckkod = artikel.old_streckkod;
       } else if (!currentGroup.old_streckkod && artikel.old_streckkod) {
         currentGroup.old_streckkod = artikel.old_streckkod;
