@@ -80,6 +80,7 @@ const navigation = [
       { name: 'Godkänna Begäran', path: '/Lokalvard/BegaranAttGodkanna', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Produktstatistik', path: '/Lokalvard/Produktstatistik', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
       { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true },
     ]
