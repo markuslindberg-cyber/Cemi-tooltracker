@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
+import LagerkorrigeringSection from '@/components/inventory/LagerkorrigeringSection.jsx';
 
 // ─── CSV export ─────────────────────────────────────────────────────────────────
 function exportToCSV(sessionConfig, checkedItems, allItems, manualCounts) {
@@ -567,6 +568,17 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                         {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}
                         {entry.manualCount !== undefined && ` · Antal: ${entry.manualCount}`}
                       </p>
+                      {entry.type === 'lokalvards' && (() => {
+                        const srcItem = scopedItems.find(si => si.id === entry.id);
+                        const lager = srcItem?.current_quantity ?? 0;
+                        const inv = manualCounts[entry.id] ?? (checkedItems.has(entry.id) ? 1 : 0);
+                        const differs = inv !== lager;
+                        return (
+                          <p className={cn("text-xs mt-0.5 font-medium", differs ? "text-amber-600" : "text-gray-400")}>
+                            Inventerat: {inv} | Lager: {lager}
+                          </p>
+                        );
+                      })()}
                     </div>
                   </div>
                   <span className="text-xs text-gray-400 dark:text-gray-500">{entry.timestamp.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
@@ -595,6 +607,11 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                     <div>
                       <p className="font-medium text-gray-900 dark:text-gray-100">{item.name || item.benamning}</p>
                       {(item.barcode || item.streckkod) && <p className="text-xs text-gray-500 dark:text-gray-400">Streckkod: {item.barcode || item.streckkod}</p>}
+                      {item._type === 'lokalvards' && (
+                        <p className="text-xs mt-0.5 font-medium text-gray-400">
+                          Inventerat: 0 | Lager: {item.current_quantity ?? 0}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -613,10 +630,16 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
 
 // ─── Summary Step ────────────────────────────────────────────────────────────────
-function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNew }) {
+function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNew, performedAt }) {
+  const [user, setUser] = useState(null);
+  useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
+
   const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen inventering';
   const typeLabel = sessionConfig.toolType || sessionConfig.tool_type || 'Allt';
   const date = new Date().toLocaleDateString('sv-SE');
+
+  const canCorrect = user?.role === 'admin_lokalvård' || user?.role === 'ägare';
+  const hasLokalvard = allItems.some(i => i._type === 'lokalvards');
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
@@ -650,6 +673,16 @@ function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNe
             </div>
           </div>
         </div>
+
+        {/* Lagerkorrigering – only for admin_lokalvård / ägare, only when lokalvård items exist */}
+        {canCorrect && hasLokalvard && (
+          <LagerkorrigeringSection
+            allItems={allItems}
+            manualCounts={manualCounts}
+            performedAt={performedAt}
+          />
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3">
           <Button onClick={() => exportToCSV(sessionConfig, checkedItems, allItems, manualCounts)} className="flex-1 bg-green-700 hover:bg-green-800">
             <Download className="w-4 h-4 mr-2" />Exportera CSV
@@ -669,6 +702,7 @@ export default function InventoryCheck() {
   const [finalChecked, setFinalChecked] = useState(new Set());
   const [finalItems, setFinalItems] = useState([]);
   const [finalManualCounts, setFinalManualCounts] = useState({});
+  const [finalPerformedAt, setFinalPerformedAt] = useState(null);
 
   const { data: pausedSessions = [], isLoading: isLoadingSessions, refetch: refetchSessions } = useQuery({
     queryKey: ['inventorySessions'],
@@ -728,9 +762,11 @@ export default function InventoryCheck() {
   };
 
   const handleEnd = async (config, checkedItems, allItems, manualCounts) => {
+    const performedAtStr = new Date().toISOString();
     setFinalChecked(checkedItems);
     setFinalItems(allItems);
     setFinalManualCounts(manualCounts);
+    setFinalPerformedAt(performedAtStr);
     setPhase('summary');
 
     let user = null;
@@ -764,7 +800,7 @@ export default function InventoryCheck() {
       mode: config.mode,
       performed_by_name: user?.full_name || null,
       performed_by_email: user?.email || null,
-      performed_at: new Date().toISOString(),
+      performed_at: performedAtStr,
       total_items: allItems.length,
       checked_items: checkedItems.size,
       unchecked_items: allItems.length - checkedItems.size,
@@ -785,11 +821,12 @@ export default function InventoryCheck() {
     setFinalChecked(new Set());
     setFinalItems([]);
     setFinalManualCounts({});
+    setFinalPerformedAt(null);
     setPhase('setup');
   };
 
   if (phase === 'setup') return <SetupStep onStart={handleStart} pausedSessions={pausedSessions} onResume={handleResume} isLoadingSessions={isLoadingSessions} />;
   if (phase === 'active') return <ActiveInventory sessionConfig={sessionConfig} onEnd={handleEnd} onPause={handlePause} sessionId={sessionId} />;
-  if (phase === 'summary') return <SummaryStep sessionConfig={sessionConfig} checkedItems={finalChecked} allItems={finalItems} manualCounts={finalManualCounts} onNew={handleNew} />;
+  if (phase === 'summary') return <SummaryStep sessionConfig={sessionConfig} checkedItems={finalChecked} allItems={finalItems} manualCounts={finalManualCounts} onNew={handleNew} performedAt={finalPerformedAt} />;
   return null;
 }
