@@ -54,6 +54,7 @@ export default function LokalvardArtikelDetaljer() {
       window.artiklarData = artiklarData;
 
       const fundArticle = artiklarData.find(a => 
+        a.id === artikelnummer ||
         a.artikelnummer === artikelnummer || 
         a.streckkod === artikelnummer || 
         a.old_streckkod === artikelnummer
