@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScrollRestore } from '@/hooks/useScrollRestore';
 import { base44 } from '@/api/base44Client';
@@ -10,6 +10,7 @@ import { Loader2, Plus, Edit2, Upload, FileDown, ArrowUp, ArrowDown, AlertCircle
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AddArtikelDialog from '@/components/dialogs/AddArtikelDialog';
 import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
+import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
 
 export default function LokalvardLager() {
    useScrollRestore();
@@ -36,7 +37,7 @@ export default function LokalvardLager() {
    const [filterTyp, setFilterTyp] = useState('aktiva');
    const [addDialogOpen, setAddDialogOpen] = useState(false);
 
-  const { data: uttag = [] } = useQuery({
+  const { data: rawUttag = [] } = useQuery({
     queryKey: ['uttag'],
     queryFn: async () => {
       const data = await base44.entities.Uttag.list('-created_date', 100000).catch(() => []);
@@ -44,6 +45,17 @@ export default function LokalvardLager() {
     },
     staleTime: 60000,
   });
+
+  const { data: checkoutData = [] } = useQuery({
+    queryKey: ['lokalvardCheckout'],
+    queryFn: () => base44.entities.LokalvardCheckout?.list
+      ? base44.entities.LokalvardCheckout.list('-checked_out_date', 100000).catch(() => [])
+      : Promise.resolve([]),
+    staleTime: 60000,
+  });
+
+  const artikelMapForMerge = useMemo(() => buildArtikelMap(artiklar), [artiklar]);
+  const uttag = useMemo(() => mergeCheckoutAsUttag(rawUttag, checkoutData, artikelMapForMerge), [rawUttag, checkoutData, artikelMapForMerge]);
 
   const uttagLoading = false;
 

@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2, Search } from 'lucide-react';
 import ProduktstatistikTable from '@/components/lokalvard/ProduktstatistikTable';
 import BeställningslistaTable from '@/components/lokalvard/BeställningslistaTable';
+import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
 
 export default function LokalvardProduktstatistik() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,11 +19,22 @@ export default function LokalvardProduktstatistik() {
     staleTime: 60000,
   });
 
-  const { data: uttag = [], isLoading: loadingUttag } = useQuery({
+  const { data: rawUttag = [], isLoading: loadingUttag } = useQuery({
     queryKey: ['uttag'],
     queryFn: () => base44.entities.Uttag.list('-created_date', 100000).catch(() => []),
     staleTime: 60000,
   });
+
+  const { data: checkoutData = [], isLoading: loadingCheckout } = useQuery({
+    queryKey: ['lokalvardCheckout'],
+    queryFn: () => base44.entities.LokalvardCheckout?.list
+      ? base44.entities.LokalvardCheckout.list('-checked_out_date', 100000).catch(() => [])
+      : Promise.resolve([]),
+    staleTime: 60000,
+  });
+
+  const artikelMapForMerge = useMemo(() => buildArtikelMap(artiklar), [artiklar]);
+  const uttag = useMemo(() => mergeCheckoutAsUttag(rawUttag, checkoutData, artikelMapForMerge), [rawUttag, checkoutData, artikelMapForMerge]);
 
   const { data: inköp = [], isLoading: loadingInkop } = useQuery({
     queryKey: ['lokalvardInkop'],
@@ -242,7 +254,7 @@ export default function LokalvardProduktstatistik() {
     return stats.filter(s => s.daysLeft !== Infinity && s.daysLeft <= 45 && !s.utgaende);
   }, [stats]);
 
-  if (loadingArtiklar || loadingUttag || loadingInkop) {
+  if (loadingArtiklar || loadingUttag || loadingInkop || loadingCheckout) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-[#8B1E1E] animate-spin" />

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,11 +46,17 @@ export default function KostnadPerKund() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [uttag, kunder, personal] = await Promise.all([
+        const [rawUttag, kunder, personal, artiklar, checkoutRaw] = await Promise.all([
           base44.entities.Uttag.list(null, 10000),
           base44.entities.Kund.list(null, 10000),
-          base44.entities.TeamMember.list(null, 10000)
+          base44.entities.TeamMember.list(null, 10000),
+          base44.entities.LokalvardsArtikel.list(null, 10000).catch(() => []),
+          base44.entities.LokalvardCheckout?.list
+            ? base44.entities.LokalvardCheckout.list(null, 100000).catch(() => [])
+            : Promise.resolve([])
         ]);
+        const aMap = buildArtikelMap(artiklar);
+        const uttag = mergeCheckoutAsUttag(rawUttag, checkoutRaw, aMap);
         setAllCustomers(kunder);
         setAllUttag(uttag);
 

@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
+import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
 
 export default function LokalvardArtikelDetaljer() {
   const { artikelnummer } = useParams();
@@ -39,11 +40,16 @@ export default function LokalvardArtikelDetaljer() {
 
   const loadData = async () => {
     try {
-      const [artiklarData, uttagData, inköpData] = await Promise.all([
+      const [artiklarData, rawUttagData, inköpData, checkoutDataRaw] = await Promise.all([
         base44.entities.LokalvardsArtikel.list(null, 10000),
         base44.entities.Uttag.list(null, 100000),
-        base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([])
+        base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
+        base44.entities.LokalvardCheckout?.list ? base44.entities.LokalvardCheckout.list(null, 100000).catch(() => []) : Promise.resolve([])
       ]);
+
+      // Merge checkout-based withdrawals into uttag
+      const aMap = buildArtikelMap(artiklarData);
+      const uttagData = mergeCheckoutAsUttag(rawUttagData, checkoutDataRaw, aMap);
 
       window.artiklarData = artiklarData;
 
@@ -88,10 +94,6 @@ export default function LokalvardArtikelDetaljer() {
           a.artikel_id === oldStreckkod
         )
       );
-
-      // OBS: LokalvardCheckout inkluderas INTE i uttagsberäkningen
-      // eftersom Lagersidan (LokalvardLager) inte räknar med dem.
-      // Checkout-data skapar redan Uttag-poster via createUttagFromCheckout.
 
       const allTransactions = [...relateradeUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
       setTransaktioner(allTransactions);

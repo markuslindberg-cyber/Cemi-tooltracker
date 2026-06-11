@@ -27,10 +27,17 @@ export default function LokalvardSection() {
     queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
   });
 
+  const { data: checkout = [] } = useQuery({
+    queryKey: ['ownerCheckout'],
+    queryFn: () => base44.entities.LokalvardCheckout?.list
+      ? base44.entities.LokalvardCheckout.list(null, 100000).catch(() => [])
+      : Promise.resolve([]),
+  });
+
   const pendingRequests = requests.filter(r => r.status === 'pending').length;
   const lowStock = articles.filter(a => (a.current_quantity || 0) <= (a.lagertroskelvarde || 10)).length;
   const totalArticles = articles.length;
-  const totalLagerValue = calculateLokalvardLagerValue(articles, uttag, inkop);
+  const totalLagerValue = calculateLokalvardLagerValue(articles, uttag, inkop, checkout);
 
   // Uttag this month
   const now = new Date();

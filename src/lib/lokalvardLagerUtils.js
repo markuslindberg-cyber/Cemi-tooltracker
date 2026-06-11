@@ -1,8 +1,19 @@
+import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
+
 /**
  * Beräknar totalt lagervärde för lokalvårdsartiklar baserat på inköp − uttag.
  * Samma logik som LokalvardLager-sidan.
+ * @param {Array} artiklar
+ * @param {Array} uttag - raw Uttag records
+ * @param {Array} inkop
+ * @param {Array} [checkout] - optional LokalvardCheckout records
  */
-export function calculateLokalvardLagerValue(artiklar, uttag, inkop) {
+export function calculateLokalvardLagerValue(artiklar, uttag, inkop, checkout) {
+  // Merge checkout-based withdrawals
+  if (checkout && checkout.length > 0) {
+    const aMap = buildArtikelMap(artiklar);
+    uttag = mergeCheckoutAsUttag(uttag, checkout, aMap);
+  }
   // Gruppera artiklar per streckkod
   const grouped = {};
   artiklar.forEach(artikel => {
