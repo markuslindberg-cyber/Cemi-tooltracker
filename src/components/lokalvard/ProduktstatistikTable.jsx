@@ -64,6 +64,12 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('avgQty')}>
               Snitt qty/inköp<SortIcon col="avgQty" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap hidden md:table-cell" onClick={() => onSort('lastPurchase')}>
+              Senaste inköp<SortIcon col="lastPurchase" sortBy={sortBy} sortDir={sortDir} />
+            </TableHead>
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[70px] px-2 hidden md:table-cell" onClick={() => onSort('lastPurchaseQty')}>
+              Antal sen.<SortIcon col="lastPurchaseQty" sortBy={sortBy} sortDir={sortDir} />
+            </TableHead>
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs" onClick={() => onSort('trend')}>
               Trend<SortIcon col="trend" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
@@ -75,7 +81,7 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="text-center text-gray-500 py-12">
+              <TableCell colSpan={11} className="text-center text-gray-500 py-12">
                 Inga produkter matchar sökningen
               </TableCell>
             </TableRow>
@@ -135,6 +141,14 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
                       ↓ Köp ~{Math.round(item.avgQtyPerPurchase * 0.7)} st
                     </span>
                   )}
+                </TableCell>
+                <TableCell className="text-right text-sm tabular-nums hidden md:table-cell">
+                  {item.lastPurchaseDate
+                    ? new Date(item.lastPurchaseDate).toLocaleDateString('sv-SE')
+                    : '–'}
+                </TableCell>
+                <TableCell className="text-right text-sm tabular-nums px-2 w-[70px] hidden md:table-cell">
+                  {item.lastPurchaseQty != null ? item.lastPurchaseQty : '–'}
                 </TableCell>
                 <TableCell className="text-sm">
                   <TrendBadge trend={item.trend} />

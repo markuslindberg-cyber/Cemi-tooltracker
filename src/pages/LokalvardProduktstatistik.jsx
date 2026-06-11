@@ -160,6 +160,18 @@ export default function LokalvardProduktstatistik() {
           avgPurchaseIntervalDays = Math.round(totalDays / (purchaseCount - 1));
         }
 
+        // Last purchase info
+        let lastPurchaseDate = null;
+        let lastPurchaseQty = null;
+        if (purchaseCount > 0) {
+          const sorted = [...groupInköp].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+          lastPurchaseDate = sorted[0].datum;
+          lastPurchaseQty = sorted[0].antal;
+        } else if (group.inkopsdatum) {
+          lastPurchaseDate = group.inkopsdatum;
+          lastPurchaseQty = group.total_antal_inkopta;
+        }
+
         return {
           id: group.id,
           name: group.benamning,
@@ -174,6 +186,8 @@ export default function LokalvardProduktstatistik() {
           avgPurchaseIntervalDays,
           avgQtyPerPurchase,
           utgaende: group.utgaende,
+          lastPurchaseDate,
+          lastPurchaseQty,
         };
       });
   }, [artiklar, uttag, inköp]);
@@ -204,6 +218,12 @@ export default function LokalvardProduktstatistik() {
         const aVal = a.daysLeft === Infinity ? 999999 : a.daysLeft;
         const bVal = b.daysLeft === Infinity ? 999999 : b.daysLeft;
         cmp = aVal - bVal;
+      } else if (sortBy === 'lastPurchase') {
+        const aVal = a.lastPurchaseDate || '';
+        const bVal = b.lastPurchaseDate || '';
+        cmp = aVal.localeCompare(bVal);
+      } else if (sortBy === 'lastPurchaseQty') {
+        cmp = (a.lastPurchaseQty || 0) - (b.lastPurchaseQty || 0);
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
@@ -273,6 +293,8 @@ export default function LokalvardProduktstatistik() {
               <li><strong>Inköp</strong> – Antal registrerade inköpstillfällen.</li>
               <li><strong>Snittintervall inköp</strong> – Genomsnittligt antal dagar mellan varje inköp.</li>
               <li><strong>Snitt qty/inköp</strong> – Genomsnittligt antal enheter per inköpstillfälle.</li>
+              <li><strong>Senaste inköp</strong> – Datum för senaste registrerade inköpet.</li>
+              <li><strong>Antal senaste</strong> – Antal enheter vid senaste inköpet.</li>
               <li><strong>Trend</strong> – Jämför 3- och 12-månaderssnittet: Ökande, Minskande eller Stabil.</li>
               <li><strong>Räcker (dagar)</strong> – Uppskattat antal dagar lagret räcker.</li>
             </ul>
