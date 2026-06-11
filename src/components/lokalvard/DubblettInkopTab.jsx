@@ -37,11 +37,16 @@ export default function DubblettInkopTab({ resolvedInköp }) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-center gap-2">
-        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-        <span className="text-sm text-amber-800 font-medium">
-          {groups.length} grupp{groups.length !== 1 ? 'er' : ''} med möjliga dubbletter – samma datum, antal och pris men olika artikel-ID
-        </span>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 space-y-1.5">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+          <span className="text-sm text-amber-800 font-medium">
+            {groups.length} grupp{groups.length !== 1 ? 'er' : ''} med möjliga dubbletter
+          </span>
+        </div>
+        <p className="text-xs text-amber-700 ml-7">
+          Dessa inköp har grupperats ihop eftersom de har <strong>samma datum</strong>, <strong>samma antal</strong> och <strong>samma pris</strong> — men är registrerade mot <strong>olika artiklar</strong> (olika artikel-ID/namn/streckkod). Det kan bero på att samma inköp importerats eller registrerats flera gånger mot olika varianter av samma produkt.
+        </p>
       </div>
 
       {groups.map((group, idx) => {
@@ -59,6 +64,10 @@ export default function DubblettInkopTab({ resolvedInköp }) {
               <span className="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
                 {group.length} poster
               </span>
+            </div>
+            <div className="px-4 py-2 bg-amber-50/50 border-b border-amber-100 text-xs text-amber-700">
+              <span className="font-medium">Gemensamt:</span> datum {first.datum}, antal {first.antal}, pris {first.pris} kr
+              {' · '}<span className="font-medium">Skiljer sig:</span> {group.length} olika artiklar ({[...new Set(group.map(g => g.benamning))].join(' / ')})
             </div>
             <div className="divide-y divide-gray-100">
               {group.map(item => (
