@@ -81,6 +81,7 @@ const navigation = [
       { name: 'Kostnad per kund', path: '/Lokalvard/KostnadPerKund', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Produktstatistik', path: '/Lokalvard/Produktstatistik', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Inköpshistorik', path: '/Lokalvard/Inkopshistorik', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Importera inköp', path: '/Lokalvard/InköpImport', desktopOnly: true, devOnly: true },
       { name: 'Importera uttag', path: '/Lokalvard/UttagImport', desktopOnly: true, devOnly: true },
     ]
