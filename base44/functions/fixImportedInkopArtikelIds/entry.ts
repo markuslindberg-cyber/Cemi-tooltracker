@@ -10,19 +10,23 @@ Deno.serve(async (req) => {
 
     const { dryRun = true } = await req.json().catch(() => ({}));
 
-    // Fetch all articles and all inköp
     const articles = await base44.entities.LokalvardsArtikel.filter({}, null, 100000);
     const allInkop = await base44.entities.LokalvardInköp.filter({}, null, 100000);
 
-    // Build lookup maps: artikelnummer → article, streckkod → article, old_streckkod → article
+    // Build lookup maps
     const articleIdSet = new Set(articles.map(a => a.id));
     const lookupMap = {};
+    const nameLookup = {};
+
     articles.forEach(a => {
       if (a.artikelnummer) lookupMap[a.artikelnummer] = a;
       if (a.streckkod) lookupMap[a.streckkod] = a;
       if (a.old_streckkod) lookupMap[a.old_streckkod] = a;
-      // Also try lowercase
-      if (a.benamning) lookupMap[a.benamning.toLowerCase()] = a;
+      // Name lookup (normalized)
+      if (a.benamning) {
+        const key = a.benamning.trim().toLowerCase();
+        if (!nameLookup[key]) nameLookup[key] = a;
+      }
     });
 
     // Find inköp where artikel_id is NOT a valid database ID
@@ -32,7 +36,19 @@ Deno.serve(async (req) => {
     const notFound = [];
 
     for (const ink of broken) {
-      const match = lookupMap[ink.artikel_id] || lookupMap[ink.artikel_id?.toLowerCase()];
+      // Try direct lookup (artikelnummer, streckkod, old_streckkod)
+      let match = lookupMap[ink.artikel_id];
+      let matchMethod = 'artikelnummer/streckkod';
+
+      // If no direct match, try matching by name
+      if (!match) {
+        const nameKey = ink.artikel_id?.trim().toLowerCase();
+        if (nameKey && nameLookup[nameKey]) {
+          match = nameLookup[nameKey];
+          matchMethod = 'benämning';
+        }
+      }
+
       if (match) {
         if (!dryRun) {
           await base44.entities.LokalvardInköp.update(ink.id, { artikel_id: match.id });
@@ -42,6 +58,7 @@ Deno.serve(async (req) => {
           old_artikel_id: ink.artikel_id,
           new_artikel_id: match.id,
           benamning: match.benamning,
+          matchMethod,
           datum: ink.datum,
           antal: ink.antal,
         });
