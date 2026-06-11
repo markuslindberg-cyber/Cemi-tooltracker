@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, Trash2, Loader2 } from 'lucide-react';
+import { AlertTriangle, Check, Trash2, Loader2, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 
@@ -19,6 +19,7 @@ function DubblettGroup({ group, onResolved }) {
       await base44.entities.LokalvardInköp.delete(item.id);
     }
     setProcessing(false);
+    setDismissReason(`Behöll vald post – ${group.length - 1} dubbletter borttagna.`);
     setResolved(true);
     onResolved();
   };
@@ -27,15 +28,23 @@ function DubblettGroup({ group, onResolved }) {
     setProcessing(true);
     await base44.entities.LokalvardInköp.delete(id);
     setProcessing(false);
+    setDismissReason('Post borttagen.');
     setResolved(true);
     onResolved();
+  };
+
+  const [dismissReason, setDismissReason] = useState('');
+
+  const handleKeepAll = () => {
+    setDismissReason('Alla poster behålls som separata artiklar.');
+    setResolved(true);
   };
 
   if (resolved) {
     return (
       <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center gap-2 text-sm text-green-700">
         <Check className="w-4 h-4" />
-        <span>Grupp hanterad – dubbletter borttagna.</span>
+        <span>{dismissReason || 'Grupp hanterad.'}</span>
       </div>
     );
   }
@@ -124,27 +133,39 @@ function DubblettGroup({ group, onResolved }) {
       </div>
 
       {/* Action bar */}
-      {selected && (
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3">
-          <p className="text-xs text-gray-500">
-            Behåll vald post och ta bort {group.length - 1} övriga?
-          </p>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => setSelected(null)} disabled={processing}>
-              Avbryt
+      <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3 flex-wrap">
+        {selected ? (
+          <>
+            <p className="text-xs text-gray-500">
+              Behåll vald post och ta bort {group.length - 1} övriga?
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setSelected(null)} disabled={processing}>
+                Avbryt
+              </Button>
+              <Button
+                size="sm"
+                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+                disabled={processing}
+                onClick={handleKeepSelected}
+              >
+                {processing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                Behåll & ta bort resten
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-gray-500">
+              Välj en post att behålla, eller markera alla som korrekta.
+            </p>
+            <Button size="sm" variant="outline" onClick={handleKeepAll} disabled={processing}>
+              <CheckCheck className="w-4 h-4 mr-1" />
+              Inte dubbletter – behåll alla
             </Button>
-            <Button
-              size="sm"
-              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
-              disabled={processing}
-              onClick={handleKeepSelected}
-            >
-              {processing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
-              Behåll & ta bort resten
-            </Button>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
