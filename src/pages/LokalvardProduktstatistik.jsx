@@ -44,7 +44,7 @@ export default function LokalvardProduktstatistik() {
       });
     });
 
-    const activeArtiklar = artiklar.filter(a => !a.is_deleted);
+    const activeArtiklar = artiklar.filter(a => !a.is_deleted && !(a.utgaende && (a.current_quantity || 0) === 0));
 
     return activeArtiklar.map(artikel => {
       const c = consumption[artikel.id] || { last3: 0, last12: 0 };
