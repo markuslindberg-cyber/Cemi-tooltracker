@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { SprayCan, ArrowRight, AlertTriangle } from 'lucide-react';
+import { SprayCan, ArrowRight, AlertTriangle, TrendingUp } from 'lucide-react';
 import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
 
 export default function LokalvardSection() {
@@ -80,25 +80,44 @@ export default function LokalvardSection() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Low stock alert */}
+        {/* Most used articles */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 text-sm flex items-center gap-2">
-            {lowStock > 0 && <AlertTriangle className="w-4 h-4 text-amber-500" />}
-            Lågt lager ({lowStock} artiklar)
+            <TrendingUp className="w-4 h-4 text-emerald-500" />
+            Mest använda artiklar
           </h3>
-          {lowStock > 0 ? (
-            <div className="space-y-2">
-              {articles.filter(a => (a.current_quantity || 0) <= (a.lagertroskelvarde || 10)).slice(0, 5).map(a => (
-                <div key={a.id} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{a.benamning}</span>
-                  <span className="text-sm font-medium text-red-600">{a.current_quantity || 0} st</span>
-                </div>
-              ))}
-              {lowStock > 5 && <p className="text-xs text-gray-400">+ {lowStock - 5} fler artiklar</p>}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-400">Alla artiklar har tillräckligt lager</p>
-          )}
+          {(() => {
+            const articleUsage = {};
+            const allUttag = [...uttag, ...checkout.map(c => ({ artiklar: c.checked_out_items?.map(ci => ({ artikel_id: ci.item_id, benamning: ci.name, antal: ci.scanned_quantity || ci.quantity || 0 })) || [] }))];
+            allUttag.forEach(u => {
+              (u.artiklar || []).forEach(a => {
+                const id = a.artikel_id;
+                if (!id) return;
+                if (!articleUsage[id]) articleUsage[id] = { name: a.benamning || '', total: 0 };
+                articleUsage[id].total += (a.antal || 0);
+              });
+            });
+            // Enrich names from articles list
+            articles.forEach(a => { if (articleUsage[a.id] && a.benamning) articleUsage[a.id].name = a.benamning; });
+            const top = Object.values(articleUsage).filter(a => a.total > 0).sort((a, b) => b.total - a.total).slice(0, 7);
+            const maxVal = top[0]?.total || 1;
+            if (top.length === 0) return <p className="text-sm text-gray-400">Ingen uttagsdata ännu</p>;
+            return (
+              <div className="space-y-2">
+                {top.map((item, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[70%]">{item.name}</span>
+                      <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{item.total} st</span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+                      <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${(item.total / maxVal) * 100}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Recent requests */}
