@@ -38,7 +38,7 @@ export default function LokalvardProduktstatistik() {
 
   const { data: inköp = [], isLoading: loadingInkop } = useQuery({
     queryKey: ['lokalvardInkop'],
-    queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
+    queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list('-created_date', 100000) : Promise.resolve([]),
     staleTime: 60000,
   });
 
