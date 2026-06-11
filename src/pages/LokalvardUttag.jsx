@@ -277,11 +277,36 @@ export default function LokalvardUttag() {
     return sorted.slice(start, start + itemsPerPage);
   }, [sorted, currentPage]);
 
+  // Helper: check if a single artikel matches the search query
+  const artikelMatchesSearch = (a, searchLower) => {
+    if (!searchLower) return true;
+    const benamning = (a.benamning || '').toLowerCase();
+    const artikelNamn = (a.artikel_namn || '').toLowerCase();
+    const artikelId = (a.artikel_id || '').toLowerCase();
+    const streckkod = (a.streckkod || '').toLowerCase();
+    const lagerArtikel = artikelMap[a.artikel_id] || artikelMap[a.streckkod];
+    const lagerNamn = (lagerArtikel?.benamning || '').toLowerCase();
+    const lagerStreckkod = (lagerArtikel?.streckkod || '').toLowerCase();
+    return benamning.includes(searchLower) ||
+      artikelNamn.includes(searchLower) ||
+      artikelId.includes(searchLower) ||
+      streckkod.includes(searchLower) ||
+      lagerNamn.includes(searchLower) ||
+      lagerStreckkod.includes(searchLower);
+  };
+
   // Group articles by artikel_id, datum and kund_id
   const groupedRows = useMemo(() => {
     const grouped = {};
+    const searchLower = searchBarcode.trim().toLowerCase();
     paginatedData.forEach(u => {
+      // When searching, also match ordernummer at the uttag level
+      const ordernummerMatch = searchLower && (u.ordernummer || '').toLowerCase().includes(searchLower);
+
       (u.artiklar || []).forEach((artikel, idx) => {
+        // When there's a search query, only include articles that match (or if ordernummer matches)
+        if (searchLower && !ordernummerMatch && !artikelMatchesSearch(artikel, searchLower)) return;
+
         const key = `${artikel.artikel_id}-${u.datum}-${u.kund_id}`;
         if (!grouped[key]) {
           grouped[key] = {
@@ -304,7 +329,7 @@ export default function LokalvardUttag() {
       });
     });
     return Object.values(grouped);
-  }, [paginatedData]);
+  }, [paginatedData, searchBarcode, artikelMap]);
 
   const toggleRow = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
@@ -531,8 +556,11 @@ export default function LokalvardUttag() {
   // Calculate total from all grouped rows (all filtered pages)
   const allGroupedRows = useMemo(() => {
     const grouped = {};
+    const searchLower = searchBarcode.trim().toLowerCase();
     sorted.forEach(u => {
+      const ordernummerMatch = searchLower && (u.ordernummer || '').toLowerCase().includes(searchLower);
       (u.artiklar || []).forEach((artikel) => {
+        if (searchLower && !ordernummerMatch && !artikelMatchesSearch(artikel, searchLower)) return;
         const key = `${artikel.artikel_id}-${u.datum}-${u.kund_id}`;
         if (!grouped[key]) {
           grouped[key] = {
@@ -543,7 +571,7 @@ export default function LokalvardUttag() {
       });
     });
     return Object.values(grouped);
-  }, [sorted]);
+  }, [sorted, searchBarcode, artikelMap]);
 
   const total = allGroupedRows.reduce((sum, row) => sum + row.totalPrice, 0);
 
