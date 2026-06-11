@@ -96,10 +96,11 @@ export default function LokalvardArtikelDetaljer() {
       const allTransactions = [...relateradeUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
       setTransaktioner(allTransactions);
       
-      // Filtrera inköp med EXAKT samma logik som Lagersidan (getInköptForArticle)
-      // Lagersidan filtrerar ENBART på all_artikel_ids.includes(i.artikel_id)
+      // Filtrera inköp – matcha på artikel_id, streckkod och old_streckkod
       const relateradeInköp = inköpData?.filter(i => 
-        relateradeArtikelIds.includes(i.artikel_id)
+        relateradeArtikelIds.includes(i.artikel_id) ||
+        i.artikel_id === streckkod ||
+        i.artikel_id === oldStreckkod
       ) || [];
       
       setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
