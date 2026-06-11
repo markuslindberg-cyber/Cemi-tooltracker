@@ -88,6 +88,7 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
   const handleKeepAll = () => {
     setDismissReason('Alla poster behålls som separata artiklar.');
     setResolved(true);
+    onResolved();
   };
 
   if (resolved) {
