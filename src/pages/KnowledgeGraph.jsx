@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CATEGORIES, NODES, EDGES } from '@/components/knowledge-graph/graphData';
+import { CATEGORIES, NODES, EDGES, LAST_UPDATED } from '@/components/knowledge-graph/graphData';
 import GraphNode from '@/components/knowledge-graph/GraphNode';
 import GraphDetailPanel from '@/components/knowledge-graph/GraphDetailPanel';
 import GraphLegend from '@/components/knowledge-graph/GraphLegend';
@@ -66,7 +66,7 @@ export default function KnowledgeGraph() {
             </div>
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Knowledge Graph</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Systemarkitektur – alla flöden, funktioner och kopplingar</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Systemarkitektur – alla flöden, funktioner och kopplingar · Uppdaterad {LAST_UPDATED}</p>
             </div>
           </div>
           <Button
