@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScrollRestore } from '@/hooks/useScrollRestore';
 import { base44 } from '@/api/base44Client';
@@ -6,9 +6,9 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Plus, Edit2, Upload, FileDown, ArrowUp, ArrowDown, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
+import { Loader2, Edit2, ArrowUp, ArrowDown, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import AddArtikelDialog from '@/components/dialogs/AddArtikelDialog';
+
 import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
 import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
 
@@ -27,15 +27,13 @@ export default function LokalvardLager() {
      () => queryClient.invalidateQueries(['lokalvardsArtiklar']),
      artiklarLoading
    );
-   const fileInputRef = useRef(null);
+
    const [search, setSearch] = useState('');
    const [sortBy, setSortBy] = useState('benamning');
    const [sortOrder, setSortOrder] = useState('asc');
    const [editingId, setEditingId] = useState(null);
    const [editForm, setEditForm] = useState({});
-   const [uploading, setUploading] = useState(false);
    const [filterTyp, setFilterTyp] = useState('aktiva');
-   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { data: rawUttag = [] } = useQuery({
     queryKey: ['uttag'],
@@ -212,72 +210,7 @@ export default function LokalvardLager() {
     return 0;
   });
 
-  const handleDownloadTemplate = () => {
-    const headers = ['benamning', 'artikelnummer', 'streckkod', 'pris', 'inkopsdatum', 'antal_inkopta', 'lagertroskelvarde', 'subcategory', 'current_quantity', 'utgaende'];
-    const infoRows = [
-      ['=== IMPORTMALL FÖR LOKALVÅRDSARTIKLAR ===', '', '', '', '', '', '', '', '', ''],
-      headers,
-      ['Rengöringsduk', 'ART-001', '1234567890', '49.99', '2026-01-01', '100', '20', 'Textilier', '45', 'false'],
-    ];
-    const csv = [
-      ...infoRows.map(r => r.map(c => `"${c}"`).join(',')),
-      ...Array(19).fill(Array(10).fill('').map(() => ''))
-    ].join('\n');
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'lokalvard_lager_mall.csv';
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleExcelUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: 'object',
-          properties: {
-            benamning: { type: 'string' },
-            artikelnummer: { type: 'string' },
-            streckkod: { type: 'string' },
-            pris: { type: 'number' },
-            inkopsdatum: { type: 'string' },
-            antal_inkopta: { type: 'number' },
-            lagertroskelvarde: { type: 'number' },
-            subcategory: { type: 'string' },
-            current_quantity: { type: 'number' },
-            utgaende: { type: 'boolean' }
-          }
-        }
-      });
-      if (result.status === 'success' && Array.isArray(result.output)) {
-        const valid = result.output.filter(r => r.benamning && r.artikelnummer && r.pris && r.antal_inkopta);
-        if (valid.length > 0) {
-          await base44.entities.LokalvardsArtikel.bulkCreate(valid);
-          queryClient.invalidateQueries(['lokalvardsArtiklar']);
-          alert(`${valid.length} artiklar importerade!`);
-        } else {
-          alert('Inga giltiga rader hittades.');
-        }
-      } else {
-        alert('Importfel: ' + (result.details || 'Okänt fel'));
-      }
-    } catch (err) {
-      alert('Importfel: ' + (err.message || 'Okänt fel'));
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
-  };
 
   const handleEditClick = (artikel) => {
     setEditingId(artikel.id);
@@ -337,18 +270,6 @@ export default function LokalvardLager() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold">📦 Lager – Lokalvård</h1>
         <div className="flex items-center gap-2">
-          {window.location.hostname.includes('base44.app') && <>
-            <Button size="sm" onClick={handleDownloadTemplate} className="hidden lg:flex bg-purple-600 hover:bg-purple-700">
-              <FileDown className="w-4 h-4 mr-1" /> Mall
-            </Button>
-            <Button size="sm" onClick={handleImportClick} disabled={uploading} className="hidden lg:flex bg-green-600 hover:bg-green-700">
-              <Upload className="w-4 h-4 mr-1" /> Importera
-            </Button>
-            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" />
-          </>}
-          <Button size="sm" onClick={() => setAddDialogOpen(true)} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
-            <Plus className="w-4 h-4 mr-1" /> Ny artikel
-          </Button>
         </div>
       </div>
 
@@ -598,8 +519,7 @@ export default function LokalvardLager() {
         })}
       </div>
 
-      {/* Dialog för att lägga till ny artikel */}
-      <AddArtikelDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} artiklar={artiklar} />
+
     </div>
   );
 }
