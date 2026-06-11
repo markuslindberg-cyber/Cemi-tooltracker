@@ -4,7 +4,7 @@ import { AlertTriangle, Check, Trash2, Loader2, CheckCheck, Search, X, Replace }
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 function DubblettGroup({ group, allArtiklar, onResolved, onDismiss }) {
   const [selected, setSelected] = useState(null); // id of item to keep
@@ -87,13 +87,10 @@ function DubblettGroup({ group, allArtiklar, onResolved, onDismiss }) {
 
   const [dismissReason, setDismissReason] = useState('');
 
-  const handleKeepAll = async () => {
-    setProcessing(true);
-    if (onDismiss) await onDismiss();
-    setProcessing(false);
+  const handleKeepAll = () => {
+    if (onDismiss) onDismiss();
     setDismissReason('Alla poster behålls som separata artiklar.');
     setResolved(true);
-    onResolved();
   };
 
   if (resolved) {
@@ -317,14 +314,27 @@ function DubblettGroup({ group, allArtiklar, onResolved, onDismiss }) {
   );
 }
 
-// Generate a stable key for a duplicate group
+// Stable key for a group based on content, not IDs (IDs change after replace)
 function groupKey(group) {
-  const ids = group.map(i => i.id).sort().join(',');
-  return `${group[0].datum}|${group[0].antal}|${group[0].pris}|${ids}`;
+  const artikelIds = [...new Set(group.map(g => g.artikel_id))].sort().join(',');
+  return `${group[0].datum}|${group[0].antal}|${group[0].pris}|${artikelIds}`;
+}
+
+const DISMISSED_STORAGE_KEY = 'dubblettInkop_dismissed';
+
+function loadDismissed() {
+  try {
+    const raw = localStorage.getItem(DISMISSED_STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+}
+
+function saveDismissed(keys) {
+  localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify([...keys]));
 }
 
 export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
-  const queryClient = useQueryClient();
+  const [dismissedKeys, setDismissedKeys] = useState(() => loadDismissed());
 
   const { data: allArtiklar = [] } = useQuery({
     queryKey: ['lokalvardsArtiklar'],
@@ -332,34 +342,13 @@ export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
     staleTime: 60000,
   });
 
-  // Load dismissed group keys from GlobalAppConfig
-  const { data: dismissedConfig } = useQuery({
-    queryKey: ['dismissedDuplicates'],
-    queryFn: async () => {
-      const configs = await base44.entities.GlobalAppConfig.filter({ config_key: 'dismissed_duplicate_groups' });
-      return configs[0] || null;
-    },
-    staleTime: 30000,
-  });
-
-  const dismissedKeys = useMemo(() => {
-    if (!dismissedConfig?.config_value?.keys) return new Set();
-    return new Set(dismissedConfig.config_value.keys);
-  }, [dismissedConfig]);
-
-  const saveDismissedKey = async (key) => {
-    const newKeys = [...dismissedKeys, key];
-    if (dismissedConfig) {
-      await base44.entities.GlobalAppConfig.update(dismissedConfig.id, {
-        config_value: { keys: newKeys },
-      });
-    } else {
-      await base44.entities.GlobalAppConfig.create({
-        config_key: 'dismissed_duplicate_groups',
-        config_value: { keys: newKeys },
-      });
-    }
-    queryClient.invalidateQueries({ queryKey: ['dismissedDuplicates'] });
+  const dismissGroup = (key) => {
+    setDismissedKeys(prev => {
+      const next = new Set(prev);
+      next.add(key);
+      saveDismissed(next);
+      return next;
+    });
   };
 
   const groups = useMemo(() => {
@@ -374,7 +363,6 @@ export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
         if (group.length < 2) return false;
         const uniqueIds = new Set(group.map(g => g.artikel_id));
         if (uniqueIds.size <= 1) return false;
-        // Filter out dismissed groups
         return !dismissedKeys.has(groupKey(group));
       })
       .sort((a, b) => (b[0].datum || '').localeCompare(a[0].datum || ''));
@@ -409,7 +397,7 @@ export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
       </div>
 
       {groups.map((group, idx) => (
-        <DubblettGroup key={idx} group={group} allArtiklar={allArtiklar} onResolved={handleResolved} onDismiss={() => saveDismissedKey(groupKey(group))} />
+        <DubblettGroup key={idx} group={group} allArtiklar={allArtiklar} onResolved={handleResolved} onDismiss={() => dismissGroup(groupKey(group))} />
       ))}
     </div>
   );
