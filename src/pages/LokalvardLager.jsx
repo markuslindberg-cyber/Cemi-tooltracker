@@ -73,8 +73,12 @@ export default function LokalvardLager() {
   };
 
   const getInköptForArticle = (aggregatedArtikel) => {
-    // Summa inköp för alla relaterade artikel-IDs i gruppen
-    const matchingInköp = inköp.filter(i => aggregatedArtikel.all_artikel_ids.includes(i.artikel_id));
+    // Summa inköp – matcha på artikel_id, streckkod och old_streckkod
+    const matchingInköp = inköp.filter(i =>
+      aggregatedArtikel.all_artikel_ids.includes(i.artikel_id) ||
+      i.artikel_id === aggregatedArtikel.streckkod ||
+      i.artikel_id === aggregatedArtikel.old_streckkod
+    );
     return matchingInköp.reduce((sum, i) => sum + i.antal, 0);
   };
 

@@ -91,7 +91,11 @@ export default function LokalvardProduktstatistik() {
     };
 
     const getInköptForGroup = (group) => {
-      const matchingInköp = inköp.filter(i => group.all_artikel_ids.includes(i.artikel_id));
+      const matchingInköp = inköp.filter(i =>
+        group.all_artikel_ids.includes(i.artikel_id) ||
+        i.artikel_id === group.streckkod ||
+        i.artikel_id === group.old_streckkod
+      );
       const total = matchingInköp.reduce((sum, i) => sum + (i.antal || 0), 0);
       return total > 0 ? total : group.total_antal_inkopta;
     };

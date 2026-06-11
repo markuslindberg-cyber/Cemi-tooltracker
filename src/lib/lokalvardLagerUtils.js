@@ -39,7 +39,11 @@ export function calculateLokalvardLagerValue(artiklar, uttag, inkop) {
   let totalValue = 0;
   for (const g of groups) {
     // Beräkna inköpt
-    const matchingInkop = inkop.filter(i => g.all_artikel_ids.includes(i.artikel_id));
+    const matchingInkop = inkop.filter(i =>
+      g.all_artikel_ids.includes(i.artikel_id) ||
+      i.artikel_id === g.streckkod ||
+      i.artikel_id === g.old_streckkod
+    );
     const totalInkopt = matchingInkop.reduce((sum, i) => sum + i.antal, 0);
     const inkoptToUse = totalInkopt > 0 ? totalInkopt : g.total_antal_inkopta;
 
