@@ -21,9 +21,14 @@ export default function ArbetskladerSection() {
   const completed = requests.filter(r => r.status === 'completed').length;
 
   const categoryCounts = {};
+  const subcategoryCounts = {};
   items.forEach(i => {
     const cat = i.category || 'Okategoriserad';
     categoryCounts[cat] = (categoryCounts[cat] || 0) + (i.quantity || 1);
+    if (i.subcategory) {
+      const key = `${cat}|||${i.subcategory}`;
+      subcategoryCounts[key] = (subcategoryCounts[key] || 0) + (i.quantity || 1);
+    }
   });
 
   const totalValue = items.reduce((sum, i) => sum + (i.purchase_price || 0) * (i.quantity || 1), 0);
@@ -66,13 +71,31 @@ export default function ArbetskladerSection() {
         {/* Categories */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 text-sm">Per kategori</h3>
-          <div className="space-y-2">
-            {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
-              <div key={cat} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{cat}</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{count} st</span>
-              </div>
-            ))}
+          <div className="space-y-1">
+            {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => {
+              const subs = Object.entries(subcategoryCounts)
+                .filter(([k]) => k.startsWith(cat + '|||'))
+                .map(([k, c]) => ({ name: k.split('|||')[1], count: c }))
+                .sort((a, b) => b.count - a.count);
+              return (
+                <div key={cat}>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{cat}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{count} st</span>
+                  </div>
+                  {subs.length > 0 && (
+                    <div className="ml-3 border-l-2 border-gray-100 dark:border-gray-700 pl-3 space-y-0.5 mb-1">
+                      {subs.map(s => (
+                        <div key={s.name} className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{s.name}</span>
+                          <span className="text-xs text-gray-600 dark:text-gray-300">{s.count} st</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
