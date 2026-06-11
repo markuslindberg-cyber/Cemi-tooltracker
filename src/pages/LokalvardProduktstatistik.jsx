@@ -72,11 +72,18 @@ export default function LokalvardProduktstatistik() {
       }
 
       const currentGroup = groupedByStreckkod[streckkod];
-      if (new Date(artikel.inkopsdatum) > new Date(currentGroup.inkopsdatum || '1970-01-01')) {
+      // Prioritize active articles over utgående, then by inkopsdatum
+      const currentIsUtgaende = currentGroup.utgaende;
+      const newIsUtgaende = !!artikel.utgaende;
+      const isNewer = new Date(artikel.inkopsdatum) > new Date(currentGroup.inkopsdatum || '1970-01-01');
+      const shouldReplace = (!newIsUtgaende && currentIsUtgaende) || (newIsUtgaende === currentIsUtgaende && isNewer);
+
+      if (shouldReplace) {
         currentGroup.id = artikel.id;
         currentGroup.benamning = artikel.benamning;
+        currentGroup.inkopsdatum = artikel.inkopsdatum;
         currentGroup.lagertroskelvarde = artikel.lagertroskelvarde;
-        currentGroup.utgaende = !!artikel.utgaende;
+        currentGroup.utgaende = newIsUtgaende;
         currentGroup.pris = artikel.pris || currentGroup.pris;
         if (artikel.old_streckkod) currentGroup.old_streckkod = artikel.old_streckkod;
       } else if (!currentGroup.old_streckkod && artikel.old_streckkod) {
