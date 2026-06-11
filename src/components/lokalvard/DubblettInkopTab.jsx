@@ -13,18 +13,19 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
   const [showManualPicker, setShowManualPicker] = useState(false);
   const [manualSearch, setManualSearch] = useState('');
   const [manualSelected, setManualSelected] = useState(null);
-  // Track which items to replace with manual article (by id)
-  const [replaceIds, setReplaceIds] = useState(new Set(group.map(i => i.id)));
+  // Track which items to replace with manual article (by id) – use object for React compatibility
+  const [replaceMap, setReplaceMap] = useState(() => {
+    const m = {};
+    group.forEach(i => { m[i.id] = true; });
+    return m;
+  });
 
   const first = group[0];
 
+  const replaceIds = useMemo(() => Object.keys(replaceMap).filter(id => replaceMap[id]), [replaceMap]);
+
   const toggleReplaceId = (id) => {
-    setReplaceIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setReplaceMap(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const manualResults = useMemo(() => {
@@ -53,7 +54,7 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
   };
 
   const handleReplaceWithManual = async () => {
-    if (!manualSelected || replaceIds.size === 0) return;
+    if (!manualSelected || replaceIds.length === 0) return;
     setProcessing(true);
     // Create one new inköp for the chosen article
     await base44.entities.LokalvardInköp.create({
@@ -64,11 +65,12 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
       ordernummer: first.ordernummer || null,
     });
     // Delete only the selected items
-    for (const item of group.filter(i => replaceIds.has(i.id))) {
+    const idsToDelete = new Set(replaceIds);
+    for (const item of group.filter(i => idsToDelete.has(i.id))) {
       await base44.entities.LokalvardInköp.delete(item.id);
     }
     setProcessing(false);
-    const count = replaceIds.size;
+    const count = replaceIds.length;
     setDismissReason(`Ersatt ${count} post${count > 1 ? 'er' : ''} med "${manualSelected.benamning}".`);
     setResolved(true);
     onResolved();
@@ -188,7 +190,7 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
         <div className="px-4 py-3 bg-blue-50 border-t border-blue-200 space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-blue-800">Välj vilka poster att ersätta:</p>
-            <button onClick={() => { setShowManualPicker(false); setManualSelected(null); setManualSearch(''); setReplaceIds(new Set(group.map(i => i.id))); }} className="text-blue-400 hover:text-blue-600">
+            <button onClick={() => { setShowManualPicker(false); setManualSelected(null); setManualSearch(''); const m = {}; group.forEach(i => { m[i.id] = true; }); setReplaceMap(m); }} className="text-blue-400 hover:text-blue-600">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -198,7 +200,7 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
             {group.map(item => (
               <label key={item.id} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50/50 text-sm">
                 <Checkbox
-                  checked={replaceIds.has(item.id)}
+                  checked={!!replaceMap[item.id]}
                   onCheckedChange={() => toggleReplaceId(item.id)}
                 />
                 <span className="font-medium text-gray-800 truncate flex-1">{item.benamning}</span>
@@ -207,7 +209,7 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
             ))}
           </div>
 
-          {replaceIds.size === 0 && (
+          {replaceIds.length === 0 && (
             <p className="text-xs text-red-600">Välj minst en post att ersätta.</p>
           )}
 
@@ -247,10 +249,10 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
           {manualSearch.length >= 2 && manualResults.length === 0 && (
             <p className="text-xs text-gray-500 py-1">Inga artiklar hittades.</p>
           )}
-          {manualSelected && replaceIds.size > 0 && (
+          {manualSelected && replaceIds.length > 0 && (
             <div className="flex items-center justify-between gap-2 bg-white border border-blue-200 rounded-lg px-3 py-2">
               <p className="text-xs text-blue-700">
-                Ersätt {replaceIds.size} av {group.length} post{replaceIds.size > 1 ? 'er' : ''} med <strong>{manualSelected.benamning}</strong>
+                Ersätt {replaceIds.length} av {group.length} post{replaceIds.length > 1 ? 'er' : ''} med <strong>{manualSelected.benamning}</strong>
               </p>
               <Button
                 size="sm"
