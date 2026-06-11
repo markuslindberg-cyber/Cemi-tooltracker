@@ -78,9 +78,9 @@ export default function LokalvardOmatchadeInkop() {
   };
 
   const matchMutation = useMutation({
-    mutationFn: async ({ records, newArtikelId }) => {
+    mutationFn: async ({ records, newArtikelId, extraUpdates }) => {
       for (const rec of records) {
-        await base44.entities.LokalvardInköp.update(rec.id, { artikel_id: newArtikelId });
+        await base44.entities.LokalvardInköp.update(rec.id, { artikel_id: newArtikelId, ...extraUpdates });
       }
     },
     onSuccess: () => {
@@ -197,7 +197,7 @@ export default function LokalvardOmatchadeInkop() {
                         key={record.id}
                         record={record}
                         artiklar={artiklar}
-                        onMatch={(newArtikelId) => matchMutation.mutate({ records: [record], newArtikelId })}
+                        onMatch={(newArtikelId, extraUpdates) => matchMutation.mutate({ records: [record], newArtikelId, extraUpdates })}
                         onDelete={() => {
                           if (confirm('Radera denna post?')) deleteMutation.mutate([record]);
                         }}
