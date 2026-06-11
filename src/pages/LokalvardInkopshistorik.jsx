@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Loader2, Plus, Calendar, ChevronDown, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import NyttInköpModal from '@/components/lokalvard/NyttInköpModal';
 
 export default function LokalvardInkopshistorik() {
@@ -200,7 +201,11 @@ export default function LokalvardInkopshistorik() {
             {sorted.map(row => (
               <tr key={row.id} className="hover:bg-gray-50">
                 <td className="px-3 py-2 text-gray-900 whitespace-nowrap text-xs">{row.datum}</td>
-                <td className="px-3 py-2 text-gray-900 font-medium text-xs">{row.benamning}</td>
+                <td className="px-3 py-2 font-medium text-xs">
+                  <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.streckkod || row.artikel_id)}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                    {row.benamning}
+                  </Link>
+                </td>
                 <td className="px-3 py-2 text-gray-500 text-xs font-mono">{row.streckkod}</td>
                 <td className="px-3 py-2 text-right text-gray-900 text-xs">{row.antal}</td>
                 <td className="px-3 py-2 text-right text-gray-900 text-xs whitespace-nowrap">
@@ -221,7 +226,9 @@ export default function LokalvardInkopshistorik() {
           <div key={row.id} className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-start justify-between">
               <div className="min-w-0">
-                <p className="font-semibold text-sm text-gray-900 truncate">{row.benamning}</p>
+                <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.streckkod || row.artikel_id)}`} className="font-semibold text-sm text-blue-600 hover:text-blue-800 hover:underline truncate block">
+                  {row.benamning}
+                </Link>
                 <p className="text-xs text-gray-500 mt-0.5">{row.streckkod}</p>
               </div>
               <p className="text-sm font-bold text-gray-900 whitespace-nowrap ml-3">
