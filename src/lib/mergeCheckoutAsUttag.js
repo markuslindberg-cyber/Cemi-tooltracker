@@ -7,7 +7,8 @@
  * lagervärde-utility can all include checkout-based withdrawals.
  */
 export function mergeCheckoutAsUttag(uttagArray, checkoutArray, artikelMap) {
-  if (!checkoutArray || checkoutArray.length === 0) return uttagArray;
+  const safeUttag = Array.isArray(uttagArray) ? uttagArray : [];
+  if (!checkoutArray || checkoutArray.length === 0) return safeUttag;
 
   const checkoutAsUttag = checkoutArray.map(co => {
     const dateStr = co.checked_out_date || new Date().toISOString();
@@ -46,7 +47,7 @@ export function mergeCheckoutAsUttag(uttagArray, checkoutArray, artikelMap) {
     };
   });
 
-  return [...uttagArray, ...checkoutAsUttag];
+  return [...safeUttag, ...checkoutAsUttag];
 }
 
 /**
