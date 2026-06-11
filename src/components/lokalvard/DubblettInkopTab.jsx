@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, Trash2, Loader2, CheckCheck } from 'lucide-react';
+import { AlertTriangle, Check, Trash2, Loader2, CheckCheck, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
-function DubblettGroup({ group, onResolved }) {
+function DubblettGroup({ group, allArtiklar, onResolved }) {
   const [selected, setSelected] = useState(null); // id of item to keep
   const [processing, setProcessing] = useState(false);
   const [resolved, setResolved] = useState(false);
+  const [showManualPicker, setShowManualPicker] = useState(false);
+  const [manualSearch, setManualSearch] = useState('');
+  const [manualSelected, setManualSelected] = useState(null);
 
   const first = group[0];
+
+  const manualResults = useMemo(() => {
+    if (!manualSearch || manualSearch.length < 2) return [];
+    const q = manualSearch.toLowerCase();
+    return allArtiklar
+      .filter(a => !a.is_deleted && (
+        a.benamning?.toLowerCase().includes(q) ||
+        a.streckkod?.includes(manualSearch) ||
+        a.artikelnummer?.toLowerCase().includes(q)
+      ))
+      .slice(0, 10);
+  }, [manualSearch, allArtiklar]);
 
   const handleKeepSelected = async () => {
     if (!selected) return;
@@ -20,6 +36,27 @@ function DubblettGroup({ group, onResolved }) {
     }
     setProcessing(false);
     setDismissReason(`Behöll vald post – ${group.length - 1} dubbletter borttagna.`);
+    setResolved(true);
+    onResolved();
+  };
+
+  const handleReplaceWithManual = async () => {
+    if (!manualSelected) return;
+    setProcessing(true);
+    // Create a new inköp for the chosen article
+    await base44.entities.LokalvardInköp.create({
+      artikel_id: manualSelected.id,
+      datum: first.datum,
+      antal: first.antal,
+      pris: first.pris,
+      ordernummer: first.ordernummer || null,
+    });
+    // Delete all original duplicates
+    for (const item of group) {
+      await base44.entities.LokalvardInköp.delete(item.id);
+    }
+    setProcessing(false);
+    setDismissReason(`Ersatt med "${manualSelected.benamning}" – ${group.length} gamla poster borttagna.`);
     setResolved(true);
     onResolved();
   };
@@ -132,6 +169,66 @@ function DubblettGroup({ group, onResolved }) {
         })}
       </div>
 
+      {/* Manual article picker */}
+      {showManualPicker && (
+        <div className="px-4 py-3 bg-blue-50 border-t border-blue-200 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-blue-800">Sök efter rätt artikel:</p>
+            <button onClick={() => { setShowManualPicker(false); setManualSelected(null); setManualSearch(''); }} className="text-blue-400 hover:text-blue-600">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Sök namn, streckkod eller artikelnummer..."
+              value={manualSearch}
+              onChange={e => setManualSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border border-blue-200 rounded-lg bg-white focus:outline-none focus:border-blue-400"
+            />
+          </div>
+          {manualResults.length > 0 && (
+            <div className="bg-white border border-blue-200 rounded-lg max-h-48 overflow-y-auto divide-y divide-gray-100">
+              {manualResults.map(a => (
+                <button
+                  key={a.id}
+                  onClick={() => setManualSelected(a)}
+                  className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between hover:bg-blue-50 transition-colors ${
+                    manualSelected?.id === a.id ? 'bg-green-50 ring-1 ring-inset ring-green-300' : ''
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="font-medium text-gray-800 truncate block">{a.benamning}</span>
+                    <span className="text-xs text-gray-400">{a.streckkod || a.artikelnummer || ''}</span>
+                  </div>
+                  {manualSelected?.id === a.id && <Check className="w-4 h-4 text-green-600 shrink-0 ml-2" />}
+                </button>
+              ))}
+            </div>
+          )}
+          {manualSearch.length >= 2 && manualResults.length === 0 && (
+            <p className="text-xs text-gray-500 py-1">Inga artiklar hittades.</p>
+          )}
+          {manualSelected && (
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <p className="text-xs text-blue-700">
+                Ersätt alla {group.length} poster med inköp på <strong>{manualSelected.benamning}</strong>?
+              </p>
+              <Button
+                size="sm"
+                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+                disabled={processing}
+                onClick={handleReplaceWithManual}
+              >
+                {processing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                Ersätt
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Action bar */}
       <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3 flex-wrap">
         {selected ? (
@@ -157,12 +254,20 @@ function DubblettGroup({ group, onResolved }) {
         ) : (
           <>
             <p className="text-xs text-gray-500">
-              Välj en post att behålla, eller markera alla som korrekta.
+              Välj en post, sök manuellt, eller behåll alla.
             </p>
-            <Button size="sm" variant="outline" onClick={handleKeepAll} disabled={processing}>
-              <CheckCheck className="w-4 h-4 mr-1" />
-              Inte dubbletter – behåll alla
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+              {!showManualPicker && (
+                <Button size="sm" variant="outline" onClick={() => setShowManualPicker(true)} disabled={processing}>
+                  <Search className="w-4 h-4 mr-1" />
+                  Ingen av dessa – välj manuellt
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={handleKeepAll} disabled={processing}>
+                <CheckCheck className="w-4 h-4 mr-1" />
+                Behåll alla
+              </Button>
+            </div>
           </>
         )}
       </div>
@@ -171,6 +276,12 @@ function DubblettGroup({ group, onResolved }) {
 }
 
 export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
+  const { data: allArtiklar = [] } = useQuery({
+    queryKey: ['lokalvardsArtiklar'],
+    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).catch(() => []),
+    staleTime: 60000,
+  });
+
   const groups = React.useMemo(() => {
     const map = {};
     resolvedInköp.forEach(i => {
@@ -216,7 +327,7 @@ export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
       </div>
 
       {groups.map((group, idx) => (
-        <DubblettGroup key={idx} group={group} onResolved={handleResolved} />
+        <DubblettGroup key={idx} group={group} allArtiklar={allArtiklar} onResolved={handleResolved} />
       ))}
     </div>
   );
