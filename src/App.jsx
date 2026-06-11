@@ -45,6 +45,7 @@ import ArbetskläderStreckkodhantering from './pages/ArbetskläderStreckkodhante
 import KnowledgeGraph from './pages/KnowledgeGraph';
 import LokalvardProduktstatistik from './pages/LokalvardProduktstatistik';
 import LokalvardInkopshistorik from './pages/LokalvardInkopshistorik';
+import LokalvardOmatchadeInkop from './pages/LokalvardOmatchadeInkop';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -156,6 +157,7 @@ const AuthenticatedApp = () => {
       <Route path="/KnowledgeGraph" element={<LayoutWrapper currentPageName="KnowledgeGraph"><KnowledgeGraph /></LayoutWrapper>} />
       <Route path="/Lokalvard/Produktstatistik" element={<LayoutWrapper currentPageName="LokalvardProduktstatistik"><LokalvardProduktstatistik /></LayoutWrapper>} />
       <Route path="/Lokalvard/Inkopshistorik" element={<LayoutWrapper currentPageName="LokalvardInkopshistorik"><LokalvardInkopshistorik /></LayoutWrapper>} />
+      <Route path="/Lokalvard/OmatchadeInkop" element={<LayoutWrapper currentPageName="LokalvardOmatchadeInkop"><LokalvardOmatchadeInkop /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>

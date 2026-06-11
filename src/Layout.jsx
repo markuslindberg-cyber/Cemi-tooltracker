@@ -82,6 +82,7 @@ const navigation = [
       { name: 'Kunder', path: '/Lokalvard/Kunder', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Produktstatistik', path: '/Lokalvard/Produktstatistik', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Inköpshistorik', path: '/Lokalvard/Inkopshistorik', roles: ['admin_lokalvård', 'ägare'] },
+      { name: 'Omatchade inköp', path: '/Lokalvard/OmatchadeInkop', roles: ['admin_lokalvård', 'ägare'] },
 
     ]
   },
