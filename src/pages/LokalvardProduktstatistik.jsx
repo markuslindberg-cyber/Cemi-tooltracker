@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
-import { Loader2, TrendingUp, TrendingDown, Minus, Search } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import ProduktstatistikTable from '@/components/lokalvard/ProduktstatistikTable';
 
 export default function LokalvardProduktstatistik() {
@@ -11,13 +11,21 @@ export default function LokalvardProduktstatistik() {
   const [sortDir, setSortDir] = useState('asc');
 
   const { data: artiklar = [], isLoading: loadingArtiklar } = useQuery({
-    queryKey: ['lokalvardsartiklar'],
-    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 2000),
+    queryKey: ['lokalvardsArtiklar'],
+    queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 10000).then(r => r.filter(a => !a.is_deleted)),
+    staleTime: 60000,
   });
 
   const { data: uttag = [], isLoading: loadingUttag } = useQuery({
-    queryKey: ['uttag-all'],
-    queryFn: () => base44.entities.Uttag.list('-datum', 5000),
+    queryKey: ['uttag'],
+    queryFn: () => base44.entities.Uttag.list('-created_date', 100000).catch(() => []),
+    staleTime: 60000,
+  });
+
+  const { data: inköp = [], isLoading: loadingInkop } = useQuery({
+    queryKey: ['lokalvardInkop'],
+    queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
+    staleTime: 60000,
   });
 
   const stats = useMemo(() => {
@@ -27,57 +35,131 @@ export default function LokalvardProduktstatistik() {
     const d365 = new Date(now);
     d365.setDate(d365.getDate() - 365);
 
-    // Build consumption map: artikel_id -> { last3: number, last12: number }
-    const consumption = {};
+    // Group artiklar by streckkod (same logic as LokalvardLager)
+    const groupedByStreckkod = {};
+    artiklar.forEach(artikel => {
+      const streckkod = artikel.streckkod;
+      if (!streckkod) return;
+
+      if (!groupedByStreckkod[streckkod]) {
+        groupedByStreckkod[streckkod] = {
+          id: artikel.id,
+          benamning: artikel.benamning,
+          streckkod: artikel.streckkod,
+          old_streckkod: artikel.old_streckkod,
+          lagertroskelvarde: artikel.lagertroskelvarde,
+          utgaende: artikel.utgaende,
+          total_antal_inkopta: 0,
+          all_artikel_ids: [],
+        };
+      }
+
+      const currentGroup = groupedByStreckkod[streckkod];
+      if (new Date(artikel.inkopsdatum) > new Date(currentGroup.inkopsdatum || '1970-01-01')) {
+        currentGroup.id = artikel.id;
+        currentGroup.benamning = artikel.benamning;
+        currentGroup.lagertroskelvarde = artikel.lagertroskelvarde;
+        currentGroup.utgaende = artikel.utgaende;
+        if (artikel.old_streckkod) currentGroup.old_streckkod = artikel.old_streckkod;
+      } else if (!currentGroup.old_streckkod && artikel.old_streckkod) {
+        currentGroup.old_streckkod = artikel.old_streckkod;
+      }
+
+      currentGroup.total_antal_inkopta += artikel.antal_inkopta || 0;
+      currentGroup.all_artikel_ids.push(artikel.id);
+    });
+
+    const groups = Object.values(groupedByStreckkod);
+
+    // Calculate uttag per group (same matching logic as LokalvardLager)
+    const calculateUttagForGroup = (group) => {
+      if (!Array.isArray(uttag)) return 0;
+      return uttag.reduce((sum, u) => {
+        const matchingItems = u.artiklar?.filter(item => {
+          if (item.benamning && item.benamning.toLowerCase() === group.benamning.toLowerCase()) return true;
+          if (item.benamning === group.streckkod || item.benamning === group.old_streckkod) return true;
+          if (group.all_artikel_ids.includes(item.artikel_id)) return true;
+          if (item.artikel_id === group.streckkod || item.artikel_id === group.old_streckkod) return true;
+          return false;
+        }) || [];
+        return sum + matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
+      }, 0);
+    };
+
+    const getInköptForGroup = (group) => {
+      const matchingInköp = inköp.filter(i => group.all_artikel_ids.includes(i.artikel_id));
+      const total = matchingInköp.reduce((sum, i) => sum + (i.antal || 0), 0);
+      return total > 0 ? total : group.total_antal_inkopta;
+    };
+
+    // Build consumption over time windows per group
+    const consumptionByGroup = {};
+    groups.forEach(group => {
+      consumptionByGroup[group.streckkod] = { last3: 0, last12: 0 };
+    });
+
     uttag.forEach(u => {
       const uttagDate = new Date(u.datum);
       if (!u.artiklar) return;
-      u.artiklar.forEach(a => {
-        if (!a.artikel_id) return;
-        if (!consumption[a.artikel_id]) consumption[a.artikel_id] = { last3: 0, last12: 0 };
-        if (uttagDate >= d365) {
-          consumption[a.artikel_id].last12 += a.antal || 0;
-        }
-        if (uttagDate >= d90) {
-          consumption[a.artikel_id].last3 += a.antal || 0;
+      u.artiklar.forEach(item => {
+        // Find which group this uttag item belongs to
+        for (const group of groups) {
+          const matches =
+            (item.benamning && item.benamning.toLowerCase() === group.benamning.toLowerCase()) ||
+            item.benamning === group.streckkod || item.benamning === group.old_streckkod ||
+            group.all_artikel_ids.includes(item.artikel_id) ||
+            item.artikel_id === group.streckkod || item.artikel_id === group.old_streckkod;
+
+          if (matches) {
+            if (uttagDate >= d365) consumptionByGroup[group.streckkod].last12 += item.antal || 0;
+            if (uttagDate >= d90) consumptionByGroup[group.streckkod].last3 += item.antal || 0;
+            break;
+          }
         }
       });
     });
 
-    const activeArtiklar = artiklar.filter(a => !a.is_deleted && !(a.utgaende && (a.current_quantity || 0) === 0));
+    return groups
+      .filter(group => {
+        const saldo = getInköptForGroup(group) - calculateUttagForGroup(group);
+        // Filter out utgående with 0 saldo
+        return !(group.utgaende && saldo <= 0);
+      })
+      .map(group => {
+        const saldo = getInköptForGroup(group) - calculateUttagForGroup(group);
+        const c = consumptionByGroup[group.streckkod] || { last3: 0, last12: 0 };
+        const avg3 = c.last3 / 3;
+        const avg12 = c.last12 / 12;
+        const avgPerDay = avg3 / 30;
 
-    return activeArtiklar.map(artikel => {
-      const c = consumption[artikel.id] || { last3: 0, last12: 0 };
-      const avg3 = c.last3 / 3;
-      const avg12 = c.last12 / 12;
-      const avgPerDay = avg3 / 30;
+        let trend = 'stable';
+        if (avg12 > 0) {
+          if (avg3 > avg12 * 1.1) trend = 'up';
+          else if (avg3 < avg12 * 0.9) trend = 'down';
+        }
 
-      let trend = 'stable';
-      if (avg3 > avg12 * 1.1) trend = 'up';
-      else if (avg3 < avg12 * 0.9) trend = 'down';
+        const daysLeft = avgPerDay > 0
+          ? Math.round(Math.max(saldo, 0) / avgPerDay)
+          : saldo > 0 ? Infinity : 0;
 
-      const daysLeft = avgPerDay > 0
-        ? Math.round((artikel.current_quantity || 0) / avgPerDay)
-        : (artikel.current_quantity || 0) > 0 ? Infinity : 0;
-
-      return {
-        id: artikel.id,
-        name: artikel.benamning,
-        currentStock: artikel.current_quantity || 0,
-        avg3,
-        avg12,
-        trend,
-        daysLeft,
-      };
-    });
-  }, [artiklar, uttag]);
+        return {
+          id: group.id,
+          name: group.benamning,
+          currentStock: saldo,
+          avg3,
+          avg12,
+          trend,
+          daysLeft,
+        };
+      });
+  }, [artiklar, uttag, inköp]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     let items = stats;
     if (q) items = items.filter(s => s.name?.toLowerCase().includes(q));
 
-    return items.sort((a, b) => {
+    return [...items].sort((a, b) => {
       let cmp = 0;
       if (sortBy === 'name') cmp = (a.name || '').localeCompare(b.name || '', 'sv');
       else if (sortBy === 'stock') cmp = a.currentStock - b.currentStock;
@@ -100,7 +182,7 @@ export default function LokalvardProduktstatistik() {
     else { setSortBy(col); setSortDir('asc'); }
   };
 
-  if (loadingArtiklar || loadingUttag) {
+  if (loadingArtiklar || loadingUttag || loadingInkop) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-[#8B1E1E] animate-spin" />
@@ -115,6 +197,18 @@ export default function LokalvardProduktstatistik() {
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Förbrukningsanalys baserad på uttagshistorik – {stats.length} produkter
         </p>
+      </div>
+
+      {/* Färgförklaring */}
+      <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 rounded bg-red-50 border border-red-200" />
+          <span className="text-gray-600 dark:text-gray-400">Slut i lager (saldo 0)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-4 h-4 rounded bg-orange-50 border border-orange-200" />
+          <span className="text-gray-600 dark:text-gray-400">Lågt lager (&lt;14 dagar kvar)</span>
+        </div>
       </div>
 
       <div className="relative max-w-sm">
