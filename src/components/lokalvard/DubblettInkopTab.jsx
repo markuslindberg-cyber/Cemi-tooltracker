@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, Trash2, Loader2, CheckCheck, Search, X } from 'lucide-react';
+import { AlertTriangle, Check, Trash2, Loader2, CheckCheck, Search, X, Replace } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -12,8 +13,19 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
   const [showManualPicker, setShowManualPicker] = useState(false);
   const [manualSearch, setManualSearch] = useState('');
   const [manualSelected, setManualSelected] = useState(null);
+  // Track which items to replace with manual article (by id)
+  const [replaceIds, setReplaceIds] = useState(new Set(group.map(i => i.id)));
 
   const first = group[0];
+
+  const toggleReplaceId = (id) => {
+    setReplaceIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const manualResults = useMemo(() => {
     if (!manualSearch || manualSearch.length < 2) return [];
@@ -41,9 +53,9 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
   };
 
   const handleReplaceWithManual = async () => {
-    if (!manualSelected) return;
+    if (!manualSelected || replaceIds.size === 0) return;
     setProcessing(true);
-    // Create a new inköp for the chosen article
+    // Create one new inköp for the chosen article
     await base44.entities.LokalvardInköp.create({
       artikel_id: manualSelected.id,
       datum: first.datum,
@@ -51,12 +63,13 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
       pris: first.pris,
       ordernummer: first.ordernummer || null,
     });
-    // Delete all original duplicates
-    for (const item of group) {
+    // Delete only the selected items
+    for (const item of group.filter(i => replaceIds.has(i.id))) {
       await base44.entities.LokalvardInköp.delete(item.id);
     }
     setProcessing(false);
-    setDismissReason(`Ersatt med "${manualSelected.benamning}" – ${group.length} gamla poster borttagna.`);
+    const count = replaceIds.size;
+    setDismissReason(`Ersatt ${count} post${count > 1 ? 'er' : ''} med "${manualSelected.benamning}".`);
     setResolved(true);
     onResolved();
   };
@@ -171,22 +184,45 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
 
       {/* Manual article picker */}
       {showManualPicker && (
-        <div className="px-4 py-3 bg-blue-50 border-t border-blue-200 space-y-2">
+        <div className="px-4 py-3 bg-blue-50 border-t border-blue-200 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-blue-800">Sök efter rätt artikel:</p>
-            <button onClick={() => { setShowManualPicker(false); setManualSelected(null); setManualSearch(''); }} className="text-blue-400 hover:text-blue-600">
+            <p className="text-xs font-medium text-blue-800">Välj vilka poster att ersätta:</p>
+            <button onClick={() => { setShowManualPicker(false); setManualSelected(null); setManualSearch(''); setReplaceIds(new Set(group.map(i => i.id))); }} className="text-blue-400 hover:text-blue-600">
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Sök namn, streckkod eller artikelnummer..."
-              value={manualSearch}
-              onChange={e => setManualSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-blue-200 rounded-lg bg-white focus:outline-none focus:border-blue-400"
-            />
+
+          {/* Checkboxes for which items to replace */}
+          <div className="bg-white border border-blue-200 rounded-lg divide-y divide-gray-100">
+            {group.map(item => (
+              <label key={item.id} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50/50 text-sm">
+                <Checkbox
+                  checked={replaceIds.has(item.id)}
+                  onCheckedChange={() => toggleReplaceId(item.id)}
+                />
+                <span className="font-medium text-gray-800 truncate flex-1">{item.benamning}</span>
+                <span className="text-xs text-gray-400 shrink-0">{item.streckkod || item.artikel_id}</span>
+              </label>
+            ))}
+          </div>
+
+          {replaceIds.size === 0 && (
+            <p className="text-xs text-red-600">Välj minst en post att ersätta.</p>
+          )}
+
+          {/* Search for replacement article */}
+          <div>
+            <p className="text-xs font-medium text-blue-800 mb-1">Sök efter rätt artikel:</p>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Sök namn, streckkod eller artikelnummer..."
+                value={manualSearch}
+                onChange={e => setManualSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-blue-200 rounded-lg bg-white focus:outline-none focus:border-blue-400"
+              />
+            </div>
           </div>
           {manualResults.length > 0 && (
             <div className="bg-white border border-blue-200 rounded-lg max-h-48 overflow-y-auto divide-y divide-gray-100">
@@ -210,18 +246,18 @@ function DubblettGroup({ group, allArtiklar, onResolved }) {
           {manualSearch.length >= 2 && manualResults.length === 0 && (
             <p className="text-xs text-gray-500 py-1">Inga artiklar hittades.</p>
           )}
-          {manualSelected && (
-            <div className="flex items-center justify-between gap-2 pt-1">
+          {manualSelected && replaceIds.size > 0 && (
+            <div className="flex items-center justify-between gap-2 bg-white border border-blue-200 rounded-lg px-3 py-2">
               <p className="text-xs text-blue-700">
-                Ersätt alla {group.length} poster med inköp på <strong>{manualSelected.benamning}</strong>?
+                Ersätt {replaceIds.size} av {group.length} post{replaceIds.size > 1 ? 'er' : ''} med <strong>{manualSelected.benamning}</strong>
               </p>
               <Button
                 size="sm"
-                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+                className="bg-[#8B1E1E] hover:bg-[#6B1515] shrink-0"
                 disabled={processing}
                 onClick={handleReplaceWithManual}
               >
-                {processing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                {processing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Replace className="w-4 h-4 mr-1" />}
                 Ersätt
               </Button>
             </div>
