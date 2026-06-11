@@ -46,17 +46,17 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs" onClick={() => onSort('name')}>
               Produktnamn<SortIcon col="name" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
-            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right" onClick={() => onSort('stock')}>
-              Lagersaldo<SortIcon col="stock" sortBy={sortBy} sortDir={sortDir} />
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[70px] px-2" onClick={() => onSort('stock')}>
+              Lager<SortIcon col="stock" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
-            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('avg3')}>
-              Snitt/mån (3m)<SortIcon col="avg3" sortBy={sortBy} sortDir={sortDir} />
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[65px] px-2 hidden sm:table-cell" onClick={() => onSort('avg3')}>
+              3m<SortIcon col="avg3" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
-            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden md:table-cell" onClick={() => onSort('avg12')}>
-              Snitt/mån (12m)<SortIcon col="avg12" sortBy={sortBy} sortDir={sortDir} />
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[65px] px-2 hidden md:table-cell" onClick={() => onSort('avg12')}>
+              12m<SortIcon col="avg12" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
-            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('purchaseCount')}>
-              Inköpstillfällen<SortIcon col="purchaseCount" sortBy={sortBy} sortDir={sortDir} />
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[60px] px-2 hidden sm:table-cell" onClick={() => onSort('purchaseCount')}>
+              Inköp<SortIcon col="purchaseCount" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('avgInterval')}>
               Snittintervall inköp<SortIcon col="avgInterval" sortBy={sortBy} sortDir={sortDir} />
@@ -99,7 +99,7 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
                     {item.name}
                   </button>
                 </TableCell>
-                <TableCell className="text-right text-sm tabular-nums">
+                <TableCell className="text-right text-sm tabular-nums px-2 w-[70px]">
                   <span className={cn(
                     isZeroStock && 'text-red-600 font-semibold',
                     isLowStock && 'text-orange-600 font-semibold',
@@ -107,13 +107,13 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
                     {item.currentStock}
                   </span>
                 </TableCell>
-                <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                <TableCell className="text-right text-sm tabular-nums px-2 w-[65px] hidden sm:table-cell">
                   {item.avg3.toFixed(1)}
                 </TableCell>
-                <TableCell className="text-right text-sm tabular-nums hidden md:table-cell">
+                <TableCell className="text-right text-sm tabular-nums px-2 w-[65px] hidden md:table-cell">
                   {item.avg12.toFixed(1)}
                 </TableCell>
-                <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                <TableCell className="text-right text-sm tabular-nums px-2 w-[60px] hidden sm:table-cell">
                   {item.purchaseCount}
                 </TableCell>
                 <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
