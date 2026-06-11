@@ -214,6 +214,10 @@ export default function LokalvardProduktstatistik() {
     else { setSortBy(col); setSortDir('asc'); }
   };
 
+  const orderItems = useMemo(() => {
+    return stats.filter(s => s.daysLeft !== Infinity && s.daysLeft <= 45 && !s.utgaende);
+  }, [stats]);
+
   if (loadingArtiklar || loadingUttag || loadingInkop) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -221,10 +225,6 @@ export default function LokalvardProduktstatistik() {
       </div>
     );
   }
-
-  const orderItems = useMemo(() => {
-    return stats.filter(s => s.daysLeft !== Infinity && s.daysLeft <= 45 && !s.utgaende);
-  }, [stats]);
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
