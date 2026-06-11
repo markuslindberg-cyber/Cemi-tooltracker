@@ -10,104 +10,105 @@ Deno.serve(async (req) => {
 
     const { dryRun = true } = await req.json().catch(() => ({}));
 
-    // Fetch ALL articles including deleted ones
     const articles = await base44.entities.LokalvardsArtikel.filter({}, null, 100000);
     const allInkop = await base44.entities.LokalvardInköp.filter({}, null, 100000);
+    const allUttag = await base44.entities.Uttag.filter({}, null, 100000);
+    const allCheckout = await base44.entities.LokalvardCheckout.filter({}, null, 100000);
 
-    const activeArticleIdSet = new Set(articles.filter(a => !a.is_deleted).map(a => a.id));
-    const allArticleIdSet = new Set(articles.map(a => a.id));
+    const articleIdSet = new Set(articles.map(a => a.id));
 
-    // Build lookup: old deleted article ID -> find matching active article by same streckkod/benamning
-    const deletedArticles = articles.filter(a => a.is_deleted);
-    const activeArticles = articles.filter(a => !a.is_deleted);
-
-    // Build maps for active articles
-    const activeByStreckkod = {};
-    const activeByBenamning = {};
-    const activeByPris = {};
-    activeArticles.forEach(a => {
-      if (a.streckkod) activeByStreckkod[a.streckkod] = a;
-      if (a.old_streckkod) activeByStreckkod[a.old_streckkod] = a;
-      if (a.benamning) {
-        const key = a.benamning.trim().toLowerCase();
-        if (!activeByBenamning[key]) activeByBenamning[key] = a;
+    // Collect name hints from uttag
+    const nameFromUttag = {};
+    allUttag.forEach(u => {
+      if (u.artiklar) {
+        u.artiklar.forEach(art => {
+          if (art.artikel_id && art.benamning) {
+            nameFromUttag[art.artikel_id] = art.benamning;
+          }
+        });
       }
     });
 
-    // Map deleted article ID -> best matching active article
-    const deletedToActive = {};
-    deletedArticles.forEach(del => {
-      // Try streckkod match
-      let match = null;
-      if (del.streckkod && activeByStreckkod[del.streckkod]) {
-        match = activeByStreckkod[del.streckkod];
+    // Collect name hints from checkout
+    const nameFromCheckout = {};
+    allCheckout.forEach(c => {
+      if (c.checked_out_items) {
+        c.checked_out_items.forEach(item => {
+          if (item.item_id && item.name) {
+            nameFromCheckout[item.item_id] = item.name;
+          }
+        });
       }
-      if (!match && del.old_streckkod && activeByStreckkod[del.old_streckkod]) {
-        match = activeByStreckkod[del.old_streckkod];
-      }
-      // Try name match
-      if (!match && del.benamning) {
-        const key = del.benamning.trim().toLowerCase();
-        if (activeByBenamning[key]) match = activeByBenamning[key];
-      }
-      if (match) {
-        deletedToActive[del.id] = match;
+    });
+
+    // Build name lookup for active articles
+    const activeByName = {};
+    articles.forEach(a => {
+      if (a.benamning) {
+        const key = a.benamning.trim().toLowerCase();
+        if (!activeByName[key]) activeByName[key] = a;
       }
     });
 
     // Find broken inköp
-    const broken = allInkop.filter(i => i.artikel_id && !activeArticleIdSet.has(i.artikel_id));
+    const broken = allInkop.filter(i => i.artikel_id && !articleIdSet.has(i.artikel_id));
+
+    // Group by unique artikel_id
+    const groupedByArtikelId = {};
+    broken.forEach(ink => {
+      if (!groupedByArtikelId[ink.artikel_id]) {
+        groupedByArtikelId[ink.artikel_id] = [];
+      }
+      groupedByArtikelId[ink.artikel_id].push(ink);
+    });
 
     const fixed = [];
     const notFound = [];
+    const analysis = [];
 
-    for (const ink of broken) {
+    for (const [oldId, records] of Object.entries(groupedByArtikelId)) {
+      // Try name from uttag first, then checkout
+      const nameHint = nameFromUttag[oldId] || nameFromCheckout[oldId];
       let match = null;
       let matchMethod = '';
 
-      // Check if it points to a deleted article we can remap
-      if (deletedToActive[ink.artikel_id]) {
-        match = deletedToActive[ink.artikel_id];
-        matchMethod = 'via borttagen artikel → aktiv match';
+      if (nameHint) {
+        const nameKey = nameHint.trim().toLowerCase();
+        if (activeByName[nameKey]) {
+          match = activeByName[nameKey];
+          matchMethod = `namn-match: "${nameHint}"`;
+        }
       }
 
-      // Check if it points to a deleted article directly (it still exists but is_deleted)
-      if (!match && allArticleIdSet.has(ink.artikel_id)) {
-        const art = articles.find(a => a.id === ink.artikel_id);
-        if (art && art.is_deleted) {
-          // Find active equivalent
-          const key = art.benamning?.trim().toLowerCase();
-          if (key && activeByBenamning[key]) {
-            match = activeByBenamning[key];
-            matchMethod = 'borttagen artikel namn-match';
-          } else if (art.streckkod && activeByStreckkod[art.streckkod]) {
-            match = activeByStreckkod[art.streckkod];
-            matchMethod = 'borttagen artikel streckkod-match';
+      analysis.push({
+        oldId,
+        count: records.length,
+        nameHint: nameHint || null,
+        matchedTo: match ? { id: match.id, benamning: match.benamning } : null,
+        matchMethod: matchMethod || null,
+      });
+
+      for (const ink of records) {
+        if (match) {
+          if (!dryRun) {
+            await base44.entities.LokalvardInköp.update(ink.id, { artikel_id: match.id });
           }
+          fixed.push({
+            inkop_id: ink.id,
+            old_artikel_id: ink.artikel_id,
+            new_artikel_id: match.id,
+            benamning: match.benamning,
+            matchMethod,
+          });
+        } else {
+          notFound.push({
+            inkop_id: ink.id,
+            artikel_id: ink.artikel_id,
+            datum: ink.datum,
+            antal: ink.antal,
+            pris: ink.pris,
+          });
         }
-      }
-
-      if (match) {
-        if (!dryRun) {
-          await base44.entities.LokalvardInköp.update(ink.id, { artikel_id: match.id });
-        }
-        fixed.push({
-          inkop_id: ink.id,
-          old_artikel_id: ink.artikel_id,
-          new_artikel_id: match.id,
-          benamning: match.benamning,
-          matchMethod,
-          datum: ink.datum,
-          antal: ink.antal,
-        });
-      } else {
-        notFound.push({
-          inkop_id: ink.id,
-          artikel_id: ink.artikel_id,
-          datum: ink.datum,
-          antal: ink.antal,
-          pris: ink.pris,
-        });
       }
     }
 
@@ -119,8 +120,7 @@ Deno.serve(async (req) => {
       totalBroken: broken.length,
       fixedCount: fixed.length,
       notFoundCount: notFound.length,
-      deletedArticlesFound: deletedArticles.length,
-      remappable: Object.keys(deletedToActive).length,
+      analysis,
       fixed: fixed.slice(0, 30),
       notFound: notFound.slice(0, 30),
     });
