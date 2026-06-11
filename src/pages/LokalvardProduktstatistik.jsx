@@ -273,18 +273,18 @@ export default function LokalvardProduktstatistik() {
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6">
+    <div className="p-4 lg:p-8 space-y-4 lg:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Produktstatistik</h1>
+        <h1 className="text-xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Produktstatistik</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Förbrukningsanalys baserad på uttagshistorik – {stats.length} produkter
         </p>
       </div>
 
-      <Tabs defaultValue="statistik" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="statistik">Statistik</TabsTrigger>
-          <TabsTrigger value="bestallning" className="gap-2">
+      <Tabs defaultValue="statistik" className="space-y-4 lg:space-y-6">
+        <TabsList className="w-full lg:w-auto">
+          <TabsTrigger value="statistik" className="flex-1 lg:flex-initial">Statistik</TabsTrigger>
+          <TabsTrigger value="bestallning" className="flex-1 lg:flex-initial gap-2">
             Beställningslista
             {orderItems.length > 0 && (
               <span className="ml-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold bg-red-500 text-white">

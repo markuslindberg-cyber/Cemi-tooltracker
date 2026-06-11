@@ -117,7 +117,8 @@ export default function BeställningslistaTable({ items }) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto">
+      {/* Desktop table */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto hidden lg:block">
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800/80">
             <TableRow>
@@ -133,13 +134,13 @@ export default function BeställningslistaTable({ items }) {
               <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs" onClick={() => handleSort('trend')}>
                 Trend<SortIcon col="trend" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap hidden sm:table-cell" onClick={() => handleSort('avgQty')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap" onClick={() => handleSort('avgQty')}>
                 Snitt qty/inköp<SortIcon col="avgQty" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap hidden sm:table-cell" onClick={() => handleSort('lastPurchase')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap" onClick={() => handleSort('lastPurchase')}>
                 Senaste inköp<SortIcon col="lastPurchase" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[70px] px-2 hidden sm:table-cell" onClick={() => handleSort('lastPurchaseQty')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[70px] px-2" onClick={() => handleSort('lastPurchaseQty')}>
                 Antal sen.<SortIcon col="lastPurchaseQty" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
               <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap" onClick={() => handleSort('suggested')}>
@@ -194,15 +195,15 @@ export default function BeställningslistaTable({ items }) {
                   <TableCell className="text-sm">
                     <TrendBadge trend={item.trend} />
                   </TableCell>
-                  <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                  <TableCell className="text-right text-sm tabular-nums">
                     {item.avgQtyPerPurchase != null ? `${Math.round(item.avgQtyPerPurchase)} st` : '–'}
                   </TableCell>
-                  <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                  <TableCell className="text-right text-sm tabular-nums">
                     {item.lastPurchaseDate
                       ? new Date(item.lastPurchaseDate).toLocaleDateString('sv-SE')
                       : '–'}
                   </TableCell>
-                  <TableCell className="text-right text-sm tabular-nums px-2 w-[70px] hidden sm:table-cell">
+                  <TableCell className="text-right text-sm tabular-nums px-2 w-[70px]">
                     {item.lastPurchaseQty != null ? item.lastPurchaseQty : '–'}
                   </TableCell>
                   <TableCell className="text-right text-sm tabular-nums font-semibold">
@@ -217,6 +218,69 @@ export default function BeställningslistaTable({ items }) {
             })}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="lg:hidden space-y-2">
+        {sorted.length === 0 ? (
+          <p className="text-center text-gray-500 py-12">Inga produkter behöver beställas just nu 🎉</p>
+        ) : sorted.map(item => {
+          const isZeroStock = item.daysLeft === 0;
+          const isLowStock = !isZeroStock && item.daysLeft <= 14;
+          const suggested = calcSuggestedQty(item);
+
+          return (
+            <div
+              key={item.id}
+              onClick={() => navigate(`/Lokalvard/Artikel/${item.artikelnummer || item.streckkod || item.id}`)}
+              className={cn(
+                "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 active:scale-[0.99] transition-transform",
+                isZeroStock && 'border-red-300 bg-red-50 dark:bg-red-950/30',
+                isLowStock && 'border-orange-300 bg-orange-50 dark:bg-orange-950/30',
+              )}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-semibold text-sm text-blue-600 dark:text-blue-400 truncate flex-1">{item.name}</p>
+                {suggested != null && (
+                  <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#8B1E1E]/10 text-[#8B1E1E] text-xs font-bold">
+                    Beställ {suggested} st
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                <TrendBadge trend={item.trend} />
+                <span className={cn(
+                  "text-xs font-medium px-2 py-0.5 rounded-full",
+                  isZeroStock && 'bg-red-100 text-red-700',
+                  isLowStock && 'bg-orange-100 text-orange-700',
+                  !isZeroStock && !isLowStock && 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+                )}>
+                  {item.daysLeft === Infinity ? '∞' : item.daysLeft} dagar kvar
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <div>
+                  <p className="text-[10px] text-gray-400 uppercase">Lager</p>
+                  <p className={cn("text-xs font-medium", isZeroStock && 'text-red-600', isLowStock && 'text-orange-600', !isZeroStock && !isLowStock && 'text-gray-700 dark:text-gray-300')}>
+                    {item.currentStock} st
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 uppercase">Snitt/inköp</p>
+                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {item.avgQtyPerPurchase != null ? `${Math.round(item.avgQtyPerPurchase)} st` : '–'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 uppercase">Senaste</p>
+                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {item.lastPurchaseDate ? new Date(item.lastPurchaseDate).toLocaleDateString('sv-SE') : '–'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

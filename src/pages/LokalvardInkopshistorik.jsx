@@ -149,17 +149,17 @@ export default function LokalvardInkopshistorik() {
 
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold">🛒 Inköpshistorik – Lokalvård</h1>
+        <h1 className="text-lg lg:text-2xl font-bold">🛒 Inköpshistorik – Lokalvård</h1>
         <Button onClick={() => setShowModal(true)} className="bg-green-600 hover:bg-green-700">
           <Plus className="w-4 h-4 mr-1" /> Nytt inköp
         </Button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 overflow-x-auto">
         <button
           onClick={() => { setActiveTab('manuella'); setSelectedMonths([]); }}
-          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex-1 min-w-0 px-3 lg:px-4 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors whitespace-nowrap ${
             activeTab === 'manuella'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
@@ -169,23 +169,25 @@ export default function LokalvardInkopshistorik() {
         </button>
         <button
           onClick={() => { setActiveTab('importerade'); setSelectedMonths([]); }}
-          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex-1 min-w-0 px-3 lg:px-4 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors whitespace-nowrap ${
             activeTab === 'importerade'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          Importerade / Inventering ({importeradeCount})
+          <span className="hidden sm:inline">Importerade / Inventering</span>
+          <span className="sm:hidden">Import.</span>
+          <span> ({importeradeCount})</span>
         </button>
         <button
           onClick={() => { setActiveTab('dubbletter'); setSelectedMonths([]); }}
-          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`flex-1 min-w-0 px-3 lg:px-4 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors whitespace-nowrap ${
             activeTab === 'dubbletter'
               ? 'bg-white text-amber-800 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          Dubbletter {dubblettCount > 0 ? `(${dubblettCount})` : ''}
+          Dubl. {dubblettCount > 0 ? `(${dubblettCount})` : ''}
         </button>
       </div>
 
@@ -200,7 +202,7 @@ export default function LokalvardInkopshistorik() {
       />
 
       {/* Summary bar */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 lg:px-4 py-2.5 flex items-center justify-between gap-2">
         <span className="text-sm text-blue-700 font-medium">Totalt {filtered.length} inköp</span>
         <span className="text-xl font-bold text-blue-900">
           {totalKostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} kr
