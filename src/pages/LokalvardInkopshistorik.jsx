@@ -112,15 +112,32 @@ export default function LokalvardInkopshistorik() {
   const importeradeCount = resolvedInköp.filter(i => i.source === 'importerade').length;
 
   // Misstänkta dubbletter: samma datum+antal+pris men olika artikel_id
+  // Also exclude dismissed groups (stored in localStorage) so the count matches the tab content
+  const [dismissedKeysVersion, setDismissedKeysVersion] = useState(0);
   const dubblettCount = useMemo(() => {
+    let dismissed;
+    try {
+      const raw = localStorage.getItem('dubblettInkop_dismissed');
+      dismissed = raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { dismissed = new Set(); }
+
     const map = {};
     resolvedInköp.forEach(i => {
       const key = `${i.datum}|${i.antal}|${i.pris}`;
-      if (!map[key]) map[key] = new Set();
-      map[key].add(i.artikel_id);
+      if (!map[key]) map[key] = [];
+      map[key].push(i);
     });
-    return Object.values(map).filter(s => s.size > 1).length;
-  }, [resolvedInköp]);
+    return Object.values(map).filter(group => {
+      if (group.length < 2) return false;
+      const uniqueIds = new Set(group.map(g => g.artikel_id));
+      if (uniqueIds.size <= 1) return false;
+      // Build the same key as DubblettInkopTab
+      const artikelIds = [...uniqueIds].sort().join(',');
+      const gKey = `${group[0].datum}|${group[0].antal}|${group[0].pris}|${artikelIds}`;
+      return !dismissed.has(gKey);
+    }).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedInköp, dismissedKeysVersion]);
 
   if (inkopLoading || artiklarLoading) {
     return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
@@ -233,7 +250,7 @@ export default function LokalvardInkopshistorik() {
 
       {/* Table / Cards */}
       {activeTab === 'dubbletter' ? (
-        <DubblettInkopTab resolvedInköp={resolvedInköp} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['lokalvardInkop'] })} />
+        <DubblettInkopTab resolvedInköp={resolvedInköp} onRefresh={() => { queryClient.invalidateQueries({ queryKey: ['lokalvardInkop'] }); setDismissedKeysVersion(v => v + 1); }} onDismissChange={() => setDismissedKeysVersion(v => v + 1)} />
       ) : (
         <InkopshistorikTable
           rows={sorted}

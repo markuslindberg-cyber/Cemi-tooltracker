@@ -333,7 +333,7 @@ function saveDismissed(keys) {
   localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify([...keys]));
 }
 
-export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
+export default function DubblettInkopTab({ resolvedInköp, onRefresh, onDismissChange }) {
   const [dismissedKeys, setDismissedKeys] = useState(() => loadDismissed());
 
   const { data: allArtiklar = [] } = useQuery({
@@ -349,6 +349,7 @@ export default function DubblettInkopTab({ resolvedInköp, onRefresh }) {
       saveDismissed(next);
       return next;
     });
+    if (onDismissChange) onDismissChange();
   };
 
   const groups = useMemo(() => {
