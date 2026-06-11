@@ -18,6 +18,11 @@
     "pris": {
       "type": "number",
       "description": "Pris per enhet"
+    },
+    "ordernummer": {
+      "type": "string",
+      "nullable": true,
+      "description": "Best\u00e4llningsordernummer"
     }
   },
   "required": [

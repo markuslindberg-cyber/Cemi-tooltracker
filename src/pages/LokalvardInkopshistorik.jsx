@@ -78,7 +78,8 @@ export default function LokalvardInkopshistorik() {
       const s = search.toLowerCase();
       return i.benamning.toLowerCase().includes(s) ||
         i.streckkod.toLowerCase().includes(s) ||
-        (i.artikel_id || '').toLowerCase().includes(s);
+        (i.artikel_id || '').toLowerCase().includes(s) ||
+        (i.ordernummer || '').toLowerCase().includes(s);
     });
   }, [tabFiltered, selectedMonths, search]);
 

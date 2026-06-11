@@ -28,6 +28,9 @@ export default function InkopshistorikTable({ rows, sortBy, sortOrder, onSort })
                 Artikel <SortIcon col="benamning" />
               </th>
               <th className="px-3 py-2 text-left font-semibold text-gray-600 text-xs">Streckkod</th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-600 cursor-pointer hover:text-gray-900 text-xs" onClick={() => onSort('ordernummer')}>
+                Ordernr <SortIcon col="ordernummer" />
+              </th>
               <th className="px-3 py-2 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 text-xs" onClick={() => onSort('antal')}>
                 Antal <SortIcon col="antal" />
               </th>
@@ -49,6 +52,7 @@ export default function InkopshistorikTable({ rows, sortBy, sortOrder, onSort })
                   </Link>
                 </td>
                 <td className="px-3 py-2 text-gray-500 text-xs font-mono">{row.streckkod}</td>
+                <td className="px-3 py-2 text-gray-500 text-xs">{row.ordernummer || '–'}</td>
                 <td className="px-3 py-2 text-right text-gray-900 text-xs">{row.antal}</td>
                 <td className="px-3 py-2 text-right text-gray-900 text-xs whitespace-nowrap">
                   {row.pris?.toLocaleString('sv-SE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr
@@ -80,6 +84,7 @@ export default function InkopshistorikTable({ rows, sortBy, sortOrder, onSort })
             <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
               <span>{row.datum}</span>
               <span>{row.antal} st × {row.pris?.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} kr</span>
+              {row.ordernummer && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs">#{row.ordernummer}</span>}
             </div>
           </div>
         ))}
