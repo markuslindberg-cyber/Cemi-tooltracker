@@ -64,18 +64,22 @@ export default function LokalvardLager() {
   });
 
   const calculateUttag = (aggregatedArtikel) => {
-    // Räkna uttag direkt för denna grupp
     if (!Array.isArray(uttag)) return 0;
+    const allStreckkoder = aggregatedArtikel.all_streckkoder || [aggregatedArtikel.streckkod];
+    if (aggregatedArtikel.old_streckkod && !allStreckkoder.includes(aggregatedArtikel.old_streckkod)) {
+      allStreckkoder.push(aggregatedArtikel.old_streckkod);
+    }
+    const allBenamningar = aggregatedArtikel.all_benamningar || [aggregatedArtikel.benamning?.toLowerCase()];
     return uttag.reduce((sum, u) => {
       const matchingItems = u.artiklar?.filter(item => {
-        // Match om benamning är exakt samma
-        if (item.benamning && item.benamning.toLowerCase() === aggregatedArtikel.benamning.toLowerCase()) return true;
-        // Match om benamning är streckkoden
-        if (item.benamning === aggregatedArtikel.streckkod || item.benamning === aggregatedArtikel.old_streckkod) return true;
+        // Match via benämning (alla varianter)
+        if (item.benamning && allBenamningar.includes(item.benamning.toLowerCase())) return true;
+        // Match om benamning är en streckkod
+        if (item.benamning && allStreckkoder.includes(item.benamning)) return true;
         // Match om artikel_id är någon av artikel-IDs i gruppen
         if (aggregatedArtikel.all_artikel_ids.includes(item.artikel_id)) return true;
-        // Match om artikel_id är streckkoden
-        if (item.artikel_id === aggregatedArtikel.streckkod || item.artikel_id === aggregatedArtikel.old_streckkod) return true;
+        // Match om artikel_id är en streckkod
+        if (item.artikel_id && allStreckkoder.includes(item.artikel_id)) return true;
         return false;
       }) || [];
       return sum + matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
@@ -83,11 +87,13 @@ export default function LokalvardLager() {
   };
 
   const getInköptForArticle = (aggregatedArtikel) => {
-    // Summa inköp – matcha på artikel_id, streckkod och old_streckkod
+    const allStreckkoder = aggregatedArtikel.all_streckkoder || [aggregatedArtikel.streckkod];
+    if (aggregatedArtikel.old_streckkod && !allStreckkoder.includes(aggregatedArtikel.old_streckkod)) {
+      allStreckkoder.push(aggregatedArtikel.old_streckkod);
+    }
     const matchingInköp = inköp.filter(i =>
       aggregatedArtikel.all_artikel_ids.includes(i.artikel_id) ||
-      i.artikel_id === aggregatedArtikel.streckkod ||
-      i.artikel_id === aggregatedArtikel.old_streckkod
+      allStreckkoder.includes(i.artikel_id)
     );
     return matchingInköp.reduce((sum, i) => sum + i.antal, 0);
   };
@@ -122,6 +128,7 @@ export default function LokalvardLager() {
     }
   };
 
+  // Steg 1: Gruppera efter streckkod
   const groupedByStreckkod = {};
   artiklar.forEach(artikel => {
     const streckkod = artikel.streckkod;
@@ -141,6 +148,8 @@ export default function LokalvardLager() {
         total_antal_inkopta: 0,
         total_current_quantity: 0,
         all_artikel_ids: [],
+        all_streckkoder: [streckkod],
+        all_benamningar: [artikel.benamning?.toLowerCase()],
         huvudartikel_antal_inkopta: artikel.antal_inkopta,
       };
     }
@@ -166,9 +175,50 @@ export default function LokalvardLager() {
     currentGroup.total_antal_inkopta += artikel.antal_inkopta;
     currentGroup.total_current_quantity += artikel.current_quantity;
     currentGroup.all_artikel_ids.push(artikel.id);
+    if (artikel.benamning && !currentGroup.all_benamningar.includes(artikel.benamning.toLowerCase())) {
+      currentGroup.all_benamningar.push(artikel.benamning.toLowerCase());
+    }
   });
 
-  let processedArtiklar = Object.values(groupedByStreckkod);
+  // Steg 2: Slå ihop grupper som delar samma artikelnummer (t.ex. Svinto – ny och gammal streckkod)
+  const mergedGroups = {};
+  const streckkodToMergeKey = {};
+  
+  Object.entries(groupedByStreckkod).forEach(([streckkod, group]) => {
+    const artNr = group.artikelnummer;
+    // Hitta om en befintlig grupp redan har samma artikelnummer
+    if (artNr && streckkodToMergeKey[artNr]) {
+      const existingKey = streckkodToMergeKey[artNr];
+      const existingGroup = mergedGroups[existingKey];
+      // Slå ihop
+      existingGroup.all_artikel_ids.push(...group.all_artikel_ids);
+      existingGroup.total_antal_inkopta += group.total_antal_inkopta;
+      existingGroup.total_current_quantity += group.total_current_quantity;
+      existingGroup.all_streckkoder.push(streckkod);
+      group.all_benamningar.forEach(b => {
+        if (!existingGroup.all_benamningar.includes(b)) existingGroup.all_benamningar.push(b);
+      });
+      if (!existingGroup.old_streckkod) existingGroup.old_streckkod = streckkod;
+      // Använd nyaste data som huvud
+      if (new Date(group.inkopsdatum) > new Date(existingGroup.inkopsdatum)) {
+        Object.assign(existingGroup, {
+          id: group.id,
+          benamning: group.benamning,
+          streckkod: group.streckkod,
+          pris: group.pris,
+          inkopsdatum: group.inkopsdatum,
+          lagertroskelvarde: group.lagertroskelvarde,
+          utgaende: group.utgaende,
+          subcategory: group.subcategory,
+        });
+      }
+    } else {
+      mergedGroups[streckkod] = { ...group };
+      if (artNr) streckkodToMergeKey[artNr] = streckkod;
+    }
+  });
+
+  let processedArtiklar = Object.values(mergedGroups);
 
   const filteredProcessedArtiklar = processedArtiklar.filter(a => {
     const searchLower = search.toLowerCase();
@@ -426,11 +476,7 @@ export default function LokalvardLager() {
                         <>
                           <td className="px-3 py-2">
                             <button onClick={() => {
-                              const targetArtikel = artiklar.find(a => a.id === artikel.id);
-                              const navigatePath = targetArtikel?.artikelnummer || targetArtikel?.streckkod || targetArtikel?.id;
-                              if (navigatePath) {
-                                navigate(`/Lokalvard/Artikel/${navigatePath}`);
-                              }
+                              navigate(`/Lokalvard/Artikel/${artikel.streckkod}`);
                             }} className="font-medium text-blue-600 hover:underline text-left text-xs">
                               <span>{artikel.benamning}</span>
                               {artikel.subcategory && <span className="text-gray-500"> — {artikel.subcategory}</span>}
@@ -481,13 +527,7 @@ export default function LokalvardLager() {
           return (
             <div key={artikel.id} className={`${saldoBg} border border-gray-200 rounded-lg p-4`}>
               <button 
-                onClick={() => {
-                  const targetArtikel = artiklar.find(a => a.id === artikel.id);
-                  const navigatePath = targetArtikel?.artikelnummer || targetArtikel?.streckkod || targetArtikel?.id;
-                  if (navigatePath) {
-                    navigate(`/Lokalvard/Artikel/${navigatePath}`);
-                  }
-                }}
+                onClick={() => navigate(`/Lokalvard/Artikel/${artikel.streckkod}`)}
                 className="font-semibold text-blue-600 hover:underline text-left text-sm mb-2 block w-full"
               >
                 {artikel.benamning}

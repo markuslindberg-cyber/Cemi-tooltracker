@@ -53,57 +53,85 @@ export default function LokalvardArtikelDetaljer() {
 
       window.artiklarData = artiklarData;
 
-      const fundArticle = artiklarData.find(a => 
+      // Hitta alla artiklar som matchar (via id, streckkod, artikelnummer)
+      let fundArticle = artiklarData.find(a => 
         a.id === artikelnummer ||
-        a.artikelnummer === artikelnummer || 
         a.streckkod === artikelnummer || 
         a.old_streckkod === artikelnummer
       );
+      // Fallback: sök på artikelnummer
+      if (!fundArticle) {
+        fundArticle = artiklarData.find(a => a.artikelnummer === artikelnummer);
+      }
       if (!fundArticle) {
         navigate('/Lokalvard/Lager');
         return;
       }
 
-      setArtikel(fundArticle);
+      // Hitta ALLA relaterade artiklar (samma streckkod, old_streckkod eller artikelnummer)
+      const findRelated = (startArtikel) => {
+        const related = new Set();
+        const streckkoder = new Set();
+        const queue = [startArtikel];
+        while (queue.length > 0) {
+          const current = queue.pop();
+          if (related.has(current.id)) continue;
+          related.add(current.id);
+          if (current.streckkod) streckkoder.add(current.streckkod);
+          if (current.old_streckkod) streckkoder.add(current.old_streckkod);
+          // Hitta fler artiklar med samma streckkod, old_streckkod eller artikelnummer
+          artiklarData.forEach(a => {
+            if (related.has(a.id)) return;
+            if (a.streckkod && streckkoder.has(a.streckkod)) queue.push(a);
+            else if (a.old_streckkod && streckkoder.has(a.old_streckkod)) queue.push(a);
+            else if (current.artikelnummer && a.artikelnummer === current.artikelnummer) queue.push(a);
+          });
+        }
+        return { ids: [...related], streckkoder: [...streckkoder] };
+      };
+
+      const relatedInfo = findRelated(fundArticle);
+
+      // Välj den nyaste artikeln som "huvud"
+      const allRelatedArticles = artiklarData.filter(a => relatedInfo.ids.includes(a.id));
+      const newestArticle = allRelatedArticles.sort((a, b) => new Date(b.inkopsdatum) - new Date(a.inkopsdatum))[0] || fundArticle;
+
+      setArtikel(newestArticle);
       setForm({
-        benamning: fundArticle.benamning,
-        artikelnummer: fundArticle.artikelnummer || '',
-        streckkod: fundArticle.streckkod || '',
-        old_streckkod: fundArticle.old_streckkod || '',
-        pris: fundArticle.pris,
-        inkopsdatum: fundArticle.inkopsdatum,
-        antal_inkopta: fundArticle.antal_inkopta,
-        lagertroskelvarde: fundArticle.lagertroskelvarde || 10,
-        utgaende: fundArticle.utgaende || false
+        benamning: newestArticle.benamning,
+        artikelnummer: newestArticle.artikelnummer || '',
+        streckkod: newestArticle.streckkod || '',
+        old_streckkod: newestArticle.old_streckkod || '',
+        pris: newestArticle.pris,
+        inkopsdatum: newestArticle.inkopsdatum,
+        antal_inkopta: newestArticle.antal_inkopta,
+        lagertroskelvarde: newestArticle.lagertroskelvarde || 10,
+        utgaende: newestArticle.utgaende || false
       });
 
-      const streckkod = fundArticle.streckkod;
-      const oldStreckkod = fundArticle.old_streckkod;
-
-      // Samla alla artikel-IDs med samma streckkod (grupperad)
-      const relateradeArtikelIds = artiklarData
-        .filter(a => a.streckkod === streckkod || a.old_streckkod === streckkod || (oldStreckkod && (a.streckkod === oldStreckkod || a.old_streckkod === oldStreckkod)))
-        .map(a => a.id);
+      const streckkod = newestArticle.streckkod;
+      const oldStreckkod = newestArticle.old_streckkod;
+      const relateradeArtikelIds = relatedInfo.ids;
+      const allRelatedStreckkoder = relatedInfo.streckkoder;
+      const allRelatedBenamningar = [...new Set(allRelatedArticles.map(a => a.benamning?.toLowerCase()).filter(Boolean))];
 
       const relateradeUttag = uttagData.filter(u => 
-        u.artiklar?.some(a => 
-          (a.benamning && a.benamning.toLowerCase() === fundArticle.benamning.toLowerCase()) ||
-          a.benamning === streckkod || 
-          a.benamning === oldStreckkod ||
-          relateradeArtikelIds.includes(a.artikel_id) ||
-          a.artikel_id === streckkod || 
-          a.artikel_id === oldStreckkod
-        )
+        u.artiklar?.some(a => {
+          if (a.benamning && allRelatedBenamningar.includes(a.benamning.toLowerCase())) return true;
+          if (a.benamning && allRelatedStreckkoder.includes(a.benamning)) return true;
+          if (relateradeArtikelIds.includes(a.artikel_id)) return true;
+          if (a.artikel_id && allRelatedStreckkoder.includes(a.artikel_id)) return true;
+          return false;
+        })
       );
 
       const allTransactions = [...relateradeUttag].sort((a, b) => new Date(b.datum) - new Date(a.datum));
       setTransaktioner(allTransactions);
       
-      // Filtrera inköp – matcha på artikel_id, streckkod och old_streckkod
+      // Filtrera inköp – matcha på alla relaterade artikel-IDs och streckkoder
       const relateradeInköp = inköpData?.filter(i => 
         relateradeArtikelIds.includes(i.artikel_id) ||
-        i.artikel_id === streckkod ||
-        i.artikel_id === oldStreckkod
+        allRelatedStreckkoder.includes(i.artikel_id)
       ) || [];
       
       setInköp(relateradeInköp.sort((a, b) => new Date(b.datum) - new Date(a.datum)));
@@ -199,32 +227,49 @@ export default function LokalvardArtikelDetaljer() {
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   if (!artikel) return null;
 
-  // Beräkna grupperad total_antal_inkopta (samma logik som Lagersidan)
+  // Samla alla relaterade artikel-IDs och streckkoder (bredare koppling via artikelnummer)
+  const findRelatedIds = () => {
+    const ids = new Set();
+    const streckkoder = new Set();
+    const benamningar = new Set();
+    const queue = [artikel];
+    while (queue.length > 0) {
+      const current = queue.pop();
+      if (ids.has(current.id)) continue;
+      ids.add(current.id);
+      if (current.streckkod) streckkoder.add(current.streckkod);
+      if (current.old_streckkod) streckkoder.add(current.old_streckkod);
+      if (current.benamning) benamningar.add(current.benamning.toLowerCase());
+      artikelData.forEach(a => {
+        if (ids.has(a.id)) return;
+        if (a.streckkod && streckkoder.has(a.streckkod)) queue.push(a);
+        else if (a.old_streckkod && streckkoder.has(a.old_streckkod)) queue.push(a);
+        else if (current.artikelnummer && a.artikelnummer === current.artikelnummer) queue.push(a);
+      });
+    }
+    return { ids: [...ids], streckkoder: [...streckkoder], benamningar: [...benamningar] };
+  };
+  const related = findRelatedIds();
+  const artikelGruppIds = related.ids;
+  const allStreckkoder = related.streckkoder;
+  const allBenamningar = related.benamningar;
+
+  // Beräkna grupperad total_antal_inkopta
   const grupperadAntalInkopta = artikelData
-    .filter(a => 
-      a.streckkod === artikel.streckkod || 
-      a.old_streckkod === artikel.streckkod ||
-      (artikel.old_streckkod && (a.streckkod === artikel.old_streckkod || a.old_streckkod === artikel.old_streckkod))
-    )
+    .filter(a => artikelGruppIds.includes(a.id))
     .reduce((sum, a) => sum + (a.antal_inkopta || 0), 0);
 
   const totalInköpt = totalFromInköp > 0 ? totalFromInköp : grupperadAntalInkopta;
 
-  // Samla alla relaterade artikel-IDs (samma streckkod-grupp)
-  const artikelGruppIds = artikelData
-    .filter(a => a.streckkod === artikel.streckkod || a.old_streckkod === artikel.streckkod || (artikel.old_streckkod && (a.streckkod === artikel.old_streckkod || a.old_streckkod === artikel.old_streckkod)))
-    .map(a => a.id);
-
-  // Räkna uttag för denna specifika artikel
+  // Räkna uttag för hela gruppen
   const totalUttag = transaktioner.reduce((sum, uttag) => {
-    const matchingItems = uttag.artiklar.filter(item => 
-      (item.benamning && item.benamning.toLowerCase() === artikel.benamning.toLowerCase()) ||
-      item.benamning === artikel.streckkod ||
-      item.benamning === artikel.old_streckkod ||
-      artikelGruppIds.includes(item.artikel_id) ||
-      item.artikel_id === artikel.streckkod ||
-      item.artikel_id === artikel.old_streckkod
-    );
+    const matchingItems = uttag.artiklar.filter(item => {
+      if (item.benamning && allBenamningar.includes(item.benamning.toLowerCase())) return true;
+      if (item.benamning && allStreckkoder.includes(item.benamning)) return true;
+      if (artikelGruppIds.includes(item.artikel_id)) return true;
+      if (item.artikel_id && allStreckkoder.includes(item.artikel_id)) return true;
+      return false;
+    });
     return sum + matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
   }, 0);
 
@@ -426,14 +471,13 @@ export default function LokalvardArtikelDetaljer() {
         ) : (
           <div className="space-y-0.5">
             {transaktioner.map(uttag => {
-               const matchingItems = uttag.artiklar.filter(item => 
-                 (item.benamning && item.benamning.toLowerCase() === artikel.benamning.toLowerCase()) ||
-                 item.benamning === artikel.streckkod ||
-                 item.benamning === artikel.old_streckkod ||
-                 artikelGruppIds.includes(item.artikel_id) ||
-                 item.artikel_id === artikel.streckkod ||
-                 item.artikel_id === artikel.old_streckkod
-               );
+               const matchingItems = uttag.artiklar.filter(item => {
+                 if (item.benamning && allBenamningar.includes(item.benamning.toLowerCase())) return true;
+                 if (item.benamning && allStreckkoder.includes(item.benamning)) return true;
+                 if (artikelGruppIds.includes(item.artikel_id)) return true;
+                 if (item.artikel_id && allStreckkoder.includes(item.artikel_id)) return true;
+                 return false;
+               });
                const totalAntal = matchingItems.reduce((s, i) => s + (i.antal || 0), 0);
               const totalPris = matchingItems.reduce((s, i) => s + (i.antal * i.pris_per_enhet || 0), 0);
               const datum = uttag.datum ? uttag.datum.split('T')[0] : '-';

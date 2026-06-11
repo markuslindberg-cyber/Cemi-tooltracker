@@ -115,11 +115,21 @@ export default function LokalvardNyttUttag() {
       return;
     }
 
-    const requestedItem = selectedRequest?.requested_items.find(ri => 
-      ri.id === item.id || 
-      ri.name === item.benamning ||
-      ri.name === item.name
-    );
+    const requestedItem = selectedRequest?.requested_items.find(ri => {
+      // Direkt ID-match
+      if (ri.id === item.id) return true;
+      // Namn-match
+      if (ri.name === item.benamning || ri.name === item.name) return true;
+      // Match via streckkod – den begärda artikeln kan ha ett annat ID men samma streckkod/artikelnummer
+      const requestedArtikel = allItems.find(a => a.id === ri.id);
+      if (requestedArtikel) {
+        if (requestedArtikel.streckkod === item.streckkod) return true;
+        if (requestedArtikel.artikelnummer === item.artikelnummer) return true;
+        if (requestedArtikel.old_streckkod && requestedArtikel.old_streckkod === item.streckkod) return true;
+        if (item.old_streckkod && item.old_streckkod === requestedArtikel.streckkod) return true;
+      }
+      return false;
+    });
     if (!requestedItem) {
       setError(`${item.benamning || item.name} är inte på begäran`);
       setTimeout(() => setError(''), 3000);
