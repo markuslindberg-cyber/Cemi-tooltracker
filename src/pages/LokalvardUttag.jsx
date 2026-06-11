@@ -392,7 +392,9 @@ export default function LokalvardUttag() {
     const unmatched = [];
     uttag.forEach(u => {
       u.artiklar?.forEach(artikel => {
-        const found = artikelMap[artikel.artikel_id] || artikelMap[artikel.benamning];
+        const found = artikelMap[artikel.artikel_id]
+          || (artikel.benamning && artikelMap[artikel.benamning.toLowerCase()])
+          || (artikel.streckkod && artikelMap[artikel.streckkod]);
         if (!found) {
           const key = `${artikel.artikel_id}-${artikel.benamning}`;
           if (!unmatched.find(a => `${a.artikel_id}-${a.benamning}` === key)) {
