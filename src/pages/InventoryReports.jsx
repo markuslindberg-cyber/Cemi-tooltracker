@@ -224,19 +224,9 @@ export default function InventoryReports() {
     });
   }, [reports, typeFilter, locationFilter]);
 
-  // Group by type label for display
-  const grouped = useMemo(() => {
-    const groups = {};
-    filtered.forEach(r => {
-      const key = r.tool_type || 'all';
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(r);
-    });
-    return groups;
+  const sortedFiltered = useMemo(() => {
+    return [...filtered].sort((a, b) => new Date(b.performed_at) - new Date(a.performed_at));
   }, [filtered]);
-
-  const typeOrder = ['tools', 'handtools', 'both', 'arbetskläder', 'lokalvards', 'all'];
-  const sortedGroupKeys = Object.keys(grouped).sort((a, b) => typeOrder.indexOf(a) - typeOrder.indexOf(b));
 
   const handleDelete = async (id) => {
     await base44.entities.InventoryReport.delete(id);
@@ -292,25 +282,11 @@ export default function InventoryReports() {
           </div>
         )}
 
-        {/* Grouped sections */}
-        {sortedGroupKeys.map(key => {
-          const tc = getTypeConfig(key);
-          const TypeIcon = tc.icon;
-          return (
-            <div key={key} className="space-y-3">
-              <div className="flex items-center gap-2">
-                <TypeIcon className="w-4 h-4 text-gray-500" />
-                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{tc.label}</h2>
-                <span className="text-xs text-gray-400">({grouped[key].length})</span>
-              </div>
-              <div className="space-y-3">
-                {[...grouped[key]].sort((a, b) => new Date(b.performed_at) - new Date(a.performed_at)).map(report => (
-                  <ReportCard key={report.id} report={report} isAdmin={isAdmin} onDelete={handleDelete} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
+        <div className="space-y-3">
+          {sortedFiltered.map(report => (
+            <ReportCard key={report.id} report={report} isAdmin={isAdmin} onDelete={handleDelete} />
+          ))}
+        </div>
       </div>
     </div>
   );
