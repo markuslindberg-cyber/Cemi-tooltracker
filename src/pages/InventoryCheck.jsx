@@ -415,7 +415,30 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   // Determine if an item uses manual count (lokalvård or arbetskläder with quantity)
   const usesManualCount = (item) => item._type === 'lokalvards' || item._type === 'arbetskläder';
 
-
+  // Rebuild scan log from resumed session data once scoped items are loaded
+  const resumeLogBuiltRef = useRef(false);
+  useEffect(() => {
+    if (resumeLogBuiltRef.current) return;
+    const resumedIds = sessionConfig._resumedChecked;
+    if (!resumedIds || resumedIds.length === 0 || scopedItems.length === 0) return;
+    resumeLogBuiltRef.current = true;
+    const resumedManual = sessionConfig._resumedManualCounts || {};
+    const restoredLog = resumedIds.map(id => {
+      const item = scopedItems.find(si => si.id === id);
+      if (!item) return null;
+      return {
+        id: item.id,
+        name: item.name || item.benamning,
+        type: item._type,
+        timestamp: new Date(sessionConfig._resumedPausedAt || Date.now()),
+        manualCount: resumedManual[id] !== undefined ? resumedManual[id] : undefined,
+        resumed: true,
+      };
+    }).filter(Boolean);
+    if (restoredLog.length > 0) {
+      setScanLog(prev => [...prev, ...restoredLog]);
+    }
+  }, [scopedItems, sessionConfig]);
 
   // Keep external scanner input always focused (unless dialog is open or camera is active)
   useEffect(() => {
@@ -800,6 +823,7 @@ export default function InventoryCheck() {
           toolType: session.tool_type,
           _resumedChecked: session.checked_item_ids || [],
           _resumedManualCounts: session.manual_counts || {},
+          _resumedPausedAt: session.paused_at || session.started_at,
         });
         setPhase('active');
       } else {
@@ -838,6 +862,7 @@ export default function InventoryCheck() {
       toolType: session.tool_type,
       _resumedChecked: session.checked_item_ids || [],
       _resumedManualCounts: session.manual_counts || {},
+      _resumedPausedAt: session.paused_at || session.started_at,
     });
     setPhase('active');
   };
