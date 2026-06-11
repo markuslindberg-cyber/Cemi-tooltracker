@@ -46,6 +46,7 @@ export default function LokalvardInkopshistorik() {
         ...i,
         benamning: artikel?.benamning || i.artikel_id || 'Okänd artikel',
         streckkod: artikel?.streckkod || i.artikel_id || '',
+        artikelLink: artikel?.artikelnummer || artikel?.id || i.artikel_id,
         total_kostnad: (i.antal || 0) * (i.pris || 0),
         manad: i.datum ? i.datum.substring(0, 7) : '',
       };
@@ -202,7 +203,7 @@ export default function LokalvardInkopshistorik() {
               <tr key={row.id} className="hover:bg-gray-50">
                 <td className="px-3 py-2 text-gray-900 whitespace-nowrap text-xs">{row.datum}</td>
                 <td className="px-3 py-2 font-medium text-xs">
-                  <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.streckkod || row.artikel_id)}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                  <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.artikelLink)}`} className="text-blue-600 hover:text-blue-800 hover:underline">
                     {row.benamning}
                   </Link>
                 </td>
@@ -226,7 +227,7 @@ export default function LokalvardInkopshistorik() {
           <div key={row.id} className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-start justify-between">
               <div className="min-w-0">
-                <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.streckkod || row.artikel_id)}`} className="font-semibold text-sm text-blue-600 hover:text-blue-800 hover:underline truncate block">
+                <Link to={`/Lokalvard/Artikel/${encodeURIComponent(row.artikelLink)}`} className="font-semibold text-sm text-blue-600 hover:text-blue-800 hover:underline truncate block">
                   {row.benamning}
                 </Link>
                 <p className="text-xs text-gray-500 mt-0.5">{row.streckkod}</p>
