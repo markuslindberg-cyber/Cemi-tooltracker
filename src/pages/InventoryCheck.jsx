@@ -302,6 +302,35 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const [lastScanFeedback, setLastScanFeedback] = useState(null); // { name, found }
   const [scanLog, setScanLog] = useState([]); // [{ id, name, type, timestamp, manualCount? }]
   const externalScanInputRef = useRef(null);
+  const endedRef = useRef(false); // tracks if session was explicitly ended/paused
+
+  // Auto-save session on unmount (navigation away) or beforeunload
+  const checkedRef = useRef(checkedItems);
+  const manualCountsRef = useRef(manualCounts);
+  useEffect(() => { checkedRef.current = checkedItems; }, [checkedItems]);
+  useEffect(() => { manualCountsRef.current = manualCounts; }, [manualCounts]);
+
+  useEffect(() => {
+    const autoPause = () => {
+      if (endedRef.current || !sessionId) return;
+      endedRef.current = true;
+      // Fire-and-forget save
+      base44.entities.InventorySession.update(sessionId, {
+        status: 'pausad',
+        checked_item_ids: [...checkedRef.current],
+        manual_counts: manualCountsRef.current,
+        paused_at: new Date().toISOString(),
+      }).catch(() => {});
+    };
+
+    const handleBeforeUnload = () => autoPause();
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      autoPause();
+    };
+  }, [sessionId]);
 
   const { data: tools = [] } = useQuery({ queryKey: ['tools'], queryFn: () => base44.entities.Tool.list('-updated_date', 500) });
   const { data: handTools = [] } = useQuery({ queryKey: ['handtools'], queryFn: () => base44.entities.HandTool.list('-updated_date', 500) });
@@ -405,6 +434,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
 
   const handlePause = async () => {
+    endedRef.current = true;
     await onPause(sessionId, checkedItems, manualCounts);
   };
 
@@ -422,7 +452,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <button onClick={() => onEnd(sessionConfig, checkedItems, scopedItems, manualCounts)} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+              <button onClick={() => { endedRef.current = true; onEnd(sessionConfig, checkedItems, scopedItems, manualCounts); }} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Inventering pågår</h1>
@@ -436,7 +466,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
             <Button variant="outline" onClick={handlePause}>
               <Pause className="w-4 h-4 mr-2" />Pausa
             </Button>
-            <Button onClick={() => onEnd(sessionConfig, checkedItems, scopedItems, manualCounts)} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+            <Button onClick={() => { endedRef.current = true; onEnd(sessionConfig, checkedItems, scopedItems, manualCounts); }} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
               <Download className="w-4 h-4 mr-2" />Avsluta & spara
             </Button>
           </div>
@@ -696,13 +726,14 @@ function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNe
 
 // ─── Main component ──────────────────────────────────────────────────────────────
 export default function InventoryCheck() {
-  const [phase, setPhase] = useState('setup');
+  const [phase, setPhase] = useState('loading'); // start with loading to check auto-resume
   const [sessionConfig, setSessionConfig] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [finalChecked, setFinalChecked] = useState(new Set());
   const [finalItems, setFinalItems] = useState([]);
   const [finalManualCounts, setFinalManualCounts] = useState({});
   const [finalPerformedAt, setFinalPerformedAt] = useState(null);
+  const autoResumeAttemptedRef = useRef(false);
 
   const { data: pausedSessions = [], isLoading: isLoadingSessions, refetch: refetchSessions } = useQuery({
     queryKey: ['inventorySessions'],
@@ -713,6 +744,39 @@ export default function InventoryCheck() {
     queryKey: ['locations'],
     queryFn: () => base44.entities.Location.list('name'),
   });
+
+  // Auto-resume: when data is loaded, check if exactly 1 paused session belongs to current user
+  useEffect(() => {
+    if (isLoadingSessions || autoResumeAttemptedRef.current || phase !== 'loading') return;
+    autoResumeAttemptedRef.current = true;
+
+    (async () => {
+      let user = null;
+      try { user = await base44.auth.me(); } catch {}
+      if (!user?.email) { setPhase('setup'); return; }
+
+      const mySessions = pausedSessions.filter(
+        s => s.started_by_email === user.email && s.status === 'pausad'
+      );
+
+      if (mySessions.length === 1) {
+        const session = mySessions[0];
+        const location = locations.find(l => l.id === session.location_id) || null;
+        setSessionId(session.id);
+        setSessionConfig({
+          mode: session.mode,
+          location,
+          locationId: session.location_id || '',
+          toolType: session.tool_type,
+          _resumedChecked: session.checked_item_ids || [],
+          _resumedManualCounts: session.manual_counts || {},
+        });
+        setPhase('active');
+      } else {
+        setPhase('setup');
+      }
+    })();
+  }, [isLoadingSessions, pausedSessions, locations, phase]);
 
   const handleStart = async (config) => {
     let user = null;
@@ -825,6 +889,11 @@ export default function InventoryCheck() {
     setPhase('setup');
   };
 
+  if (phase === 'loading') return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+    </div>
+  );
   if (phase === 'setup') return <SetupStep onStart={handleStart} pausedSessions={pausedSessions} onResume={handleResume} isLoadingSessions={isLoadingSessions} />;
   if (phase === 'active') return <ActiveInventory sessionConfig={sessionConfig} onEnd={handleEnd} onPause={handlePause} sessionId={sessionId} />;
   if (phase === 'summary') return <SummaryStep sessionConfig={sessionConfig} checkedItems={finalChecked} allItems={finalItems} manualCounts={finalManualCounts} onNew={handleNew} performedAt={finalPerformedAt} />;
