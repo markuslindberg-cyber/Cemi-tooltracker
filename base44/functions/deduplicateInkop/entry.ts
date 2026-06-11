@@ -47,6 +47,8 @@ Deno.serve(async (req) => {
         for (const extra of extras) {
           await base44.entities.LokalvardInköp.delete(extra.id);
           toDelete.push(extra.id);
+          // Undvik rate limit
+          await new Promise(r => setTimeout(r, 200));
         }
       }
     }
