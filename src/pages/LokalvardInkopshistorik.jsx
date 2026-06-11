@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Loader2, Plus, Calendar, ChevronDown, X, RotateCcw } from 'lucide-react';
 import NyttInköpModal from '@/components/lokalvard/NyttInköpModal';
 import InkopshistorikTable from '@/components/lokalvard/InkopshistorikTable';
+import DubblettInkopTab from '@/components/lokalvard/DubblettInkopTab';
 
 export default function LokalvardInkopshistorik() {
   const [search, setSearch] = useState('');
@@ -109,6 +110,17 @@ export default function LokalvardInkopshistorik() {
   const manuellaCount = resolvedInköp.filter(i => i.source === 'manuella').length;
   const importeradeCount = resolvedInköp.filter(i => i.source === 'importerade').length;
 
+  // Misstänkta dubbletter: samma datum+antal+pris men olika artikel_id
+  const dubblettCount = useMemo(() => {
+    const map = {};
+    resolvedInköp.forEach(i => {
+      const key = `${i.datum}|${i.antal}|${i.pris}`;
+      if (!map[key]) map[key] = new Set();
+      map[key].add(i.artikel_id);
+    });
+    return Object.values(map).filter(s => s.size > 1).length;
+  }, [resolvedInköp]);
+
   if (inkopLoading || artiklarLoading) {
     return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   }
@@ -147,8 +159,19 @@ export default function LokalvardInkopshistorik() {
         >
           Importerade / Inventering ({importeradeCount})
         </button>
+        <button
+          onClick={() => { setActiveTab('dubbletter'); setSelectedMonths([]); }}
+          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            activeTab === 'dubbletter'
+              ? 'bg-white text-amber-800 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Dubbletter {dubblettCount > 0 ? `(${dubblettCount})` : ''}
+        </button>
       </div>
 
+      {activeTab !== 'dubbletter' && <>
       {/* Search */}
       <input
         type="text"
@@ -205,14 +228,19 @@ export default function LokalvardInkopshistorik() {
           </Button>
         )}
       </div>
+      </>}
 
       {/* Table / Cards */}
-      <InkopshistorikTable
-        rows={sorted}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        onSort={handleSort}
-      />
+      {activeTab === 'dubbletter' ? (
+        <DubblettInkopTab resolvedInköp={resolvedInköp} />
+      ) : (
+        <InkopshistorikTable
+          rows={sorted}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
+      )}
     </div>
   );
 }
