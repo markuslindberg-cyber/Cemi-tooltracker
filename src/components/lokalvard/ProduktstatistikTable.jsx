@@ -58,6 +58,12 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('purchaseCount')}>
               Inköpstillfällen<SortIcon col="purchaseCount" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('avgInterval')}>
+              Snittintervall<SortIcon col="avgInterval" sortBy={sortBy} sortDir={sortDir} />
+            </TableHead>
+            <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('avgQty')}>
+              Snitt qty/inköp<SortIcon col="avgQty" sortBy={sortBy} sortDir={sortDir} />
+            </TableHead>
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs" onClick={() => onSort('trend')}>
               Trend<SortIcon col="trend" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
@@ -69,7 +75,7 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-gray-500 py-12">
+              <TableCell colSpan={9} className="text-center text-gray-500 py-12">
                 Inga produkter matchar sökningen
               </TableCell>
             </TableRow>
@@ -109,6 +115,26 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
                 </TableCell>
                 <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
                   {item.purchaseCount}
+                </TableCell>
+                <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                  {item.avgPurchaseIntervalDays != null
+                    ? item.avgPurchaseIntervalDays < 60
+                      ? `var ${item.avgPurchaseIntervalDays} dagar`
+                      : `var ${Math.round(item.avgPurchaseIntervalDays / 30)} mån`
+                    : '–'}
+                </TableCell>
+                <TableCell className="text-right text-sm tabular-nums hidden sm:table-cell">
+                  <span>{item.avgQtyPerPurchase != null ? `${Math.round(item.avgQtyPerPurchase)} st` : '–'}</span>
+                  {item.avgQtyPerPurchase != null && item.trend === 'up' && (
+                    <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                      ↑ Köp ~{Math.round(item.avgQtyPerPurchase * 1.3)} st
+                    </span>
+                  )}
+                  {item.avgQtyPerPurchase != null && item.trend === 'down' && (
+                    <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                      ↓ Köp ~{Math.round(item.avgQtyPerPurchase * 0.7)} st
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="text-sm">
                   <TrendBadge trend={item.trend} />

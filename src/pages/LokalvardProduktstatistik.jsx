@@ -144,8 +144,19 @@ export default function LokalvardProduktstatistik() {
           ? Math.round(Math.max(saldo, 0) / avgPerDay)
           : saldo > 0 ? Infinity : 0;
 
-        // Count purchase occasions (distinct LokalvardInköp records for this group)
-        const purchaseCount = inköp.filter(i => group.all_artikel_ids.includes(i.artikel_id)).length;
+        // Purchase analysis for this group
+        const groupInköp = inköp.filter(i => group.all_artikel_ids.includes(i.artikel_id));
+        const purchaseCount = groupInköp.length;
+        const totalInköptQty = groupInköp.reduce((s, i) => s + (i.antal || 0), 0);
+        const avgQtyPerPurchase = purchaseCount > 0 ? totalInköptQty / purchaseCount : null;
+
+        // Average interval between purchases
+        let avgPurchaseIntervalDays = null;
+        if (purchaseCount >= 2) {
+          const dates = groupInköp.map(i => new Date(i.datum)).sort((a, b) => a - b);
+          const totalDays = (dates[dates.length - 1] - dates[0]) / (1000 * 60 * 60 * 24);
+          avgPurchaseIntervalDays = Math.round(totalDays / (purchaseCount - 1));
+        }
 
         return {
           id: group.id,
@@ -158,6 +169,8 @@ export default function LokalvardProduktstatistik() {
           trend,
           daysLeft,
           purchaseCount,
+          avgPurchaseIntervalDays,
+          avgQtyPerPurchase,
         };
       });
   }, [artiklar, uttag, inköp]);
@@ -178,6 +191,12 @@ export default function LokalvardProduktstatistik() {
         cmp = (order[a.trend] || 0) - (order[b.trend] || 0);
       } else if (sortBy === 'purchaseCount') {
         cmp = (a.purchaseCount || 0) - (b.purchaseCount || 0);
+      } else if (sortBy === 'avgInterval') {
+        const aVal = a.avgPurchaseIntervalDays ?? 999999;
+        const bVal = b.avgPurchaseIntervalDays ?? 999999;
+        cmp = aVal - bVal;
+      } else if (sortBy === 'avgQty') {
+        cmp = (a.avgQtyPerPurchase || 0) - (b.avgQtyPerPurchase || 0);
       } else if (sortBy === 'days') {
         const aVal = a.daysLeft === Infinity ? 999999 : a.daysLeft;
         const bVal = b.daysLeft === Infinity ? 999999 : b.daysLeft;
