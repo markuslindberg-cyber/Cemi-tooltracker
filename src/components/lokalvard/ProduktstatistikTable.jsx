@@ -59,7 +59,7 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
               Inköpstillfällen<SortIcon col="purchaseCount" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('avgInterval')}>
-              Snittintervall<SortIcon col="avgInterval" sortBy={sortBy} sortDir={sortDir} />
+              Snittintervall inköp<SortIcon col="avgInterval" sortBy={sortBy} sortDir={sortDir} />
             </TableHead>
             <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right hidden sm:table-cell" onClick={() => onSort('avgQty')}>
               Snitt qty/inköp<SortIcon col="avgQty" sortBy={sortBy} sortDir={sortDir} />

@@ -240,6 +240,23 @@ export default function LokalvardProduktstatistik() {
         </div>
       </div>
 
+      {/* Kolumnförklaring */}
+      <details className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+        <summary className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+          ℹ️ Kolumnförklaring
+        </summary>
+        <ul className="mt-3 space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
+          <li><strong>Lagersaldo</strong> – Beräknat saldo (totalt inköpt − totalt uttaget).</li>
+          <li><strong>Snitt/mån (3m)</strong> – Genomsnittlig förbrukning per månad senaste 3 månaderna.</li>
+          <li><strong>Snitt/mån (12m)</strong> – Genomsnittlig förbrukning per månad senaste 12 månaderna.</li>
+          <li><strong>Inköpstillfällen</strong> – Antal registrerade inköp för produkten.</li>
+          <li><strong>Snittintervall inköp</strong> – Genomsnittligt antal dagar mellan varje inköp.</li>
+          <li><strong>Snitt qty/inköp</strong> – Genomsnittligt antal enheter per inköpstillfälle. Trendtips visas om förbrukningen ökar (↑ köp mer) eller minskar (↓ köp mindre).</li>
+          <li><strong>Trend</strong> – Jämför 3-månaders- och 12-månaderssnittet: Ökande, Minskande eller Stabil.</li>
+          <li><strong>Räcker (dagar)</strong> – Uppskattat antal dagar lagret räcker baserat på nuvarande förbrukningstakt.</li>
+        </ul>
+      </details>
+
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input
