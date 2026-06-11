@@ -1,14 +1,26 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
 
 export default function LagerkorrigeringSection({ allItems, manualCounts, performedAt }) {
   const [correctedIds, setCorrectedIds] = useState(new Set());
-  const [correcting, setCorrecting] = useState(null); // item id currently being corrected
+  const [correcting, setCorrecting] = useState(null);
   const [allCorrecting, setAllCorrecting] = useState(false);
+
+  const { data: lokalvardsData = [] } = useQuery({ queryKey: ['lokalvards'], queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 500) });
+  const { data: inkopData = [] } = useQuery({ queryKey: ['lokalvardInkop'], queryFn: () => base44.entities.LokalvardInköp.list('-datum', 5000) });
+  const { data: uttagData = [] } = useQuery({ queryKey: ['uttagAll'], queryFn: () => base44.entities.Uttag.list('-datum', 5000) });
+  const { data: checkoutData = [] } = useQuery({ queryKey: ['checkoutAll'], queryFn: () => base44.entities.LokalvardCheckout.list('-checked_out_date', 5000) });
+
+  const saldoMap = useMemo(() => {
+    if (lokalvardsData.length === 0) return new Map();
+    return buildArtikelSaldoMap(lokalvardsData, inkopData, uttagData, checkoutData);
+  }, [lokalvardsData, inkopData, uttagData, checkoutData]);
 
   // Only lokalvård items that were scanned with a manual count
   const lokalvardItems = useMemo(() => {
@@ -17,10 +29,10 @@ export default function LagerkorrigeringSection({ allItems, manualCounts, perfor
       .map(i => ({
         ...i,
         inventerat: manualCounts[i.id] ?? 0,
-        lager: i.current_quantity ?? 0,
+        lager: saldoMap.get(i.id) ?? 0,
       }))
       .filter(i => i.inventerat !== i.lager);
-  }, [allItems, manualCounts]);
+  }, [allItems, manualCounts, saldoMap]);
 
   if (lokalvardItems.length === 0) return null;
 

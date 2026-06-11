@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
 import { useBarcodeCamera } from '@/hooks/useBarcodeCamera';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -353,6 +354,19 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const { data: handTools = [] } = useQuery({ queryKey: ['handtools'], queryFn: () => base44.entities.HandTool.list('-updated_date', 500) });
   const { data: arbetskläderData = [] } = useQuery({ queryKey: ['arbetskläder'], queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500) });
   const { data: lokalvardsData = [] } = useQuery({ queryKey: ['lokalvards'], queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 500) });
+  const { data: inkopData = [] } = useQuery({ queryKey: ['lokalvardInkop'], queryFn: () => base44.entities.LokalvardInköp.list('-datum', 5000) });
+  const { data: uttagData = [] } = useQuery({ queryKey: ['uttagAll'], queryFn: () => base44.entities.Uttag.list('-datum', 5000) });
+  const { data: checkoutData = [] } = useQuery({ queryKey: ['checkoutAll'], queryFn: () => base44.entities.LokalvardCheckout.list('-checked_out_date', 5000) });
+
+  // Build dynamic saldo map for lokalvård articles
+  const artikelSaldoMap = useMemo(() => {
+    if (lokalvardsData.length === 0) return new Map();
+    return buildArtikelSaldoMap(lokalvardsData, inkopData, uttagData, checkoutData);
+  }, [lokalvardsData, inkopData, uttagData, checkoutData]);
+
+  const getArtikelSaldo = useCallback((artikelId) => {
+    return artikelSaldoMap.get(artikelId) ?? 0;
+  }, [artikelSaldoMap]);
 
   const updateToolMutation = useMutation({
     mutationFn: ({ id, data, type }) => {
@@ -616,8 +630,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                         {entry.manualCount !== undefined && ` · Antal: ${entry.manualCount}`}
                       </p>
                       {entry.type === 'lokalvards' && (() => {
-                        const srcItem = scopedItems.find(si => si.id === entry.id);
-                        const lager = srcItem?.current_quantity ?? 0;
+                        const lager = getArtikelSaldo(entry.id);
                         const inv = manualCounts[entry.id] ?? (checkedItems.has(entry.id) ? 1 : 0);
                         const differs = inv !== lager;
                         return (
@@ -656,7 +669,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                       {(item.barcode || item.streckkod) && <p className="text-xs text-gray-500 dark:text-gray-400">Streckkod: {item.barcode || item.streckkod}</p>}
                       {item._type === 'lokalvards' && (
                         <p className="text-xs mt-0.5 font-medium text-gray-400">
-                          Inventerat: 0 | Lager: {item.current_quantity ?? 0}
+                          Inventerat: 0 | Lager: {getArtikelSaldo(item.id)}
                         </p>
                       )}
                     </div>
