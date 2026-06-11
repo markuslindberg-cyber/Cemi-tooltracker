@@ -81,9 +81,12 @@ export default function DubblettInkopTab({ resolvedInköp }) {
                     </Link>
                     <span className="text-xs text-gray-400">{item.streckkod || item.artikel_id}</span>
                   </div>
-                  <div className="text-right shrink-0 ml-4">
-                    <span className="font-medium text-gray-700">{totalKostnad.toLocaleString('sv-SE')} kr</span>
-                    <div className="text-xs text-gray-400">{item.source === 'manuella' ? 'Manuell' : 'Import'}</div>
+                  <div className="text-right shrink-0 ml-4 flex items-center gap-4">
+                    <span className="text-gray-500">{item.antal} st</span>
+                    <div>
+                      <span className="font-medium text-gray-700">{((item.antal || 0) * (item.pris || 0)).toLocaleString('sv-SE')} kr</span>
+                      <div className="text-xs text-gray-400">{item.source === 'manuella' ? 'Manuell' : 'Import'}</div>
+                    </div>
                   </div>
                 </div>
               ))}
