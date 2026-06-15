@@ -9,8 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Edit2, ArrowUp, ArrowDown, AlertCircle, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
 import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
+import { groupArtiklarByStreckkod } from '@/lib/groupArtiklarByStreckkod';
 
 export default function LokalvardLager() {
    useScrollRestore();
@@ -128,97 +128,7 @@ export default function LokalvardLager() {
     }
   };
 
-  // Steg 1: Gruppera efter streckkod
-  const groupedByStreckkod = {};
-  artiklar.forEach(artikel => {
-    const streckkod = artikel.streckkod;
-    if (!streckkod) return;
-
-    if (!groupedByStreckkod[streckkod]) {
-      groupedByStreckkod[streckkod] = {
-        id: artikel.id,
-        benamning: artikel.benamning,
-        artikelnummer: artikel.artikelnummer,
-        streckkod: artikel.streckkod,
-        pris: artikel.pris,
-        inkopsdatum: artikel.inkopsdatum,
-        lagertroskelvarde: artikel.lagertroskelvarde,
-        utgaende: artikel.utgaende,
-        subcategory: artikel.subcategory,
-        total_antal_inkopta: 0,
-        total_current_quantity: 0,
-        all_artikel_ids: [],
-        all_streckkoder: [streckkod],
-        all_benamningar: [artikel.benamning?.toLowerCase()],
-        huvudartikel_antal_inkopta: artikel.antal_inkopta,
-      };
-    }
-
-    const currentGroup = groupedByStreckkod[streckkod];
-
-    if (new Date(artikel.inkopsdatum) > new Date(currentGroup.inkopsdatum)) {
-      Object.assign(currentGroup, {
-        id: artikel.id,
-        benamning: artikel.benamning,
-        artikelnummer: artikel.artikelnummer,
-        pris: artikel.pris,
-        inkopsdatum: artikel.inkopsdatum,
-        lagertroskelvarde: artikel.lagertroskelvarde,
-        utgaende: artikel.utgaende,
-        subcategory: artikel.subcategory,
-        old_streckkod: artikel.old_streckkod,
-      });
-    } else if (!currentGroup.old_streckkod && artikel.old_streckkod) {
-      currentGroup.old_streckkod = artikel.old_streckkod;
-    }
-
-    currentGroup.total_antal_inkopta += artikel.antal_inkopta;
-    currentGroup.total_current_quantity += artikel.current_quantity;
-    currentGroup.all_artikel_ids.push(artikel.id);
-    if (artikel.benamning && !currentGroup.all_benamningar.includes(artikel.benamning.toLowerCase())) {
-      currentGroup.all_benamningar.push(artikel.benamning.toLowerCase());
-    }
-  });
-
-  // Steg 2: Slå ihop grupper som delar samma artikelnummer (t.ex. Svinto – ny och gammal streckkod)
-  const mergedGroups = {};
-  const streckkodToMergeKey = {};
-  
-  Object.entries(groupedByStreckkod).forEach(([streckkod, group]) => {
-    const artNr = group.artikelnummer;
-    // Hitta om en befintlig grupp redan har samma artikelnummer
-    if (artNr && streckkodToMergeKey[artNr]) {
-      const existingKey = streckkodToMergeKey[artNr];
-      const existingGroup = mergedGroups[existingKey];
-      // Slå ihop
-      existingGroup.all_artikel_ids.push(...group.all_artikel_ids);
-      existingGroup.total_antal_inkopta += group.total_antal_inkopta;
-      existingGroup.total_current_quantity += group.total_current_quantity;
-      existingGroup.all_streckkoder.push(streckkod);
-      group.all_benamningar.forEach(b => {
-        if (!existingGroup.all_benamningar.includes(b)) existingGroup.all_benamningar.push(b);
-      });
-      if (!existingGroup.old_streckkod) existingGroup.old_streckkod = streckkod;
-      // Använd nyaste data som huvud
-      if (new Date(group.inkopsdatum) > new Date(existingGroup.inkopsdatum)) {
-        Object.assign(existingGroup, {
-          id: group.id,
-          benamning: group.benamning,
-          streckkod: group.streckkod,
-          pris: group.pris,
-          inkopsdatum: group.inkopsdatum,
-          lagertroskelvarde: group.lagertroskelvarde,
-          utgaende: group.utgaende,
-          subcategory: group.subcategory,
-        });
-      }
-    } else {
-      mergedGroups[streckkod] = { ...group };
-      if (artNr) streckkodToMergeKey[artNr] = streckkod;
-    }
-  });
-
-  let processedArtiklar = Object.values(mergedGroups);
+  let processedArtiklar = groupArtiklarByStreckkod(artiklar);
 
   const filteredProcessedArtiklar = processedArtiklar.filter(a => {
     const searchLower = search.toLowerCase();

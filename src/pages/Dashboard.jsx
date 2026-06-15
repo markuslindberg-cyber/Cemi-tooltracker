@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useGlobalConfig } from '@/hooks/useGlobalConfig';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+
 import StatsCard from '@/components/ui/StatsCard';
 import PendingRequestsChart from '@/components/dashboard/PendingRequestsChart';
 import TransferModal from '@/components/modals/TransferModal';
@@ -475,7 +475,7 @@ export default function Dashboard() {
               <div key="recent_tools" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Senaste maskiner</h2>
-                  <Link to={createPageUrl('Inventory')}>
+                  <Link to="/Inventory">
                     <Button variant="ghost" size="sm" className="text-[#8B1E1E] hover:text-[#6B1515] hover:bg-[#8B1E1E]/10">
                       Visa alla <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>

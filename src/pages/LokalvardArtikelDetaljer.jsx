@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Edit2, Save, X, Plus, Trash2, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { calculateUttagMatching } from '@/lib/calculateUttagUtils';
 import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
 
 export default function LokalvardArtikelDetaljer() {

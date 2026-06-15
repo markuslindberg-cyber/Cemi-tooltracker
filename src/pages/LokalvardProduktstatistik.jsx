@@ -7,6 +7,7 @@ import { Loader2, Search } from 'lucide-react';
 import ProduktstatistikTable from '@/components/lokalvard/ProduktstatistikTable';
 import BeställningslistaTable from '@/components/lokalvard/BeställningslistaTable';
 import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
+import { groupArtiklarByStreckkod } from '@/lib/groupArtiklarByStreckkod';
 
 export default function LokalvardProduktstatistik() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,52 +50,7 @@ export default function LokalvardProduktstatistik() {
     const d365 = new Date(now);
     d365.setDate(d365.getDate() - 365);
 
-    // Group artiklar by streckkod (same logic as LokalvardLager)
-    const groupedByStreckkod = {};
-    artiklar.forEach(artikel => {
-      const streckkod = artikel.streckkod;
-      if (!streckkod) return;
-
-      if (!groupedByStreckkod[streckkod]) {
-        groupedByStreckkod[streckkod] = {
-          id: artikel.id,
-          benamning: artikel.benamning,
-          artikelnummer: artikel.artikelnummer,
-          inkopsdatum: artikel.inkopsdatum,
-          streckkod: artikel.streckkod,
-          old_streckkod: artikel.old_streckkod,
-          lagertroskelvarde: artikel.lagertroskelvarde,
-          utgaende: !!artikel.utgaende,
-          pris: artikel.pris || 0,
-          total_antal_inkopta: 0,
-          all_artikel_ids: [],
-        };
-      }
-
-      const currentGroup = groupedByStreckkod[streckkod];
-      // Prioritize active articles over utgående, then by inkopsdatum
-      const currentIsUtgaende = currentGroup.utgaende;
-      const newIsUtgaende = !!artikel.utgaende;
-      const isNewer = new Date(artikel.inkopsdatum) > new Date(currentGroup.inkopsdatum || '1970-01-01');
-      const shouldReplace = (!newIsUtgaende && currentIsUtgaende) || (newIsUtgaende === currentIsUtgaende && isNewer);
-
-      if (shouldReplace) {
-        currentGroup.id = artikel.id;
-        currentGroup.benamning = artikel.benamning;
-        currentGroup.inkopsdatum = artikel.inkopsdatum;
-        currentGroup.lagertroskelvarde = artikel.lagertroskelvarde;
-        currentGroup.utgaende = newIsUtgaende;
-        currentGroup.pris = artikel.pris || currentGroup.pris;
-        if (artikel.old_streckkod) currentGroup.old_streckkod = artikel.old_streckkod;
-      } else if (!currentGroup.old_streckkod && artikel.old_streckkod) {
-        currentGroup.old_streckkod = artikel.old_streckkod;
-      }
-
-      currentGroup.total_antal_inkopta += artikel.antal_inkopta || 0;
-      currentGroup.all_artikel_ids.push(artikel.id);
-    });
-
-    const groups = Object.values(groupedByStreckkod);
+    const groups = groupArtiklarByStreckkod(artiklar);
 
     // Calculate uttag per group (same matching logic as LokalvardLager)
     const calculateUttagForGroup = (group) => {
