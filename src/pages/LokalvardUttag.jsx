@@ -137,6 +137,7 @@ export default function LokalvardUttag() {
         kund_namn: co.customer_name,
         ordernummer: co.ordernummer || linkedRequest?.ordernummer || null,
         request_id: co.request_id,
+        request_number: linkedRequest?.request_number || null,
         artiklar: artiklar,
         total_kostnad: total_kostnad,
         manad: dateStr.substring(0, 7)
@@ -320,6 +321,7 @@ export default function LokalvardUttag() {
             totalPrice: 0,
             isCheckout: artikel.isCheckout,
             ordernummer: u.ordernummer,
+            request_number: u.request_number || null,
             indices: []
           };
         }
@@ -597,6 +599,7 @@ export default function LokalvardUttag() {
                     </th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-600 text-xs">Artikel</th>
                     <th className="px-3 py-2 text-center font-semibold text-gray-600 text-xs">Antal</th>
+                    <th className="px-3 py-2 text-left font-semibold text-gray-600 text-xs">Begäran</th>
                     <th className="px-3 py-2 text-left font-semibold text-gray-600 text-xs">Ordernr</th>
                     <th className="px-3 py-2 text-right font-semibold text-gray-600 cursor-pointer hover:text-gray-900 whitespace-nowrap text-xs" onClick={() => handleSort('total_kostnad')}>
                       Kostnad <SortIcon col="total_kostnad" />
@@ -632,6 +635,7 @@ export default function LokalvardUttag() {
                             `${row.totalAntal} st`
                           )}
                         </td>
+                        <td className="px-3 py-1.5 text-gray-500 text-xs">{row.request_number ? `#${row.request_number}` : '–'}</td>
                         <td className="px-3 py-1.5 text-gray-500 text-xs">{row.ordernummer || '–'}</td>
                         <td className="px-3 py-1.5 text-right font-semibold text-gray-900 whitespace-nowrap text-xs">
                           {editingArticleId === `${row.id}-${firstIdx}` ? (
@@ -700,7 +704,8 @@ export default function LokalvardUttag() {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                       <span>{u.personal_namn}</span>
-                      {u.ordernummer && <span>· {u.ordernummer}</span>}
+                      {u.request_number && <span>· Begäran #{u.request_number}</span>}
+                      {u.ordernummer && <span>· Order: {u.ordernummer}</span>}
                     </div>
                     <div className="text-xs text-gray-600 mt-0.5">
                       {u.artiklar?.map((a, idx) => (
