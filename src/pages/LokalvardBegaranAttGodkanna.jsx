@@ -682,7 +682,7 @@ export default function LokalvardBegaranAttGodkanna() {
                                 })()}
                               </div>
                               <div>
-                                <p className="text-gray-600 font-medium mb-1">Artiklar</p>
+                                <p className="text-gray-600 font-medium mb-1">Begärda artiklar</p>
                                 <div className="space-y-0.5">
                                   {request.requested_items?.map((item, idx) => {
                                     const checkout = checkouts.find(c => c.request_id === request.id);
@@ -695,6 +695,27 @@ export default function LokalvardBegaranAttGodkanna() {
                                     );
                                   })}
                                 </div>
+                                {(() => {
+                                  const checkout = checkouts.find(c => c.request_id === request.id);
+                                  if (!checkout?.checked_out_items) return null;
+                                  const requestedIds = new Set(request.requested_items?.map(ri => ri.id) || []);
+                                  const requestedNames = new Set(request.requested_items?.map(ri => ri.name) || []);
+                                  const extraItems = checkout.checked_out_items.filter(ci => !requestedIds.has(ci.item_id) && !requestedNames.has(ci.name));
+                                  if (extraItems.length === 0) return null;
+                                  return (
+                                    <div className="mt-2 pt-2 border-t border-amber-200">
+                                      <p className="text-amber-700 font-medium mb-1 text-xs">Manuellt tillagda (ej i begäran)</p>
+                                      <div className="space-y-0.5">
+                                        {extraItems.map((ei, idx) => (
+                                          <div key={idx} className="flex justify-between text-xs">
+                                            <span className="text-amber-800">{ei.name}</span>
+                                            <span className="font-medium text-amber-700">{ei.scanned_quantity} st</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                               </div>
                               <Button
                                 size="sm"
@@ -771,7 +792,7 @@ export default function LokalvardBegaranAttGodkanna() {
                        </div>
 
                       <div>
-                       <p className="text-sm font-medium text-gray-700 mb-2">Artiklar</p>
+                       <p className="text-sm font-medium text-gray-700 mb-2">Begärda artiklar</p>
                        <div className="space-y-1">
                          {request.requested_items?.map((item, idx) => {
                            const checkout = checkouts.find(c => c.request_id === request.id);
@@ -792,6 +813,27 @@ export default function LokalvardBegaranAttGodkanna() {
                            );
                          })}
                        </div>
+                       {(() => {
+                         const checkout = checkouts.find(c => c.request_id === request.id);
+                         if (!checkout?.checked_out_items) return null;
+                         const requestedIds = new Set(request.requested_items?.map(ri => ri.id) || []);
+                         const requestedNames = new Set(request.requested_items?.map(ri => ri.name) || []);
+                         const extraItems = checkout.checked_out_items.filter(ci => !requestedIds.has(ci.item_id) && !requestedNames.has(ci.name));
+                         if (extraItems.length === 0) return null;
+                         return (
+                           <div className="mt-2 pt-2 border-t border-amber-200">
+                             <p className="text-amber-700 font-medium mb-1 text-sm">Manuellt tillagda (ej i begäran)</p>
+                             <div className="space-y-1">
+                               {extraItems.map((ei, idx) => (
+                                 <div key={idx} className="flex items-center justify-between text-sm p-2 bg-amber-50 rounded border border-amber-100">
+                                   <span className="text-amber-800">{ei.name}</span>
+                                   <span className="font-medium text-amber-700">{ei.scanned_quantity} st</span>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         );
+                       })()}
                        </div>
 
                        {request.notes && (
