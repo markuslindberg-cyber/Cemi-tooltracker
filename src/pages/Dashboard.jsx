@@ -74,6 +74,7 @@ export default function Dashboard() {
     queryKey: ['dashboardTools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
     staleTime: 0,
+    refetchInterval: 30000,
   });
 
   const { containerRef, isPulling, pullDistance, PULL_THRESHOLD } = usePullToRefresh(
@@ -84,16 +85,19 @@ export default function Dashboard() {
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
     queryFn: () => base44.entities.Location.list(),
+    refetchInterval: 30000,
   });
 
   const { data: teamMembers = [] } = useQuery({
     queryKey: ['teamMembers'],
     queryFn: () => base44.entities.TeamMember.list(),
+    refetchInterval: 30000,
   });
 
   const { data: recentTransfers = [] } = useQuery({
     queryKey: ['recentTransfers'],
     queryFn: () => base44.entities.Transfer.list('-transfer_date', 5),
+    refetchInterval: 30000,
   });
 
   const { data: user } = useQuery({
@@ -104,16 +108,19 @@ export default function Dashboard() {
   const { data: loanRequests = [] } = useQuery({
     queryKey: ['loanRequests'],
     queryFn: () => base44.entities.LoanRequest.list(),
+    refetchInterval: 30000,
   });
 
   const { data: workwearRequests = [] } = useQuery({
     queryKey: ['workwearRequestsPending'],
     queryFn: () => base44.entities.WorkwearRequest.list(),
+    refetchInterval: 30000,
   });
 
   const { data: lokalvardRequests = [] } = useQuery({
     queryKey: ['lokalvardRequestsPending'],
     queryFn: () => base44.entities.LokalvardArtikelRequest.list(),
+    refetchInterval: 30000,
   });
 
   const { data: depSettings = [] } = useQuery({
