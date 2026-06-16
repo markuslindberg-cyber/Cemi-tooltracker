@@ -14,25 +14,35 @@ const ICON_MAP = {
 
 // roles: undefined = alla, array = specifika roller
 const ALL_SHORTCUTS = [
-  // Dashboard är fast och visas inte i listan
+  // --- Maskiner ---
   { path: '/Inventory', label: 'Maskiner', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Huvudmaskiner', label: 'Huvudmaskiner', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Inventory/SaldaRedskap', label: 'Sålda & Kasserade', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Transfers', label: 'Lån av utrustning', icon: 'Package', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Service', label: 'Service', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  // --- Handredskap ---
   { path: '/HandTools', label: 'Handredskap', icon: 'Shovel', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
-  { path: '/ArbetskladerUtrustning', label: 'Arbetskläder & Skyddsutrustning', icon: 'Shirt' },
-  { path: '/Arbetsklader/CheckoutReports', label: 'Uttagsrapporter (Kläder)', icon: 'Shirt' },
-  { path: '/ArbetskläderRequestWorkwear', label: 'Begäran om uttag (Kläder)', icon: 'Shirt' },
-  { path: '/Arbetsklader/Forfragan', label: 'Förfrågan (Kläder)', icon: 'Shirt' },
-  { path: '/Lokalvard/Lager', label: 'Lokalvård – Lager', icon: 'SprayCan', roles: ['lokalvårdare', 'admin_lokalvård', 'ägare'] },
+  // --- Arbetskläder ---
+  { path: '/ArbetskladerUtrustning', label: 'Arbetskläder & Skyddsutrustning', icon: 'Shirt', roles: ['admin', 'admin_lokalvård', 'ägare'] },
+  { path: '/Arbetsklader/CheckoutReports', label: 'Uttagsrapporter (Kläder)', icon: 'Shirt', roles: ['admin', 'admin_lokalvård', 'ägare'] },
+  { path: '/ArbetskläderRequestWorkwear', label: 'Begäran – arbetskläder', icon: 'Shirt' },
+  { path: '/Arbetsklader/Forfragan', label: 'Förfrågan – arbetskläder', icon: 'Shirt', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Arbetsklader/Streckkodhantering', label: 'Streckkodhantering (Kläder)', icon: 'Shirt', roles: ['admin_lokalvård', 'ägare'] },
+  // --- Lokalvård ---
+  { path: '/LokalvardRequestArtikel', label: 'Begäran – lokalvårdsartiklar', icon: 'SprayCan', roles: ['lokalvårdare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/Lager', label: 'Lokalvård – Lager', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/NyttUttag', label: 'Lokalvård – Plocka ut begärda uttag', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
   { path: '/Lokalvard/Uttag', label: 'Lokalvård – Uttag', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
-  { path: '/Lokalvard/BegaranAttGodkanna', label: 'Lokalvård – Begäran & uttag', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/BegaranAttGodkanna', label: 'Lokalvård – Godkänna begäran', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
   { path: '/Lokalvard/KostnadPerKund', label: 'Lokalvård – Kostnad per kund', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
   { path: '/Lokalvard/Kunder', label: 'Lokalvård – Kunder', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
-  { path: '/RequestWorkwear', label: 'Begäran lokalvårdsartiklar', icon: 'SprayCan', roles: ['lokalvårdare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/Produktstatistik', label: 'Lokalvård – Produktstatistik', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/Inkopshistorik', label: 'Lokalvård – Inköpshistorik', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  { path: '/Lokalvard/OmatchadeInkop', label: 'Lokalvård – Omatchade inköp', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  // --- Inventeringskontroll ---
   { path: '/InventoryCheck', label: 'Inventering', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/InventoryReports', label: 'Inventeringsrapporter', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  // --- Administration ---
   { path: '/Locations', label: 'Platser', icon: 'MapPin', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Team', label: 'Personal', icon: 'Users', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/Administration/Kategorier', label: 'Kategorier', icon: 'Settings', roles: ['admin', 'ägare'] },
