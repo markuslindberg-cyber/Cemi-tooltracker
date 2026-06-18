@@ -1,0 +1,232 @@
+{
+  "name": "MaterialLager",
+  "type": "object",
+  "properties": {
+    "benamning": {
+      "type": "string",
+      "description": "Ben\u00e4mning/namn p\u00e5 materialet"
+    },
+    "kategori": {
+      "type": "string",
+      "description": "Huvudkategori, t.ex. Plattor, Sten, Tr\u00e4, F\u00f6rbrukningsmaterial"
+    },
+    "underkategori": {
+      "type": "string",
+      "nullable": true,
+      "description": "Underkategori"
+    },
+    "material_typ": {
+      "type": "string",
+      "nullable": true,
+      "description": "Typ av material, t.ex. Betong, Granit, Kalksten"
+    },
+    "tillverkare": {
+      "type": "string",
+      "nullable": true,
+      "description": "Tillverkare/m\u00e4rke om k\u00e4nt"
+    },
+    "matt": {
+      "type": "string",
+      "nullable": true,
+      "description": "M\u00e5tt, t.ex. 400x400x50mm"
+    },
+    "antal": {
+      "type": "number",
+      "description": "Antal enheter i lager"
+    },
+    "enhet": {
+      "type": "string",
+      "nullable": true,
+      "description": "Enhet, t.ex. st, m\u00b2, m, kg, liter"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "i_lager",
+        "reserverad",
+        "s\u00e5ld"
+      ],
+      "default": "i_lager",
+      "description": "Nuvarande status"
+    },
+    "syfte": {
+      "type": "string",
+      "enum": [
+        "internt",
+        "till_forsaljning"
+      ],
+      "default": "internt",
+      "description": "Om materialet ska anv\u00e4ndas internt eller s\u00e4ljas"
+    },
+    "inkopspris": {
+      "type": "number",
+      "description": "Ink\u00f6pspris per enhet"
+    },
+    "forsaljningspris_manuell": {
+      "type": "number",
+      "nullable": true,
+      "description": "Manuellt satt f\u00f6rs\u00e4ljningspris (om tomt ber\u00e4knas +30%)"
+    },
+    "inkopsdatum": {
+      "type": "string",
+      "format": "date",
+      "nullable": true,
+      "description": "Datum d\u00e5 materialet k\u00f6ptes in"
+    },
+    "inkopt_fran": {
+      "type": "string",
+      "nullable": true,
+      "description": "Ink\u00f6pt ifr\u00e5n (leverant\u00f6r)"
+    },
+    "artikelnummer": {
+      "type": "string",
+      "description": "Artikelnummer eller streckkod"
+    },
+    "levfaktura_nummer": {
+      "type": "string",
+      "nullable": true,
+      "description": "Leverant\u00f6rsfakturanummer"
+    },
+    "ordernummer": {
+      "type": "string",
+      "nullable": true,
+      "description": "Ordernummer/projektnummer p\u00e5 jobbet det kommer ifr\u00e5n"
+    },
+    "kund_namn": {
+      "type": "string",
+      "nullable": true,
+      "description": "Kundnamn p\u00e5 jobbet materialet kommer ifr\u00e5n"
+    },
+    "location_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "Referens till plats d\u00e4r materialet lagras"
+    },
+    "location_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Namn p\u00e5 lagringsplats"
+    },
+    "image_url": {
+      "type": "string",
+      "nullable": true,
+      "description": "Bild p\u00e5 materialet"
+    },
+    "notes": {
+      "type": "string",
+      "nullable": true,
+      "description": "Anteckningar"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mjukradering \u2013 visas i papperskorg"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true,
+      "description": "Tidpunkt f\u00f6r mjukradering"
+    }
+  },
+  "required": [
+    "benamning",
+    "kategori",
+    "antal",
+    "inkopspris",
+    "artikelnummer"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    }
+  }
+}

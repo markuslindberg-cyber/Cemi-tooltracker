@@ -25,6 +25,7 @@ import {
   Package,
   RotateCw,
   SprayCan,
+  Boxes,
   Settings,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -312,6 +313,24 @@ export default function Dashboard() {
                   <div>
                     <h3 className="font-semibold text-sm sm:text-base">Begär lokalvårdsartiklar</h3>
                     <p className="text-white/80 text-xs sm:text-sm hidden sm:block">Skicka en begäran om uttag av lokalvårdsprodukter</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/70 shrink-0" />
+              </div>
+            </div>
+          </Link>
+        )}
+
+        {/* Materialbanken shortcut */}
+        {!LOKALVARD_ONLY_ROLES.includes(user?.role) && (
+          <Link to="/Materialbanken">
+            <div className="bg-gradient-to-r from-amber-600 to-amber-700 rounded-2xl p-4 text-white shadow-lg shadow-amber-600/25 hover:from-amber-700 hover:to-amber-800 transition-all">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-xl shrink-0"><Boxes className="w-5 h-5" /></div>
+                  <div>
+                    <h3 className="font-semibold text-sm sm:text-base">Materialbanken</h3>
+                    <p className="text-white/80 text-xs sm:text-sm hidden sm:block">Överblivet material från jobb – se och registrera</p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/70 shrink-0" />

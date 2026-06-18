@@ -21,6 +21,7 @@ import {
   Settings,
   Star,
   SlidersHorizontal,
+  Boxes,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -97,6 +98,12 @@ const navigation = [
     ]
   },
   {
+    name: 'Materialbanken',
+    path: '/Materialbanken',
+    icon: Boxes,
+    roles: NOT_LOKALVARDARE,
+  },
+  {
     name: 'Administration',
     path: '/Administration',
     icon: Users,
@@ -113,7 +120,7 @@ const navigation = [
 ];
 
 const ICON_MAP = {
-  LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star
+  LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star, Boxes
 };
 
 const DASHBOARD_TAB = { name: 'Dashboard', path: '/', icon: LayoutDashboard };

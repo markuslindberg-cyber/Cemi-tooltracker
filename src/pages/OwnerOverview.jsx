@@ -10,6 +10,7 @@ import MaskinerSection from '@/components/owner/MaskinerSection';
 import HandredskapSection from '@/components/owner/HandredskapSection';
 import ArbetskladerSection from '@/components/owner/ArbetskladerSection';
 import LokalvardSection from '@/components/owner/LokalvardSection';
+import MaterialSection from '@/components/owner/MaterialSection';
 import OwnerTotalSummary from '@/components/owner/OwnerTotalSummary';
 
 export default function OwnerOverview() {
@@ -90,6 +91,8 @@ export default function OwnerOverview() {
           <ArbetskladerSection />
           <hr className="border-gray-200 dark:border-gray-800" />
           <LokalvardSection />
+          <hr className="border-gray-200 dark:border-gray-800" />
+          <MaterialSection />
         </div>
       </div>
     </div>

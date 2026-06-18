@@ -46,6 +46,7 @@ import KnowledgeGraph from './pages/KnowledgeGraph';
 import LokalvardProduktstatistik from './pages/LokalvardProduktstatistik';
 import LokalvardInkopshistorik from './pages/LokalvardInkopshistorik';
 import LokalvardOmatchadeInkop from './pages/LokalvardOmatchadeInkop';
+import Materialbanken from './pages/Materialbanken';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -158,6 +159,7 @@ const AuthenticatedApp = () => {
       <Route path="/Lokalvard/Produktstatistik" element={<LayoutWrapper currentPageName="LokalvardProduktstatistik"><LokalvardProduktstatistik /></LayoutWrapper>} />
       <Route path="/Lokalvard/Inkopshistorik" element={<LayoutWrapper currentPageName="LokalvardInkopshistorik"><LokalvardInkopshistorik /></LayoutWrapper>} />
       <Route path="/Lokalvard/OmatchadeInkop" element={<LayoutWrapper currentPageName="LokalvardOmatchadeInkop"><LokalvardOmatchadeInkop /></LayoutWrapper>} />
+      <Route path="/Materialbanken" element={<LayoutWrapper currentPageName="Materialbanken"><Materialbanken /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>
