@@ -8,11 +8,12 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Forbidden: Admin eller ägare krävs' }, { status: 403 });
   }
 
-  const [tools, handTools, arbetsklader, lokalvard] = await Promise.all([
+  const [tools, handTools, arbetsklader, lokalvard, material] = await Promise.all([
     base44.asServiceRole.entities.Tool.list(null, 100000),
     base44.asServiceRole.entities.HandTool.list(null, 100000),
     base44.asServiceRole.entities['Arbetskl\u00e4derUtrustning'].list(null, 100000),
     base44.asServiceRole.entities.LokalvardsArtikel.list(null, 100000),
+    base44.asServiceRole.entities.MaterialLager.list(null, 100000),
   ]);
 
   const counts = {};
@@ -31,6 +32,7 @@ Deno.serve(async (req) => {
   addCount(arbetsklader, 'Arbetskl\u00e4derUtrustning', 'category');
   // LokalvardsArtikel has no category field - count all under a special key
   counts['LokalvardsArtikel::__all__'] = lokalvard.length;
+  addCount(material, 'MaterialLager', 'kategori');
 
   return Response.json({ counts });
 });

@@ -5,6 +5,7 @@ const ENTITY_PAGE_MAP = {
   HandTool: 'Handredskap',
   'ArbetskläderUtrustning': 'Arbetskläder',
   LokalvardsArtikel: 'Lokalvård – Lager',
+  MaterialLager: 'Materialbanken',
 };
 
 Deno.serve(async (req) => {
@@ -16,11 +17,12 @@ Deno.serve(async (req) => {
   }
 
   // Fetch all relevant entity data in parallel
-  const [tools, handTools, arbetsklader, lokalvard] = await Promise.all([
+  const [tools, handTools, arbetsklader, lokalvard, material] = await Promise.all([
     base44.asServiceRole.entities.Tool.list(null, 100000),
     base44.asServiceRole.entities.HandTool.list(null, 100000),
     base44.asServiceRole.entities.ArbetskläderUtrustning.list(null, 100000),
     base44.asServiceRole.entities.LokalvardsArtikel.list(null, 100000),
+    base44.asServiceRole.entities.MaterialLager.list(null, 100000),
   ]);
 
   const sources = [
@@ -28,6 +30,7 @@ Deno.serve(async (req) => {
     { items: handTools, entityType: 'HandTool', categoryField: 'category', subcategoryField: 'subcategory' },
     { items: arbetsklader, entityType: 'ArbetskläderUtrustning', categoryField: 'category', subcategoryField: 'subcategory' },
     { items: lokalvard, entityType: 'LokalvardsArtikel', categoryField: null, subcategoryField: 'subcategory' },
+    { items: material, entityType: 'MaterialLager', categoryField: 'kategori', subcategoryField: 'underkategori' },
   ];
 
   // Build category map: { "EntityType::CategoryName": Set(subcategories) }

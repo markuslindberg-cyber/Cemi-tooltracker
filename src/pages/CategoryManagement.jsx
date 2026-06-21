@@ -12,6 +12,7 @@ const ENTITY_LABELS = {
   HandTool: 'Handredskap',
   'ArbetskläderUtrustning': 'Arbetskläder',
   LokalvardsArtikel: 'Lokalvård – Lager',
+  MaterialLager: 'Materialbanken',
 };
 
 const ENTITY_COLORS = {
@@ -19,6 +20,7 @@ const ENTITY_COLORS = {
   HandTool: 'bg-green-100 text-green-700',
   'ArbetskläderUtrustning': 'bg-purple-100 text-purple-700',
   LokalvardsArtikel: 'bg-orange-100 text-orange-700',
+  MaterialLager: 'bg-amber-100 text-amber-700',
 };
 
 function EditableField({ value, onSave }) {

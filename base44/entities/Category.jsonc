@@ -8,12 +8,13 @@
     },
     "entity_type": {
       "type": "string",
-      "description": "Vilken entitet kategorin tillh\u00f6r, t.ex. Tool, HandTool, Arbetskl\u00e4derUtrustning, LokalvardsArtikel",
+      "description": "Vilken entitet kategorin tillh\u00f6r",
       "enum": [
         "Tool",
         "HandTool",
         "Arbetskl\u00e4derUtrustning",
-        "LokalvardsArtikel"
+        "LokalvardsArtikel",
+        "MaterialLager"
       ]
     },
     "subcategories": {

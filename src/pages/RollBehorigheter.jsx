@@ -31,6 +31,9 @@ const ENTITIES = [
   { id: 'LokalvardArtikelRequest', label: 'Begäran lokalvård', group: 'Lokalvård' },
   { id: 'Uttag', label: 'Uttag', group: 'Lokalvård' },
   { id: 'Kund', label: 'Kunder', group: 'Lokalvård' },
+  // Materialbanken
+  { id: 'MaterialLager', label: 'Materiallager', group: 'Materialbanken' },
+  { id: 'MaterialUttag', label: 'Materialuttag', group: 'Materialbanken' },
   // Administration
   { id: 'Location', label: 'Platser', group: 'Administration' },
   { id: 'TeamMember', label: 'Personal', group: 'Administration' },
