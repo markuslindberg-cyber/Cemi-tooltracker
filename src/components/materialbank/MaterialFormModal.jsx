@@ -222,7 +222,7 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
             </div>
             <div>
               <Label>Ordernummer (från jobbet materialet kommer ifrån)</Label>
-              <Input value={form.ordernummer} onChange={e => set('ordernummer', e.target.value)} placeholder="T.ex. ORD-2024-001" />
+              <Input value={form.ordernummer} onChange={e => set('ordernummer', e.target.value)} placeholder="T.ex. 162057" />
             </div>
             <div>
               <Label>Kundnamn (kunden på jobbet materialet kommer ifrån)</Label>
