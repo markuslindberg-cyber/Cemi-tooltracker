@@ -11,6 +11,7 @@ import TransferModal from '@/components/modals/TransferModal';
 import ToolFormModal from '@/components/modals/ToolFormModal';
 import LoanRequestModal from '@/components/modals/LoanRequestModal';
 import DashboardScanSearch from '@/components/dashboard/DashboardScanSearch';
+import MaterialWidget from '@/components/dashboard/MaterialWidget';
 import { Button } from '@/components/ui/button';
 import {
   Wrench,
@@ -31,7 +32,7 @@ import {
 import { format } from 'date-fns';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 
-const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers'];
+const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers', 'material_summary'];
 const LOKALVARD_ONLY_ROLES = ['lokalvårdare', 'admin_lokalvård'];
 
 const DEFAULT_WIDGETS = [
@@ -45,6 +46,7 @@ const DEFAULT_WIDGETS = [
   { id: 'recent_transfers', visible: true, column: 'sidebar' },
   { id: 'lokalvard_pending_chart', visible: true, column: 'main' },
   { id: 'recent_tools', visible: true, column: 'main' },
+  { id: 'material_summary', visible: true, column: 'sidebar' },
 ];
 
 export default function Dashboard() {
@@ -478,6 +480,9 @@ export default function Dashboard() {
                 lokalvardCount={pendingLokalvardCount}
                 lokalvardApprovedCount={approvedNotCheckedOutLokalvardCount}
               />
+            ),
+            material_summary: isVisible('material_summary') && !LOKALVARD_ONLY_ROLES.includes(user?.role) && (
+              <MaterialWidget key="material_summary" />
             ),
             recent_tools: isVisible('recent_tools') && (
               <div key="recent_tools" className="space-y-4">
