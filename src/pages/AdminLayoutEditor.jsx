@@ -18,9 +18,10 @@ const ALL_WIDGETS = [
   { id: 'loans_by_location', label: 'Platser med aktiva lån' },
   { id: 'recent_transfers', label: 'Senaste förflyttningar' },
   { id: 'recent_tools', label: 'Senaste maskiner (lista)' },
+  { id: 'material_summary', label: 'Materialbanken (sammanfattning)' },
 ];
 // Widgets that can be in main or sidebar (wide widgets are always main)
-const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers'];
+const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers', 'material_summary'];
 const ALWAYS_MAIN = ['stats', 'loan_alert', 'missing_alert', 'recent_tools'];
 
 const DEFAULT_WIDGET_ORDER = ALL_WIDGETS.map(w => ({
@@ -69,6 +70,12 @@ const ALL_NAV_ITEMS = [
     id: 'inventering', label: 'Inventeringskontroll', children: [
       { id: 'inventering_inventering', label: 'Inventering' },
       { id: 'inventering_rapporter', label: 'Inventeringsrapporter' },
+    ]
+  },
+  {
+    id: 'materialbanken', label: 'Materialbanken', children: [
+      { id: 'materialbanken_oversikt', label: 'Översikt' },
+      { id: 'materialbanken_uttag', label: 'Uttag' },
     ]
   },
   {

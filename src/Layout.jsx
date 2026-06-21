@@ -153,6 +153,7 @@ const NAV_ID_MAP = {
   arbetsklader: 'Arbetskläder',
   lokalvard: 'Lokalvård',
   inventering: 'Inventeringskontroll',
+  materialbanken: 'Materialbanken',
   administration: 'Administration',
 };
 
