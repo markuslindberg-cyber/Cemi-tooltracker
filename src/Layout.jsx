@@ -102,6 +102,10 @@ const navigation = [
     path: '/Materialbanken',
     icon: Boxes,
     roles: NOT_LOKALVARDARE,
+    children: [
+      { name: 'Översikt', path: '/Materialbanken' },
+      { name: 'Uttag', path: '/Materialbanken/Uttag' },
+    ]
   },
   {
     name: 'Administration',
