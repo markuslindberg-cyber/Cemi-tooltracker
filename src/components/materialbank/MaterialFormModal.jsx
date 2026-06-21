@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { base44 } from '@/api/base44Client';
+import MaterialHistorik from '@/components/materialbank/MaterialHistorik';
 import { Camera, Loader2, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -247,6 +248,13 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
             <Label>Anteckningar</Label>
             <Textarea value={form.notes || ''} onChange={e => set('notes', e.target.value)} rows={3} />
           </div>
+
+          {/* Historik – visas bara vid redigering */}
+          {material?.id && (
+            <div className="border-t pt-4">
+              <MaterialHistorik materialId={material.id} />
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">

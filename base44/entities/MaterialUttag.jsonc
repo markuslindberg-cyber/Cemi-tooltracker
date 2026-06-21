@@ -1,0 +1,150 @@
+{
+  "name": "MaterialUttag",
+  "type": "object",
+  "properties": {
+    "material_id": {
+      "type": "string",
+      "description": "Referens till MaterialLager"
+    },
+    "material_benamning": {
+      "type": "string",
+      "description": "Ben\u00e4mning p\u00e5 materialet vid uttaget"
+    },
+    "material_artikelnummer": {
+      "type": "string",
+      "description": "Artikelnummer/streckkod"
+    },
+    "antal": {
+      "type": "number",
+      "description": "Antal uttagna enheter"
+    },
+    "enhet": {
+      "type": "string",
+      "description": "Enhet, t.ex. st, m\u00b2, m"
+    },
+    "kund_namn": {
+      "type": "string",
+      "description": "Kund som materialet g\u00e5r till"
+    },
+    "ordernummer": {
+      "type": "string",
+      "description": "Ordernummer/projektnummer"
+    },
+    "uttagen_av_namn": {
+      "type": "string",
+      "description": "Namn p\u00e5 personen som g\u00f6r uttaget"
+    },
+    "uttagen_av_email": {
+      "type": "string",
+      "description": "Email p\u00e5 personen som g\u00f6r uttaget"
+    },
+    "datum": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Datum och tid f\u00f6r uttaget"
+    },
+    "typ": {
+      "type": "string",
+      "enum": [
+        "uttag",
+        "justering",
+        "inkomst"
+      ],
+      "default": "uttag",
+      "description": "Typ av h\u00e4ndelse"
+    },
+    "notering": {
+      "type": "string",
+      "nullable": true,
+      "description": "Fritext-notering"
+    }
+  },
+  "required": [
+    "material_id",
+    "material_benamning",
+    "antal",
+    "kund_namn",
+    "ordernummer",
+    "uttagen_av_namn",
+    "uttagen_av_email",
+    "datum"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin_lokalv\u00e5rd"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "verktygsf\u00f6rvaltare"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        }
+      ]
+    }
+  }
+}

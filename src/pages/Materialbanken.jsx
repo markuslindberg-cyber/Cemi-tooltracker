@@ -6,15 +6,18 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import MaterialFormModal from '@/components/materialbank/MaterialFormModal';
-import { Plus, Search, Boxes, Package, Trash2, RotateCcw } from 'lucide-react';
+import MaterialUttagModal from '@/components/materialbank/MaterialUttagModal';
+import { Plus, Search, Boxes, Package, Trash2, RotateCcw, ScanLine } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 const STATUS_LABELS = { i_lager: 'I lager', reserverad: 'Reserverad', såld: 'Såld' };
 const STATUS_COLORS = { i_lager: 'bg-emerald-100 text-emerald-700', reserverad: 'bg-amber-100 text-amber-700', såld: 'bg-gray-100 text-gray-600' };
 const SYFTE_LABELS = { internt: 'Internt', till_forsaljning: 'Till försäljning' };
+const SYFTE_COLORS = { internt: 'bg-amber-100 text-amber-800 border-amber-200', till_forsaljning: 'bg-blue-100 text-blue-800 border-blue-200' };
 
 export default function Materialbanken() {
   const [showForm, setShowForm] = useState(false);
+  const [showUttag, setShowUttag] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [search, setSearch] = useState('');
   const [filterKategori, setFilterKategori] = useState('all');
@@ -94,9 +97,14 @@ export default function Materialbanken() {
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">Överblivet material från jobb</p>
             </div>
           </div>
-          <Button onClick={() => { setEditItem(null); setShowForm(true); }} className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25">
-            <Plus className="w-4 h-4 mr-2" /> Registrera material
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowUttag(true)} variant="outline" className="border-[#8B1E1E] text-[#8B1E1E] hover:bg-[#8B1E1E]/10">
+              <ScanLine className="w-4 h-4 mr-2" /> Uttag
+            </Button>
+            <Button onClick={() => { setEditItem(null); setShowForm(true); }} className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25">
+              <Plus className="w-4 h-4 mr-2" /> Registrera material
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -182,7 +190,7 @@ export default function Materialbanken() {
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {filtered.map(m => (
-                    <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer" onClick={() => { setEditItem(m); setShowForm(true); }}>
+                    <tr key={m.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer ${m.syfte === 'internt' ? 'border-l-4 border-l-amber-400' : 'border-l-4 border-l-blue-400'}`} onClick={() => { setEditItem(m); setShowForm(true); }}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           {m.image_url ? (
@@ -204,7 +212,9 @@ export default function Materialbanken() {
                       <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">{(m.inkopspris || 0).toLocaleString('sv-SE')} kr</td>
                       <td className="px-4 py-3 text-right text-gray-600 dark:text-gray-400">{getForsaljningspris(m).toLocaleString('sv-SE')} kr</td>
                       <td className="px-4 py-3 text-center">
-                        <Badge variant="outline" className="text-xs">{SYFTE_LABELS[m.syfte] || m.syfte}</Badge>
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold border ${SYFTE_COLORS[m.syfte] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                          {SYFTE_LABELS[m.syfte] || m.syfte}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[m.status] || 'bg-gray-100 text-gray-600'}`}>
@@ -225,7 +235,7 @@ export default function Materialbanken() {
             {/* Mobile Cards */}
             <div className="lg:hidden space-y-3">
               {filtered.map(m => (
-                <div key={m.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 active:scale-[0.99] transition-transform" onClick={() => { setEditItem(m); setShowForm(true); }}>
+                <div key={m.id} className={`bg-white dark:bg-gray-900 rounded-xl border p-4 active:scale-[0.99] transition-transform ${m.syfte === 'internt' ? 'border-l-4 border-l-amber-400 border-gray-100 dark:border-gray-800' : 'border-l-4 border-l-blue-400 border-gray-100 dark:border-gray-800'}`} onClick={() => { setEditItem(m); setShowForm(true); }}>
                   <div className="flex items-start gap-3">
                     {m.image_url ? (
                       <img src={m.image_url} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
@@ -239,7 +249,9 @@ export default function Materialbanken() {
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{m.kategori}{m.location_name ? ` · ${m.location_name}` : ''}</p>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status]}</span>
-                        <Badge variant="outline" className="text-xs">{SYFTE_LABELS[m.syfte]}</Badge>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${SYFTE_COLORS[m.syfte] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                          {SYFTE_LABELS[m.syfte]}
+                        </span>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -260,6 +272,13 @@ export default function Materialbanken() {
         material={editItem}
         locations={locations}
         onSubmit={(data) => saveMutation.mutateAsync(data)}
+      />
+
+      <MaterialUttagModal
+        isOpen={showUttag}
+        onClose={() => setShowUttag(false)}
+        materials={materials}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['materialLager'] })}
       />
     </div>
   );
