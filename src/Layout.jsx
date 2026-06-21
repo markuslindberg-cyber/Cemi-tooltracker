@@ -124,7 +124,7 @@ const navigation = [
 ];
 
 const ICON_MAP = {
-  LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star, Boxes
+  LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star, Boxes,
 };
 
 const DASHBOARD_TAB = { name: 'Dashboard', path: '/', icon: LayoutDashboard };

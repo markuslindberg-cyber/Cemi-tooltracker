@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import {
   LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan,
-  MapPin, Settings, Star, Check, GripVertical, X
+  MapPin, Settings, Star, Check, GripVertical, X, Boxes
 } from 'lucide-react';
 
 const ICON_MAP = {
-  LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star
+  LayoutDashboard, Package, Users, Wrench, Shovel, Shirt, SprayCan, MapPin, Settings, Star, Boxes
 };
 
 // roles: undefined = alla, array = specifika roller
@@ -39,6 +39,9 @@ const ALL_SHORTCUTS = [
   { path: '/Lokalvard/Produktstatistik', label: 'Lokalvård – Produktstatistik', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
   { path: '/Lokalvard/Inkopshistorik', label: 'Lokalvård – Inköpshistorik', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
   { path: '/Lokalvard/OmatchadeInkop', label: 'Lokalvård – Omatchade inköp', icon: 'SprayCan', roles: ['admin_lokalvård', 'ägare'] },
+  // --- Materialbanken ---
+  { path: '/Materialbanken', label: 'Materialbanken – Översikt', icon: 'Boxes', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
+  { path: '/Materialbanken/Uttag', label: 'Materialbanken – Uttag', icon: 'Boxes', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   // --- Inventeringskontroll ---
   { path: '/InventoryCheck', label: 'Inventering', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
   { path: '/InventoryReports', label: 'Inventeringsrapporter', icon: 'Wrench', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'] },
