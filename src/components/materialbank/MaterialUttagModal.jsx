@@ -5,7 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
-import { ScanLine, Package, Loader2, AlertTriangle } from 'lucide-react';
+import { useBarcodeCamera } from '@/hooks/useBarcodeCamera';
+import ScannerOverlay from '@/components/ScannerOverlay';
+import TorchButton from '@/components/ui/TorchButton';
+import { ScanLine, Camera, Package, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 export default function MaterialUttagModal({ isOpen, onClose, materials = [], onSuccess }) {
@@ -17,7 +20,18 @@ export default function MaterialUttagModal({ isOpen, onClose, materials = [], on
   const [ordernummer, setOrdernummer] = useState('');
   const [notering, setNotering] = useState('');
   const [saving, setSaving] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const scanRef = useRef(null);
+
+  const CAMERA_ID = 'material-uttag-camera';
+  const { torchOn, torchSupported, toggleTorch } = useBarcodeCamera(
+    CAMERA_ID,
+    cameraOpen,
+    (code) => {
+      setCameraOpen(false);
+      handleScan(code);
+    }
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -28,6 +42,7 @@ export default function MaterialUttagModal({ isOpen, onClose, materials = [], on
       setKundNamn('');
       setOrdernummer('');
       setNotering('');
+      setCameraOpen(false);
       setTimeout(() => scanRef.current?.focus(), 100);
     }
   }, [isOpen]);
@@ -106,19 +121,39 @@ export default function MaterialUttagModal({ isOpen, onClose, materials = [], on
 
         {step === 'scan' && (
           <div className="space-y-4 py-2">
-            <div>
-              <Label>Skanna streckkod / Sök artikelnummer</Label>
-              <Input
-                ref={scanRef}
-                value={scanInput}
-                onChange={e => setScanInput(e.target.value)}
-                onKeyDown={handleScanKeyDown}
-                placeholder="Skanna eller skriv artikelnummer..."
-                className="text-lg h-12 mt-1"
-                autoFocus
-              />
-              <p className="text-xs text-gray-400 mt-1">Tryck Enter efter skanning</p>
+            {/* Camera scanner */}
+            {cameraOpen && (
+              <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                <div id={CAMERA_ID} className="w-full h-full" />
+                <ScannerOverlay />
+                {torchSupported && (
+                  <TorchButton torchOn={torchOn} onToggle={toggleTorch} />
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Input
+                  ref={scanRef}
+                  value={scanInput}
+                  onChange={e => setScanInput(e.target.value)}
+                  onKeyDown={handleScanKeyDown}
+                  placeholder="Skanna eller skriv artikelnummer..."
+                  className="text-lg h-12"
+                  autoFocus
+                />
+              </div>
+              <Button
+                variant={cameraOpen ? "default" : "outline"}
+                size="icon"
+                className={`h-12 w-12 shrink-0 ${cameraOpen ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}
+                onClick={() => setCameraOpen(prev => !prev)}
+              >
+                <Camera className="w-5 h-5" />
+              </Button>
             </div>
+            <p className="text-xs text-gray-400">Tryck Enter efter manuell inmatning, eller använd kameran</p>
 
             <div className="border-t pt-4">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Eller välj material:</p>
