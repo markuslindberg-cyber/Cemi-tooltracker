@@ -221,12 +221,12 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
               <Input value={form.levfaktura_nummer} onChange={e => set('levfaktura_nummer', e.target.value)} />
             </div>
             <div>
-              <Label>Ordernummer (jobb)</Label>
-              <Input value={form.ordernummer} onChange={e => set('ordernummer', e.target.value)} />
+              <Label>Ordernummer (från jobbet materialet kommer ifrån)</Label>
+              <Input value={form.ordernummer} onChange={e => set('ordernummer', e.target.value)} placeholder="T.ex. ORD-2024-001" />
             </div>
             <div>
-              <Label>Kundnamn</Label>
-              <Input value={form.kund_namn} onChange={e => set('kund_namn', e.target.value)} />
+              <Label>Kundnamn (kunden på jobbet materialet kommer ifrån)</Label>
+              <Input value={form.kund_namn} onChange={e => set('kund_namn', e.target.value)} placeholder="T.ex. BRF Solgläntan" />
             </div>
             <div>
               <Label>Lagringsplats</Label>
