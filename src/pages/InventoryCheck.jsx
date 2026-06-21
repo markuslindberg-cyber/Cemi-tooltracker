@@ -29,7 +29,7 @@ function exportToCSV(sessionConfig, checkedItems, allItems, manualCounts) {
 
   const toRow = (item, result) => [
     item.name || item.benamning,
-    item._type === 'handtool' ? 'Handredskap' : item._type === 'arbetskläder' ? 'Arbetskläder' : item._type === 'lokalvards' ? 'Lokalvård' : 'Maskin',
+    item._type === 'handtool' ? 'Handredskap' : item._type === 'arbetskläder' ? 'Arbetskläder' : item._type === 'lokalvards' ? 'Lokalvård' : item._type === 'material' ? 'Material' : 'Maskin',
     item.category || item.subcategory || '',
     item.barcode || item.streckkod || '',
     item.location_name || '',
@@ -92,6 +92,7 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
     { value: 'handtools', label: 'Handredskap' },
     { value: 'arbetskläder', label: 'Arbetskläder' },
     { value: 'lokalvards', label: 'Lokalvård' },
+    { value: 'material', label: 'Material' },
     { value: 'all', label: 'Alla' },
   ];
 
@@ -354,6 +355,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const { data: handTools = [] } = useQuery({ queryKey: ['handtools'], queryFn: () => base44.entities.HandTool.list('-updated_date', 500) });
   const { data: arbetskläderData = [] } = useQuery({ queryKey: ['arbetskläder'], queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500) });
   const { data: lokalvardsData = [] } = useQuery({ queryKey: ['lokalvards'], queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 500) });
+  const { data: materialData = [] } = useQuery({ queryKey: ['materialLager'], queryFn: () => base44.entities.MaterialLager.filter({ is_deleted: false }) });
   const { data: inkopData = [] } = useQuery({ queryKey: ['lokalvardInkop'], queryFn: () => base44.entities.LokalvardInköp.list('-datum', 5000) });
   const { data: uttagData = [] } = useQuery({ queryKey: ['uttagAll'], queryFn: () => base44.entities.Uttag.list('-datum', 5000) });
   const { data: checkoutData = [] } = useQuery({ queryKey: ['checkoutAll'], queryFn: () => base44.entities.LokalvardCheckout.list('-checked_out_date', 5000) });
@@ -373,6 +375,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
       if (type === 'handtool') return base44.entities.HandTool.update(id, data);
       if (type === 'arbetskläder') return base44.entities.ArbetskläderUtrustning.update(id, data);
       if (type === 'lokalvards') return base44.entities.LokalvardsArtikel.update(id, data);
+      if (type === 'material') return base44.entities.MaterialLager.update(id, data);
       return base44.entities.Tool.update(id, data);
     },
     onSuccess: () => {
@@ -380,6 +383,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
       queryClient.invalidateQueries({ queryKey: ['handtools'] });
       queryClient.invalidateQueries({ queryKey: ['arbetskläder'] });
       queryClient.invalidateQueries({ queryKey: ['lokalvards'] });
+      queryClient.invalidateQueries({ queryKey: ['materialLager'] });
     },
   });
 
@@ -409,11 +413,16 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
       const t = lokalvardsData.map(l => ({ ...l, _type: 'lokalvards', name: l.benamning }));
       list = [...list, ...t];
     }
+    if (include('material')) {
+      let t = materialData.map(m => ({ ...m, _type: 'material', name: m.benamning, barcode: m.artikelnummer }));
+      if (mode === 'location') t = t.filter(m => m.location_id === locationId);
+      list = [...list, ...t];
+    }
     return list;
-  }, [tools, handTools, arbetskläderData, lokalvardsData, sessionConfig]);
+  }, [tools, handTools, arbetskläderData, lokalvardsData, materialData, sessionConfig]);
 
   // Determine if an item uses manual count (lokalvård or arbetskläder with quantity)
-  const usesManualCount = (item) => item._type === 'lokalvards' || item._type === 'arbetskläder';
+  const usesManualCount = (item) => item._type === 'lokalvards' || item._type === 'arbetskläder' || item._type === 'material';
 
   // Rebuild scan log from resumed session data once scoped items are loaded
   const resumeLogBuiltRef = useRef(false);
@@ -458,6 +467,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         ...handTools.map(t => ({ ...t, _type: 'handtool' })),
         ...arbetskläderData.map(a => ({ ...a, _type: 'arbetskläder' })),
         ...lokalvardsData.map(l => ({ ...l, _type: 'lokalvards', name: l.benamning })),
+        ...materialData.map(m => ({ ...m, _type: 'material', name: m.benamning, barcode: m.artikelnummer })),
       ];
     }
     const item = searchList.find(t => (t.barcode || t.streckkod)?.trim() === trimmedBarcode);
@@ -649,7 +659,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                     <div>
                       <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{entry.name}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}
+                        {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : entry.type === 'material' ? 'Material' : 'Maskin'}
                         {entry.manualCount !== undefined && ` · Antal: ${entry.manualCount}`}
                       </p>
                       {entry.type === 'lokalvards' && (() => {
@@ -698,7 +708,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">{item._type === 'handtool' ? 'Handredskap' : item._type === 'arbetskläder' ? 'Arbetskläder' : item._type === 'lokalvards' ? 'Lokalvård' : 'Maskin'}</Badge>
+                    <Badge variant="outline" className="text-xs">{item._type === 'handtool' ? 'Handredskap' : item._type === 'arbetskläder' ? 'Arbetskläder' : item._type === 'lokalvards' ? 'Lokalvård' : item._type === 'material' ? 'Material' : 'Maskin'}</Badge>
                     {item.location_name && <Badge variant="outline" className="text-xs">{item.location_name}</Badge>}
                   </div>
                 </div>
