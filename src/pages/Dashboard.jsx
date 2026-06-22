@@ -548,11 +548,46 @@ export default function Dashboard() {
             .filter(id => getColumn(id) === 'sidebar' && widgetContent[id])
             .map(id => widgetContent[id]);
 
+          // On mobile: single column, all widgets interleaved for balanced layout
+          // On md (tablet): 2-column grid with all widgets distributed
+          // On lg (desktop): 3-column grid with main (2 cols) + sidebar (1 col)
+          const allWidgetsOrdered = orderedWidgetIds
+            .filter(id => widgetContent[id])
+            .map(id => ({ id, content: widgetContent[id], column: getColumn(id) }));
+
           return (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-              <div className="lg:col-span-2 lg:order-1 space-y-4">{mainWidgets}</div>
-              <div className="space-y-4 lg:order-2">{sidebarWidgets}</div>
-            </div>
+            <>
+              {/* Mobile: single column, interleaved */}
+              <div className="md:hidden space-y-4">
+                {allWidgetsOrdered.map(w => (
+                  <div key={w.id}>{w.content}</div>
+                ))}
+              </div>
+
+              {/* Tablet: 2-column masonry-like */}
+              <div className="hidden md:grid lg:hidden grid-cols-2 gap-4">
+                {(() => {
+                  const col1 = [];
+                  const col2 = [];
+                  allWidgetsOrdered.forEach((w, i) => {
+                    if (i % 2 === 0) col1.push(w);
+                    else col2.push(w);
+                  });
+                  return (
+                    <>
+                      <div className="space-y-4">{col1.map(w => <div key={w.id}>{w.content}</div>)}</div>
+                      <div className="space-y-4">{col2.map(w => <div key={w.id}>{w.content}</div>)}</div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Desktop: 3-column with main + sidebar */}
+              <div className="hidden lg:grid grid-cols-3 gap-6">
+                <div className="col-span-2 space-y-4">{mainWidgets}</div>
+                <div className="space-y-4">{sidebarWidgets}</div>
+              </div>
+            </>
           );
         })()}
       </div>
