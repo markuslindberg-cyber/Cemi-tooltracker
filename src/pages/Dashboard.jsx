@@ -548,44 +548,24 @@ export default function Dashboard() {
             .filter(id => getColumn(id) === 'sidebar' && widgetContent[id])
             .map(id => widgetContent[id]);
 
-          // Full-width widgets that should always span the entire row
-          const FULL_WIDTH_IDS = ['recent_tools', 'lokalvard_pending_chart'];
+          const ordered = orderedWidgetIds.filter(id => widgetContent[id]);
+          const smallWidgets = ordered.filter(id => SIDEBAR_CAPABLE.includes(id));
+          const fullWidgets = ordered.filter(id => !SIDEBAR_CAPABLE.includes(id));
 
           return (
             <div className="space-y-4">
-              {/* Main widgets: full-width ones get full row, sidebar-capable ones pair up */}
-              {(() => {
-                const ordered = orderedWidgetIds.filter(id => widgetContent[id]);
-                const rows = [];
-                let smallBatch = [];
-
-                const flushSmall = () => {
-                  if (smallBatch.length === 0) return;
-                  rows.push(
-                    <div key={`row-${smallBatch.map(s => s).join('-')}`} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {smallBatch.map(id => (
-                        <div key={id}>{widgetContent[id]}</div>
-                      ))}
-                    </div>
-                  );
-                  smallBatch = [];
-                };
-
-                ordered.forEach(id => {
-                  const isSmall = SIDEBAR_CAPABLE.includes(id);
-                  const isFullWidth = FULL_WIDTH_IDS.includes(id);
-
-                  if (isSmall && !isFullWidth) {
-                    smallBatch.push(id);
-                  } else {
-                    flushSmall();
-                    rows.push(<div key={id}>{widgetContent[id]}</div>);
-                  }
-                });
-                flushSmall();
-
-                return rows;
-              })()}
+              {/* Full-width widgets */}
+              {fullWidgets.map(id => (
+                <div key={id}>{widgetContent[id]}</div>
+              ))}
+              {/* Compact widgets grid */}
+              {smallWidgets.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {smallWidgets.map(id => (
+                    <div key={id}>{widgetContent[id]}</div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })()}
