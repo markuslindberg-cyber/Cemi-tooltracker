@@ -548,46 +548,45 @@ export default function Dashboard() {
             .filter(id => getColumn(id) === 'sidebar' && widgetContent[id])
             .map(id => widgetContent[id]);
 
-          // On mobile: single column, all widgets interleaved for balanced layout
-          // On md (tablet): 2-column grid with all widgets distributed
-          // On lg (desktop): 3-column grid with main (2 cols) + sidebar (1 col)
-          const allWidgetsOrdered = orderedWidgetIds
-            .filter(id => widgetContent[id])
-            .map(id => ({ id, content: widgetContent[id], column: getColumn(id) }));
+          // Full-width widgets that should always span the entire row
+          const FULL_WIDTH_IDS = ['recent_tools', 'lokalvard_pending_chart'];
 
           return (
-            <>
-              {/* Mobile: single column, interleaved */}
-              <div className="md:hidden space-y-4">
-                {allWidgetsOrdered.map(w => (
-                  <div key={w.id}>{w.content}</div>
-                ))}
-              </div>
+            <div className="space-y-4">
+              {/* Main widgets: full-width ones get full row, sidebar-capable ones pair up */}
+              {(() => {
+                const ordered = orderedWidgetIds.filter(id => widgetContent[id]);
+                const rows = [];
+                let smallBatch = [];
 
-              {/* Tablet: 2-column masonry-like */}
-              <div className="hidden md:grid lg:hidden grid-cols-2 gap-4">
-                {(() => {
-                  const col1 = [];
-                  const col2 = [];
-                  allWidgetsOrdered.forEach((w, i) => {
-                    if (i % 2 === 0) col1.push(w);
-                    else col2.push(w);
-                  });
-                  return (
-                    <>
-                      <div className="space-y-4">{col1.map(w => <div key={w.id}>{w.content}</div>)}</div>
-                      <div className="space-y-4">{col2.map(w => <div key={w.id}>{w.content}</div>)}</div>
-                    </>
+                const flushSmall = () => {
+                  if (smallBatch.length === 0) return;
+                  rows.push(
+                    <div key={`row-${smallBatch.map(s => s).join('-')}`} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {smallBatch.map(id => (
+                        <div key={id}>{widgetContent[id]}</div>
+                      ))}
+                    </div>
                   );
-                })()}
-              </div>
+                  smallBatch = [];
+                };
 
-              {/* Desktop: 3-column with main + sidebar */}
-              <div className="hidden lg:grid grid-cols-3 gap-6">
-                <div className="col-span-2 space-y-4">{mainWidgets}</div>
-                <div className="space-y-4">{sidebarWidgets}</div>
-              </div>
-            </>
+                ordered.forEach(id => {
+                  const isSmall = SIDEBAR_CAPABLE.includes(id);
+                  const isFullWidth = FULL_WIDTH_IDS.includes(id);
+
+                  if (isSmall && !isFullWidth) {
+                    smallBatch.push(id);
+                  } else {
+                    flushSmall();
+                    rows.push(<div key={id}>{widgetContent[id]}</div>);
+                  }
+                });
+                flushSmall();
+
+                return rows;
+              })()}
+            </div>
           );
         })()}
       </div>
