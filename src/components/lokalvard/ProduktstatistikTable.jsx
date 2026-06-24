@@ -41,36 +41,36 @@ export default function ProduktstatistikTable({ items, sortBy, sortDir, onSort }
   return (
     <>
       {/* Desktop table */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto hidden lg:block">
-        <Table>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto hidden lg:block min-w-0">
+        <Table className="w-full table-fixed">
           <TableHeader className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800/80">
             <TableRow>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs" onClick={() => onSort('name')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs w-[22%]" onClick={() => onSort('name')}>
                 Produktnamn<SortIcon col="name" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[70px] px-2" onClick={() => onSort('stock')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right w-[7%] px-2" onClick={() => onSort('stock')}>
                 Lager<SortIcon col="stock" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[65px] px-2" onClick={() => onSort('avg3')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right w-[6%] px-2" onClick={() => onSort('avg3')}>
                 3m<SortIcon col="avg3" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[65px] px-2" onClick={() => onSort('avg12')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right w-[6%] px-2" onClick={() => onSort('avg12')}>
                 12m<SortIcon col="avg12" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right whitespace-nowrap w-[60px] px-2" onClick={() => onSort('purchaseCount')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right w-[7%] px-2" onClick={() => onSort('purchaseCount')}>
                 Inköp<SortIcon col="purchaseCount" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right" onClick={() => onSort('avgInterval')}>
-                Snittintervall inköp<SortIcon col="avgInterval" sortBy={sortBy} sortDir={sortDir} />
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right w-[13%]" onClick={() => onSort('avgInterval')}>
+                Snittintervall<SortIcon col="avgInterval" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right" onClick={() => onSort('avgQty')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right w-[16%]" onClick={() => onSort('avgQty')}>
                 Snitt qty/inköp<SortIcon col="avgQty" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs" onClick={() => onSort('trend')}>
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs w-[12%]" onClick={() => onSort('trend')}>
                 Trend<SortIcon col="trend" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right" onClick={() => onSort('days')}>
-                Räcker (dagar)<SortIcon col="days" sortBy={sortBy} sortDir={sortDir} />
+              <TableHead className="font-semibold cursor-pointer select-none hover:text-[#8B1E1E] text-xs text-right w-[11%]" onClick={() => onSort('days')}>
+                Räcker<SortIcon col="days" sortBy={sortBy} sortDir={sortDir} />
               </TableHead>
             </TableRow>
           </TableHeader>
