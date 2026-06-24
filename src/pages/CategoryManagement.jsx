@@ -266,7 +266,7 @@ export default function CategoryManagement() {
         name: newCatName.trim(),
         entity_type: newCatEntity,
         subcategories: [],
-        page_label: { Tool: 'Maskiner / Inventarie', HandTool: 'Handredskap', 'ArbetskläderUtrustning': 'Arbetskläder', LokalvardsArtikel: 'Lokalvård – Lager' }[newCatEntity],
+        page_label: { Tool: 'Maskiner / Inventarie', HandTool: 'Handredskap', 'ArbetskläderUtrustning': 'Arbetskläder', LokalvardsArtikel: 'Lokalvård – Lager', MaterialLager: 'Materialbanken' }[newCatEntity],
       });
       toast.success(`Kategorin "${newCatName.trim()}" skapades.`);
       setNewCatName('');
