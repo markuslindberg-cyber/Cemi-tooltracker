@@ -7,7 +7,7 @@ export default function StatsCard({ title, value, icon: Icon, trend, trendLabel,
 
   return (
     <div className={cn(
-      "bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300",
+      "bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 h-full",
       className
     )}>
       <div className="flex items-start justify-between gap-2">
