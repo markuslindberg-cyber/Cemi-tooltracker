@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, ChevronsUpDown, Check, X } from "lucide-react";
+import { Loader2, ChevronsUpDown, Check, X, Camera, Upload } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -30,6 +30,7 @@ const defaultLocation = {
   name: '',
   type: 'jobsite',
   address: '',
+  image_url: '',
   team_member_ids: [],
   team_member_names: [],
   parent_location_id: '',
@@ -46,6 +47,7 @@ export default function LocationFormModal({
   isLoading,
 }) {
   const [formData, setFormData] = useState(defaultLocation);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const { data: allLocations = [] } = useQuery({
     queryKey: ['locations'],
@@ -124,6 +126,49 @@ export default function LocationFormModal({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Platsbild */}
+          <div className="space-y-2">
+            <Label>Platsbild</Label>
+            <div className="flex items-center gap-4">
+              {formData.image_url ? (
+                <div className="relative">
+                  <img src={formData.image_url} alt="Plats" className="w-24 h-24 rounded-xl object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => handleChange('image_url', '')}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                  {uploadingImage ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  ) : (
+                    <>
+                      <Camera className="w-6 h-6 text-gray-400" />
+                      <span className="text-xs text-gray-400 mt-1">Ladda upp</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingImage(true);
+                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      handleChange('image_url', file_url);
+                      setUploadingImage(false);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label>Platsnamn *</Label>
             <Input

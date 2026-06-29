@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import MaterialHistorik from '@/components/materialbank/MaterialHistorik';
 import { Camera, Loader2, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import LocationSatellitePicker from '@/components/LocationSatellitePicker';
 
 const EMPTY_FORM = {
   benamning: '', kategori: '', underkategori: '', material_typ: '',
@@ -16,6 +17,7 @@ const EMPTY_FORM = {
   syfte: 'internt', inkopspris: '', forsaljningspris_manuell: '',
   inkopsdatum: '', inkopt_fran: '', streckkod: '', artikelnummer: '', levfaktura_nummer: '',
   ordernummer: '', kund_namn: '', location_id: '', location_name: '',
+  satellite_location_id: '', satellite_location_name: '',
   image_url: '', notes: '',
 };
 
@@ -233,18 +235,14 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
               <Label>Kundnamn (kunden på jobbet materialet kommer ifrån)</Label>
               <Input value={form.kund_namn} onChange={e => set('kund_namn', e.target.value)} placeholder="T.ex. BRF Solgläntan" />
             </div>
-            <div>
-              <Label>Lagringsplats</Label>
-              <Select value={form.location_id || '_none'} onValueChange={v => handleLocationChange(v === '_none' ? '' : v)}>
-                <SelectTrigger><SelectValue placeholder="Välj plats" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">Ingen vald</SelectItem>
-                  {locations.map(l => (
-                    <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <LocationSatellitePicker
+              locations={locations}
+              locationId={form.location_id}
+              satelliteLocationId={form.satellite_location_id}
+              onLocationChange={(id, name) => setForm(prev => ({ ...prev, location_id: id, location_name: name }))}
+              onSatelliteChange={(id, name) => setForm(prev => ({ ...prev, satellite_location_id: id, satellite_location_name: name }))}
+              locationLabel="Lagringsplats"
+            />
           </div>
 
           {/* Anteckningar */}

@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ServiceHistoryPanel from '@/components/ServiceHistoryPanel';
 import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
 import ToolLogTab from '@/components/ToolLogTab';
+import LocationSatellitePicker from '@/components/LocationSatellitePicker';
 import { useMemo, useState, useEffect } from 'react';
 
 const defaultTool = {
@@ -39,6 +40,8 @@ purchase_location: '',
 invoice_number: '',
 location_id: '',
 location_name: '',
+satellite_location_id: '',
+satellite_location_name: '',
 assigned_to_email: '',
 assigned_to_name: '',
 notes: '',
@@ -141,6 +144,8 @@ export default function ToolFormModal({
           condition: templateTool.condition,
           location_id: templateTool.location_id,
           location_name: templateTool.location_name,
+          satellite_location_id: templateTool.satellite_location_id || '',
+          satellite_location_name: templateTool.satellite_location_name || '',
         });
       }
     } else {
@@ -151,11 +156,7 @@ export default function ToolFormModal({
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
-    // Auto-fill location/person names
-    if (field === 'location_id') {
-      const location = locations?.find(l => l.id === value);
-      setFormData(prev => ({ ...prev, [field]: value, location_name: location?.name || '' }));
-    }
+    // Auto-fill person names
     if (field === 'assigned_to_email') {
       const member = teamMembers?.find(m => m.email === value);
       setFormData(prev => ({ ...prev, [field]: value || '', assigned_to_name: member?.name || '' }));
@@ -1009,18 +1010,13 @@ export default function ToolFormModal({
 
               {/* Assignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label>Plats</Label>
-                    <MobileSelect
-                      value={formData.location_id}
-                      onChange={(v) => handleChange('location_id', v)}
-                      options={[
-                        { value: '', label: 'Ej tilldelad' },
-                        ...(locations?.map((location) => ({ value: location.id, label: location.name })) || [])
-                      ]}
-                      placeholder="Välj plats"
-                    />
-                  </div>
+                <LocationSatellitePicker
+                  locations={locations || []}
+                  locationId={formData.location_id}
+                  satelliteLocationId={formData.satellite_location_id}
+                  onLocationChange={(id, name) => setFormData(prev => ({ ...prev, location_id: id, location_name: name }))}
+                  onSatelliteChange={(id, name) => setFormData(prev => ({ ...prev, satellite_location_id: id, satellite_location_name: name }))}
+                />
               </div>
 
               {/* Notes */}

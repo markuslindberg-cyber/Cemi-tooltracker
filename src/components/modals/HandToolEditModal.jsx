@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Upload, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import LocationSatellitePicker from '@/components/LocationSatellitePicker';
 
 export default function HandToolEditModal({ isOpen, onClose, tool, locations, onSuccess }) {
   const [form, setForm] = useState({});
@@ -213,18 +214,13 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label>Plats</Label>
-            <Select value={form.location_id || ''} onValueChange={v => handleChange('location_id', v)}>
-              <SelectTrigger><SelectValue placeholder="Välj plats" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={null}>Ingen plats</SelectItem>
-                {locations?.map(loc => (
-                  <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <LocationSatellitePicker
+            locations={locations || []}
+            locationId={form.location_id}
+            satelliteLocationId={form.satellite_location_id}
+            onLocationChange={(id, name) => setForm(p => ({ ...p, location_id: id, location_name: name }))}
+            onSatelliteChange={(id, name) => setForm(p => ({ ...p, satellite_location_id: id, satellite_location_name: name }))}
+          />
 
           <div className="space-y-1">
             <Label>Anteckningar</Label>

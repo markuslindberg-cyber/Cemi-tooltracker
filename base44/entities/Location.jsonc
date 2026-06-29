@@ -20,6 +20,11 @@
     "address": {
       "type": "string"
     },
+    "image_url": {
+      "type": "string",
+      "nullable": true,
+      "description": "Bild p\u00e5 platsen"
+    },
     "responsible_person_id": {
       "type": "string",
       "nullable": true,

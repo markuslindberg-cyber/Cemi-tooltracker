@@ -112,6 +112,16 @@
       "nullable": true,
       "description": "Namn p\u00e5 lagringsplats"
     },
+    "satellite_location_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "Satellitplats (underplats)"
+    },
+    "satellite_location_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Namn p\u00e5 satellitplats"
+    },
     "image_url": {
       "type": "string",
       "nullable": true,

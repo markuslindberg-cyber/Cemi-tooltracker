@@ -236,6 +236,11 @@ export default function Locations() {
               return (
                 <div key={location.id}>
                   <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                    {location.image_url && (
+                      <div className="h-36 overflow-hidden">
+                        <img src={location.image_url} alt={location.name} className="w-full h-full object-cover" />
+                      </div>
+                    )}
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-xl ${type.color.split(' ')[0]}`}>
@@ -319,9 +324,15 @@ export default function Locations() {
                 const toolCount = getToolCount(location.id);
                 return (
                   <div key={location.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <div className={`p-2 rounded-lg ${type.color.split(' ')[0]}`}>
-                      <Icon className={`w-5 h-5 ${type.color.split(' ')[1]}`} />
-                    </div>
+                    {location.image_url ? (
+                      <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                        <img src={location.image_url} alt={location.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className={`p-2 rounded-lg ${type.color.split(' ')[0]}`}>
+                        <Icon className={`w-5 h-5 ${type.color.split(' ')[1]}`} />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/locations/${location.id}`)}>
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-gray-900 dark:text-gray-100 hover:text-[#8B1E1E] transition-colors">{location.name}</p>
