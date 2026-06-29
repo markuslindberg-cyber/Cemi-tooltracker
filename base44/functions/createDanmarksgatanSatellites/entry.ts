@@ -10,9 +10,9 @@ Deno.serve(async (req) => {
     }
 
     // Find the main location
-    const locations = await base44.entities.Location.filter({ name: 'Danmarksgatan pallstelage' });
+    const locations = await base44.entities.Location.filter({ name: 'Danmarksgatan Pallstelage' });
     if (!locations.length) {
-      return Response.json({ error: 'Huvudplatsen "Danmarksgatan pallstelage" hittades inte' }, { status: 404 });
+      return Response.json({ error: 'Huvudplatsen "Danmarksgatan Pallstelage" hittades inte' }, { status: 404 });
     }
     const main = locations[0];
 

@@ -443,7 +443,7 @@ export default function Locations() {
             <DialogTitle>Skapa satellitplatser för Danmarksgatan</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Följande <strong>{ALL_SATELLITE_NAMES.length} satellitplatser</strong> kommer att skapas under huvudplatsen "Danmarksgatan pallstelage". Redan existerande platser hoppas över.
+            Följande <strong>{ALL_SATELLITE_NAMES.length} satellitplatser</strong> kommer att skapas under huvudplatsen "Danmarksgatan Pallstelage". Redan existerande platser hoppas över.
           </p>
           <div className="space-y-3 mt-2">
             <div>
