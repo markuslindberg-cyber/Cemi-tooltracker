@@ -51,7 +51,8 @@ export default function MaterialUttagModal({ isOpen, onClose, materials = [], on
     const code = value.trim();
     if (!code) return;
     const found = materials.find(m =>
-      m.artikelnummer === code || m.artikelnummer?.toLowerCase() === code.toLowerCase()
+      m.streckkod?.toLowerCase() === code.toLowerCase()
+      || m.artikelnummer?.toLowerCase() === code.toLowerCase()
     );
     if (found) {
       setSelectedMaterial(found);
@@ -139,7 +140,7 @@ export default function MaterialUttagModal({ isOpen, onClose, materials = [], on
                   value={scanInput}
                   onChange={e => setScanInput(e.target.value)}
                   onKeyDown={handleScanKeyDown}
-                  placeholder="Skanna eller skriv artikelnummer..."
+                  placeholder="Skanna eller skriv streckkod/artikelnr..."
                   className="text-lg h-12"
                   autoFocus
                 />
@@ -169,7 +170,7 @@ export default function MaterialUttagModal({ isOpen, onClose, materials = [], on
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm">{m.benamning}</p>
-                      <p className="text-xs text-gray-400">{m.artikelnummer} · {m.kategori}</p>
+                      <p className="text-xs text-gray-400">{m.streckkod || m.artikelnummer} · {m.kategori}</p>
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-semibold text-sm">{m.antal} {m.enhet || 'st'}</p>
@@ -191,7 +192,7 @@ export default function MaterialUttagModal({ isOpen, onClose, materials = [], on
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedMaterial.benamning}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{selectedMaterial.artikelnummer} · {selectedMaterial.kategori}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{selectedMaterial.streckkod || selectedMaterial.artikelnummer} · {selectedMaterial.kategori}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{selectedMaterial.antal} {selectedMaterial.enhet || 'st'}</p>

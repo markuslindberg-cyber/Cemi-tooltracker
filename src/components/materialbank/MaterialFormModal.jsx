@@ -14,7 +14,7 @@ const EMPTY_FORM = {
   benamning: '', kategori: '', underkategori: '', material_typ: '',
   tillverkare: '', matt: '', antal: '', enhet: 'st', status: 'i_lager',
   syfte: 'internt', inkopspris: '', forsaljningspris_manuell: '',
-  inkopsdatum: '', inkopt_fran: '', artikelnummer: '', levfaktura_nummer: '',
+  inkopsdatum: '', inkopt_fran: '', streckkod: '', artikelnummer: '', levfaktura_nummer: '',
   ordernummer: '', kund_namn: '', location_id: '', location_name: '',
   image_url: '', notes: '',
 };
@@ -125,8 +125,12 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
               <Input value={form.benamning} onChange={e => set('benamning', e.target.value)} placeholder="T.ex. Markplattor grå" />
             </div>
             <div>
-              <Label>Artikelnummer / Streckkod *</Label>
-              <Input value={form.artikelnummer} onChange={e => set('artikelnummer', e.target.value)} />
+              <Label>Streckkod</Label>
+              <Input value={form.streckkod} onChange={e => set('streckkod', e.target.value)} placeholder="Streckkod" />
+            </div>
+            <div>
+              <Label>Leverantörens artikelnummer *</Label>
+              <Input value={form.artikelnummer} onChange={e => set('artikelnummer', e.target.value)} placeholder="Leverantörens artikelnummer" />
             </div>
             <div>
               <Label>Kategori *</Label>

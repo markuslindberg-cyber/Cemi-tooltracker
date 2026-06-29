@@ -69,6 +69,7 @@ export default function Materialbanken() {
       if (search) {
         const s = search.toLowerCase();
         return (m.benamning || '').toLowerCase().includes(s)
+          || (m.streckkod || '').toLowerCase().includes(s)
           || (m.artikelnummer || '').toLowerCase().includes(s)
           || (m.tillverkare || '').toLowerCase().includes(s)
           || (m.kund_namn || '').toLowerCase().includes(s)

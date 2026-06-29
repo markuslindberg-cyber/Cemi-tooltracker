@@ -78,9 +78,14 @@
       "nullable": true,
       "description": "Ink\u00f6pt ifr\u00e5n (leverant\u00f6r)"
     },
+    "streckkod": {
+      "type": "string",
+      "nullable": true,
+      "description": "Streckkod f\u00f6r materialet"
+    },
     "artikelnummer": {
       "type": "string",
-      "description": "Artikelnummer eller streckkod"
+      "description": "Leverant\u00f6rens artikelnummer"
     },
     "levfaktura_nummer": {
       "type": "string",
