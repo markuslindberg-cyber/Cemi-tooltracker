@@ -99,7 +99,7 @@ export default function Locations() {
   );
 
   const getSubLocations = (locationId) => {
-    return locations.filter(l => l.parent_location_id === locationId);
+    return locations.filter(l => l.parent_location_id === locationId).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
   };
 
   const getToolCount = (locationId) => {
