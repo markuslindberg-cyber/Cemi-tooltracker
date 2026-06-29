@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -7,6 +7,14 @@ import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   Plus,
   MapPin,
@@ -26,6 +34,7 @@ import {
   List,
   Shovel,
   ChevronRight,
+  LayoutGrid,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -43,14 +52,28 @@ const typeConfig = {
   other: { icon: MapPin, color: 'bg-gray-100 text-gray-700' },
 };
 
+// Generate satellite name lists for the confirmation dialog
+const ENTRESOL_NAMES = ['A','B','C','D'].flatMap(l => [1,2,3,4,5,6].map(n => `Entresol ${l}${n}`));
+const MASKINHALL_CONFIG = { E:3,F:3,G:3,H:3,I:3,J:3,K:3,L:2,M:3,N:3,O:1,P:2,Q:3,R:3,S:3,T:3,U:3 };
+const MASKINHALL_NAMES = Object.entries(MASKINHALL_CONFIG).flatMap(([l,c]) => Array.from({length:c},(_,i)=>`Maskinhall ${l}${i+1}`));
+const ALL_SATELLITE_NAMES = [...ENTRESOL_NAMES, ...MASKINHALL_NAMES];
+
 export default function Locations() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [editLocation, setEditLocation] = useState(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [locationToDelete, setLocationToDelete] = useState(null);
+  const [showSatelliteConfirm, setShowSatelliteConfirm] = useState(false);
+  const [creatingSatellites, setCreatingSatellites] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+  }, []);
 
   const { data: locations = [], isLoading: loadingLocations } = useQuery({
     queryKey: ['locations'],
@@ -154,6 +177,19 @@ export default function Locations() {
     deleteLocationMutation.mutate({ locationId: locationToDelete.id, unassign });
   };
 
+  const handleCreateSatellites = async () => {
+    setCreatingSatellites(true);
+    const res = await base44.functions.invoke('createDanmarksgatanSatellites', {});
+    setCreatingSatellites(false);
+    setShowSatelliteConfirm(false);
+    if (res.data?.success) {
+      toast({ title: 'Satelliter skapade', description: res.data.message });
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+    } else {
+      toast({ title: 'Fel', description: res.data?.error || 'Något gick fel', variant: 'destructive' });
+    }
+  };
+
   if (loadingLocations) {
     return (
       <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
@@ -173,13 +209,24 @@ export default function Locations() {
               {locations.length} {locations.length !== 1 ? 'platser' : 'plats'}
             </p>
           </div>
-          <Button
-            onClick={() => setShowAddLocation(true)}
-            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Lägg till plats
-          </Button>
+          <div className="flex items-center gap-2">
+            {(user?.role === 'ägare' || user?.role === 'admin') && (
+              <Button
+                variant="outline"
+                onClick={() => setShowSatelliteConfirm(true)}
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Skapa Danmarksgatan-satelliter
+              </Button>
+            )}
+            <Button
+              onClick={() => setShowAddLocation(true)}
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Lägg till plats
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
@@ -388,6 +435,35 @@ export default function Locations() {
         onDeleteOnly={() => confirmDeleteLocation(false)}
         onConfirmNoTools={() => confirmDeleteLocation(false)}
       />
+
+      {/* Satellite creation confirmation dialog */}
+      <Dialog open={showSatelliteConfirm} onOpenChange={setShowSatelliteConfirm}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Skapa satellitplatser för Danmarksgatan</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Följande <strong>{ALL_SATELLITE_NAMES.length} satellitplatser</strong> kommer att skapas under huvudplatsen "Danmarksgatan pallstelage". Redan existerande platser hoppas över.
+          </p>
+          <div className="space-y-3 mt-2">
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Entresol ({ENTRESOL_NAMES.length} st)</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{ENTRESOL_NAMES.join(', ')}</p>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Maskinhall ({MASKINHALL_NAMES.length} st)</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{MASKINHALL_NAMES.join(', ')}</p>
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowSatelliteConfirm(false)} disabled={creatingSatellites}>Avbryt</Button>
+            <Button onClick={handleCreateSatellites} disabled={creatingSatellites} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+              {creatingSatellites && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {creatingSatellites ? 'Skapar...' : `Skapa ${ALL_SATELLITE_NAMES.length} satelliter`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
