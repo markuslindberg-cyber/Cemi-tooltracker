@@ -13,6 +13,7 @@ const PAGE_OPERATIONS = [
 
 const ROLES = [
   { id: 'admin', label: 'Admin' },
+  { id: 'mekaniker', label: 'Mekaniker' },
   { id: 'verktygsförvaltare', label: 'Verktygsförvaltare' },
   { id: 'admin_lokalvård', label: 'Admin Lokalvård' },
   { id: 'lokalvårdare', label: 'Lokalvårdare' },
