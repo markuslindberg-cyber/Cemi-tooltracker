@@ -60,6 +60,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "admin_lokalv\u00e5rd"
           }
         },
@@ -75,6 +80,11 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "mekaniker"
           }
         },
         {
@@ -98,6 +108,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "admin_lokalv\u00e5rd"
           }
         },
@@ -113,6 +128,11 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "mekaniker"
           }
         },
         {
