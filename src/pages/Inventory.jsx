@@ -862,7 +862,12 @@ export default function Inventory() {
                         </TableCell>
                        <TableCell className="px-1 py-1 text-xs hidden sm:table-cell">
                           {tool.location_name ? (
-                            <span className="truncate text-gray-600 dark:text-gray-300">{tool.location_name}</span>
+                            <div className="min-w-0">
+                              <span className="truncate text-gray-600 dark:text-gray-300 block">{tool.location_name}</span>
+                              {tool.satellite_location_name && (
+                                <span className="truncate text-gray-400 dark:text-gray-500 block text-[11px]">{tool.satellite_location_name}</span>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-gray-400 dark:text-gray-600">—</span>
                           )}
