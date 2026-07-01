@@ -9,13 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
   Plus,
   MapPin,
   Building2,
@@ -34,7 +27,7 @@ import {
   List,
   Shovel,
   ChevronRight,
-  LayoutGrid,
+  ChevronDown,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -52,11 +45,6 @@ const typeConfig = {
   other: { icon: MapPin, color: 'bg-gray-100 text-gray-700' },
 };
 
-// Generate satellite name lists for the confirmation dialog
-const ENTRESOL_NAMES = ['A','B','C','D'].flatMap(l => [1,2,3,4,5,6].map(n => `Entresol ${l}${n}`));
-const MASKINHALL_CONFIG = { E:3,F:3,G:3,H:3,I:3,J:3,K:3,L:2,M:3,N:3,O:1,P:2,Q:3,R:3,S:3,T:3,U:3 };
-const MASKINHALL_NAMES = Object.entries(MASKINHALL_CONFIG).flatMap(([l,c]) => Array.from({length:c},(_,i)=>`Maskinhall ${l}${i+1}`));
-const ALL_SATELLITE_NAMES = [...ENTRESOL_NAMES, ...MASKINHALL_NAMES];
 
 export default function Locations() {
   const queryClient = useQueryClient();
@@ -67,13 +55,7 @@ export default function Locations() {
   const [isLoading, setIsLoading] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [locationToDelete, setLocationToDelete] = useState(null);
-  const [showSatelliteConfirm, setShowSatelliteConfirm] = useState(false);
-  const [creatingSatellites, setCreatingSatellites] = useState(false);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
-  }, []);
+  const [expandedLocations, setExpandedLocations] = useState({});
 
   const { data: locations = [], isLoading: loadingLocations } = useQuery({
     queryKey: ['locations'],
@@ -177,17 +159,8 @@ export default function Locations() {
     deleteLocationMutation.mutate({ locationId: locationToDelete.id, unassign });
   };
 
-  const handleCreateSatellites = async () => {
-    setCreatingSatellites(true);
-    const res = await base44.functions.invoke('createDanmarksgatanSatellites', {});
-    setCreatingSatellites(false);
-    setShowSatelliteConfirm(false);
-    if (res.data?.success) {
-      toast({ title: 'Satelliter skapade', description: res.data.message });
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
-    } else {
-      toast({ title: 'Fel', description: res.data?.error || 'Något gick fel', variant: 'destructive' });
-    }
+  const toggleExpanded = (locationId) => {
+    setExpandedLocations(prev => ({ ...prev, [locationId]: !prev[locationId] }));
   };
 
   if (loadingLocations) {
@@ -210,15 +183,6 @@ export default function Locations() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {(user?.role === 'ägare' || user?.role === 'admin') && (
-              <Button
-                variant="outline"
-                onClick={() => setShowSatelliteConfirm(true)}
-              >
-                <LayoutGrid className="w-4 h-4 mr-2" />
-                Skapa Danmarksgatan-satelliter
-              </Button>
-            )}
             <Button
               onClick={() => setShowAddLocation(true)}
               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
@@ -336,26 +300,30 @@ export default function Locations() {
                     </div>
                   </div>
                   {subLocations.length > 0 && (
-                    <div className="mt-3 space-y-2 ml-4">
-                      {subLocations.map((subLoc) => {
-                        const subType = typeConfig[subLoc.type] || typeConfig.other;
-                        const SubIcon = subType.icon;
-                        return (
-                          <div
-                            key={subLoc.id}
-                            onClick={() => navigate(`/locations/${subLoc.id}`)}
-                            className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-all cursor-pointer flex items-start gap-3"
-                          >
-                            <div className={`p-2 rounded-lg ${subType.color.split(' ')[0]} flex-shrink-0`}>
-                              <SubIcon className={`w-4 h-4 ${subType.color.split(' ')[1]}`} />
+                    <div className="mt-2 ml-4">
+                      <button
+                        onClick={() => toggleExpanded(location.id)}
+                        className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors py-1.5"
+                      >
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${expandedLocations[location.id] ? '' : '-rotate-90'}`} />
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>{subLocations.length} satellitplatser</span>
+                      </button>
+                      {expandedLocations[location.id] && (
+                        <div className="space-y-1.5 mt-1.5">
+                          {subLocations.map((subLoc) => (
+                            <div
+                              key={subLoc.id}
+                              onClick={() => navigate(`/locations/${subLoc.id}`)}
+                              className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 hover:shadow-md transition-all cursor-pointer flex items-center gap-2"
+                            >
+                              <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                              <span className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{subLoc.name}</span>
+                              <span className="text-xs text-gray-400 ml-auto shrink-0">{getToolCount(subLoc.id)} maskiner</span>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{subLoc.name}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">{getToolCount(subLoc.id)} maskiner</p>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -436,34 +404,7 @@ export default function Locations() {
         onConfirmNoTools={() => confirmDeleteLocation(false)}
       />
 
-      {/* Satellite creation confirmation dialog */}
-      <Dialog open={showSatelliteConfirm} onOpenChange={setShowSatelliteConfirm}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Skapa satellitplatser för Danmarksgatan</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Följande <strong>{ALL_SATELLITE_NAMES.length} satellitplatser</strong> kommer att skapas under huvudplatsen "Danmarksgatan Pallstelage". Redan existerande platser hoppas över.
-          </p>
-          <div className="space-y-3 mt-2">
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Entresol ({ENTRESOL_NAMES.length} st)</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{ENTRESOL_NAMES.join(', ')}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Maskinhall ({MASKINHALL_NAMES.length} st)</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{MASKINHALL_NAMES.join(', ')}</p>
-            </div>
-          </div>
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setShowSatelliteConfirm(false)} disabled={creatingSatellites}>Avbryt</Button>
-            <Button onClick={handleCreateSatellites} disabled={creatingSatellites} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
-              {creatingSatellites && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {creatingSatellites ? 'Skapar...' : `Skapa ${ALL_SATELLITE_NAMES.length} satelliter`}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }
