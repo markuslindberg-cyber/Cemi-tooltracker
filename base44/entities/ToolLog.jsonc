@@ -60,6 +60,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "verktygsf\u00f6rvaltare"
           }
         },
@@ -77,20 +82,43 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "verktygsf\u00f6rvaltare"
           }
         }
       ]
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "mekaniker"
+          }
+        }
+      ]
     },
     "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "mekaniker"
+          }
+        }
+      ]
     }
   }
 }
