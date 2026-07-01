@@ -9,7 +9,8 @@
         "admin",
         "admin_lokalv\u00e5rd",
         "verktygsf\u00f6rvaltare",
-        "lokalv\u00e5rdare"
+        "lokalv\u00e5rdare",
+        "mekaniker"
       ],
       "default": "verktygsf\u00f6rvaltare",
       "description": "Anv\u00e4ndarens roll i systemet"

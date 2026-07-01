@@ -166,6 +166,7 @@ export default function TeamMemberFormModal({
                 { value: 'admin lokalvård', label: 'Admin Lokalvård' },
                 { value: 'lokalvårdare', label: 'Lokalvårdare' },
                 { value: 'verktygsförvaltare', label: 'Verktygsförvaltare' },
+                { value: 'mekaniker', label: 'Mekaniker' },
                 { value: 'ägare', label: 'Ägare' },
               ]}
               placeholder="Välj roll"

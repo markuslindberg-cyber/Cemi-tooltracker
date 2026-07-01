@@ -43,6 +43,7 @@ const roleConfig = {
   'admin_lokalvård': { label: 'Admin Lokalvård', color: 'bg-red-100 text-red-700' },
   lokalvårdare: { label: 'Lokalvårdare', color: 'bg-orange-100 text-orange-700' },
   verktygsförvaltare: { label: 'Verktygsförvaltare', color: 'bg-blue-100 text-blue-700' },
+  mekaniker: { label: 'Mekaniker', color: 'bg-teal-100 text-teal-700' },
   manager: { label: 'Chef', color: 'bg-emerald-100 text-emerald-700' },
   ägare: { label: 'Ägare', color: 'bg-purple-100 text-purple-700' },
   technician: { label: 'Tekniker', color: 'bg-blue-100 text-blue-700' },
