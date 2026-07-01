@@ -74,6 +74,7 @@ export default function ToolFormModal({
   const [customCategory, setCustomCategory] = useState('');
   const [showCustomSubcategory, setShowCustomSubcategory] = useState(false);
   const [customSubcategory, setCustomSubcategory] = useState('');
+  const [activeTab, setActiveTab] = useState('details');
 
   const { data: allTools = [] } = useQuery({
     queryKey: ['tools'],
@@ -129,6 +130,7 @@ export default function ToolFormModal({
       setFormData(defaultTool);
       setTemplateToolId('');
     }
+    setActiveTab('details');
   }, [tool, isOpen]);
 
   const handleTemplateSelect = (toolId) => {
@@ -430,7 +432,7 @@ export default function ToolFormModal({
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs defaultValue="details" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details">Verktygsdetaljer</TabsTrigger>
               {isEditing && <TabsTrigger value="service">Servicehistorik</TabsTrigger>}
@@ -1055,25 +1057,27 @@ export default function ToolFormModal({
             )}
           </Tabs>
 
-          <DialogFooter className="gap-3">
-            <Button variant="outline" onClick={handleClose}>
-              Avbryt
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!formData.name || !formData.category || isLoading}
-              className="bg-[#8B1E1E] hover:bg-[#6B1515]"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sparar...
-                </>
-              ) : (
-                isEditing ? 'Spara ändringar' : 'Lägg till verktyg'
-              )}
-            </Button>
-          </DialogFooter>
+          {activeTab !== 'log' && (
+            <DialogFooter className="gap-3">
+              <Button variant="outline" onClick={handleClose}>
+                Avbryt
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!formData.name || !formData.category || isLoading}
+                className="bg-[#8B1E1E] hover:bg-[#6B1515]"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sparar...
+                  </>
+                ) : (
+                  isEditing ? 'Spara ändringar' : 'Lägg till verktyg'
+                )}
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 
