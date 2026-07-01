@@ -224,7 +224,7 @@ export default function LocationFormModal({
                       />
                       Ingen huvudplats
                     </CommandItem>
-                    {allLocations.filter(l => l.id !== location?.id).map((loc) => (
+                    {allLocations.filter(l => l.id !== location?.id && !l.parent_location_id).map((loc) => (
                       <CommandItem
                         key={loc.id}
                         value={loc.name}
