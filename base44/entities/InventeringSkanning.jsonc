@@ -29,7 +29,7 @@
     },
     "scannad_av_email": {
       "type": "string",
-      "description": "Email p\u00e5 personalen som scannadeartikeln"
+      "description": "Email p\u00e5 personalen som skannade artikeln"
     },
     "scannad_av_namn": {
       "type": "string",
@@ -61,6 +61,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "\u00e4gare"
           }
         },
@@ -76,6 +81,11 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "mekaniker"
           }
         },
         {
@@ -99,6 +109,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "\u00e4gare"
           }
         }
@@ -109,6 +124,11 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "mekaniker"
           }
         },
         {
