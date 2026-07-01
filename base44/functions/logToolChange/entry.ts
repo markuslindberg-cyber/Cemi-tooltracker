@@ -1,37 +1,36 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { event, data, old_data } = await req.json();
 
     if (!event || !data) {
       return Response.json({ error: 'Missing event or data' }, { status: 400 });
     }
 
-    const tool_id = data.id;
-    const changed_by_email = user.email;
-    const changed_by_name = user.full_name || 'Unknown';
+    const tool_id = event.entity_id || data.id;
     const change_date = new Date().toISOString();
 
-    // Fields to track changes for (exclude certain system fields)
+    // Try to get the user who made the change from data's updated_by or created_by
+    const changed_by_email = data.updated_by || data.created_by_id || 'system';
+    const changed_by_name = changed_by_email;
+
+    // Fields to track changes for
     const fieldsToTrack = [
-      'name', 'manufacturer', 'model_number', 'category', 'subcategory',
-      'status', 'condition', 'purchase_date', 'purchase_price', 'purchase_location',
-      'invoice_number', 'location_id', 'location_name', 'assigned_to_email', 'assigned_to_name',
-      'main_machine_id', 'main_machine_name', 'barcode', 'image_url', 'notes'
+      'name', 'manufacturer', 'model_number', 'serial_number', 'tool_number',
+      'category', 'subcategory', 'status', 'condition',
+      'purchase_date', 'purchase_price', 'purchase_location',
+      'invoice_number', 'location_id', 'location_name',
+      'satellite_location_id', 'satellite_location_name',
+      'assigned_to_email', 'assigned_to_name',
+      'main_machine_id', 'main_machine_name', 'barcode', 'image_url', 'notes',
+      'depreciation_level', 'service_cost'
     ];
 
     const logsToCreate = [];
 
     if (event.type === 'create') {
-      // For new tools, log all provided fields
       fieldsToTrack.forEach(field => {
         if (data[field] !== undefined && data[field] !== null && data[field] !== '') {
           logsToCreate.push({
@@ -47,12 +46,10 @@ Deno.serve(async (req) => {
         }
       });
     } else if (event.type === 'update' && old_data) {
-      // For updates, only log fields that actually changed
       fieldsToTrack.forEach(field => {
         const oldVal = old_data[field];
         const newVal = data[field];
 
-        // Convert to strings for comparison, treat null and empty string as equivalent
         const oldStr = (oldVal === null || oldVal === undefined || oldVal === '') ? '' : String(oldVal);
         const newStr = (newVal === null || newVal === undefined || newVal === '') ? '' : String(newVal);
 
