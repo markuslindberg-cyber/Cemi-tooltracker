@@ -430,12 +430,32 @@ export default function RollBehorigheter() {
                     const key = makeKey(selectedRole, `page__${page.id}`);
                     const perms = localPerms[key] || {};
                     const showGroup = idx === 0 || page.group !== PAGES[idx - 1].group;
+                    const groupPages = PAGES.filter(p => p.group === page.group);
+                    const allGroupChecked = groupPages.every(p => localPerms[makeKey(selectedRole, `page__${p.id}`)]?.can_read);
+                    const someGroupChecked = !allGroupChecked && groupPages.some(p => localPerms[makeKey(selectedRole, `page__${p.id}`)]?.can_read);
                     return (
                       <React.Fragment key={page.id}>
                         {showGroup && (
                           <tr className="bg-gray-50/80 dark:bg-gray-800/40">
-                            <td colSpan={2} className="px-4 py-2">
+                            <td className="px-4 py-2">
                               <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{page.group}</span>
+                            </td>
+                            <td className="text-center px-4 py-2">
+                              <Checkbox
+                                checked={allGroupChecked}
+                                indeterminate={someGroupChecked}
+                                onCheckedChange={() => {
+                                  setLocalPerms(prev => {
+                                    const next = { ...prev };
+                                    groupPages.forEach(p => {
+                                      const k = makeKey(selectedRole, `page__${p.id}`);
+                                      next[k] = { ...next[k], can_read: !allGroupChecked, can_create: false, can_update: false, can_delete: false };
+                                    });
+                                    return next;
+                                  });
+                                  setDirty(true);
+                                }}
+                              />
                             </td>
                           </tr>
                         )}
