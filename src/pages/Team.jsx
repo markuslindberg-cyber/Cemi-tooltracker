@@ -361,7 +361,11 @@ export default function Team() {
                     <div className="mt-4 space-y-2">
                       {member.email && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><Mail className="w-4 h-4" /><span className="truncate">{member.email}</span></div>}
                       {member.phone && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><Phone className="w-4 h-4" /><span>{member.phone}</span></div>}
-                      {member.default_location_name && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><MapPin className="w-4 h-4" /><span className="truncate">{member.default_location_name}</span></div>}
+                      {(() => {
+                        const loc = locations.find(l => l.id === member.default_location_id);
+                        const displayLoc = loc && !loc.parent_location_id ? loc.name : null;
+                        return displayLoc ? <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><MapPin className="w-4 h-4" /><span className="truncate">{displayLoc}</span></div> : null;
+                      })()}
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
                       <div className="flex items-center justify-between text-sm">
@@ -407,7 +411,11 @@ export default function Team() {
                       <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{member.email}</p>
                     </div>
                     <div className="hidden sm:flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                      {member.default_location_name && <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{member.default_location_name}</span>}
+                      {(() => {
+                        const loc = locations.find(l => l.id === member.default_location_id);
+                        const displayLoc = loc && !loc.parent_location_id ? loc.name : null;
+                        return displayLoc ? <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{displayLoc}</span> : null;
+                      })()}
                       <span className="flex items-center gap-1"><Wrench className="w-4 h-4" />{toolCount}</span>
                       {(() => {
                         const userInfo = getUserInfo(member.email);

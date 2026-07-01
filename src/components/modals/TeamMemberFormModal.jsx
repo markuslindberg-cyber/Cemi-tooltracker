@@ -218,7 +218,7 @@ export default function TeamMemberFormModal({
               onChange={(v) => handleChange('default_location_id', v)}
               options={[
                 { value: '', label: 'Ingen' },
-                ...(locations?.map((location) => ({ value: location.id, label: location.name })) || [])
+                ...(locations?.filter(l => !l.parent_location_id).map((location) => ({ value: location.id, label: location.name })) || [])
               ]}
               placeholder="Välj standardplats"
             />
@@ -227,7 +227,7 @@ export default function TeamMemberFormModal({
           <div className="space-y-2">
             <Label>Platser där personen arbetar</Label>
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              {locations?.map((location) => {
+              {locations?.filter(l => !l.parent_location_id).map((location) => {
                 const isSelected = formData.location_ids.includes(location.id);
                 return (
                   <button
