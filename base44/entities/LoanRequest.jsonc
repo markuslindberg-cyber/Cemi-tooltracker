@@ -161,6 +161,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "admin_lokalv\u00e5rd"
           }
         },
@@ -188,6 +193,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "admin_lokalv\u00e5rd"
           }
         },
@@ -197,16 +207,16 @@
           }
         },
         {
-          "requested_by_email": "{{user.email}}"
+          "data.requested_by_email": "{{user.email}}"
         },
         {
-          "assigned_to_email": "{{user.email}}"
+          "data.assigned_to_email": "{{user.email}}"
         },
         {
-          "approver_email": "{{user.email}}"
+          "data.approver_email": "{{user.email}}"
         },
         {
-          "destination_location_manager_email": "{{user.email}}"
+          "data.destination_location_manager_email": "{{user.email}}"
         }
       ]
     },
@@ -224,6 +234,11 @@
         },
         {
           "user_condition": {
+            "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
             "role": "admin_lokalv\u00e5rd"
           }
         },
@@ -233,11 +248,11 @@
           }
         },
         {
-          "requested_by_email": "{{user.email}}",
+          "data.requested_by_email": "{{user.email}}",
           "data.status": "pending"
         },
         {
-          "approver_email": "{{user.email}}"
+          "data.approver_email": "{{user.email}}"
         }
       ]
     },
