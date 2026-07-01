@@ -12,9 +12,23 @@ Deno.serve(async (req) => {
     const tool_id = event.entity_id || data.id;
     const change_date = new Date().toISOString();
 
-    // Try to get the user who made the change from data's updated_by or created_by
-    const changed_by_email = data.updated_by || data.created_by_id || 'system';
-    const changed_by_name = changed_by_email;
+    // Look up the user who made the change
+    let changed_by_email = 'system';
+    let changed_by_name = 'System';
+    const userId = data.created_by_id;
+    if (userId) {
+      try {
+        const users = await base44.asServiceRole.entities.User.filter({ id: userId });
+        if (users.length > 0) {
+          changed_by_email = users[0].email || userId;
+          changed_by_name = users[0].full_name || users[0].email || userId;
+        }
+      } catch (e) {
+        // fallback to ID
+        changed_by_email = userId;
+        changed_by_name = userId;
+      }
+    }
 
     // Fields to track changes for
     const fieldsToTrack = [
