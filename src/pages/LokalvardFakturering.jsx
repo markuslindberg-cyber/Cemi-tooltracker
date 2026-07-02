@@ -95,7 +95,8 @@ export default function LokalvardFakturering() {
       }
       const cust = map[u.kund_id];
       (u.artiklar || []).forEach(a => {
-        const key = a.artikel_id || a.benamning || 'unknown';
+        const namn = (a.benamning || a.artikel_namn || '').trim().toLowerCase();
+        const key = namn || a.artikel_id || 'unknown';
         const pris = a.pris_per_enhet || artikelPrisMap[a.artikel_id] || 0;
         if (!cust.articles[key]) {
           cust.articles[key] = {
