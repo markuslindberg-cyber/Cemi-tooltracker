@@ -82,6 +82,7 @@ const PAGES = [
   { id: 'lokalvard_produktstatistik', label: 'Produktstatistik', group: 'Lokalvård' },
   { id: 'lokalvard_inkopshistorik', label: 'Inköpshistorik', group: 'Lokalvård' },
   { id: 'lokalvard_omatchade', label: 'Omatchade inköp', group: 'Lokalvård' },
+  { id: 'lokalvard_fakturering', label: 'Faktureringsunderlag', group: 'Lokalvård' },
   { id: 'inventering', label: 'Inventering', group: 'Inventering' },
   { id: 'inventering_rapporter', label: 'Inventeringsrapporter', group: 'Inventering' },
   { id: 'materialbanken', label: 'Materialbanken – Översikt', group: 'Materialbanken' },
