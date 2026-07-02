@@ -46,6 +46,7 @@ import KnowledgeGraph from './pages/KnowledgeGraph';
 import LokalvardProduktstatistik from './pages/LokalvardProduktstatistik';
 import LokalvardInkopshistorik from './pages/LokalvardInkopshistorik';
 import LokalvardOmatchadeInkop from './pages/LokalvardOmatchadeInkop';
+import LokalvardFakturering from './pages/LokalvardFakturering';
 import InventeringsManual from './pages/InventeringsManual';
 import Materialbanken from './pages/Materialbanken';
 import MaterialUttagHistorik from './pages/MaterialUttagHistorik';
@@ -161,6 +162,7 @@ const AuthenticatedApp = () => {
       <Route path="/Lokalvard/Produktstatistik" element={<LayoutWrapper currentPageName="LokalvardProduktstatistik"><LokalvardProduktstatistik /></LayoutWrapper>} />
       <Route path="/Lokalvard/Inkopshistorik" element={<LayoutWrapper currentPageName="LokalvardInkopshistorik"><LokalvardInkopshistorik /></LayoutWrapper>} />
       <Route path="/Lokalvard/OmatchadeInkop" element={<LayoutWrapper currentPageName="LokalvardOmatchadeInkop"><LokalvardOmatchadeInkop /></LayoutWrapper>} />
+      <Route path="/Lokalvard/Fakturering" element={<LayoutWrapper currentPageName="LokalvardFakturering"><LokalvardFakturering /></LayoutWrapper>} />
       <Route path="/Materialbanken" element={<LayoutWrapper currentPageName="Materialbanken"><Materialbanken /></LayoutWrapper>} />
       <Route path="/Materialbanken/Uttag" element={<LayoutWrapper currentPageName="MaterialUttagHistorik"><MaterialUttagHistorik /></LayoutWrapper>} />
       <Route path="/InventeringsManual" element={<LayoutWrapper currentPageName="InventeringsManual"><InventeringsManual /></LayoutWrapper>} />
