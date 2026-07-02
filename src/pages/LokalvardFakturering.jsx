@@ -69,6 +69,20 @@ export default function LokalvardFakturering() {
     return m;
   }, [artiklar]);
 
+  // Lookup: artikel_id → benamning (also keyed by streckkod)
+  const artikelNamnMap = useMemo(() => {
+    const m = {};
+    artiklar.forEach(a => {
+      if (a.benamning) {
+        m[a.id] = a.benamning;
+        if (a.streckkod) m[a.streckkod] = a.benamning;
+        if (a.old_streckkod) m[a.old_streckkod] = a.benamning;
+        if (a.artikelnummer) m[a.artikelnummer] = a.benamning;
+      }
+    });
+    return m;
+  }, [artiklar]);
+
   const availablePeriods = useMemo(
     () => [...new Set(uttag.map(u => u.manad).filter(Boolean))].sort((a, b) => b.localeCompare(a)),
     [uttag]
@@ -97,19 +111,21 @@ export default function LokalvardFakturering() {
       }
       const cust = map[u.kund_id];
       (u.artiklar || []).forEach(a => {
-        const namn = (a.benamning || a.artikel_namn || '').trim().toLowerCase();
-        const key = namn || a.artikel_id || 'unknown';
+        // Resolve the real article name: prefer stored benamning, then lookup by id/streckkod
+        const rawName = a.benamning || a.artikel_namn || '';
+        const resolvedName = artikelNamnMap[a.artikel_id] || artikelNamnMap[rawName] || rawName || 'Okänd artikel';
+        const normKey = resolvedName.trim().toLowerCase() || a.artikel_id || 'unknown';
         const pris = a.pris_per_enhet || artikelPrisMap[a.artikel_id] || 0;
-        if (!cust.articles[key]) {
-          cust.articles[key] = {
+        if (!cust.articles[normKey]) {
+          cust.articles[normKey] = {
             artikel_id: a.artikel_id,
-            benamning: a.benamning || a.artikel_namn || 'Okänd artikel',
+            benamning: resolvedName,
             antal: 0,
             inkopspris: pris,
             totalKostnad: 0,
           };
         }
-        const art = cust.articles[key];
+        const art = cust.articles[normKey];
         art.antal += a.antal || 0;
         const lineCost = (a.antal || 0) * pris;
         art.totalKostnad += lineCost;
@@ -124,7 +140,7 @@ export default function LokalvardFakturering() {
         forslagetPris: c.totalKostnad * markup,
       }))
       .sort((a, b) => b.totalKostnad - a.totalKostnad);
-  }, [uttag, selectedPeriods, selectedCustomerIds, kundeMap, artikelPrisMap, markup]);
+  }, [uttag, selectedPeriods, selectedCustomerIds, kundeMap, artikelPrisMap, artikelNamnMap, markup]);
 
   const grandTotalKostnad = aggregated.reduce((s, c) => s + c.totalKostnad, 0);
   const grandTotalForslaget = grandTotalKostnad * markup;
