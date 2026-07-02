@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const MARKUP = 1.5; // 50% påslag
+const DEFAULT_MARKUP_PERCENT = 50;
 
 function FilterChip({ label, count, children }) {
   return (
@@ -33,6 +33,8 @@ export default function LokalvardFakturering() {
   const [selectedPeriods, setSelectedPeriods] = useState([]);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
   const [expandedCustomers, setExpandedCustomers] = useState({});
+  const [markupPercent, setMarkupPercent] = useState(DEFAULT_MARKUP_PERCENT);
+  const markup = 1 + (markupPercent / 100);
 
   const { data: rawData, isLoading } = useQuery({
     queryKey: ['faktureringsData'],
@@ -119,13 +121,13 @@ export default function LokalvardFakturering() {
       .map(c => ({
         ...c,
         articles: Object.values(c.articles).sort((a, b) => b.totalKostnad - a.totalKostnad),
-        forslagetPris: c.totalKostnad * MARKUP,
+        forslagetPris: c.totalKostnad * markup,
       }))
       .sort((a, b) => b.totalKostnad - a.totalKostnad);
-  }, [uttag, selectedPeriods, selectedCustomerIds, kundeMap, artikelPrisMap]);
+  }, [uttag, selectedPeriods, selectedCustomerIds, kundeMap, artikelPrisMap, markup]);
 
   const grandTotalKostnad = aggregated.reduce((s, c) => s + c.totalKostnad, 0);
-  const grandTotalForslaget = grandTotalKostnad * MARKUP;
+  const grandTotalForslaget = grandTotalKostnad * markup;
 
   const hasFilters = selectedPeriods.length > 0 || selectedCustomerIds.length > 0;
 
@@ -150,7 +152,7 @@ export default function LokalvardFakturering() {
           a.antal,
           a.inkopspris.toFixed(2),
           a.totalKostnad.toFixed(2),
-          (a.totalKostnad * MARKUP).toFixed(2),
+          (a.totalKostnad * markup).toFixed(2),
         ]);
       });
       rows.push([c.namn, 'TOTALT', '', '', c.totalKostnad.toFixed(2), c.forslagetPris.toFixed(2)]);
@@ -186,7 +188,7 @@ export default function LokalvardFakturering() {
             <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-[#8B1E1E]" />
             Faktureringsunderlag
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sammanställning av uttag per kund och artikel med föreslaget utpris (+50%)</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sammanställning av uttag per kund och artikel med föreslaget utpris</p>
         </div>
         {aggregated.length > 0 && (
           <Button onClick={handleExportCSV} className="bg-green-600 hover:bg-green-700 shrink-0">
@@ -194,6 +196,23 @@ export default function LokalvardFakturering() {
             Exportera CSV
           </Button>
         )}
+      </div>
+
+      {/* Markup setting */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm px-4 py-3 flex items-center gap-3 flex-wrap">
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Påslag för utpris:</label>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min="0"
+            max="500"
+            value={markupPercent}
+            onChange={e => setMarkupPercent(Math.max(0, parseFloat(e.target.value) || 0))}
+            className="w-20 h-9 px-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-center bg-gray-50 dark:bg-gray-800 focus:outline-none focus:border-[#8B1E1E]"
+          />
+          <span className="text-sm text-gray-500 dark:text-gray-400">%</span>
+        </div>
+        <span className="text-xs text-gray-400">(Kostnad × {markup.toFixed(2)} = utpris)</span>
       </div>
 
       {/* Filters */}
@@ -278,7 +297,7 @@ export default function LokalvardFakturering() {
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{grandTotalKostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</p>
             </div>
             <div className="px-4 py-3 text-center bg-green-50/50 dark:bg-green-900/10">
-              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Föreslaget utpris (+50%)</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Föreslaget utpris (+{markupPercent}%)</p>
               <p className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-400">{grandTotalForslaget.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</p>
             </div>
           </div>
@@ -326,7 +345,7 @@ export default function LokalvardFakturering() {
                             <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Antal</th>
                             <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Enhetspris</th>
                             <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Kostnad</th>
-                            <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Utpris (+50%)</th>
+                            <th className="px-4 py-2 text-right text-xs font-semibold text-gray-500 uppercase">Utpris (+{markupPercent}%)</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -336,7 +355,7 @@ export default function LokalvardFakturering() {
                               <td className="px-4 py-2 text-right text-gray-700 dark:text-gray-300">{a.antal} st</td>
                               <td className="px-4 py-2 text-right text-gray-700 dark:text-gray-300">{a.inkopspris.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} kr</td>
                               <td className="px-4 py-2 text-right font-semibold text-gray-900 dark:text-gray-100">{a.totalKostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</td>
-                              <td className="px-4 py-2 text-right font-semibold text-green-700 dark:text-green-400">{(a.totalKostnad * MARKUP).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</td>
+                              <td className="px-4 py-2 text-right font-semibold text-green-700 dark:text-green-400">{(a.totalKostnad * markup).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</td>
                             </tr>
                           ))}
                         </tbody>
@@ -359,7 +378,7 @@ export default function LokalvardFakturering() {
                             <span className="text-xs text-gray-500">{a.antal} st × {a.inkopspris.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} kr</span>
                             <div className="text-right">
                               <span className="text-xs text-gray-500 mr-2">{a.totalKostnad.toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</span>
-                              <span className="text-xs font-bold text-green-700 dark:text-green-400">{(a.totalKostnad * MARKUP).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</span>
+                              <span className="text-xs font-bold text-green-700 dark:text-green-400">{(a.totalKostnad * markup).toLocaleString('sv-SE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</span>
                             </div>
                           </div>
                         </div>
