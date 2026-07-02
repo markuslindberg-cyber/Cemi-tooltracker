@@ -146,7 +146,7 @@ export default function RollBehorigheter() {
         const saved = savedLookup[key];
         local[key] = {
           can_create: false,
-          can_read: saved?.can_read ?? false,
+          can_read: saved ? (saved.can_read ?? false) : true,
           can_update: false,
           can_delete: false,
         };
