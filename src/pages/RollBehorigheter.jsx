@@ -85,6 +85,7 @@ const PAGES = [
   { id: 'lokalvard_fakturering', label: 'Faktureringsunderlag', group: 'Lokalvård' },
   { id: 'inventering', label: 'Inventering', group: 'Inventering' },
   { id: 'inventering_rapporter', label: 'Inventeringsrapporter', group: 'Inventering' },
+  { id: 'inventering_manual', label: 'Inventeringsmanual', group: 'Inventering' },
   { id: 'materialbanken', label: 'Materialbanken – Översikt', group: 'Materialbanken' },
   { id: 'materialbanken_uttag', label: 'Materialuttag', group: 'Materialbanken' },
   { id: 'platser', label: 'Platser', group: 'Administration' },
@@ -96,6 +97,62 @@ const PAGES = [
   { id: 'agaroversikt', label: 'Ägaröversikt', group: 'Administration' },
   { id: 'redigera_layout', label: 'Redigera layout', group: 'Administration' },
 ];
+
+// Defines the actual default page access per role, matching Layout.jsx navigation logic.
+// NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare']
+// LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare']
+const DEFAULT_PAGE_ACCESS = {
+  admin: {
+    dashboard: true,
+    maskiner: true, huvudmaskiner: true, salda_redskap: true, lan_utrustning: true, service: true,
+    handredskap: true,
+    arbetsklader: true, arbetsklader_rapporter: true, arbetsklader_begaran: true, arbetsklader_forfragan: false, arbetsklader_streckkod: false,
+    lokalvard_begaran: true, lokalvard_lager: false, lokalvard_nyttuttag: false, lokalvard_uttag: false, lokalvard_godkanna: false, lokalvard_kostnad: false, lokalvard_kunder: false, lokalvard_produktstatistik: false, lokalvard_inkopshistorik: false, lokalvard_omatchade: false, lokalvard_fakturering: false,
+    inventering: true, inventering_rapporter: true, inventering_manual: true,
+    materialbanken: true, materialbanken_uttag: true,
+    platser: true, personal: true, kategorier: true, papperskorg: true, roll_behorigheter: false, avskrivningar: false, agaroversikt: false, redigera_layout: false,
+  },
+  mekaniker: {
+    dashboard: true,
+    maskiner: true, huvudmaskiner: true, salda_redskap: true, lan_utrustning: true, service: true,
+    handredskap: true,
+    arbetsklader: true, arbetsklader_rapporter: true, arbetsklader_begaran: true, arbetsklader_forfragan: false, arbetsklader_streckkod: false,
+    lokalvard_begaran: true, lokalvard_lager: false, lokalvard_nyttuttag: false, lokalvard_uttag: false, lokalvard_godkanna: false, lokalvard_kostnad: false, lokalvard_kunder: false, lokalvard_produktstatistik: false, lokalvard_inkopshistorik: false, lokalvard_omatchade: false, lokalvard_fakturering: false,
+    inventering: true, inventering_rapporter: true, inventering_manual: true,
+    materialbanken: true, materialbanken_uttag: true,
+    platser: true, personal: true, kategorier: true, papperskorg: true, roll_behorigheter: false, avskrivningar: false, agaroversikt: false, redigera_layout: false,
+  },
+  'verktygsförvaltare': {
+    dashboard: true,
+    maskiner: true, huvudmaskiner: true, salda_redskap: true, lan_utrustning: true, service: true,
+    handredskap: true,
+    arbetsklader: false, arbetsklader_rapporter: false, arbetsklader_begaran: true, arbetsklader_forfragan: false, arbetsklader_streckkod: false,
+    lokalvard_begaran: false, lokalvard_lager: false, lokalvard_nyttuttag: false, lokalvard_uttag: false, lokalvard_godkanna: false, lokalvard_kostnad: false, lokalvard_kunder: false, lokalvard_produktstatistik: false, lokalvard_inkopshistorik: false, lokalvard_omatchade: false, lokalvard_fakturering: false,
+    inventering: true, inventering_rapporter: true, inventering_manual: true,
+    materialbanken: true, materialbanken_uttag: true,
+    platser: true, personal: false, kategorier: false, papperskorg: false, roll_behorigheter: false, avskrivningar: false, agaroversikt: false, redigera_layout: false,
+  },
+  'admin_lokalvård': {
+    dashboard: true,
+    maskiner: true, huvudmaskiner: true, salda_redskap: true, lan_utrustning: true, service: true,
+    handredskap: true,
+    arbetsklader: true, arbetsklader_rapporter: true, arbetsklader_begaran: true, arbetsklader_forfragan: true, arbetsklader_streckkod: true,
+    lokalvard_begaran: true, lokalvard_lager: true, lokalvard_nyttuttag: true, lokalvard_uttag: true, lokalvard_godkanna: true, lokalvard_kostnad: true, lokalvard_kunder: true, lokalvard_produktstatistik: true, lokalvard_inkopshistorik: true, lokalvard_omatchade: true, lokalvard_fakturering: true,
+    inventering: true, inventering_rapporter: true, inventering_manual: true,
+    materialbanken: true, materialbanken_uttag: true,
+    platser: true, personal: true, kategorier: true, papperskorg: true, roll_behorigheter: false, avskrivningar: false, agaroversikt: false, redigera_layout: false,
+  },
+  'lokalvårdare': {
+    dashboard: true,
+    maskiner: false, huvudmaskiner: false, salda_redskap: false, lan_utrustning: false, service: false,
+    handredskap: false,
+    arbetsklader: false, arbetsklader_rapporter: false, arbetsklader_begaran: true, arbetsklader_forfragan: false, arbetsklader_streckkod: false,
+    lokalvard_begaran: true, lokalvard_lager: false, lokalvard_nyttuttag: false, lokalvard_uttag: false, lokalvard_godkanna: false, lokalvard_kostnad: false, lokalvard_kunder: false, lokalvard_produktstatistik: false, lokalvard_inkopshistorik: false, lokalvard_omatchade: false, lokalvard_fakturering: false,
+    inventering: false, inventering_rapporter: false, inventering_manual: false,
+    materialbanken: false, materialbanken_uttag: false,
+    platser: false, personal: false, kategorier: false, papperskorg: false, roll_behorigheter: false, avskrivningar: false, agaroversikt: false, redigera_layout: false,
+  },
+};
 
 const OPERATIONS = [
   { id: 'can_create', label: 'Skapa' },
@@ -144,9 +201,10 @@ export default function RollBehorigheter() {
       PAGES.forEach(page => {
         const key = makeKey(role.id, `page__${page.id}`);
         const saved = savedLookup[key];
+        const defaultAccess = DEFAULT_PAGE_ACCESS[role.id]?.[page.id] ?? false;
         local[key] = {
           can_create: false,
-          can_read: saved ? (saved.can_read ?? false) : true,
+          can_read: saved ? (saved.can_read ?? false) : defaultAccess,
           can_update: false,
           can_delete: false,
         };
