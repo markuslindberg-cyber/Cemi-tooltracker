@@ -69,6 +69,11 @@
           "user_condition": {
             "role": "mekaniker"
           }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
         }
       ]
     },
@@ -115,6 +120,11 @@
           "user_condition": {
             "role": "mekaniker"
           }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
         }
       ]
     },
@@ -128,6 +138,11 @@
         {
           "user_condition": {
             "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
           }
         }
       ]
