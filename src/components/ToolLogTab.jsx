@@ -13,22 +13,22 @@ const SERVICE_LABELS = {
 function ServiceEntry({ entry }) {
   return (
     <div className="border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20 rounded p-2 text-xs">
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <Wrench className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0" />
-          <div>
+      <div className="flex justify-between items-start gap-1">
+        <div className="flex items-start gap-1.5 flex-1 min-w-0">
+          <Wrench className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+          <div className="min-w-0">
             <p className="font-medium text-green-800 dark:text-green-300">
               {SERVICE_LABELS[entry.service_type] || 'Service'}
             </p>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-500 dark:text-gray-400 break-words">
               {entry.performed_by || 'Okänd'}
               {entry.cost > 0 ? ` · ${Number(entry.cost).toLocaleString('sv-SE')} kr` : ''}
               {entry.supplier ? ` · ${entry.supplier}` : ''}
             </p>
-            {entry.description && <p className="text-gray-600 dark:text-gray-300 mt-0.5">{entry.description}</p>}
+            {entry.description && <p className="text-gray-600 dark:text-gray-300 mt-0.5 break-words">{entry.description}</p>}
           </div>
         </div>
-        <p className="text-gray-400 whitespace-nowrap ml-2 text-[10px]">
+        <p className="text-gray-400 whitespace-nowrap text-[10px]">
           {format(new Date(entry.date), 'HH:mm', { locale: sv })}
         </p>
       </div>
@@ -39,15 +39,15 @@ function ServiceEntry({ entry }) {
 function ScanEntry({ entry }) {
   return (
     <div className="border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20 rounded p-2 text-xs">
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <ScanLine className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-          <div>
+      <div className="flex justify-between items-start gap-1">
+        <div className="flex items-start gap-1.5 flex-1 min-w-0">
+          <ScanLine className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <div className="min-w-0">
             <p className="font-medium text-blue-800 dark:text-blue-300">Inventerad</p>
-            <p className="text-gray-500 dark:text-gray-400">{entry.by_name}{entry.location ? ` · ${entry.location}` : ''}</p>
+            <p className="text-gray-500 dark:text-gray-400 break-words">{entry.by_name}{entry.location ? ` · ${entry.location}` : ''}</p>
           </div>
         </div>
-        <p className="text-gray-400 whitespace-nowrap ml-2 text-[10px]">
+        <p className="text-gray-400 whitespace-nowrap text-[10px]">
           {format(new Date(entry.date), 'HH:mm', { locale: sv })}
         </p>
       </div>
@@ -60,7 +60,7 @@ function LogEntry({ entry }) {
     <div className="border border-gray-200 dark:border-gray-700 rounded p-2 text-xs">
       <div className="flex justify-between items-start">
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-gray-900 dark:text-gray-100">{entry.changed_by_name}</p>
+          <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{entry.changed_by_name}</p>
         </div>
         <p className="text-gray-400 whitespace-nowrap ml-2 text-[10px]">
           {format(new Date(entry.date), 'HH:mm', { locale: sv })}
@@ -69,15 +69,16 @@ function LogEntry({ entry }) {
       <div className="mt-1">
         {entry.change_type === 'created' ? (
           <div className="text-gray-700 dark:text-gray-300">
-            <span className="font-medium">✓ {entry.field_name}</span>:
-            <span className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 ml-1 break-all">{entry.new_value}</span>
+            <p className="font-medium">✓ {entry.field_name}</p>
+            <p className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 mt-0.5 break-all text-[11px]">{entry.new_value}</p>
           </div>
         ) : (
           <div className="text-gray-700 dark:text-gray-300">
-            <span className="font-medium">{entry.field_name}</span>:
-            <span className="font-mono bg-red-50 dark:bg-red-900/30 px-1 py-0.5 rounded text-red-700 dark:text-red-400 ml-1 break-all">{entry.old_value || '—'}</span>
-            <span className="text-gray-400 mx-1">→</span>
-            <span className="font-mono bg-green-50 dark:bg-green-900/30 px-1 py-0.5 rounded text-green-700 dark:text-green-400 break-all">{entry.new_value || '—'}</span>
+            <p className="font-medium mb-0.5">{entry.field_name}</p>
+            <div className="flex flex-col gap-0.5">
+              <p className="font-mono bg-red-50 dark:bg-red-900/30 px-1.5 py-0.5 rounded text-red-700 dark:text-red-400 break-all text-[11px] line-through">{entry.old_value || '—'}</p>
+              <p className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 break-all text-[11px]">{entry.new_value || '—'}</p>
+            </div>
           </div>
         )}
       </div>
@@ -119,11 +120,11 @@ function DateGroup({ dateKey, entries }) {
           : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
         }
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
             <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{dateLabel}</span>
             <span className="text-xs text-gray-400 dark:text-gray-500">{entries.length} händelser</span>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{summary}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{summary}</p>
         </div>
       </button>
       {expanded && (
