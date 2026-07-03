@@ -53,6 +53,7 @@ const ALL_NAV_ITEMS = [
       { id: 'arbetsklader_rapporter', label: 'Uttagsrapporter' },
       { id: 'arbetsklader_begaran', label: 'Begäran - arbetskläder' },
       { id: 'arbetsklader_forfragan', label: 'Förfrågan - arbetskläder' },
+      { id: 'arbetsklader_streckkod', label: 'Streckkodhantering' },
     ]
   },
   {
@@ -64,12 +65,17 @@ const ALL_NAV_ITEMS = [
       { id: 'lokalvard_godkanna', label: 'Godkänna Begäran' },
       { id: 'lokalvard_kostnad', label: 'Kostnad per kund' },
       { id: 'lokalvard_kunder', label: 'Kunder' },
+      { id: 'lokalvard_produktstatistik', label: 'Produktstatistik' },
+      { id: 'lokalvard_inkopshistorik', label: 'Inköpshistorik' },
+      { id: 'lokalvard_omatchade', label: 'Omatchade inköp' },
+      { id: 'lokalvard_fakturering', label: 'Faktureringsunderlag' },
     ]
   },
   {
     id: 'inventering', label: 'Inventeringskontroll', children: [
       { id: 'inventering_inventering', label: 'Inventering' },
       { id: 'inventering_rapporter', label: 'Inventeringsrapporter' },
+      { id: 'inventering_manual', label: 'Manual' },
     ]
   },
   {
@@ -83,6 +89,9 @@ const ALL_NAV_ITEMS = [
       { id: 'administration_platser', label: 'Platser' },
       { id: 'administration_personal', label: 'Personal' },
       { id: 'administration_kategorier', label: 'Kategorier' },
+      { id: 'administration_papperskorg', label: 'Papperskorg' },
+      { id: 'administration_rollbehorigheter', label: 'Roller & Behörigheter' },
+      { id: 'administration_avskrivningar', label: 'Avskrivningar' },
     ]
   },
 ];

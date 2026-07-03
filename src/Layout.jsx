@@ -320,13 +320,20 @@ export default function Layout({ children }) {
                     arbetsklader_rapporter: 'Uttagsrapporter',
                     arbetsklader_begaran: 'Begäran - arbetskläder',
                     arbetsklader_forfragan: 'Förfrågan - arbetskläder',
+                    arbetsklader_streckkod: 'Streckkodhantering',
                     lokalvard_begaran: 'Begäran - lokalvårdsartiklar',
                     lokalvard_lager: 'Lager', lokalvard_nyttuttag: 'Plocka ut begärda uttag',
                     lokalvard_uttag: 'Uttag', lokalvard_godkanna: 'Godkänna Begäran',
                     lokalvard_kostnad: 'Kostnad per kund', lokalvard_kunder: 'Kunder',
+                    lokalvard_produktstatistik: 'Produktstatistik', lokalvard_inkopshistorik: 'Inköpshistorik',
+                    lokalvard_omatchade: 'Omatchade inköp', lokalvard_fakturering: 'Faktureringsunderlag',
                     inventering_inventering: 'Inventering', inventering_rapporter: 'Inventeringsrapporter',
+                    inventering_manual: 'Manual',
+                    materialbanken_oversikt: 'Översikt', materialbanken_uttag: 'Uttag',
                     administration_platser: 'Platser', administration_personal: 'Personal',
-                    administration_kategorier: 'Kategorier',
+                    administration_kategorier: 'Kategorier', administration_papperskorg: 'Papperskorg',
+                    administration_rollbehorigheter: 'Roller & Behörigheter',
+                    administration_avskrivningar: 'Avskrivningar',
                   };
                   const visible = childOrder.filter(c => c.visible).map(c => CHILD_ID_TO_NAME[c.id]).filter(Boolean);
                   const reordered = visible.map(name => item.children.find(c => c.name === name)).filter(Boolean);
