@@ -23,7 +23,7 @@
       }
     },
     "read": {
-      "user_condition": {
+      "id": {
         "$exists": true
       }
     },
