@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { ScanLine } from 'lucide-react';
+import { ScanLine, Wrench } from 'lucide-react';
 
 export default function ToolLogTab({ toolId }) {
   const { data: logs = [] } = useQuery({
@@ -15,6 +15,12 @@ export default function ToolLogTab({ toolId }) {
   const { data: inventoryReports = [] } = useQuery({
     queryKey: ['inventoryReports'],
     queryFn: () => base44.entities.InventoryReport.list('-performed_at', 200),
+    enabled: !!toolId,
+  });
+
+  const { data: serviceRecords = [] } = useQuery({
+    queryKey: ['serviceRecords', toolId],
+    queryFn: () => toolId ? base44.entities.ServiceRecord.filter({ tool_id: toolId }, '-service_date', 100) : Promise.resolve([]),
     enabled: !!toolId,
   });
 
@@ -34,15 +40,29 @@ export default function ToolLogTab({ toolId }) {
       }));
   }, [inventoryReports, toolId]);
 
-  // Merge logs and scan entries into a single timeline sorted by date
+  // Map service records into timeline entries
+  const serviceEntries = useMemo(() => {
+    return serviceRecords.map(r => ({
+      id: `service-${r.id}`,
+      type: 'service',
+      date: r.service_date || r.created_date,
+      service_type: r.service_type,
+      description: r.description,
+      performed_by: r.performed_by,
+      cost: r.cost,
+      supplier: r.supplier,
+    }));
+  }, [serviceRecords]);
+
+  // Merge logs, scan entries and service entries into a single timeline sorted by date
   const timeline = useMemo(() => {
     const logEntries = logs.map(log => ({
       ...log,
       type: 'log',
       date: log.change_date,
     }));
-    return [...logEntries, ...scanEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [logs, scanEntries]);
+    return [...logEntries, ...scanEntries, ...serviceEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [logs, scanEntries, serviceEntries]);
 
   if (timeline.length === 0) {
     return (
@@ -55,6 +75,33 @@ export default function ToolLogTab({ toolId }) {
   return (
     <div className="space-y-2">
       {timeline.map((entry) => {
+        if (entry.type === 'service') {
+          const SERVICE_LABELS = { repair: 'Reparation', maintenance: 'Underhåll', inspection: 'Inspektion', calibration: 'Kalibrering', replacement_parts: 'Reservdelar', annual_service: 'Årlig service' };
+          return (
+            <div key={entry.id} className="border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20 rounded p-2 hover:bg-green-50 dark:hover:bg-green-900/30 transition text-xs">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <Wrench className="w-3.5 h-3.5 text-green-600 dark:text-green-400 shrink-0" />
+                  <div>
+                    <p className="font-medium text-green-800 dark:text-green-300">
+                      {SERVICE_LABELS[entry.service_type] || 'Service'}
+                    </p>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      {entry.performed_by || 'Okänd'}
+                      {entry.cost > 0 ? ` · ${Number(entry.cost).toLocaleString('sv-SE')} kr` : ''}
+                      {entry.supplier ? ` · ${entry.supplier}` : ''}
+                    </p>
+                    {entry.description && <p className="text-gray-600 dark:text-gray-300 mt-0.5">{entry.description}</p>}
+                  </div>
+                </div>
+                <p className="text-gray-400 whitespace-nowrap ml-2">
+                  {format(new Date(entry.date), 'dd/MM/yy', { locale: sv })}
+                </p>
+              </div>
+            </div>
+          );
+        }
+
         if (entry.type === 'scan') {
           return (
             <div key={entry.id} className="border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/20 rounded p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition text-xs">
