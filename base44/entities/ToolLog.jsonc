@@ -69,6 +69,11 @@
           }
         },
         {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
+        },
+        {
           "created_by": "{{user.email}}"
         }
       ]
@@ -89,6 +94,11 @@
           "user_condition": {
             "role": "verktygsf\u00f6rvaltare"
           }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
         }
       ]
     },
@@ -103,6 +113,11 @@
           "user_condition": {
             "role": "mekaniker"
           }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
+          }
         }
       ]
     },
@@ -116,6 +131,11 @@
         {
           "user_condition": {
             "role": "mekaniker"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "\u00e4gare"
           }
         }
       ]
