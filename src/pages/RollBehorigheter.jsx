@@ -12,6 +12,7 @@ const PAGE_OPERATIONS = [
 ];
 
 const ROLES = [
+  { id: 'ägare', label: 'Ägare' },
   { id: 'admin', label: 'Admin' },
   { id: 'mekaniker', label: 'Mekaniker' },
   { id: 'verktygsförvaltare', label: 'Verktygsförvaltare' },
@@ -102,6 +103,16 @@ const PAGES = [
 // NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare']
 // LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare']
 const DEFAULT_PAGE_ACCESS = {
+  'ägare': {
+    dashboard: true,
+    maskiner: true, huvudmaskiner: true, salda_redskap: true, lan_utrustning: true, service: true,
+    handredskap: true,
+    arbetsklader: true, arbetsklader_rapporter: true, arbetsklader_begaran: true, arbetsklader_forfragan: true, arbetsklader_streckkod: true,
+    lokalvard_begaran: true, lokalvard_lager: true, lokalvard_nyttuttag: true, lokalvard_uttag: true, lokalvard_godkanna: true, lokalvard_kostnad: true, lokalvard_kunder: true, lokalvard_produktstatistik: true, lokalvard_inkopshistorik: true, lokalvard_omatchade: true, lokalvard_fakturering: true,
+    inventering: true, inventering_rapporter: true, inventering_manual: true,
+    materialbanken: true, materialbanken_uttag: true,
+    platser: true, personal: true, kategorier: true, papperskorg: true, roll_behorigheter: true, avskrivningar: true, agaroversikt: true, redigera_layout: true,
+  },
   admin: {
     dashboard: true,
     maskiner: true, huvudmaskiner: true, salda_redskap: true, lan_utrustning: true, service: true,
@@ -546,7 +557,7 @@ export default function RollBehorigheter() {
       )}
 
       <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
-        Obs: Ägare har alltid full behörighet och kan inte begränsas. Ändringar här påverkar appens mjuka behörighetskontroller.
+        Ändringar här påverkar appens mjuka behörighetskontroller. Ägare har som standard full behörighet.
       </p>
     </div>
   );
