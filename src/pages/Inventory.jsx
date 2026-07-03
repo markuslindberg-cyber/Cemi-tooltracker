@@ -360,6 +360,7 @@ export default function Inventory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tools'] });
+      queryClient.invalidateQueries({ queryKey: ['toolLogs'] });
       setEditTool(null);
       setShowAddTool(false);
     },
