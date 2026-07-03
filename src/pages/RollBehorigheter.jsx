@@ -54,8 +54,7 @@ const ENTITIES = [
   { id: 'Location', label: 'Platser', group: 'Administration' },
   { id: 'TeamMember', label: 'Personal', group: 'Administration' },
   { id: 'Category', label: 'Kategorier', group: 'Administration' },
-  { id: 'CategoryImage', label: 'Kategoribilder', group: 'Administration' },
-  { id: 'GlobalAppConfig', label: 'Appkonfiguration', group: 'Administration' },
+
   { id: 'DepreciationSetting', label: 'Avskrivningsinställningar', group: 'Administration' },
   { id: 'RolePermission', label: 'Roller & Behörigheter', group: 'Administration' },
 ];
