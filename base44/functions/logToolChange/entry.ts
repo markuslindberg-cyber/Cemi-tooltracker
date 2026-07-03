@@ -16,17 +16,16 @@ Deno.serve(async (req) => {
     let changed_by_email = 'system';
     let changed_by_name = 'System';
     const userId = data.created_by_id;
-    if (userId) {
+    if (userId && !userId.startsWith('service_')) {
       try {
         const users = await base44.asServiceRole.entities.User.filter({ id: userId });
         if (users.length > 0) {
-          changed_by_email = users[0].email || userId;
-          changed_by_name = users[0].full_name || users[0].email || userId;
+          changed_by_email = users[0].email || 'system';
+          changed_by_name = users[0].full_name || users[0].email || 'System';
         }
       } catch (e) {
-        // fallback to ID
-        changed_by_email = userId;
-        changed_by_name = userId;
+        changed_by_email = 'system';
+        changed_by_name = 'System';
       }
     }
 
