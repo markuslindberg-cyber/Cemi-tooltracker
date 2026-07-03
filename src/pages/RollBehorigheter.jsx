@@ -199,11 +199,11 @@ export default function RollBehorigheter() {
   useEffect(() => {
     const local = {};
     ROLES.forEach(role => {
-      const isOwner = role.id === 'ägare';
+      const fullAccess = role.id === 'ägare' || role.id === 'mekaniker';
       ENTITIES.forEach(entity => {
         const key = makeKey(role.id, entity.id);
         const saved = savedLookup[key];
-        const fallback = isOwner ? true : false;
+        const fallback = fullAccess ? true : false;
         local[key] = {
           can_create: saved?.can_create ?? fallback,
           can_read: saved?.can_read ?? fallback,
