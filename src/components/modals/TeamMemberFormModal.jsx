@@ -53,15 +53,18 @@ export default function TeamMemberFormModal({
     if (member) {
       // Auto-set default location if member is responsible for any location
       const responsibleLocation = locations?.find(l => l.responsible_person_id === member.id);
+      const editDefaults = { ...defaultMember, send_invitation: false, send_new_invitation: false };
       if (responsibleLocation && !member.default_location_id) {
         setFormData({ 
-          ...defaultMember, 
+          ...editDefaults, 
           ...member,
+          send_invitation: false,
+          send_new_invitation: false,
           default_location_id: responsibleLocation.id,
           default_location_name: responsibleLocation.name
         });
       } else {
-        setFormData({ ...defaultMember, ...member });
+        setFormData({ ...editDefaults, ...member, send_invitation: false, send_new_invitation: false });
       }
     } else {
       setFormData(defaultMember);
