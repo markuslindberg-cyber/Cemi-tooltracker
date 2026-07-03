@@ -10,6 +10,7 @@ export default function ToolLogTab({ toolId }) {
     queryKey: ['toolLogs', toolId],
     queryFn: () => toolId ? base44.entities.ToolLog.filter({ tool_id: toolId }, '-change_date') : Promise.resolve([]),
     enabled: !!toolId,
+    staleTime: 0,
   });
 
   const { data: inventoryReports = [] } = useQuery({
