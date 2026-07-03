@@ -199,14 +199,16 @@ export default function RollBehorigheter() {
   useEffect(() => {
     const local = {};
     ROLES.forEach(role => {
+      const isOwner = role.id === 'ägare';
       ENTITIES.forEach(entity => {
         const key = makeKey(role.id, entity.id);
         const saved = savedLookup[key];
+        const fallback = isOwner ? true : false;
         local[key] = {
-          can_create: saved?.can_create ?? false,
-          can_read: saved?.can_read ?? false,
-          can_update: saved?.can_update ?? false,
-          can_delete: saved?.can_delete ?? false,
+          can_create: saved?.can_create ?? fallback,
+          can_read: saved?.can_read ?? fallback,
+          can_update: saved?.can_update ?? fallback,
+          can_delete: saved?.can_delete ?? fallback,
         };
       });
       PAGES.forEach(page => {
