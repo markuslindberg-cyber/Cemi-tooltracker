@@ -467,9 +467,9 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
       list = [...list, ...t];
     }
     if (include('lokalvards')) {
-      // Only include active articles (not deleted, not utgående) with stock > 0
+      // Include active articles (not deleted) with stock > 0, including utgående (visually marked)
       const t = lokalvardsData
-        .filter(l => !l.is_deleted && !l.utgaende && (artikelSaldoMap.get(l.id) ?? 0) > 0)
+        .filter(l => !l.is_deleted && (artikelSaldoMap.get(l.id) ?? 0) > 0)
         .map(l => ({ ...l, _type: 'lokalvards', name: l.benamning }));
       list = [...list, ...t];
     }
