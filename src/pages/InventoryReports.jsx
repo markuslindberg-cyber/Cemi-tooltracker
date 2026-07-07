@@ -154,7 +154,7 @@ function ReportCard({ report, isAdmin, onDelete, onKorrigera }) {
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            {hasLokalvard && onKorrigera && (
+            {hasLokalvard && onKorrigera && window.location.hostname.includes('base44.app') && (
               <Button size="sm" variant="outline" onClick={() => onKorrigera(report)} className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200">
                 <PencilLine className="w-3.5 h-3.5 mr-1" />
                 <span className="hidden sm:inline">Korrigera</span>
