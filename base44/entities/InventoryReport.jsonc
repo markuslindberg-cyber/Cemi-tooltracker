@@ -35,6 +35,11 @@
     "unchecked_items": {
       "type": "number"
     },
+    "manual_counts": {
+      "type": "object",
+      "description": "Manuellt inmatade antal per artikel-ID {id: antal}",
+      "additionalProperties": true
+    },
     "checked_list": {
       "type": "array",
       "items": {

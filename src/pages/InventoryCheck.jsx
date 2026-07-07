@@ -1028,6 +1028,8 @@ export default function InventoryCheck() {
       status: i.status || '',
       condition: i.condition || '',
       scanned_quantity: manualCounts[i.id] ?? null,
+      pris: i.pris ?? null,
+      benamning: i.benamning || i.name || '',
     }));
     const uncheckedArr = allItems.filter(i => !checkedItems.has(i.id)).map(i => ({
       id: i.id,
@@ -1050,6 +1052,7 @@ export default function InventoryCheck() {
       total_items: allItems.length,
       checked_items: checkedItems.size,
       unchecked_items: allItems.length - checkedItems.size,
+      manual_counts: manualCounts,
       checked_list: checkedArr,
       unchecked_list: uncheckedArr,
     });

@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   CheckCircle2, AlertTriangle, Calendar, User, MapPin,
   Package, ChevronDown, ChevronUp, Download, ClipboardList, Trash2, Loader2,
-  Wrench, Shovel, Shirt, SprayCan, Globe,
+  Wrench, Shovel, Shirt, SprayCan, Globe, PencilLine,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import LagerkorrigeringSection from '@/components/inventory/LagerkorrigeringSection';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 
@@ -99,11 +101,12 @@ function CategorySection({ title, items, bgColor, textColor, icon }) {
   );
 }
 
-function ReportCard({ report, isAdmin, onDelete }) {
+function ReportCard({ report, isAdmin, onDelete, onKorrigera }) {
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const unchecked = report.unchecked_list || [];
   const checked = report.checked_list || [];
+  const hasLokalvard = (report.tool_type || '').includes('lokalvards') || checked.some(i => i.type === 'lokalvards');
   const pct = report.total_items > 0 ? Math.round((report.checked_items / report.total_items) * 100) : 0;
   const tc = getTypeConfig(report.tool_type);
   const TypeIcon = tc.icon;
@@ -151,6 +154,12 @@ function ReportCard({ report, isAdmin, onDelete }) {
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            {hasLokalvard && onKorrigera && (
+              <Button size="sm" variant="outline" onClick={() => onKorrigera(report)} className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200">
+                <PencilLine className="w-3.5 h-3.5 mr-1" />
+                <span className="hidden sm:inline">Korrigera</span>
+              </Button>
+            )}
             <Button size="sm" variant="outline" onClick={() => exportReport(report)}>
               <Download className="w-3.5 h-3.5" />
             </Button>
@@ -196,6 +205,7 @@ export default function InventoryReports() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
   const [user, setUser] = useState(null);
+  const [korrigeraReport, setKorrigeraReport] = useState(null);
 
   React.useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -207,6 +217,7 @@ export default function InventoryReports() {
   });
 
   const isAdmin = user?.role === 'admin';
+  const canCorrect = user?.role === 'admin_lokalvård' || user?.role === 'ägare';
 
   const locations = useMemo(() => {
     const locs = [...new Set(reports.map(r => r.location_name).filter(Boolean))].sort();
@@ -284,10 +295,58 @@ export default function InventoryReports() {
 
         <div className="space-y-3">
           {sortedFiltered.map(report => (
-            <ReportCard key={report.id} report={report} isAdmin={isAdmin} onDelete={handleDelete} />
+            <ReportCard key={report.id} report={report} isAdmin={isAdmin} onDelete={handleDelete} onKorrigera={canCorrect ? setKorrigeraReport : null} />
           ))}
         </div>
       </div>
+
+      {/* Korrigera saldo dialog */}
+      <Dialog open={!!korrigeraReport} onOpenChange={(open) => { if (!open) setKorrigeraReport(null); }}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Korrigera saldo — {korrigeraReport?.location_name || 'Öppen inventering'}</DialogTitle>
+          </DialogHeader>
+          {korrigeraReport && (() => {
+            const checkedList = korrigeraReport.checked_list || [];
+            const mc = korrigeraReport.manual_counts || {};
+            // Build allItems from checked_list, adding _type
+            const allItems = checkedList
+              .filter(i => i.type === 'lokalvards')
+              .map(i => ({
+                ...i,
+                _type: 'lokalvards',
+                benamning: i.benamning || i.name,
+                pris: i.pris ?? 0,
+              }));
+            // Build manualCounts from report.manual_counts or scanned_quantity
+            const manualCounts = {};
+            allItems.forEach(i => {
+              if (mc[i.id] !== undefined) {
+                manualCounts[i.id] = mc[i.id];
+              } else if (i.scanned_quantity !== null && i.scanned_quantity !== undefined) {
+                manualCounts[i.id] = i.scanned_quantity;
+              }
+            });
+            const hasData = Object.keys(manualCounts).length > 0;
+            if (!hasData) {
+              return (
+                <div className="py-8 text-center text-gray-500">
+                  <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+                  <p className="font-medium text-gray-700">Ingen kvantitetsdata sparad</p>
+                  <p className="text-sm mt-1">Denna rapport saknar manuellt inmatade antal. Gör en ny inventering för att kunna korrigera saldo.</p>
+                </div>
+              );
+            }
+            return (
+              <LagerkorrigeringSection
+                allItems={allItems}
+                manualCounts={manualCounts}
+                performedAt={korrigeraReport.performed_at}
+              />
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
