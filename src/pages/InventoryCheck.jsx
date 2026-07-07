@@ -763,11 +763,11 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : entry.type === 'material' ? 'Material' : 'Maskin'}
-                        {entry.manualCount !== undefined && ` · Antal: ${entry.manualCount}`}
+                        {manualCounts[entry.id] !== undefined && ` · Antal: ${manualCounts[entry.id]}`}
                       </p>
                       {entry.type === 'lokalvards' && (() => {
                         const lager = getArtikelSaldo(entry.id);
-                        const inv = (manualCounts || {})[entry.id] ?? (checkedItems.has(entry.id) ? 1 : 0);
+                        const inv = manualCounts[entry.id] ?? 0;
                         const differs = inv !== lager;
                         return (
                           <p className={cn("text-xs mt-0.5 font-medium", differs ? "text-amber-600" : "text-gray-400")}>
