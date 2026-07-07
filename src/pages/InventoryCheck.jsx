@@ -563,7 +563,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     await onPause(sessionId, checkedItems, manualCounts);
   };
 
-  const checkedCount = checkedItems.size;
+  const checkedCount = scopedItems.filter(t => checkedItems.has(t.id)).length;
   const totalCount = scopedItems.length;
   const uncheckedItems = scopedItems.filter(t => !checkedItems.has(t.id));
   const isDone = sessionConfig?.mode !== 'open' && checkedCount === totalCount && totalCount > 0;
