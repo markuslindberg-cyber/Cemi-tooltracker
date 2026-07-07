@@ -7,7 +7,7 @@ import { CheckCircle2, AlertTriangle, Loader2, ArrowUp, ArrowDown } from 'lucide
 import { cn } from '@/lib/utils';
 import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
 
-export default function LagerkorrigeringSection({ allItems, manualCounts, performedAt }) {
+export default function LagerkorrigeringSection({ allItems, manualCounts, performedAt, reportId, onReportUpdated }) {
   const [correctedIds, setCorrectedIds] = useState(new Set());
   const [correcting, setCorrecting] = useState(null);
   const [allCorrecting, setAllCorrecting] = useState(false);
@@ -40,47 +40,41 @@ export default function LagerkorrigeringSection({ allItems, manualCounts, perfor
     ? new Date(performedAt).toISOString().slice(0, 10)
     : new Date().toISOString().slice(0, 10);
 
-  const correctItem = async (item) => {
-    setCorrecting(item.id);
+  const removeFromReport = async (ids) => {
+    if (!reportId) return;
+    const updated = { ...manualCounts };
+    ids.forEach(id => delete updated[id]);
+    await base44.entities.InventoryReport.update(reportId, { manual_counts: updated });
+    if (onReportUpdated) onReportUpdated();
+  };
+
+  const doCorrection = async (item) => {
     const diff = item.inventerat - item.lager;
-
-    // Update the article's current_quantity
-    await base44.entities.LokalvardsArtikel.update(item.id, {
-      current_quantity: item.inventerat,
-    });
-
-    // Create audit trail entry
+    await base44.entities.LokalvardsArtikel.update(item.id, { current_quantity: item.inventerat });
     if (diff > 0) {
-      // Increase → create inköpspost
       await base44.entities.LokalvardInköp.create({
-        artikel_id: item.id,
-        datum: dateStr,
-        antal: diff,
-        pris: item.pris ?? 0,
-        ordernummer: `INVENTERING ${dateStr}`,
+        artikel_id: item.id, datum: dateStr, antal: diff,
+        pris: item.pris ?? 0, ordernummer: `INVENTERING ${dateStr}`,
       });
     } else {
-      // Decrease → create uttagspost
       await base44.entities.Uttag.create({
         datum: new Date(performedAt || Date.now()).toISOString(),
-        personal_id: 'system',
-        personal_namn: 'Inventering',
-        kund_id: 'inventering',
-        kund_namn: 'INVENTERING',
-        artiklar: [{
-          artikel_id: item.id,
-          benamning: item.benamning || item.name,
-          antal: Math.abs(diff),
-          pris_per_enhet: item.pris ?? 0,
-          total_pris: Math.abs(diff) * (item.pris ?? 0),
-        }],
+        personal_id: 'system', personal_namn: 'Inventering',
+        kund_id: 'inventering', kund_namn: 'INVENTERING',
+        artiklar: [{ artikel_id: item.id, benamning: item.benamning || item.name,
+          antal: Math.abs(diff), pris_per_enhet: item.pris ?? 0,
+          total_pris: Math.abs(diff) * (item.pris ?? 0) }],
         total_kostnad: Math.abs(diff) * (item.pris ?? 0),
-        manad: dateStr.slice(0, 7),
-        ordernummer: `INVENTERING ${dateStr}`,
+        manad: dateStr.slice(0, 7), ordernummer: `INVENTERING ${dateStr}`,
       });
     }
+  };
 
+  const correctItem = async (item) => {
+    setCorrecting(item.id);
+    await doCorrection(item);
     setCorrectedIds(prev => new Set([...prev, item.id]));
+    await removeFromReport([item.id]);
     setCorrecting(null);
   };
 
@@ -88,8 +82,11 @@ export default function LagerkorrigeringSection({ allItems, manualCounts, perfor
     setAllCorrecting(true);
     const uncorrected = lokalvardItems.filter(i => !correctedIds.has(i.id));
     for (const item of uncorrected) {
-      await correctItem(item);
+      await doCorrection(item);
     }
+    const allIds = uncorrected.map(i => i.id);
+    setCorrectedIds(prev => new Set([...prev, ...allIds]));
+    await removeFromReport(allIds);
     setAllCorrecting(false);
   };
 

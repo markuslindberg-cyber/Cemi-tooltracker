@@ -342,6 +342,8 @@ export default function InventoryReports() {
                 allItems={allItems}
                 manualCounts={manualCounts}
                 performedAt={korrigeraReport.performed_at}
+                reportId={korrigeraReport.id}
+                onReportUpdated={() => queryClient.invalidateQueries(['inventoryReports'])}
               />
             );
           })()}
