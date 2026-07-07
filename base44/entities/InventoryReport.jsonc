@@ -100,6 +100,17 @@
           }
         }
       }
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mjukradering \u2013 visas i papperskorg"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true,
+      "description": "Tidpunkt f\u00f6r mjukradering"
     }
   },
   "required": [

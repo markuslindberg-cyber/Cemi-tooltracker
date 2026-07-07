@@ -213,7 +213,7 @@ export default function InventoryReports() {
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['inventoryReports'],
-    queryFn: () => base44.entities.InventoryReport.list('-performed_at', 200),
+    queryFn: () => base44.entities.InventoryReport.filter({ is_deleted: { $ne: true } }, '-performed_at', 200),
   });
 
   const isAdmin = user?.role === 'admin';
@@ -240,7 +240,7 @@ export default function InventoryReports() {
   }, [filtered]);
 
   const handleDelete = async (id) => {
-    await base44.entities.InventoryReport.delete(id);
+    await base44.entities.InventoryReport.update(id, { is_deleted: true, deleted_at: new Date().toISOString() });
     queryClient.invalidateQueries(['inventoryReports']);
   };
 

@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, RotateCcw, AlertTriangle, Loader2, Package, Shirt, Shovel, SprayCan, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, RotateCcw, AlertTriangle, Loader2, Package, Shirt, Shovel, SprayCan, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react';
 import { formatDistanceToNow, differenceInDays } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -48,6 +48,16 @@ const SECTIONS = [
     headerColor: 'bg-orange-50',
     getName: (item) => item.benamning,
     getExtra: (item) => [item.subcategory, item.streckkod].filter(Boolean).join(' · '),
+  },
+  {
+    key: 'InventoryReport',
+    label: 'Inventeringsrapporter',
+    icon: ClipboardList,
+    color: 'bg-indigo-100 text-indigo-700',
+    borderColor: 'border-indigo-200',
+    headerColor: 'bg-indigo-50',
+    getName: (item) => item.location_name || 'Öppen inventering',
+    getExtra: (item) => [item.tool_type, item.performed_by_name].filter(Boolean).join(' · '),
   },
 ];
 
@@ -134,17 +144,22 @@ export default function Papperskorg() {
     queryKey: ['trash_lokalvard'],
     queryFn: () => base44.entities.LokalvardsArtikel.filter({ is_deleted: true }, '-deleted_at', 1000),
   });
+  const { data: invReports = [], isLoading: l5 } = useQuery({
+    queryKey: ['trash_inventoryreport'],
+    queryFn: () => base44.entities.InventoryReport.filter({ is_deleted: true }, '-deleted_at', 1000),
+  });
 
-  const isLoading = l1 || l2 || l3 || l4;
+  const isLoading = l1 || l2 || l3 || l4 || l5;
 
   const dataMap = {
     Tool: tools,
     HandTool: handTools,
     ArbetskläderUtrustning: arbetsklader,
     LokalvardsArtikel: lokalvard,
+    InventoryReport: invReports,
   };
 
-  const totalCount = tools.length + handTools.length + arbetsklader.length + lokalvard.length;
+  const totalCount = tools.length + handTools.length + arbetsklader.length + lokalvard.length + invReports.length;
 
   const handleRestore = async (entityKey, item) => {
     setRestoring(item.id);
@@ -177,6 +192,7 @@ export default function Papperskorg() {
     queryClient.invalidateQueries(['trash_handtools']);
     queryClient.invalidateQueries(['trash_arbetsklader']);
     queryClient.invalidateQueries(['trash_lokalvard']);
+    queryClient.invalidateQueries(['trash_inventoryreport']);
     toast.success('Papperskorgen tömd!');
   };
 
