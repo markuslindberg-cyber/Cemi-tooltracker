@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,8 @@ import { Loader2, Plus, X, Check, Copy, Clock, ChevronDown } from 'lucide-react'
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
+import { Search, AlertTriangle } from 'lucide-react';
+import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
 
 export default function LokalvardRequestArtikel() {
   const queryClient = useQueryClient();
@@ -43,13 +44,40 @@ export default function LokalvardRequestArtikel() {
     },
   });
 
-  const { data: artiklar = [] } = useQuery({
+  const { data: allArtiklar = [] } = useQuery({
     queryKey: ['lokalvardArtiklar'],
     queryFn: async () => {
       const result = await base44.entities.LokalvardsArtikel.list(null, 1000);
-      return result.filter(a => !a.is_deleted && !((a.current_quantity === 0 || !a.current_quantity) && a.utgaende));
+      return result.filter(a => !a.is_deleted);
     },
   });
+
+  const { data: inkopData = [] } = useQuery({
+    queryKey: ['lokalvardInkopForRequest'],
+    queryFn: () => base44.entities.LokalvardInköp.list('-datum', 5000).catch(() => []),
+  });
+  const { data: uttagData = [] } = useQuery({
+    queryKey: ['uttagForRequest'],
+    queryFn: () => base44.entities.Uttag.list('-datum', 5000).catch(() => []),
+  });
+  const { data: checkoutData = [] } = useQuery({
+    queryKey: ['checkoutForRequest'],
+    queryFn: () => base44.entities.LokalvardCheckout.list('-checked_out_date', 5000).catch(() => []),
+  });
+
+  const artikelSaldoMap = React.useMemo(() => {
+    if (allArtiklar.length === 0) return new Map();
+    return buildArtikelSaldoMap(allArtiklar, inkopData, uttagData, checkoutData);
+  }, [allArtiklar, inkopData, uttagData, checkoutData]);
+
+  // Only show active articles with stock > 0
+  const artiklar = React.useMemo(() => {
+    return allArtiklar.filter(a => {
+      if (a.utgaende) return false;
+      const saldo = artikelSaldoMap.get(a.id) ?? 0;
+      return saldo > 0;
+    });
+  }, [allArtiklar, artikelSaldoMap]);
 
   const { data: myRequests = [] } = useQuery({
     queryKey: ['myLokalvardRequests'],

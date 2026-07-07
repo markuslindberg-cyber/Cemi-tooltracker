@@ -11,6 +11,7 @@ import ManualScanDialog from '@/components/ManualScanDialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
+import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
 
 // Steg 1: Lista pending-begäranden och välj en
 // Steg 2: Granska detaljer + godkänn/avslå
@@ -107,6 +108,21 @@ export default function LokalvardBegaranAttGodkanna() {
     queryKey: ['lokalvardCheckouts'],
     queryFn: () => base44.entities.LokalvardCheckout.list(null, 10000).catch(() => []),
   });
+
+  const { data: inkopData = [] } = useQuery({
+    queryKey: ['lokalvardInkopForGodkanna'],
+    queryFn: () => base44.entities.LokalvardInköp.list('-datum', 5000).catch(() => []),
+  });
+
+  const { data: uttagData = [] } = useQuery({
+    queryKey: ['uttagForGodkanna'],
+    queryFn: () => base44.entities.Uttag.list('-datum', 5000).catch(() => []),
+  });
+
+  const artikelSaldoMap = React.useMemo(() => {
+    if (allItems.length === 0) return new Map();
+    return buildArtikelSaldoMap(allItems, inkopData, uttagData, checkouts);
+  }, [allItems, inkopData, uttagData, checkouts]);
 
   const approveMutation = useMutation({
     mutationFn: (requestId) =>
@@ -893,15 +909,26 @@ export default function LokalvardBegaranAttGodkanna() {
           <div className="border-t dark:border-gray-700 pt-4">
             <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Begärda artiklar</h3>
             <div className="space-y-2">
-              {selectedRequest.requested_items?.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              {selectedRequest.requested_items?.map((item, idx) => {
+                const lagerItem = allItems.find(a => a.id === item.id);
+                const saldo = artikelSaldoMap.get(item.id) ?? 0;
+                const isUtgaende = lagerItem?.utgaende === true;
+                const saknarLager = saldo <= 0;
+                const warn = isUtgaende || saknarLager;
+                return (
+                <div key={idx} className={`flex items-center justify-between p-3 rounded-lg ${warn ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700' : 'bg-gray-50 dark:bg-gray-800'}`}>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {item.name}
+                      {isUtgaende && <span className="ml-2 text-xs font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Utgående</span>}
+                      {saknarLager && <span className="ml-2 text-xs font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Slut i lager</span>}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{item.subcategory}{saldo > 0 ? ` • Lager: ${saldo}` : ''}</p>
                   </div>
                   <p className="font-semibold text-gray-900 dark:text-gray-100">{item.quantity} st</p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
