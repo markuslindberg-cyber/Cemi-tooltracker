@@ -163,7 +163,7 @@ function ReportCard({ report, isAdmin, onDelete, onKorrigera }) {
             <Button size="sm" variant="outline" onClick={() => exportReport(report)}>
               <Download className="w-3.5 h-3.5" />
             </Button>
-            {isAdmin && (
+            {(isAdmin || window.location.hostname.includes('base44.app')) && (
               <Button size="sm" variant="ghost" onClick={handleDelete} disabled={deleting} className="text-red-400 hover:text-red-600 hover:bg-red-50">
                 {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
               </Button>
