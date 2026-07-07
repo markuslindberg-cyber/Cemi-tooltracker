@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Camera, CheckCircle2, Loader2, Search, Package, MapPin,
   AlertTriangle, ArrowLeft, Download, ClipboardList, Globe,
-  Pause, Play, PencilLine, Plus, AlertCircle,
+  Pause, Play, PencilLine, Plus, AlertCircle, CloudOff, Cloud,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -316,49 +316,106 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [manualDialogPreselected, setManualDialogPreselected] = useState(null);
   const [manualBarcode, setManualBarcode] = useState('');
-  const [checkedItems, setCheckedItems] = useState(new Set(sessionConfig._resumedChecked || []));
-  const [manualCounts, setManualCounts] = useState(sessionConfig._resumedManualCounts || {});
-  const [lastScanFeedback, setLastScanFeedback] = useState(null); // { name, found }
-  const [scanLog, setScanLog] = useState([]); // [{ id, name, type, timestamp, manualCount? }]
+  const [checkedItems, setCheckedItems] = useState(new Set(sessionConfig?._resumedChecked || []));
+  const [manualCounts, setManualCounts] = useState(sessionConfig?._resumedManualCounts || {});
+  const [lastScanFeedback, setLastScanFeedback] = useState(null);
+  const [scanLog, setScanLog] = useState([]);
+  const [autosaveStatus, setAutosaveStatus] = useState(null); // 'saving' | 'saved' | 'error'
   const externalScanInputRef = useRef(null);
-  const endedRef = useRef(false); // tracks if session was explicitly ended/paused
+  const endedRef = useRef(false);
 
-  // Auto-save session on unmount (navigation away) or beforeunload
+  // Refs for autosave — always up to date
   const checkedRef = useRef(checkedItems);
   const manualCountsRef = useRef(manualCounts);
+  const lastSavedCheckedRef = useRef(new Set(sessionConfig?._resumedChecked || []));
+  const lastSavedManualCountsRef = useRef(sessionConfig?._resumedManualCounts || {});
+  const autosaveTimerRef = useRef(null);
+  const isSavingRef = useRef(false);
+
   useEffect(() => { checkedRef.current = checkedItems; }, [checkedItems]);
   useEffect(() => { manualCountsRef.current = manualCounts; }, [manualCounts]);
 
+  // ── Background autosave: debounced, non-blocking ──
+  const doAutosave = useCallback(async () => {
+    if (endedRef.current || !sessionId || isSavingRef.current) return;
+
+    const currentChecked = [...checkedRef.current];
+    const currentManual = { ...manualCountsRef.current };
+
+    // Skip if nothing changed since last save
+    const lastIds = [...lastSavedCheckedRef.current];
+    if (
+      currentChecked.length === lastIds.length &&
+      currentChecked.every(id => lastSavedCheckedRef.current.has(id)) &&
+      JSON.stringify(currentManual) === JSON.stringify(lastSavedManualCountsRef.current)
+    ) return;
+
+    isSavingRef.current = true;
+    setAutosaveStatus('saving');
+    try {
+      await base44.entities.InventorySession.update(sessionId, {
+        status: 'pågående',
+        checked_item_ids: currentChecked,
+        manual_counts: currentManual,
+        paused_at: new Date().toISOString(),
+      });
+      lastSavedCheckedRef.current = new Set(currentChecked);
+      lastSavedManualCountsRef.current = currentManual;
+      setAutosaveStatus('saved');
+    } catch {
+      setAutosaveStatus('error');
+    } finally {
+      isSavingRef.current = false;
+    }
+  }, [sessionId]);
+
+  // Schedule autosave 5s after any change to checkedItems or manualCounts
   useEffect(() => {
-    const autoPause = () => {
+    if (endedRef.current) return;
+    clearTimeout(autosaveTimerRef.current);
+    autosaveTimerRef.current = setTimeout(doAutosave, 5000);
+    return () => clearTimeout(autosaveTimerRef.current);
+  }, [checkedItems, manualCounts, doAutosave]);
+
+  // Also save on beforeunload and unmount as a fallback
+  useEffect(() => {
+    const handleBeforeUnload = () => {
       if (endedRef.current || !sessionId) return;
-      endedRef.current = true;
-      // Fire-and-forget save
-      base44.entities.InventorySession.update(sessionId, {
+      // Use sendBeacon for reliability on page close
+      const payload = JSON.stringify({
         status: 'pausad',
         checked_item_ids: [...checkedRef.current],
         manual_counts: manualCountsRef.current,
         paused_at: new Date().toISOString(),
-      }).catch(() => {});
+      });
+      // Fire-and-forget — best effort
+      base44.entities.InventorySession.update(sessionId, JSON.parse(payload)).catch(() => {});
     };
-
-    const handleBeforeUnload = () => autoPause();
     window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      autoPause();
+      // On unmount (navigation away), do a final save if not ended
+      if (!endedRef.current && sessionId) {
+        base44.entities.InventorySession.update(sessionId, {
+          status: 'pausad',
+          checked_item_ids: [...checkedRef.current],
+          manual_counts: manualCountsRef.current,
+          paused_at: new Date().toISOString(),
+        }).catch(() => {});
+      }
     };
   }, [sessionId]);
 
-  const { data: tools = [] } = useQuery({ queryKey: ['tools'], queryFn: () => base44.entities.Tool.list('-updated_date', 500) });
-  const { data: handTools = [] } = useQuery({ queryKey: ['handtools'], queryFn: () => base44.entities.HandTool.list('-updated_date', 500) });
-  const { data: arbetskläderData = [] } = useQuery({ queryKey: ['arbetskläder'], queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500) });
-  const { data: lokalvardsData = [] } = useQuery({ queryKey: ['lokalvards'], queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 500) });
-  const { data: materialData = [] } = useQuery({ queryKey: ['materialLager'], queryFn: () => base44.entities.MaterialLager.filter({ is_deleted: false }) });
-  const { data: inkopData = [] } = useQuery({ queryKey: ['lokalvardInkop'], queryFn: () => base44.entities.LokalvardInköp.list('-datum', 5000) });
-  const { data: uttagData = [] } = useQuery({ queryKey: ['uttagAll'], queryFn: () => base44.entities.Uttag.list('-datum', 5000) });
-  const { data: checkoutData = [] } = useQuery({ queryKey: ['checkoutAll'], queryFn: () => base44.entities.LokalvardCheckout.list('-checked_out_date', 5000) });
+  // Disable background refetching during active inventory to prevent re-renders / crashes
+  const stableQueryOpts = { refetchOnWindowFocus: false, refetchOnReconnect: false, staleTime: Infinity };
+  const { data: tools = [] } = useQuery({ queryKey: ['tools'], queryFn: () => base44.entities.Tool.list('-updated_date', 500), ...stableQueryOpts });
+  const { data: handTools = [] } = useQuery({ queryKey: ['handtools'], queryFn: () => base44.entities.HandTool.list('-updated_date', 500), ...stableQueryOpts });
+  const { data: arbetskläderData = [] } = useQuery({ queryKey: ['arbetskläder'], queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 500), ...stableQueryOpts });
+  const { data: lokalvardsData = [] } = useQuery({ queryKey: ['lokalvards'], queryFn: () => base44.entities.LokalvardsArtikel.list('-updated_date', 500), ...stableQueryOpts });
+  const { data: materialData = [] } = useQuery({ queryKey: ['materialLager'], queryFn: () => base44.entities.MaterialLager.filter({ is_deleted: false }), ...stableQueryOpts });
+  const { data: inkopData = [] } = useQuery({ queryKey: ['lokalvardInkop'], queryFn: () => base44.entities.LokalvardInköp.list('-datum', 5000), ...stableQueryOpts });
+  const { data: uttagData = [] } = useQuery({ queryKey: ['uttagAll'], queryFn: () => base44.entities.Uttag.list('-datum', 5000), ...stableQueryOpts });
+  const { data: checkoutData = [] } = useQuery({ queryKey: ['checkoutAll'], queryFn: () => base44.entities.LokalvardCheckout.list('-checked_out_date', 5000), ...stableQueryOpts });
 
   // Build dynamic saldo map for lokalvård articles
   const artikelSaldoMap = useMemo(() => {
@@ -389,6 +446,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
   // Build scoped item list
   const scopedItems = useMemo(() => {
+    if (!sessionConfig) return [];
     const { mode, locationId, toolType } = sessionConfig;
     const types = toolType === 'all' ? ['tools', 'handtools', 'arbetskläder', 'lokalvards'] : toolType.split(',');
     const include = (t) => types.includes(t);
@@ -461,7 +519,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     const trimmedBarcode = barcode.trim();
     // Search only within scoped items (or all in open mode)
     let searchList = scopedItems;
-    if (sessionConfig.mode === 'open') {
+    if (sessionConfig?.mode === 'open') {
       searchList = [
         ...tools.map(t => ({ ...t, _type: 'tool' })),
         ...handTools.map(t => ({ ...t, _type: 'handtool' })),
@@ -481,7 +539,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     } else {
       setLastScanFeedback({ name: trimmedBarcode, found: false });
     }
-  }, [scopedItems, tools, handTools, arbetskläderData, lokalvardsData, sessionConfig.mode]);
+  }, [scopedItems, tools, handTools, arbetskläderData, lokalvardsData, materialData, sessionConfig?.mode]);
 
   useBarcodeCamera("barcode-scanner", scannerActive, handleScan);
 
@@ -499,15 +557,18 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
   const handlePause = async () => {
     endedRef.current = true;
+    clearTimeout(autosaveTimerRef.current);
     await onPause(sessionId, checkedItems, manualCounts);
   };
 
   const checkedCount = checkedItems.size;
   const totalCount = scopedItems.length;
   const uncheckedItems = scopedItems.filter(t => !checkedItems.has(t.id));
-  const isDone = sessionConfig.mode !== 'open' && checkedCount === totalCount && totalCount > 0;
-  const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen';
-  const typeLabel = sessionConfig.toolType || sessionConfig.tool_type || 'Allt';
+  const isDone = sessionConfig?.mode !== 'open' && checkedCount === totalCount && totalCount > 0;
+  const locationLabel = sessionConfig?.location ? sessionConfig.location.name : 'Öppen';
+  const typeLabel = sessionConfig?.toolType || sessionConfig?.tool_type || 'Allt';
+
+  if (!sessionConfig) return null;
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
@@ -516,28 +577,37 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <button onClick={() => { endedRef.current = true; onEnd(sessionConfig, checkedItems, scopedItems, manualCounts); }} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+              <button onClick={() => { endedRef.current = true; clearTimeout(autosaveTimerRef.current); onEnd(sessionConfig, checkedItems, scopedItems, manualCounts); }} className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" aria-label="Avsluta inventering">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Inventering pågår</h1>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline">{locationLabel}</Badge>
               <Badge variant="outline">{typeLabel}</Badge>
+              {autosaveStatus === 'saving' && (
+                <span className="flex items-center gap-1 text-xs text-gray-400"><Loader2 className="w-3 h-3 animate-spin" />Sparar...</span>
+              )}
+              {autosaveStatus === 'saved' && (
+                <span className="flex items-center gap-1 text-xs text-green-600"><Cloud className="w-3 h-3" />Sparat</span>
+              )}
+              {autosaveStatus === 'error' && (
+                <span className="flex items-center gap-1 text-xs text-red-500"><CloudOff className="w-3 h-3" />Sparfel</span>
+              )}
             </div>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handlePause}>
               <Pause className="w-4 h-4 mr-2" />Pausa
             </Button>
-            <Button onClick={() => { endedRef.current = true; onEnd(sessionConfig, checkedItems, scopedItems, manualCounts); }} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+            <Button onClick={() => { endedRef.current = true; clearTimeout(autosaveTimerRef.current); onEnd(sessionConfig, checkedItems, scopedItems, manualCounts); }} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
               <Download className="w-4 h-4 mr-2" />Avsluta & spara
             </Button>
           </div>
         </div>
 
         {/* Progress */}
-        {sessionConfig.mode !== 'open' && (
+        {sessionConfig?.mode !== 'open' && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Framsteg</span>
@@ -556,7 +626,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
           </div>
         )}
 
-        {sessionConfig.mode === 'open' && (
+        {sessionConfig?.mode === 'open' && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 shadow-sm flex items-center gap-3">
             <CheckCircle2 className="w-6 h-6 text-[#8B1E1E]" />
             <span className="font-medium text-gray-800 dark:text-gray-200">{checkedCount} föremål kontrollerade</span>
@@ -664,7 +734,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                       </p>
                       {entry.type === 'lokalvards' && (() => {
                         const lager = getArtikelSaldo(entry.id);
-                        const inv = manualCounts[entry.id] ?? (checkedItems.has(entry.id) ? 1 : 0);
+                        const inv = (manualCounts || {})[entry.id] ?? (checkedItems.has(entry.id) ? 1 : 0);
                         const differs = inv !== lager;
                         return (
                           <p className={cn("text-xs mt-0.5 font-medium", differs ? "text-amber-600" : "text-gray-400")}>
@@ -674,7 +744,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                       })()}
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">{entry.timestamp.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{entry.timestamp instanceof Date ? entry.timestamp.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</span>
                 </div>
               ))}
             </div>
@@ -682,7 +752,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         )}
 
         {/* Unchecked list */}
-        {sessionConfig.mode !== 'open' && uncheckedItems.length > 0 && (
+        {sessionConfig?.mode !== 'open' && uncheckedItems.length > 0 && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 dark:text-gray-100">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
