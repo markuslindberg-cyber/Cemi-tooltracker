@@ -534,12 +534,26 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     if (item) {
       setCheckedItems(prev => new Set([...prev, item.id]));
       setLastScanFeedback({ name: item.name || item.benamning, found: true });
+      // For countable items (lokalvård, arbetskläder, material), increment manualCounts on each scan
+      const isCountable = item._type === 'lokalvards' || item._type === 'arbetskläder' || item._type === 'material';
+      if (isCountable) {
+        setManualCounts(prev => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }));
+      }
       setScanLog(prev => {
         const existing = prev.find(e => e.id === item.id);
         if (existing) {
-          return prev.map(e => e.id === item.id ? { ...e, scanCount: (e.scanCount || 1) + 1, timestamp: new Date() } : e);
+          return prev.map(e => e.id === item.id ? {
+            ...e,
+            scanCount: (e.scanCount || 1) + 1,
+            manualCount: isCountable ? (e.manualCount || 0) + 1 : e.manualCount,
+            timestamp: new Date(),
+          } : e);
         }
-        return [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date(), scanCount: 1 }, ...prev];
+        return [{
+          id: item.id, name: item.name || item.benamning, type: item._type,
+          timestamp: new Date(), scanCount: 1,
+          manualCount: isCountable ? 1 : undefined,
+        }, ...prev];
       });
       updateToolMutation.mutate({ id: item.id, data: { last_seen_date: new Date().toISOString() }, type: item._type });
       setTimeout(() => externalScanInputRef.current?.focus(), 50);
