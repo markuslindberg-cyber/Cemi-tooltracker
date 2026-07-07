@@ -467,8 +467,10 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
       list = [...list, ...t];
     }
     if (include('lokalvards')) {
-      // Lokalvård: compare against full stock (no location filter)
-      const t = lokalvardsData.map(l => ({ ...l, _type: 'lokalvards', name: l.benamning }));
+      // Only include active articles (not deleted, not utgående) with stock > 0
+      const t = lokalvardsData
+        .filter(l => !l.is_deleted && !l.utgaende && (artikelSaldoMap.get(l.id) ?? 0) > 0)
+        .map(l => ({ ...l, _type: 'lokalvards', name: l.benamning }));
       list = [...list, ...t];
     }
     if (include('material')) {
@@ -477,7 +479,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
       list = [...list, ...t];
     }
     return list;
-  }, [tools, handTools, arbetskläderData, lokalvardsData, materialData, sessionConfig]);
+  }, [tools, handTools, arbetskläderData, lokalvardsData, materialData, sessionConfig, artikelSaldoMap]);
 
   // Determine if an item uses manual count (lokalvård or arbetskläder with quantity)
   const usesManualCount = (item) => item._type === 'lokalvards' || item._type === 'arbetskläder' || item._type === 'material';
