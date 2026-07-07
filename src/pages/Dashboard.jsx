@@ -70,8 +70,14 @@ export default function Dashboard() {
     if (w?.column) return w.column;
     return SIDEBAR_CAPABLE.includes(id) ? 'sidebar' : 'main';
   };
-  // Ordered widget ids
-  const orderedWidgetIds = widgets.map(w => w.id);
+  // Ordered widget ids — ensure default widgets not in saved config are still included
+  const orderedWidgetIds = (() => {
+    const ids = widgets.map(w => w.id);
+    DEFAULT_WIDGETS.forEach(dw => {
+      if (!ids.includes(dw.id)) ids.push(dw.id);
+    });
+    return ids;
+  })();
 
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['dashboardTools'],
