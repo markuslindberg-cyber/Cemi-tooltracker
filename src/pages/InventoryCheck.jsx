@@ -792,8 +792,10 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
               Ej kontrollerade ({uncheckedItems.length})
             </h2>
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {uncheckedItems.map(item => (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              {uncheckedItems.map(item => {
+                const isUtgaende = item.utgaende === true;
+                return (
+                <div key={item.id} className={cn("flex items-center justify-between p-3 rounded-lg", isUtgaende ? "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800" : "bg-gray-50 dark:bg-gray-800/50")}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center">
                       {item.image_url
@@ -801,7 +803,10 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                         : <Package className="w-5 h-5 text-gray-400" />}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">{item.name || item.benamning}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {item.name || item.benamning}
+                        {isUtgaende && <span className="ml-2 text-xs font-semibold text-amber-600 dark:text-amber-400">Utgående</span>}
+                      </p>
                       {(item.barcode || item.streckkod) && <p className="text-xs text-gray-500 dark:text-gray-400">Streckkod: {item.barcode || item.streckkod}</p>}
                       {item._type === 'lokalvards' && (
                         <p className="text-xs mt-0.5 font-medium text-gray-400">
@@ -815,7 +820,8 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                     {item.location_name && <Badge variant="outline" className="text-xs">{item.location_name}</Badge>}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
