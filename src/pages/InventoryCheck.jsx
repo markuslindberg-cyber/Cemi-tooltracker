@@ -805,7 +805,11 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                     <div>
                       <p className="font-medium text-gray-900 dark:text-gray-100">
                         {item.name || item.benamning}
-                        {isUtgaende && <span className="ml-2 text-xs font-semibold text-amber-600 dark:text-amber-400">Utgående</span>}
+                        {item._type === 'lokalvards' && (
+                          isUtgaende
+                            ? <span className="ml-2 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 rounded">Utgående</span>
+                            : <span className="ml-2 text-xs font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded">Aktiv</span>
+                        )}
                       </p>
                       {(item.barcode || item.streckkod) && <p className="text-xs text-gray-500 dark:text-gray-400">Streckkod: {item.barcode || item.streckkod}</p>}
                       {item._type === 'lokalvards' && (
