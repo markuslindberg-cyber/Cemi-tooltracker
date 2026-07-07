@@ -213,7 +213,9 @@ function ManualCountDialog({ isOpen, onClose, scopedItems, onConfirm, preselecte
   }, [isOpen, preselectedItem]);
 
   const searchItem = (trimmed) => {
-    let item = scopedItems.find(i => (i.barcode || i.streckkod) === trimmed);
+    // For lokalvård items, match only on streckkod (not old_streckkod)
+    const getBarcode = (i) => i._type === 'lokalvards' ? i.streckkod : (i.barcode || i.streckkod);
+    let item = scopedItems.find(i => getBarcode(i) === trimmed);
     if (!item) item = scopedItems.find(i => i.artikelnummer === trimmed);
     if (!item) item = scopedItems.find(i => (i.name || i.benamning || '').toLowerCase().includes(trimmed.toLowerCase()));
     return item || null;
@@ -530,7 +532,9 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
         ...materialData.map(m => ({ ...m, _type: 'material', name: m.benamning, barcode: m.artikelnummer })),
       ];
     }
-    const item = searchList.find(t => (t.barcode || t.streckkod)?.trim() === trimmedBarcode);
+    // For lokalvård items, match only on streckkod (not old_streckkod)
+    const getInventoryBarcode = (t) => t._type === 'lokalvards' ? t.streckkod : (t.barcode || t.streckkod);
+    const item = searchList.find(t => getInventoryBarcode(t)?.trim() === trimmedBarcode);
     if (item) {
       setCheckedItems(prev => new Set([...prev, item.id]));
       setLastScanFeedback({ name: item.name || item.benamning, found: true });
