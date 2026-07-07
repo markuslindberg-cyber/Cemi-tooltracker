@@ -749,7 +749,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 dark:text-gray-100">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
-              Skannade produkter ({scanLog.reduce((sum, e) => sum + (e.scanCount || 1), 0)})
+              Kontrollerade produkter ({scanLog.length})
             </h2>
             <div className="space-y-2 max-h-72 overflow-y-auto">
               {scanLog.map((entry, idx) => (
@@ -759,7 +759,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                     <div>
                       <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                         {entry.name}
-                        {(entry.scanCount || 1) > 1 && <span className="ml-1.5 text-xs font-normal text-blue-600 dark:text-blue-400">×{entry.scanCount}</span>}
+                        {manualCounts[entry.id] > 0 && <span className="ml-1.5 text-xs font-normal text-blue-600 dark:text-blue-400">×{manualCounts[entry.id]}</span>}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : entry.type === 'material' ? 'Material' : 'Maskin'}
