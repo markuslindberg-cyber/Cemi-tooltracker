@@ -101,6 +101,37 @@
         }
       }
     },
+    "corrections": {
+      "type": "array",
+      "description": "Logg \u00f6ver korrigerade artiklar",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "item_name": {
+            "type": "string"
+          },
+          "old_saldo": {
+            "type": "number"
+          },
+          "new_saldo": {
+            "type": "number"
+          },
+          "diff": {
+            "type": "number"
+          },
+          "corrected_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "corrected_by": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "is_deleted": {
       "type": "boolean",
       "default": false,
