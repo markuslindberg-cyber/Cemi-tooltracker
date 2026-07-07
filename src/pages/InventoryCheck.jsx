@@ -532,10 +532,15 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     }
     const item = searchList.find(t => (t.barcode || t.streckkod)?.trim() === trimmedBarcode);
     if (item) {
-      // Always auto-register — no manual dialog on scan
       setCheckedItems(prev => new Set([...prev, item.id]));
       setLastScanFeedback({ name: item.name || item.benamning, found: true });
-      setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date() }, ...prev]);
+      setScanLog(prev => {
+        const existing = prev.find(e => e.id === item.id);
+        if (existing) {
+          return prev.map(e => e.id === item.id ? { ...e, scanCount: (e.scanCount || 1) + 1, timestamp: new Date() } : e);
+        }
+        return [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date(), scanCount: 1 }, ...prev];
+      });
       updateToolMutation.mutate({ id: item.id, data: { last_seen_date: new Date().toISOString() }, type: item._type });
       setTimeout(() => externalScanInputRef.current?.focus(), 50);
     } else {
@@ -550,9 +555,18 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
   };
 
   const handleManualCountConfirm = (item, antal) => {
-    setManualCounts(prev => ({ ...prev, [item.id]: antal }));
+    setManualCounts(prev => {
+      const existing = prev[item.id] || 0;
+      return { ...prev, [item.id]: existing + antal };
+    });
     setCheckedItems(prev => new Set([...prev, item.id]));
-    setScanLog(prev => [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date(), manualCount: antal }, ...prev]);
+    setScanLog(prev => {
+      const existingEntry = prev.find(e => e.id === item.id);
+      if (existingEntry) {
+        return prev.map(e => e.id === item.id ? { ...e, manualCount: (e.manualCount || 0) + antal, scanCount: (e.scanCount || 1) + 1, timestamp: new Date() } : e);
+      }
+      return [{ id: item.id, name: item.name || item.benamning, type: item._type, timestamp: new Date(), manualCount: antal, scanCount: 1 }, ...prev];
+    });
   };
 
 
@@ -721,7 +735,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 dark:text-gray-100">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
-              Skannade produkter ({scanLog.length})
+              Skannade produkter ({scanLog.reduce((sum, e) => sum + (e.scanCount || 1), 0)})
             </h2>
             <div className="space-y-2 max-h-72 overflow-y-auto">
               {scanLog.map((entry, idx) => (
@@ -729,7 +743,10 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{entry.name}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                        {entry.name}
+                        {(entry.scanCount || 1) > 1 && <span className="ml-1.5 text-xs font-normal text-blue-600 dark:text-blue-400">×{entry.scanCount}</span>}
+                      </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {entry.type === 'handtool' ? 'Handredskap' : entry.type === 'arbetskläder' ? 'Arbetskläder' : entry.type === 'lokalvards' ? 'Lokalvård' : entry.type === 'material' ? 'Material' : 'Maskin'}
                         {entry.manualCount !== undefined && ` · Antal: ${entry.manualCount}`}
