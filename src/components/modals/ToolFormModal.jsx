@@ -981,11 +981,12 @@ export default function ToolFormModal({
 
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <div className="space-y-2">
-                       <Label>Streckkod / Tag-ID</Label>
+                       <Label className={!formData.barcode ? 'text-red-500' : ''}>Streckkod / Tag-ID *</Label>
                        <Input
                          value={formData.barcode}
                          onChange={(e) => handleChange('barcode', e.target.value)}
                          placeholder="Skanna eller ange streckkod"
+                         className={!formData.barcode ? 'border-red-400 focus-visible:ring-red-400' : ''}
                        />
                      </div>
                    </div>
@@ -1103,7 +1104,7 @@ export default function ToolFormModal({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={!formData.name || !formData.category || !formData.unit_id || isLoading}
+                disabled={!formData.name || !formData.category || !formData.unit_id || !formData.barcode || isLoading}
                 className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 {isLoading ? (
