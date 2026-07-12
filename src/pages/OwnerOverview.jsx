@@ -117,17 +117,28 @@ export default function OwnerOverview() {
         <OwnerTotalSummary unitFilter={activeTab === 'all' ? null : activeTab} />
 
         {/* Sections */}
-        <div className="space-y-10">
-          <MaskinerSection unitFilter={activeTab === 'all' ? null : activeTab} />
-          <hr className="border-gray-200 dark:border-gray-800" />
-          <HandredskapSection unitFilter={activeTab === 'all' ? null : activeTab} />
-          <hr className="border-gray-200 dark:border-gray-800" />
-          <ArbetskladerSection unitFilter={activeTab === 'all' ? null : activeTab} />
-          <hr className="border-gray-200 dark:border-gray-800" />
-          <LokalvardSection unitFilter={activeTab === 'all' ? null : activeTab} />
-          <hr className="border-gray-200 dark:border-gray-800" />
-          <MaterialSection unitFilter={activeTab === 'all' ? null : activeTab} />
-        </div>
+        {(() => {
+          const unitFilter = activeTab === 'all' ? null : activeTab;
+          const activeUnit = units.find(u => u.id === activeTab);
+          const isFoervaltning = activeUnit?.name?.toLowerCase() === 'förvaltning';
+          return (
+            <div className="space-y-10">
+              <MaskinerSection unitFilter={unitFilter} />
+              <hr className="border-gray-200 dark:border-gray-800" />
+              <HandredskapSection unitFilter={unitFilter} />
+              <hr className="border-gray-200 dark:border-gray-800" />
+              <ArbetskladerSection unitFilter={unitFilter} />
+              {!isFoervaltning && (
+                <>
+                  <hr className="border-gray-200 dark:border-gray-800" />
+                  <LokalvardSection unitFilter={unitFilter} />
+                </>
+              )}
+              <hr className="border-gray-200 dark:border-gray-800" />
+              <MaterialSection unitFilter={unitFilter} />
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
