@@ -232,7 +232,7 @@ export default function LocationFormModal({
                       />
                       Ingen huvudplats
                     </CommandItem>
-                    {allLocations.filter(l => l.id !== location?.id && !l.parent_location_id).map((loc) => (
+                    {allLocations.filter(l => l.id !== location?.id && !l.parent_location_id && (!activeUnitId || l.unit_id === activeUnitId)).map((loc) => (
                       <CommandItem
                         key={loc.id}
                         value={loc.name}
@@ -283,7 +283,7 @@ export default function LocationFormModal({
                       <Check className={cn("mr-2 h-4 w-4", !formData.team_member_ids[0] ? "opacity-100" : "opacity-0")} />
                       Ingen ansvarig
                     </CommandItem>
-                    {teamMembers.filter(m => m.is_active !== false).map((member) => (
+                    {teamMembers.filter(m => m.is_active !== false && (!activeUnitId || m.unit_id === activeUnitId)).map((member) => (
                       <CommandItem
                         key={member.id}
                         value={member.name}
@@ -344,7 +344,7 @@ export default function LocationFormModal({
                   <CommandInput placeholder="Sök personlig..." />
                   <CommandEmpty>Ingen personlig hittades.</CommandEmpty>
                   <CommandGroup className="max-h-64 overflow-auto">
-                    {teamMembers.filter(m => m.is_active !== false).map((member) => (
+                    {teamMembers.filter(m => m.is_active !== false && (!activeUnitId || m.unit_id === activeUnitId)).map((member) => (
                       <CommandItem
                         key={member.id}
                         value={member.name}
