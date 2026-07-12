@@ -1,7 +1,5 @@
 // Knowledge graph data – all nodes and edges for the ToolTrack system
-// Senast uppdaterad: 2026-06-11
-
-export const LAST_UPDATED = '2026-06-11';
+// Arkitekturdata är statisk; live-räknare hämtas via useKnowledgeGraphStats
 
 export const CATEGORIES = {
   workflow: { label: 'Arbetsflöde', color: '#8B1E1E', bg: '#8B1E1E15' },
@@ -46,6 +44,8 @@ export const NODES = [
   { id: 'e_globalconfig', label: 'GlobalAppConfig', cat: 'entity', desc: 'Globala konfigurationer som navigationsordning och dashboard-layout.' },
   { id: 'e_depreciation', label: 'DepreciationSetting', cat: 'entity', desc: 'Avskrivningsinställningar per nivå (Låg/Medel/Hög).' },
   { id: 'e_rolepermission', label: 'RolePermission', cat: 'entity', desc: 'Roll-behörighetsmappning per entitet (CRUD).' },
+  { id: 'e_materiallager', label: 'MaterialLager', cat: 'entity', desc: 'Material i materialbanken med kategori, antal, pris och försäljningsstatus.' },
+  { id: 'e_materialuttag', label: 'MaterialUttag', cat: 'entity', desc: 'Uttag av material från materialbanken med kund och ordernummer.' },
 
   // === FUNCTIONS ===
   { id: 'fn_createLoan', label: 'createLoanRequest', cat: 'function', desc: 'Skapar låneförfrågan → skickar email till godkännare + destinationschef + bekräftelse till beställare.' },
@@ -75,12 +75,15 @@ export const NODES = [
   { id: 'fn_createTeamOnUser', label: 'createTeamMemberOnUserCreate', cat: 'function', desc: 'Skapar automatiskt TeamMember när ny användare registreras.' },
   { id: 'fn_setUserRole', label: 'setUserRole', cat: 'function', desc: 'Sätter roll på en användare.' },
   { id: 'fn_deactivateUser', label: 'deactivateUserAndTransferData', cat: 'function', desc: 'Inaktiverar användare och överför data till annan person.' },
+  { id: 'fn_createMaterialUttag', label: 'createMaterialUttag', cat: 'function', desc: 'Skapar uttag från materialbanken, minskar lagersaldo.' },
+  { id: 'fn_inviteUser', label: 'inviteUserAsService', cat: 'function', desc: 'Bjuder in ny användare via service-roll med email-fallback.' },
 
   // === ROLES ===
   { id: 'r_lokalvardare', label: 'Lokalvårdare', cat: 'role', desc: 'Kan skapa begäranden för arbetskläder och lokalvårdsartiklar. Kan INTE godkänna.' },
   { id: 'r_admin_lok', label: 'Admin Lokalvård', cat: 'role', desc: 'Kan godkänna begäranden, hantera uttag, streckkoder, lager. Hanterar kunder.' },
   { id: 'r_verktygsfv', label: 'Verktygsförvaltare', cat: 'role', desc: 'Hanterar inventering av maskiner och handredskap. Kan registrera lånförfrågor.' },
   { id: 'r_admin', label: 'Admin', cat: 'role', desc: 'Full systemåtkomst. Hanterar personal, platser och kategorier.' },
+  { id: 'r_mekaniker', label: 'Mekaniker', cat: 'role', desc: 'Bred åtkomst till maskiner, handredskap, platser, personal och lån. Kan bjuda in användare.' },
   { id: 'r_agare', label: 'Ägare', cat: 'role', desc: 'Tillgång till ALLT: ägaröversikt, rollhantering, avskrivningar, layout-editor, dataexport.' },
 
   // === EMAILS ===
@@ -265,4 +268,19 @@ export const EDGES = [
   { from: 'p_categories', to: 'e_category', label: 'hanterar' },
   { from: 'p_avskrivningar', to: 'e_depreciation', label: 'hanterar' },
   { from: 'p_roller', to: 'e_rolepermission', label: 'hanterar' },
+
+  // === MATERIALBANKEN ===
+  { from: 'e_materialuttag', to: 'e_materiallager', label: 'refererar till' },
+  { from: 'fn_createMaterialUttag', to: 'e_materialuttag', label: 'skapar' },
+  { from: 'fn_createMaterialUttag', to: 'e_materiallager', label: 'minskar saldo' },
+
+  // === MEKANIKER ROLE ===
+  { from: 'r_mekaniker', to: 'p_inventory', label: 'kan använda' },
+  { from: 'r_mekaniker', to: 'p_handtools', label: 'kan använda' },
+  { from: 'r_mekaniker', to: 'p_transfers', label: 'kan använda' },
+  { from: 'r_mekaniker', to: 'p_locations', label: 'kan använda' },
+  { from: 'r_mekaniker', to: 'p_team', label: 'kan använda' },
+
+  // === INVITE ===
+  { from: 'fn_inviteUser', to: 'e_teammember', label: 'bjuder in' },
 ];

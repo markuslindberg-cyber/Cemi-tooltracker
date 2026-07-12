@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CATEGORIES, NODES, EDGES, LAST_UPDATED } from '@/components/knowledge-graph/graphData';
+import { CATEGORIES, NODES, EDGES } from '@/components/knowledge-graph/graphData';
 import GraphNode from '@/components/knowledge-graph/GraphNode';
 import GraphDetailPanel from '@/components/knowledge-graph/GraphDetailPanel';
 import GraphLegend from '@/components/knowledge-graph/GraphLegend';
@@ -7,15 +7,19 @@ import WorkflowDiagram from '@/components/knowledge-graph/WorkflowDiagram';
 import ApprovalsTab from '@/components/knowledge-graph/ApprovalsTab';
 import RolesTab from '@/components/knowledge-graph/RolesTab';
 import BackendFunctionsTab from '@/components/knowledge-graph/BackendFunctionsTab';
+import { useKnowledgeGraphStats } from '@/hooks/useKnowledgeGraphStats';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Search, GitBranch, Network, CheckCircle, Shield, Zap, Download } from 'lucide-react';
+import { Search, GitBranch, Network, CheckCircle, Shield, Zap, Download, RefreshCw } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { sv } from 'date-fns/locale';
 
 export default function KnowledgeGraph() {
   const [selectedId, setSelectedId] = useState(null);
   const [filterCat, setFilterCat] = useState(null);
   const [search, setSearch] = useState('');
+  const { data: stats, isLoading: statsLoading, dataUpdatedAt, refetch } = useKnowledgeGraphStats();
 
   // Nodes connected to selected node
   const connectedIds = useMemo(() => {
@@ -66,26 +70,42 @@ export default function KnowledgeGraph() {
             </div>
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Knowledge Graph</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Systemarkitektur – alla flöden, funktioner och kopplingar · Uppdaterad {LAST_UPDATED}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Systemarkitektur – alla flöden, funktioner och kopplingar
+                {dataUpdatedAt ? ` · Live-data uppdaterad ${formatDistanceToNow(new Date(dataUpdatedAt), { addSuffix: true, locale: sv })}` : ''}
+              </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => {
-              const data = { nodes: NODES, edges: EDGES, categories: CATEGORIES };
-              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `knowledge-graph-${new Date().toISOString().split('T')[0]}.json`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            <Download className="w-4 h-4" />
-            Ladda ned JSON
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => refetch()}
+              disabled={statsLoading}
+            >
+              <RefreshCw className={`w-4 h-4 ${statsLoading ? 'animate-spin' : ''}`} />
+              Uppdatera
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                const data = { nodes: NODES, edges: EDGES, categories: CATEGORIES, liveStats: stats };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `knowledge-graph-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              <Download className="w-4 h-4" />
+              Ladda ned
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="graph" className="w-full">
@@ -141,6 +161,7 @@ export default function KnowledgeGraph() {
                             isSelected={selectedId === node.id}
                             isHighlighted={connectedIds ? connectedIds.has(node.id) : null}
                             onSelect={handleSelect}
+                            liveCount={stats?.counts?.[node.id]}
                           />
                         ))}
                       </div>
@@ -167,24 +188,99 @@ export default function KnowledgeGraph() {
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
-              <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{NODES.length}</p>
-                <p className="text-xs text-gray-500">Totala noder</p>
+            {/* Live Stats */}
+            <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Arkitektur</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{NODES.length}</p>
+                  <p className="text-xs text-gray-500">Totala noder</p>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{EDGES.length}</p>
+                  <p className="text-xs text-gray-500">Kopplingar</p>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{NODES.filter(n => n.cat === 'function').length}</p>
+                  <p className="text-xs text-gray-500">Backend-funktioner</p>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{NODES.filter(n => n.cat === 'entity').length}</p>
+                  <p className="text-xs text-gray-500">Entiteter</p>
+                </div>
               </div>
-              <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{EDGES.length}</p>
-                <p className="text-xs text-gray-500">Kopplingar</p>
-              </div>
-              <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{NODES.filter(n => n.cat === 'function').length}</p>
-                <p className="text-xs text-gray-500">Backend-funktioner</p>
-              </div>
-              <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{NODES.filter(n => n.cat === 'entity').length}</p>
-                <p className="text-xs text-gray-500">Entiteter</p>
-              </div>
+
+              {stats && (
+                <>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 pt-2">Live-data (realtid)</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="text-2xl font-bold text-blue-600">{stats.counts.e_tool}</p>
+                      <p className="text-xs text-gray-500">Maskiner</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="text-2xl font-bold text-blue-600">{stats.counts.e_handtool}</p>
+                      <p className="text-xs text-gray-500">Handredskap</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="text-2xl font-bold text-blue-600">{stats.counts.e_arbetsklader}</p>
+                      <p className="text-xs text-gray-500">Arbetskläder</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="text-2xl font-bold text-blue-600">{stats.counts.e_lokalvardsartikel}</p>
+                      <p className="text-xs text-gray-500">Lokalv.artiklar</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="text-2xl font-bold text-blue-600">{stats.counts.e_materiallager}</p>
+                      <p className="text-xs text-gray-500">Material</p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="text-2xl font-bold text-blue-600">{stats.counts.e_location}</p>
+                      <p className="text-xs text-gray-500">Platser</p>
+                    </div>
+                  </div>
+
+                  {/* Role distribution */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Personal per roll ({stats.totalActiveTeam} aktiva)</h4>
+                      <div className="space-y-2">
+                        {Object.entries(stats.roleDistribution).sort((a, b) => b[1] - a[1]).map(([role, count]) => (
+                          <div key={role} className="flex items-center justify-between">
+                            <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">{role}</span>
+                            <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Aktiva flöden</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Lånförfrågningar</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{stats.counts.e_loanrequest}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Arbetskl. begäranden</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{stats.counts.e_workwearrequest}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Lokalv. begäranden</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{stats.counts.e_lokalvardrequest}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Uttag</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{stats.counts.e_uttag}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-700 dark:text-gray-300">Serviceregistreringar</span>
+                          <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{stats.counts.e_servicerecord}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </TabsContent>
 

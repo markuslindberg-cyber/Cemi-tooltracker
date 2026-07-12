@@ -1,7 +1,7 @@
 import React from 'react';
 import { CATEGORIES } from './graphData';
 
-export default function GraphNode({ node, isSelected, isHighlighted, onSelect }) {
+export default function GraphNode({ node, isSelected, isHighlighted, onSelect, liveCount }) {
   const cat = CATEGORIES[node.cat];
   const dimmed = isHighlighted === false;
 
@@ -20,9 +20,17 @@ export default function GraphNode({ node, isSelected, isHighlighted, onSelect })
         className="w-2.5 h-2.5 rounded-full shrink-0"
         style={{ backgroundColor: cat.color }}
       />
-      <span className="truncate" style={{ color: dimmed ? '#9ca3af' : '#1f2937' }}>
+      <span className="truncate flex-1" style={{ color: dimmed ? '#9ca3af' : '#1f2937' }}>
         {node.label}
       </span>
+      {liveCount != null && (
+        <span
+          className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
+          style={{ backgroundColor: `${cat.color}18`, color: cat.color }}
+        >
+          {liveCount}
+        </span>
+      )}
     </button>
   );
 }
