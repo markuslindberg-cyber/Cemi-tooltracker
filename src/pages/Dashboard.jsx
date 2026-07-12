@@ -415,7 +415,7 @@ export default function Dashboard() {
             pending_chart: isVisible('pending_chart') && !LOKALVARD_ONLY_ROLES.includes(user?.role) && (
               <PendingRequestsChart key="pending_chart"
                 loanCount={pendingLoanCount}
-                workwearCount={pendingWorkwearCount}
+                workwearCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? pendingWorkwearCount : 0}
                 lokalvardCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? pendingLokalvardCount : 0}
                 lokalvardApprovedCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? approvedNotCheckedOutLokalvardCount : 0}
               />
@@ -510,6 +510,8 @@ export default function Dashboard() {
                 lokalvardApprovedCount={approvedNotCheckedOutLokalvardCount}
               />
             ),
+            // Arbetskläder-specific shortcut for lokalvårdare (also Förvaltning-only)
+
             material_summary: isVisible('material_summary') && !LOKALVARD_ONLY_ROLES.includes(user?.role) && (
               <MaterialWidget key="material_summary" />
             ),
