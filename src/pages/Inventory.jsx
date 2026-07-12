@@ -215,9 +215,9 @@ export default function Inventory() {
 
   const allItems = useMemo(() => {
     let items = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
-    // Filter by active unit via location
+    // Filter by active unit via location — exclude tools without a location
     if (unitLocationIds) {
-      items = items.filter(t => !t.location_id || unitLocationIds.has(t.location_id));
+      items = items.filter(t => t.location_id && unitLocationIds.has(t.location_id));
     }
     return items.map(t => ({ ...t, type: 'tool' }));
   }, [tools, unitLocationIds]);

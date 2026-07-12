@@ -85,7 +85,7 @@ export default function HandTools() {
 
   const unitFilteredTools = React.useMemo(() => {
     if (!unitLocationIds) return handTools;
-    return handTools.filter(t => !t.location_id || unitLocationIds.has(t.location_id));
+    return handTools.filter(t => t.location_id && unitLocationIds.has(t.location_id));
   }, [handTools, unitLocationIds]);
 
   const AVSPARRNING_CATEGORY = 'Avspärrningsmaterial';

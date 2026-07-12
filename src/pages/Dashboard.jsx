@@ -36,6 +36,7 @@ import { Badge as UnitBadge } from '@/components/ui/badge';
 
 const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers', 'material_summary'];
 const LOKALVARD_ONLY_ROLES = ['lokalvårdare', 'admin_lokalvård'];
+const FORVALTNING_UNIT_NAME = 'Förvaltning';
 
 const DEFAULT_WIDGETS = [
   { id: 'stats', visible: true, column: 'main' },
@@ -150,7 +151,7 @@ export default function Dashboard() {
 
   const unitTools = React.useMemo(() => {
     if (!unitLocationIds) return tools;
-    return tools.filter(t => !t.location_id || unitLocationIds.has(t.location_id));
+    return tools.filter(t => t.location_id && unitLocationIds.has(t.location_id));
   }, [tools, unitLocationIds]);
 
   const activeTools = unitTools.filter(t => !HIDDEN_STATUSES.includes(t.status));
@@ -334,7 +335,7 @@ export default function Dashboard() {
         )}
 
         {/* Lokalvård shortcut for lokalvårdare */}
-        {user?.role === 'lokalvårdare' && (
+        {user?.role === 'lokalvårdare' && activeUnit?.name === FORVALTNING_UNIT_NAME && (
           <Link to="/LokalvardRequestArtikel">
             <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-2xl p-4 text-white shadow-lg shadow-emerald-600/25 hover:from-emerald-700 hover:to-emerald-800 transition-all">
               <div className="flex items-center justify-between gap-3">
@@ -415,8 +416,8 @@ export default function Dashboard() {
               <PendingRequestsChart key="pending_chart"
                 loanCount={pendingLoanCount}
                 workwearCount={pendingWorkwearCount}
-                lokalvardCount={pendingLokalvardCount}
-                lokalvardApprovedCount={approvedNotCheckedOutLokalvardCount}
+                lokalvardCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? pendingLokalvardCount : 0}
+                lokalvardApprovedCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? approvedNotCheckedOutLokalvardCount : 0}
               />
             ),
             inventory_value: isVisible('inventory_value') && (
@@ -501,7 +502,7 @@ export default function Dashboard() {
                 )}
               </div>
             ),
-            lokalvard_pending_chart: isVisible('lokalvard_pending_chart') && LOKALVARD_ONLY_ROLES.includes(user?.role) && (
+            lokalvard_pending_chart: isVisible('lokalvard_pending_chart') && LOKALVARD_ONLY_ROLES.includes(user?.role) && activeUnit?.name === FORVALTNING_UNIT_NAME && (
               <PendingRequestsChart key="lokalvard_pending_chart"
                 loanCount={pendingLoanCount}
                 workwearCount={pendingWorkwearCount}
