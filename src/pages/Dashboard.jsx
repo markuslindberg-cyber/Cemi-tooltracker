@@ -144,10 +144,15 @@ export default function Dashboard() {
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
 
   // Build unit location set for filtering
+  const unitLocations = React.useMemo(() => {
+    if (!activeUnitId) return locations;
+    return locations.filter(l => l.unit_id === activeUnitId);
+  }, [locations, activeUnitId]);
+
   const unitLocationIds = React.useMemo(() => {
     if (!activeUnitId) return null;
-    return new Set(locations.filter(l => l.unit_id === activeUnitId).map(l => l.id));
-  }, [locations, activeUnitId]);
+    return new Set(unitLocations.map(l => l.id));
+  }, [unitLocations, activeUnitId]);
 
   const unitTools = React.useMemo(() => {
     if (!unitLocationIds) return tools;
@@ -311,7 +316,7 @@ export default function Dashboard() {
                 <StatsCard title="Saknas" value={missingTools} icon={AlertTriangle} iconClassName="bg-[#8B1E1E]/10" className="border-[#8B1E1E]/20 bg-[#8B1E1E]/5 cursor-pointer hover:shadow-md transition-shadow" />
               </Link>
             ) : (
-              <StatsCard title="Platser" value={locations.length} icon={MapPin} iconClassName="bg-purple-50" />
+              <StatsCard title="Platser" value={unitLocations.length} icon={MapPin} iconClassName="bg-purple-50" />
             )}
           </div>
         )}
