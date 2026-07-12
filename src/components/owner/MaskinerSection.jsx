@@ -6,10 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Package, ArrowRight, TrendingUp, Users, AlertTriangle, Wrench } from 'lucide-react';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 
-export default function MaskinerSection() {
+export default function MaskinerSection({ unitFilter }) {
   const { data: tools = [] } = useQuery({
     queryKey: ['ownerTools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
+  });
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
   });
 
   const { data: serviceRecords = [] } = useQuery({
@@ -22,8 +27,16 @@ export default function MaskinerSection() {
     queryFn: () => base44.entities.DepreciationSetting.list(),
   });
 
+  const unitLocationIds = React.useMemo(() => {
+    if (!unitFilter) return null;
+    return new Set(locations.filter(l => l.unit_id === unitFilter).map(l => l.id));
+  }, [locations, unitFilter]);
+
   const HIDDEN = ['såld', 'sålda', 'retired'];
-  const active = tools.filter(t => !HIDDEN.includes(t.status));
+  const allActive = tools.filter(t => !HIDDEN.includes(t.status));
+  const active = unitLocationIds
+    ? allActive.filter(t => t.location_id && unitLocationIds.has(t.location_id))
+    : allActive;
   const available = active.filter(t => t.status === 'available' || t.status === 'Tillgänglig').length;
   const inUse = active.filter(t => t.status === 'in_use').length;
   const iLager = active.filter(t => t.status === 'i_lager').length;

@@ -3,11 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Boxes } from 'lucide-react';
 
-export default function MaterialSection() {
-  const { data: materials = [], isLoading } = useQuery({
+export default function MaterialSection({ unitFilter }) {
+  const { data: allMaterials = [], isLoading } = useQuery({
     queryKey: ['materialLagerOwner'],
     queryFn: () => base44.entities.MaterialLager.filter({ is_deleted: false }),
   });
+
+  const materials = unitFilter
+    ? allMaterials.filter(m => m.unit_id === unitFilter)
+    : allMaterials;
 
   const iLager = materials.filter(m => m.status === 'i_lager');
   const tillForsaljning = materials.filter(m => m.syfte === 'till_forsaljning' && m.status !== 'såld');

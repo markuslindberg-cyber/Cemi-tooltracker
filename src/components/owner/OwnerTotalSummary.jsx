@@ -5,18 +5,18 @@ import { TrendingUp, Package, Shovel, Shirt, SprayCan } from 'lucide-react';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
 
-export default function OwnerTotalSummary() {
-  const { data: tools = [] } = useQuery({
+export default function OwnerTotalSummary({ unitFilter }) {
+  const { data: allTools = [] } = useQuery({
     queryKey: ['ownerTools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
   });
 
-  const { data: handTools = [] } = useQuery({
+  const { data: allHandTools = [] } = useQuery({
     queryKey: ['ownerHandTools'],
     queryFn: () => base44.entities.HandTool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
   });
 
-  const { data: workwear = [] } = useQuery({
+  const { data: allWorkwear = [] } = useQuery({
     queryKey: ['ownerWorkwear'],
     queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
   });
@@ -41,6 +41,26 @@ export default function OwnerTotalSummary() {
     queryFn: () => base44.entities.LokalvardInköp?.list ? base44.entities.LokalvardInköp.list() : Promise.resolve([]),
   });
 
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
+  });
+
+  const unitLocationIds = React.useMemo(() => {
+    if (!unitFilter) return null;
+    return new Set(locations.filter(l => l.unit_id === unitFilter).map(l => l.id));
+  }, [locations, unitFilter]);
+
+  const tools = unitLocationIds
+    ? allTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
+    : allTools;
+  const handTools = unitLocationIds
+    ? allHandTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
+    : allHandTools;
+  const workwear = unitLocationIds
+    ? allWorkwear.filter(t => t.location_id && unitLocationIds.has(t.location_id))
+    : allWorkwear;
+
   const HIDDEN = ['såld', 'sålda', 'retired'];
   const activeTools = tools.filter(t => !HIDDEN.includes(t.status));
 
@@ -51,7 +71,7 @@ export default function OwnerTotalSummary() {
   }, 0);
   const handredskapValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
   const workwearValue = workwear.reduce((sum, t) => sum + (t.purchase_price || 0) * (t.quantity || 1), 0);
-  const lokalvardValue = calculateLokalvardLagerValue(articles, uttag, inkop);
+  const lokalvardValue = unitFilter ? 0 : calculateLokalvardLagerValue(articles, uttag, inkop);
   const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue;
 
   const sections = [

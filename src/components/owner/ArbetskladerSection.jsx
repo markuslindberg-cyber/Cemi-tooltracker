@@ -5,11 +5,25 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Shirt, ArrowRight, Clock } from 'lucide-react';
 
-export default function ArbetskladerSection() {
-  const { data: items = [] } = useQuery({
+export default function ArbetskladerSection({ unitFilter }) {
+  const { data: allItems = [] } = useQuery({
     queryKey: ['ownerArbetsklader'],
     queryFn: () => base44.entities.ArbetskläderUtrustning.list('-updated_date', 10000).then(r => r.filter(i => !i.is_deleted)),
   });
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
+  });
+
+  const unitLocationIds = React.useMemo(() => {
+    if (!unitFilter) return null;
+    return new Set(locations.filter(l => l.unit_id === unitFilter).map(l => l.id));
+  }, [locations, unitFilter]);
+
+  const items = unitLocationIds
+    ? allItems.filter(i => i.location_id && unitLocationIds.has(i.location_id))
+    : allItems;
 
   const { data: requests = [] } = useQuery({
     queryKey: ['ownerWorkwearRequests'],

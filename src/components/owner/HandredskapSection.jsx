@@ -5,11 +5,25 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Shovel, ArrowRight } from 'lucide-react';
 
-export default function HandredskapSection() {
-  const { data: tools = [] } = useQuery({
+export default function HandredskapSection({ unitFilter }) {
+  const { data: allTools = [] } = useQuery({
     queryKey: ['ownerHandTools'],
     queryFn: () => base44.entities.HandTool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
   });
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
+  });
+
+  const unitLocationIds = React.useMemo(() => {
+    if (!unitFilter) return null;
+    return new Set(locations.filter(l => l.unit_id === unitFilter).map(l => l.id));
+  }, [locations, unitFilter]);
+
+  const tools = unitLocationIds
+    ? allTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
+    : allTools;
 
   const statusMap = {
     i_lager: { label: 'I lager', color: 'bg-emerald-500' },
