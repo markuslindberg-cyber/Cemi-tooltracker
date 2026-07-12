@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
+import { useUnit } from '@/hooks/useUnitContext';
+import { Badge as UnitBadge } from '@/components/ui/badge';
 
 const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers', 'material_summary'];
 const LOKALVARD_ONLY_ROLES = ['lokalvårdare', 'admin_lokalvård'];
@@ -55,6 +57,7 @@ export default function Dashboard() {
   const [showAddTool, setShowAddTool] = useState(false);
   const [showLoanRequest, setShowLoanRequest] = useState(false);
   const queryClient = useQueryClient();
+  const { activeUnitId, activeUnit } = useUnit();
 
   const { data: dashboardConfig } = useGlobalConfig('dashboard_layout');
   const widgets = dashboardConfig?.config_value?.widgets?.length
@@ -138,11 +141,23 @@ export default function Dashboard() {
   });
 
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
-  const activeTools = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
+
+  // Build unit location set for filtering
+  const unitLocationIds = React.useMemo(() => {
+    if (!activeUnitId) return null;
+    return new Set(locations.filter(l => l.unit_id === activeUnitId).map(l => l.id));
+  }, [locations, activeUnitId]);
+
+  const unitTools = React.useMemo(() => {
+    if (!unitLocationIds) return tools;
+    return tools.filter(t => !t.location_id || unitLocationIds.has(t.location_id));
+  }, [tools, unitLocationIds]);
+
+  const activeTools = unitTools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
   const availableTools = activeTools.filter(t => t.status === 'available' || t.status === 'Tillgänglig').length;
   const inUseTools = activeTools.filter(t => t.status === 'in_use').length;
-  const missingTools = tools.filter(t => t.status === 'missing').length;
+  const missingTools = unitTools.filter(t => t.status === 'missing').length;
   const maintenanceTools = activeTools.filter(t => t.status === 'maintenance').length;
   const iLagerTools = activeTools.filter(t => t.status === 'i_lager').length;
   const purchaseValue = activeTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
@@ -249,7 +264,14 @@ export default function Dashboard() {
         {/* Header */}
          <div className="flex items-center justify-between gap-3">
            <div className="min-w-0">
-             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+             <div className="flex items-center gap-2">
+               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+               {activeUnit && (
+                 <UnitBadge className={`border-0 text-xs ${activeUnit.name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                   {activeUnit.name}
+                 </UnitBadge>
+               )}
+             </div>
              <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
            </div>
            <div className="flex gap-2 shrink-0">

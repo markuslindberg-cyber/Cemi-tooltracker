@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import LagerkorrigeringSection from '@/components/inventory/LagerkorrigeringSection';
+import { useUnit } from '@/hooks/useUnitContext';
 
 // ─── CSV export ─────────────────────────────────────────────────────────────────
 function exportToCSV(sessionConfig, checkedItems, allItems, manualCounts) {
@@ -65,6 +66,7 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
   const [mode, setMode] = useState('');
   const [locationId, setLocationId] = useState('');
   const [selectedTypes, setSelectedTypes] = useState(['all']);
+  const { activeUnitId, activeUnit } = useUnit();
 
   const toggleType = (value) => {
     if (value === 'all') { setSelectedTypes(['all']); return; }
@@ -100,7 +102,14 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-950 p-6 lg:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Inventeringskontroll</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Inventeringskontroll</h1>
+            {activeUnit && (
+              <Badge className={`border-0 text-xs ${activeUnit.name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                {activeUnit.name}
+              </Badge>
+            )}
+          </div>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Välj hur du vill genomföra inventeringen</p>
         </div>
 
@@ -157,7 +166,7 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
                 <Select value={locationId} onValueChange={setLocationId}>
                   <SelectTrigger><SelectValue placeholder="Välj en plats" /></SelectTrigger>
                   <SelectContent>
-                    {locations.filter(l => l.is_active !== false && !l.parent_location_id).map(loc => (
+                    {locations.filter(l => l.is_active !== false && !l.parent_location_id && (!activeUnitId || l.unit_id === activeUnitId)).map(loc => (
                       <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
                     ))}
                   </SelectContent>

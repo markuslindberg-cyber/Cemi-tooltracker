@@ -57,6 +57,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { format } from 'date-fns';
+import { useUnit } from '@/hooks/useUnitContext';
+import { Badge as UnitBadge } from '@/components/ui/badge';
 
 const statusConfig = {
   available: { label: "Tillgänglig", color: "bg-emerald-100 text-emerald-700" },
@@ -82,6 +84,7 @@ const categoryLabels = {
 
 export default function Inventory() {
    const queryClient = useQueryClient();
+   const { activeUnitId, activeUnit } = useUnit();
    
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
@@ -203,7 +206,21 @@ export default function Inventory() {
 
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
-  const allItems = useMemo(() => tools.filter(t => !HIDDEN_STATUSES.includes(t.status)).map(t => ({ ...t, type: 'tool' })), [tools]);
+
+  // Build a set of location IDs belonging to active unit for fast filtering
+  const unitLocationIds = useMemo(() => {
+    if (!activeUnitId) return null;
+    return new Set(locations.filter(l => l.unit_id === activeUnitId).map(l => l.id));
+  }, [locations, activeUnitId]);
+
+  const allItems = useMemo(() => {
+    let items = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
+    // Filter by active unit via location
+    if (unitLocationIds) {
+      items = items.filter(t => !t.location_id || unitLocationIds.has(t.location_id));
+    }
+    return items.map(t => ({ ...t, type: 'tool' }));
+  }, [tools, unitLocationIds]);
 
   const { data: locations = [] } = useQuery({
     queryKey: ['locations'],
@@ -653,7 +670,14 @@ export default function Inventory() {
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Maskiner</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Maskiner</h1>
+              {activeUnit && (
+                <UnitBadge className={`border-0 text-xs ${activeUnit.name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  {activeUnit.name}
+                </UnitBadge>
+              )}
+            </div>
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
               {filteredTools.length} verktyg
               {(statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || conditionFilter.length > 0 || locationFilter.length > 0 || searchQuery) && ' matchar filter'}

@@ -17,6 +17,8 @@ import HandToolEditModal from '@/components/modals/HandToolEditModal';
 import HandToolGroupEditModal from '@/components/modals/HandToolGroupEditModal';
 import HandToolCard from '@/components/ui/HandToolCard';
 import SearchFilterBar from '@/components/ui/SearchFilterBar';
+import { useUnit } from '@/hooks/useUnitContext';
+import { Badge as UnitBadge } from '@/components/ui/badge';
 
 const statusConfig = {
   i_lager:  { label: 'I lager',  className: 'bg-green-100 text-green-800' },
@@ -28,6 +30,7 @@ const statusConfig = {
 
 export default function HandTools() {
    const queryClient = useQueryClient();
+   const { activeUnitId, activeUnit } = useUnit();
    const [search, setSearch] = useState('');
    
    const { data: handTools = [], isLoading } = useQuery({
@@ -74,6 +77,17 @@ export default function HandTools() {
     queryFn: () => base44.entities.Location.list('name'),
   });
 
+  // Build a set of location IDs belonging to active unit for filtering
+  const unitLocationIds = React.useMemo(() => {
+    if (!activeUnitId) return null;
+    return new Set(locations.filter(l => l.unit_id === activeUnitId).map(l => l.id));
+  }, [locations, activeUnitId]);
+
+  const unitFilteredTools = React.useMemo(() => {
+    if (!unitLocationIds) return handTools;
+    return handTools.filter(t => !t.location_id || unitLocationIds.has(t.location_id));
+  }, [handTools, unitLocationIds]);
+
   const AVSPARRNING_CATEGORY = 'Avspärrningsmaterial';
   const [activeTab, setActiveTab] = useState('handredskap');
 
@@ -81,8 +95,8 @@ export default function HandTools() {
     setActiveTab(tab);
   };
 
-  const mainHandTools = handTools.filter(t => t.category !== AVSPARRNING_CATEGORY);
-  const avsparrningTools = handTools.filter(t => t.category === AVSPARRNING_CATEGORY);
+  const mainHandTools = unitFilteredTools.filter(t => t.category !== AVSPARRNING_CATEGORY);
+  const avsparrningTools = unitFilteredTools.filter(t => t.category === AVSPARRNING_CATEGORY);
 
   const activeTools = activeTab === 'avsparrning' ? avsparrningTools : mainHandTools;
 
@@ -363,8 +377,15 @@ export default function HandTools() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Handredskap</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{handTools.length} redskap totalt</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Handredskap</h1>
+            {activeUnit && (
+              <UnitBadge className={`border-0 text-xs ${activeUnit.name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                {activeUnit.name}
+              </UnitBadge>
+            )}
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{unitFilteredTools.length} redskap totalt</p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
           {import.meta.env.DEV && <>
