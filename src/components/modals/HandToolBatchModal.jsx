@@ -146,6 +146,8 @@ const availableSubcategories = [...new Set([
           barcode: form.barcode || undefined,
           location_id: dist.location_id || undefined,
           location_name: dist.location_name || undefined,
+          unit_id: unitId || undefined,
+          unit_name: unitName || undefined,
         });
       }
     }

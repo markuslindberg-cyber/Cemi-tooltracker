@@ -55,7 +55,10 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
   ])].sort();
 
   useEffect(() => {
-    if (tool) { setForm({ ...tool }); setShowCustomSubcategory(false); }
+    if (tool) {
+      setForm({ ...tool });
+      setShowCustomSubcategory(false);
+    }
   }, [tool]);
 
   const handleChange = (field, value) => {
