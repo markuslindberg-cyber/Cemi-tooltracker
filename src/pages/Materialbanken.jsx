@@ -61,13 +61,13 @@ export default function Materialbanken() {
     },
   });
 
-  const kategorier = useMemo(() => [...new Set(unitFiltered.map(m => m.kategori).filter(Boolean))].sort(), [unitFiltered]);
-
   // Filter by active unit
   const unitFiltered = useMemo(() => {
     if (!activeUnitId) return materials;
     return materials.filter(m => m.unit_id === activeUnitId);
   }, [materials, activeUnitId]);
+
+  const kategorier = useMemo(() => [...new Set(unitFiltered.map(m => m.kategori).filter(Boolean))].sort(), [unitFiltered]);
 
   const filtered = useMemo(() => {
     return unitFiltered.filter(m => {
