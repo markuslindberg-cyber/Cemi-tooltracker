@@ -157,7 +157,7 @@ function SetupStep({ onStart, pausedSessions, onResume, isLoadingSessions }) {
                 <Select value={locationId} onValueChange={setLocationId}>
                   <SelectTrigger><SelectValue placeholder="Välj en plats" /></SelectTrigger>
                   <SelectContent>
-                    {locations.filter(l => l.is_active !== false).map(loc => (
+                    {locations.filter(l => l.is_active !== false && !l.parent_location_id).map(loc => (
                       <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
                     ))}
                   </SelectContent>
