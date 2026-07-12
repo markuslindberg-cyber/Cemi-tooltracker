@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useUnit } from '@/hooks/useUnitContext';
 
 const roleConfig = {
   admin: { label: 'Admin', color: 'bg-red-100 text-red-700' },
@@ -65,6 +66,7 @@ export default function Team() {
   const [memberToInactivate, setMemberToInactivate] = useState(null);
   const [inactivating, setInactivating] = useState(false);
   const { toast } = useToast();
+  const { activeUnitId } = useUnit();
 
   const { data: teamMembers = [], isLoading: loadingMembers } = useQuery({
     queryKey: ['teamMembers'],
@@ -458,7 +460,7 @@ export default function Team() {
           setEditMember(null);
         }}
         member={editMember}
-        locations={locations}
+        locations={activeUnitId ? locations.filter(l => l.unit_id === activeUnitId) : locations}
         onSubmit={handleSaveMember}
         isLoading={saveMemberMutation.isPending}
       />
