@@ -61,7 +61,7 @@ export default function Team() {
   const [editMember, setEditMember] = useState(null);
   const [showAddMember, setShowAddMember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('list');
   const [memberToDelete, setMemberToDelete] = useState(null);
   const [memberToInactivate, setMemberToInactivate] = useState(null);
   const [inactivating, setInactivating] = useState(false);
@@ -291,7 +291,7 @@ export default function Team() {
           <div className="flex flex-wrap items-center gap-2">
             <MobileSelect
               value={roleFilter}
-              onChange={e => setRoleFilter(e.target.value)}
+              onChange={(v) => setRoleFilter(typeof v === 'object' ? v.target.value : v)}
               options={[
                 { value: 'all', label: 'Alla roller' },
                 ...availableRoles.map(role => ({ value: role, label: roleConfig[role]?.label || role }))
