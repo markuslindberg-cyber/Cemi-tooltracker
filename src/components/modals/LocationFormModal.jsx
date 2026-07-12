@@ -45,6 +45,8 @@ export default function LocationFormModal({
   location,
   onSubmit,
   isLoading,
+  activeUnitId,
+  activeUnitName,
 }) {
   const [formData, setFormData] = useState(defaultLocation);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -106,7 +108,13 @@ export default function LocationFormModal({
   };
 
   const handleSubmit = () => {
-    onSubmit(formData);
+    const data = { ...formData };
+    // Auto-set unit on new locations
+    if (!location?.id && activeUnitId) {
+      data.unit_id = activeUnitId;
+      data.unit_name = activeUnitName || '';
+    }
+    onSubmit(data);
   };
 
   const handleClose = () => {

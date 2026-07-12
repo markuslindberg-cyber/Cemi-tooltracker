@@ -29,6 +29,7 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react';
+import { useUnit } from '@/hooks/useUnitContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +50,7 @@ const typeConfig = {
 export default function Locations() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { activeUnitId, activeUnit } = useUnit();
   const [searchQuery, setSearchQuery] = useState('');
   const [editLocation, setEditLocation] = useState(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
@@ -74,7 +76,12 @@ export default function Locations() {
     queryFn: () => base44.entities.HandTool.list(),
   });
 
-  const filteredLocations = locations.filter(location =>
+  // Filter by active unit first, then by search
+  const unitLocations = activeUnitId
+    ? locations.filter(l => l.unit_id === activeUnitId)
+    : locations;
+
+  const filteredLocations = unitLocations.filter(location =>
     (location.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     location.address?.toLowerCase().includes(searchQuery.toLowerCase())) &&
     !location.parent_location_id // Only show main locations, not sub-locations
@@ -179,7 +186,8 @@ export default function Locations() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Platser</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">
-              {locations.length} {locations.length !== 1 ? 'platser' : 'plats'}
+              {unitLocations.length} {unitLocations.length !== 1 ? 'platser' : 'plats'}
+              {activeUnit ? ` — ${activeUnit.name}` : ''}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -388,6 +396,8 @@ export default function Locations() {
         location={editLocation}
         onSubmit={handleSaveLocation}
         isLoading={saveLocationMutation.isPending}
+        activeUnitId={activeUnitId}
+        activeUnitName={activeUnit?.name}
       />
       <DeleteConfirmationModal
         isOpen={!!locationToDelete}
