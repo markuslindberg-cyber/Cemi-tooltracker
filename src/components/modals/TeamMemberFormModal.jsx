@@ -49,7 +49,7 @@ export default function TeamMemberFormModal({
   isLoading,
 }) {
   const [formData, setFormData] = useState(defaultMember);
-  const { units, activeUnitId, activeUnit } = useUnit();
+  const { units } = useUnit();
 
   useEffect(() => {
     if (member) {
@@ -71,11 +71,11 @@ export default function TeamMemberFormModal({
     } else {
       setFormData({
         ...defaultMember,
-        unit_id: activeUnitId || '',
-        unit_name: activeUnit?.name || '',
+        unit_id: '',
+        unit_name: '',
       });
     }
-  }, [member, locations, isOpen, activeUnitId, activeUnit]);
+  }, [member, locations, isOpen]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -122,6 +122,11 @@ export default function TeamMemberFormModal({
   };
 
   const isEditing = !!member?.id;
+
+  // Filtrera platser baserat på vald enhet i formuläret
+  const filteredLocations = formData.unit_id
+    ? locations?.filter(l => l.unit_id === formData.unit_id)
+    : locations;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -171,8 +176,15 @@ export default function TeamMemberFormModal({
               value={formData.unit_id || ''}
               onChange={(v) => {
                 const unit = units.find(u => u.id === v);
-                handleChange('unit_id', v);
-                handleChange('unit_name', unit?.name || '');
+                setFormData(prev => ({
+                  ...prev,
+                  unit_id: v,
+                  unit_name: unit?.name || '',
+                  default_location_id: '',
+                  default_location_name: '',
+                  location_ids: [],
+                  location_names: [],
+                }));
               }}
               options={units.map(u => ({ value: u.id, label: u.name }))}
               placeholder="Välj enhet"
@@ -242,7 +254,7 @@ export default function TeamMemberFormModal({
               onChange={(v) => handleChange('default_location_id', typeof v === 'object' ? v.target.value : v)}
               options={[
                 { value: '', label: 'Ingen' },
-                ...(locations?.filter(l => !l.parent_location_id).map((location) => ({ value: location.id, label: location.name })) || [])
+                ...(filteredLocations?.filter(l => !l.parent_location_id).map((location) => ({ value: location.id, label: location.name })) || [])
               ]}
               placeholder="Välj standardplats"
             />
@@ -251,7 +263,7 @@ export default function TeamMemberFormModal({
           <div className="space-y-2">
             <Label>Platser där personen arbetar</Label>
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              {locations?.filter(l => !l.parent_location_id).map((location) => {
+              {filteredLocations?.filter(l => !l.parent_location_id).map((location) => {
                 const isSelected = formData.location_ids.includes(location.id);
                 return (
                   <button
@@ -268,7 +280,7 @@ export default function TeamMemberFormModal({
                   </button>
                 );
               })}
-              {(!locations || locations.length === 0) && (
+              {(!filteredLocations || filteredLocations.filter(l => !l.parent_location_id).length === 0) && (
                 <p className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">Inga platser tillgängliga</p>
               )}
             </div>

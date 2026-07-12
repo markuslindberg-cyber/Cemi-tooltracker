@@ -70,7 +70,7 @@ export default function Team() {
   const [inactivating, setInactivating] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const { toast } = useToast();
-  const { activeUnitId } = useUnit();
+  // Enhetsväljaren är inaktiverad på Personal-sidan — enheten styrs via redigeringsmodalen
 
   const { data: teamMembers = [], isLoading: loadingMembers } = useQuery({
     queryKey: ['teamMembers'],
@@ -491,7 +491,7 @@ export default function Team() {
           setEditMember(null);
         }}
         member={editMember}
-        locations={activeUnitId ? locations.filter(l => l.unit_id === activeUnitId) : locations}
+        locations={locations}
         onSubmit={handleSaveMember}
         isLoading={saveMemberMutation.isPending}
       />
