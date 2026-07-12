@@ -101,7 +101,7 @@ export default function Team() {
       member.email?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === 'all' || member.role === roleFilter;
     return matchesSearch && matchesRole;
-  });
+  }).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'sv'));
 
   const availableRoles = [...new Set(teamMembers.map(m => m.role).filter(Boolean))].sort();
 
