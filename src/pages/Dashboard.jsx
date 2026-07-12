@@ -289,7 +289,7 @@ export default function Dashboard() {
                  </Button>
                </Link>
              )}
-             <DashboardScanSearch tools={activeTools} onSelectTool={(tool) => setEditTool(tool)} />
+             <DashboardScanSearch tools={tools} onSelectTool={(tool) => setEditTool(tool)} />
              <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="sm:gap-1">
                <RotateCw className="w-4 h-4" />
                <span className="hidden sm:inline">Låneförfrågan</span>
