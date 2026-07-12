@@ -7,7 +7,7 @@ import { CheckCircle2, AlertTriangle, Loader2, ArrowUp, ArrowDown } from 'lucide
 import { cn } from '@/lib/utils';
 import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
 
-export default function LagerkorrigeringSection({ allItems, manualCounts, performedAt, reportId, onReportUpdated }) {
+export default function LagerkorrigeringSection({ allItems, manualCounts, performedAt, reportId, onReportUpdated, userName }) {
   const [correctedIds, setCorrectedIds] = useState(new Set());
   const [correcting, setCorrecting] = useState(null);
   const [allCorrecting, setAllCorrecting] = useState(false);
@@ -40,11 +40,25 @@ export default function LagerkorrigeringSection({ allItems, manualCounts, perfor
     ? new Date(performedAt).toISOString().slice(0, 10)
     : new Date().toISOString().slice(0, 10);
 
-  const removeFromReport = async (ids) => {
+  const saveCorrectionsToReport = async (items) => {
     if (!reportId) return;
+    const report = await base44.entities.InventoryReport.filter({ id: reportId });
+    const existing = report[0]?.corrections || [];
+    const newCorrections = items.map(item => ({
+      item_id: item.id,
+      item_name: item.benamning || item.name,
+      old_saldo: item.lager,
+      new_saldo: item.inventerat,
+      diff: item.inventerat - item.lager,
+      corrected_at: new Date().toISOString(),
+      corrected_by: userName || 'Okänd',
+    }));
     const updated = { ...manualCounts };
-    ids.forEach(id => delete updated[id]);
-    await base44.entities.InventoryReport.update(reportId, { manual_counts: updated });
+    items.forEach(i => delete updated[i.id]);
+    await base44.entities.InventoryReport.update(reportId, {
+      manual_counts: updated,
+      corrections: [...existing, ...newCorrections],
+    });
     if (onReportUpdated) onReportUpdated();
   };
 
@@ -74,7 +88,7 @@ export default function LagerkorrigeringSection({ allItems, manualCounts, perfor
     setCorrecting(item.id);
     await doCorrection(item);
     setCorrectedIds(prev => new Set([...prev, item.id]));
-    await removeFromReport([item.id]);
+    await saveCorrectionsToReport([item]);
     setCorrecting(null);
   };
 
@@ -84,9 +98,8 @@ export default function LagerkorrigeringSection({ allItems, manualCounts, perfor
     for (const item of uncorrected) {
       await doCorrection(item);
     }
-    const allIds = uncorrected.map(i => i.id);
-    setCorrectedIds(prev => new Set([...prev, ...allIds]));
-    await removeFromReport(allIds);
+    setCorrectedIds(prev => new Set([...prev, ...uncorrected.map(i => i.id)]));
+    await saveCorrectionsToReport(uncorrected);
     setAllCorrecting(false);
   };
 

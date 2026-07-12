@@ -186,8 +186,43 @@ function ReportCard({ report, isAdmin, onDelete, onKorrigera }) {
         </div>
       </div>
 
+      {/* Corrections badge */}
+      {(report.corrections?.length > 0) && (
+        <div className="border-t border-gray-100 px-5 py-3">
+          <div className="flex items-center gap-2 text-xs text-green-700">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span className="font-medium">Korrigerad — {report.corrections.length} artiklar justerade</span>
+          </div>
+        </div>
+      )}
+
       {expanded && (
         <div className="border-t border-gray-100 p-5 space-y-4">
+          {(report.corrections?.length > 0) && (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold flex items-center gap-2 text-green-700 px-1">
+                <CheckCircle2 className="w-4 h-4" /> Korrigeringar ({report.corrections.length})
+              </p>
+              <div className="rounded-xl border border-green-100 overflow-hidden divide-y divide-green-50">
+                {report.corrections.map((c, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm py-2.5 px-4 bg-green-50/50">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-medium text-gray-900">{c.item_name}</span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        av {c.corrected_by} — {format(new Date(c.corrected_at), 'd MMM HH:mm', { locale: sv })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 ml-3">
+                      <span className="text-xs text-gray-500">{c.old_saldo} → {c.new_saldo}</span>
+                      <Badge className={`text-xs ${c.diff > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {c.diff > 0 ? `+${c.diff}` : c.diff}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {unchecked.length > 0 && (
             <CategorySection title="Ej kontrollerade" items={unchecked} bgColor="bg-amber-50" textColor="text-amber-700" icon={<AlertTriangle className="w-4 h-4" />} />
           )}
@@ -344,6 +379,7 @@ export default function InventoryReports() {
                 performedAt={korrigeraReport.performed_at}
                 reportId={korrigeraReport.id}
                 onReportUpdated={() => queryClient.invalidateQueries(['inventoryReports'])}
+                userName={user?.full_name || user?.email}
               />
             );
           })()}
