@@ -14,10 +14,8 @@ Deno.serve(async (req) => {
     const { email, appRole } = await req.json();
     if (!email) return Response.json({ error: 'Email krävs' }, { status: 400 });
 
-    // inviteUser requires the caller to have platform role 'admin'.
-    // App owner has a special platform role that can't be changed.
-    // Try invite — it works for users with platform role 'admin'.
-    await base44.auth.inviteUser(email.trim(), 'user');
+    // Use service role users.inviteUser to bypass platform role restrictions
+    await base44.asServiceRole.users.inviteUser(email.trim(), 'user');
 
     // Sync the app-specific role if provided
     if (appRole) {
