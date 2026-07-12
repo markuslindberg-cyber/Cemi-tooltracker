@@ -6,21 +6,17 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Only ägare and admin can invite
-    if (user.role !== 'ägare' && user.role !== 'admin' && user.role !== 'mekaniker') {
+    // Only ägare, admin and mekaniker can invite
+    if (!['ägare', 'admin', 'mekaniker'].includes(user.role)) {
       return Response.json({ error: 'Ingen behörighet att bjuda in användare' }, { status: 403 });
     }
 
     const { email, appRole } = await req.json();
     if (!email) return Response.json({ error: 'Email krävs' }, { status: 400 });
 
-    // List what's available on asServiceRole
-    const keys = Object.keys(base44.asServiceRole || {});
-    // Try users module on service role
-    const usersKeys = base44.asServiceRole?.users ? Object.keys(base44.asServiceRole.users) : 'no users';
-    const authKeys = base44.asServiceRole?.auth ? Object.keys(base44.asServiceRole.auth) : 'no auth';
-    
-    // Fallback: use regular auth.inviteUser (which uses the caller's token)
+    // inviteUser requires the caller to have platform role 'admin'.
+    // App owner has a special platform role that can't be changed.
+    // Try invite — it works for users with platform role 'admin'.
     await base44.auth.inviteUser(email.trim(), 'user');
 
     // Sync the app-specific role if provided
@@ -28,7 +24,7 @@ Deno.serve(async (req) => {
       try {
         await base44.asServiceRole.functions.invoke('setUserRole', { email: email.trim(), role: appRole });
       } catch (e) {
-        // Role sync is best-effort
+        // Role sync is best-effort — user might not exist yet
       }
     }
 

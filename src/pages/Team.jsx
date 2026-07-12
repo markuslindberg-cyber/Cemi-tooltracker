@@ -122,16 +122,21 @@ export default function Team() {
 
   const saveMemberMutation = useMutation({
     mutationFn: async (memberData) => {
-      const shouldInvite = (memberData.send_invitation || memberData.send_new_invitation) && memberData.email;
-      if (shouldInvite) {
-        await base44.functions.invoke('inviteUserAsService', { email: memberData.email, appRole: memberData.role });
-      }
       const { send_invitation, send_new_invitation, ...data } = memberData;
       let result;
       if (editMember?.id) {
         result = await base44.entities.TeamMember.update(editMember.id, data);
       } else {
         result = await base44.entities.TeamMember.create(data);
+      }
+      // Try to invite (non-blocking — member is saved regardless)
+      const shouldInvite = (send_invitation || send_new_invitation) && data.email;
+      if (shouldInvite) {
+        try {
+          await base44.functions.invoke('inviteUserAsService', { email: data.email, appRole: data.role });
+        } catch (e) {
+          console.warn('Inbjudan misslyckades:', e);
+        }
       }
       // Sync role to User entity if email exists
       if (data.email && data.role) {

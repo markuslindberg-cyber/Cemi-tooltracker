@@ -27,13 +27,22 @@ export default function InviteUserDialog({ open, onOpenChange }) {
     if (!email.trim()) return;
     setLoading(true);
     try {
-      await base44.functions.invoke('inviteUserAsService', { email: email.trim(), appRole: role });
+      const res = await base44.functions.invoke('inviteUserAsService', { email: email.trim(), appRole: role });
+      if (res.data?.error) throw new Error(res.data.error);
       toast({ title: 'Inbjudan skickad', description: `En inbjudan har skickats till ${email.trim()}` });
       setEmail('');
       setRole('verktygsförvaltare');
       onOpenChange(false);
     } catch (err) {
-      toast({ title: 'Kunde inte skicka inbjudan', description: err?.message || 'Något gick fel', variant: 'destructive' });
+      const msg = err?.response?.data?.error || err?.message || 'Något gick fel';
+      const isPermission = msg.includes('Only admins') || msg.includes('credentials');
+      toast({ 
+        title: 'Kunde inte skicka inbjudan', 
+        description: isPermission 
+          ? 'Bara användare med admin-roll i plattformen kan bjuda in. Be en admin-kollega skicka inbjudan, eller bjud in via Base44-dashboarden.'
+          : msg, 
+        variant: 'destructive' 
+      });
     } finally {
       setLoading(false);
     }
