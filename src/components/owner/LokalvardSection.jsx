@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SprayCan, ArrowRight, AlertTriangle, TrendingUp } from 'lucide-react';
 import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
-import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
+import { groupArtiklarByStreckkod } from '@/lib/groupArtiklarByStreckkod';
+import { mergeCheckoutAsUttag, buildArtikelMap } from '@/lib/mergeCheckoutAsUttag';
 
 export default function LokalvardSection() {
   const { data: articles = [] } = useQuery({
@@ -39,14 +40,42 @@ export default function LokalvardSection() {
   const pendingRequests = requests.filter(r => r.status === 'pending').length;
   const totalLagerValue = calculateLokalvardLagerValue(articles, uttag, inkop, checkout);
 
-  // Build saldo map to count articles with actual stock
-  const saldoMap = React.useMemo(() => {
-    if (articles.length === 0) return new Map();
-    return buildArtikelSaldoMap(articles, inkop, uttag, checkout);
-  }, [articles, inkop, uttag, checkout]);
+  // Use same grouping logic as LokalvardLager page for consistent article count
+  const { groups, mergedUttag } = React.useMemo(() => {
+    if (articles.length === 0) return { groups: [], mergedUttag: [] };
+    const aMap = buildArtikelMap(articles);
+    const merged = mergeCheckoutAsUttag(uttag, checkout, aMap);
+    const g = groupArtiklarByStreckkod(articles);
+    return { groups: g, mergedUttag: merged };
+  }, [articles, uttag, checkout]);
+
+  const calculateSaldo = (aggregatedArtikel) => {
+    const allStreckkoder = aggregatedArtikel.all_streckkoder || [aggregatedArtikel.streckkod];
+    if (aggregatedArtikel.old_streckkod && !allStreckkoder.includes(aggregatedArtikel.old_streckkod)) {
+      allStreckkoder.push(aggregatedArtikel.old_streckkod);
+    }
+    const allBenamningar = aggregatedArtikel.all_benamningar || [aggregatedArtikel.benamning?.toLowerCase()];
+    const matchingInkop = inkop.filter(i =>
+      aggregatedArtikel.all_artikel_ids.includes(i.artikel_id) ||
+      allStreckkoder.includes(i.artikel_id)
+    );
+    const totalInkopt = matchingInkop.reduce((sum, i) => sum + i.antal, 0);
+    const inkoptToUse = totalInkopt > 0 ? totalInkopt : aggregatedArtikel.total_antal_inkopta;
+    const totalUttagVal = mergedUttag.reduce((sum, u) => {
+      const items = u.artiklar?.filter(item => {
+        if (item.benamning && allBenamningar.includes(item.benamning.toLowerCase())) return true;
+        if (item.benamning && allStreckkoder.includes(item.benamning)) return true;
+        if (aggregatedArtikel.all_artikel_ids.includes(item.artikel_id)) return true;
+        if (item.artikel_id && allStreckkoder.includes(item.artikel_id)) return true;
+        return false;
+      }) || [];
+      return sum + items.reduce((s, i) => s + (i.antal || 0), 0);
+    }, 0);
+    return inkoptToUse - totalUttagVal;
+  };
 
   const activeArticles = articles.filter(a => !a.utgaende);
-  const articlesInStock = articles.filter(a => (saldoMap.get(a.id) ?? 0) > 0);
+  const articlesInStock = groups.filter(g => calculateSaldo(g) > 0);
 
   // Uttag this month
   const now = new Date();

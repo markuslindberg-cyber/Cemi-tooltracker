@@ -58,14 +58,15 @@ export default function OwnerTotalSummary({ unitFilter, units = [] }) {
     return new Set(locations.filter(l => l.unit_id === unitFilter).map(l => l.id));
   }, [locations, unitFilter]);
 
+  const unassignedTools = allTools.filter(t => !t.location_id);
   const tools = unitLocationIds
-    ? allTools.filter(t => !t.location_id || unitLocationIds.has(t.location_id))
+    ? allTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allTools;
   const handTools = unitLocationIds
-    ? allHandTools.filter(t => !t.location_id || unitLocationIds.has(t.location_id))
+    ? allHandTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allHandTools;
   const workwear = unitLocationIds
-    ? allWorkwear.filter(t => !t.location_id || unitLocationIds.has(t.location_id))
+    ? allWorkwear.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allWorkwear;
 
   const HIDDEN = ['såld', 'sålda', 'retired'];
@@ -90,7 +91,7 @@ export default function OwnerTotalSummary({ unitFilter, units = [] }) {
   const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue;
 
   const sections = [
-    { label: 'Maskiner (bokfört)', value: maskinerValue, icon: Package, color: 'text-[#8B1E1E]', bg: 'bg-[#8B1E1E]/10', subtitle: maskinerPurchaseValue !== maskinerValue ? `Inköp: ${maskinerPurchaseValue.toLocaleString('sv-SE')} kr` : null },
+    { label: 'Maskiner (bokfört)', value: maskinerValue, icon: Package, color: 'text-[#8B1E1E]', bg: 'bg-[#8B1E1E]/10', subtitle: unitFilter && unassignedTools.filter(t => !['såld','sålda','retired'].includes(t.status)).length > 0 ? `${unassignedTools.filter(t => !['såld','sålda','retired'].includes(t.status)).length} utan plats ej inkl.` : (maskinerPurchaseValue !== maskinerValue ? `Inköp: ${maskinerPurchaseValue.toLocaleString('sv-SE')} kr` : null) },
     { label: 'Handredskap', value: handredskapValue, icon: Shovel, color: 'text-orange-600', bg: 'bg-orange-100 dark:bg-orange-900/30' },
     ...(showLokalvardArbetsklader ? [
       { label: 'Arbetskläder', value: workwearValue, icon: Shirt, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
