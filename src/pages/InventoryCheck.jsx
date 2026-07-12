@@ -840,8 +840,9 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
 
 
 // ─── Summary Step ────────────────────────────────────────────────────────────────
-function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNew, performedAt }) {
+function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNew, performedAt, reportId, userName }) {
   const [user, setUser] = useState(null);
+  const queryClient = useQueryClient();
   useEffect(() => { base44.auth.me().then(setUser).catch(() => {}); }, []);
 
   const locationLabel = sessionConfig.location ? sessionConfig.location.name : 'Öppen inventering';
@@ -890,6 +891,9 @@ function SummaryStep({ sessionConfig, checkedItems, allItems, manualCounts, onNe
             allItems={allItems}
             manualCounts={manualCounts}
             performedAt={performedAt}
+            reportId={reportId}
+            onReportUpdated={() => queryClient.invalidateQueries(['inventoryReports'])}
+            userName={userName || user?.full_name || user?.email}
           />
         )}
 
@@ -913,6 +917,8 @@ export default function InventoryCheck() {
   const [finalItems, setFinalItems] = useState([]);
   const [finalManualCounts, setFinalManualCounts] = useState({});
   const [finalPerformedAt, setFinalPerformedAt] = useState(null);
+  const [finalReportId, setFinalReportId] = useState(null);
+  const [finalUserName, setFinalUserName] = useState(null);
   const autoResumeAttemptedRef = useRef(false);
 
   const { data: pausedSessions = [], isLoading: isLoadingSessions, refetch: refetchSessions } = useQuery({
@@ -1041,7 +1047,7 @@ export default function InventoryCheck() {
       status: i.status || '',
     }));
 
-    await base44.entities.InventoryReport.create({
+    const createdReport = await base44.entities.InventoryReport.create({
       location_name: config.location?.name || null,
       location_id: config.locationId || null,
       tool_type: config.toolType,
@@ -1056,6 +1062,8 @@ export default function InventoryCheck() {
       checked_list: checkedArr,
       unchecked_list: uncheckedArr,
     });
+    setFinalReportId(createdReport.id);
+    setFinalUserName(user?.full_name || user?.email);
 
     // Mark session as completed
     if (sessionId) {
@@ -1071,6 +1079,8 @@ export default function InventoryCheck() {
     setFinalItems([]);
     setFinalManualCounts({});
     setFinalPerformedAt(null);
+    setFinalReportId(null);
+    setFinalUserName(null);
     setPhase('setup');
   };
 
@@ -1081,6 +1091,6 @@ export default function InventoryCheck() {
   );
   if (phase === 'setup') return <SetupStep onStart={handleStart} pausedSessions={pausedSessions} onResume={handleResume} isLoadingSessions={isLoadingSessions} />;
   if (phase === 'active') return <ActiveInventory sessionConfig={sessionConfig} onEnd={handleEnd} onPause={handlePause} sessionId={sessionId} />;
-  if (phase === 'summary') return <SummaryStep sessionConfig={sessionConfig} checkedItems={finalChecked} allItems={finalItems} manualCounts={finalManualCounts} onNew={handleNew} performedAt={finalPerformedAt} />;
+  if (phase === 'summary') return <SummaryStep sessionConfig={sessionConfig} checkedItems={finalChecked} allItems={finalItems} manualCounts={finalManualCounts} onNew={handleNew} performedAt={finalPerformedAt} reportId={finalReportId} userName={finalUserName} />;
   return null;
 }
