@@ -23,6 +23,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "
 import { Loader2, ChevronsUpDown, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MobileSelect from "@/components/ui/mobile-select";
+import { useUnit } from '@/hooks/useUnitContext';
 
 const defaultMember = {
   name: '',
@@ -48,6 +49,7 @@ export default function TeamMemberFormModal({
   isLoading,
 }) {
   const [formData, setFormData] = useState(defaultMember);
+  const { units, activeUnitId, activeUnit } = useUnit();
 
   useEffect(() => {
     if (member) {
@@ -67,9 +69,13 @@ export default function TeamMemberFormModal({
         setFormData({ ...editDefaults, ...member, send_invitation: false, send_new_invitation: false });
       }
     } else {
-      setFormData(defaultMember);
+      setFormData({
+        ...defaultMember,
+        unit_id: activeUnitId || '',
+        unit_name: activeUnit?.name || '',
+      });
     }
-  }, [member, locations, isOpen]);
+  }, [member, locations, isOpen, activeUnitId, activeUnit]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -157,6 +163,20 @@ export default function TeamMemberFormModal({
                 className="text-sm"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Enhet</Label>
+            <MobileSelect
+              value={formData.unit_id || ''}
+              onChange={(v) => {
+                const unit = units.find(u => u.id === v);
+                handleChange('unit_id', v);
+                handleChange('unit_name', unit?.name || '');
+              }}
+              options={units.map(u => ({ value: u.id, label: u.name }))}
+              placeholder="Välj enhet"
+            />
           </div>
 
           <div className="space-y-2">
