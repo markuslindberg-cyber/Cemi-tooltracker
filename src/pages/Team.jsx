@@ -360,7 +360,14 @@ export default function Team() {
                       </div>
                     </div>
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">{member.name}</h3>
-                    <Badge className={`${role.color} border-0 text-xs mt-1`}>{role.label}</Badge>
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                      <Badge className={`${role.color} border-0 text-xs`}>{role.label}</Badge>
+                      {member.unit_name && (
+                        <Badge className={`border-0 text-xs ${member.unit_name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          {member.unit_name}
+                        </Badge>
+                      )}
+                    </div>
                     <div className="mt-4 space-y-2">
                       {member.email && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><Mail className="w-4 h-4" /><span className="truncate">{member.email}</span></div>}
                       {member.phone && <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"><Phone className="w-4 h-4" /><span>{member.phone}</span></div>}
@@ -406,9 +413,14 @@ export default function Team() {
                       <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold">{getInitials(member.name)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium text-gray-900 dark:text-gray-100">{member.name}</p>
                         <Badge className={`${role.color} border-0 text-xs`}>{role.label}</Badge>
+                        {member.unit_name && (
+                          <Badge className={`border-0 text-xs ${member.unit_name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {member.unit_name}
+                          </Badge>
+                        )}
                         {!member.is_active && <Badge variant="secondary" className="bg-gray-100 text-gray-500 text-xs">Inaktiv</Badge>}
                       </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{member.email}</p>
