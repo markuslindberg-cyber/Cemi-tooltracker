@@ -669,7 +669,7 @@ export default function ToolFormModal({
                         <Button
                           variant="outline"
                           role="combobox"
-                          className={cn("w-full justify-between", !formData.category && "border-red-400")}
+                          className={cn("w-full justify-between", !formData.category && "!border-red-400")}
                         >
                           {formData.category || "Välj kategori..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1045,7 +1045,7 @@ export default function ToolFormModal({
                     }}
                     options={units.map(u => ({ value: u.id, label: u.name }))}
                     placeholder="Välj enhet"
-                    className={!formData.unit_id ? 'border-red-400' : ''}
+                    className={!formData.unit_id ? '!border-red-400' : ''}
                   />
                 </div>
               </div>
@@ -1058,6 +1058,7 @@ export default function ToolFormModal({
                   satelliteLocationId={formData.satellite_location_id}
                   onLocationChange={(id, name) => setFormData(prev => ({ ...prev, location_id: id, location_name: name }))}
                   onSatelliteChange={(id, name) => setFormData(prev => ({ ...prev, satellite_location_id: id, satellite_location_name: name }))}
+                  locationError={!formData.location_id}
                 />
               </div>
 

@@ -10,6 +10,7 @@ export default function LocationSatellitePicker({
   onSatelliteChange,
   locationLabel = 'Huvudplats *',
   satelliteLabel = 'Satellit (valfritt)',
+  locationError = false,
 }) {
   // Main locations = those with no parent
   const mainLocations = useMemo(
@@ -38,7 +39,7 @@ export default function LocationSatellitePicker({
   return (
     <>
       <div className="space-y-2">
-        <Label>{locationLabel}</Label>
+        <Label className={locationError ? 'text-red-500' : ''}>{locationLabel}</Label>
         <MobileSelect
           value={locationId || ''}
           onChange={handleMainChange}
@@ -47,6 +48,7 @@ export default function LocationSatellitePicker({
             ...mainLocations.map(l => ({ value: l.id, label: l.name })),
           ]}
           placeholder="Välj huvudplats"
+          className={locationError ? '!border-red-400' : ''}
         />
       </div>
 
