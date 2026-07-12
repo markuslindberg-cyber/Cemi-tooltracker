@@ -104,10 +104,12 @@ export default function Team() {
     const matchesSearch = member.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === 'all' || member.role === roleFilter;
-    return matchesSearch && matchesRole;
+    const matchesUnit = unitFilter === 'all' || member.unit_name === unitFilter;
+    return matchesSearch && matchesRole && matchesUnit;
   }).sort((a, b) => (a.name || '').trim().localeCompare((b.name || '').trim(), 'sv'));
 
   const availableRoles = [...new Set(teamMembers.map(m => m.role).filter(Boolean))].sort();
+  const availableUnits = [...new Set(teamMembers.map(m => m.unit_name).filter(Boolean))].sort();
 
   const getToolCount = (memberEmail) => {
     return tools.filter(t => t.assigned_to_email === memberEmail).length;
@@ -301,6 +303,15 @@ export default function Team() {
                 ...availableRoles.map(role => ({ value: role, label: roleConfig[role]?.label || role }))
               ]}
               placeholder="Välj roll"
+            />
+            <MobileSelect
+              value={unitFilter}
+              onChange={(v) => setUnitFilter(typeof v === 'object' ? v.target.value : v)}
+              options={[
+                { value: 'all', label: 'Alla enheter' },
+                ...availableUnits.map(u => ({ value: u, label: u }))
+              ]}
+              placeholder="Välj enhet"
             />
             <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden ml-auto">
               <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')} className={`h-9 w-9 rounded-none ${viewMode === 'grid' ? 'bg-[#8B1E1E] hover:bg-[#6B1515]' : ''}`}><Grid className="w-4 h-4" /></Button>
