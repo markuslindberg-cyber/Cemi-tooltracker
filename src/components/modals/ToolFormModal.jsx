@@ -128,7 +128,12 @@ export default function ToolFormModal({
 
   useEffect(() => {
     if (tool) {
-      setFormData({ ...defaultTool, ...tool });
+      setFormData({
+        ...defaultTool,
+        ...tool,
+        unit_id: tool.unit_id || activeUnitId || '',
+        unit_name: tool.unit_name || activeUnit?.name || '',
+      });
     } else {
       setFormData({
         ...defaultTool,
