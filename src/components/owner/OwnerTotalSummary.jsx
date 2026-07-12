@@ -64,6 +64,8 @@ export default function OwnerTotalSummary({ unitFilter, units = [] }) {
   }, [locations, unitFilter]);
 
   const unassignedTools = allTools.filter(t => !t.location_id);
+  const unassignedHandTools = allHandTools.filter(t => !t.location_id);
+  const totalUnassigned = unassignedTools.filter(t => !['såld','sålda','retired'].includes(t.status)).length + unassignedHandTools.length;
   const tools = unitLocationIds
     ? allTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allTools;
@@ -139,6 +141,11 @@ export default function OwnerTotalSummary({ unitFilter, units = [] }) {
           </div>
         ))}
       </div>
+      {unitFilter && totalUnassigned > 0 && (
+        <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">
+          ⚠ {totalUnassigned} artiklar saknar tilldelad plats och ingår inte i denna enhets siffror.
+        </p>
+      )}
     </div>
   );
 }

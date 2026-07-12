@@ -24,6 +24,7 @@ export default function HandredskapSection({ unitFilter }) {
   const tools = unitLocationIds
     ? allTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allTools;
+  const unassignedCount = unitFilter ? allTools.filter(t => !t.location_id).length : 0;
 
   const statusMap = {
     i_lager: { label: 'I lager', color: 'bg-emerald-500' },

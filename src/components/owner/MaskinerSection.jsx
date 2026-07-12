@@ -37,6 +37,7 @@ export default function MaskinerSection({ unitFilter }) {
   const active = unitLocationIds
     ? allActive.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allActive;
+  const unassignedCount = unitFilter ? allActive.filter(t => !t.location_id).length : 0;
   const available = active.filter(t => t.status === 'available' || t.status === 'Tillgänglig').length;
   const inUse = active.filter(t => t.status === 'in_use').length;
   const iLager = active.filter(t => t.status === 'i_lager').length;
