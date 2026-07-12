@@ -120,14 +120,15 @@ export default function OwnerOverview() {
         {(() => {
           const unitFilter = activeTab === 'all' ? null : activeTab;
           const activeUnit = units.find(u => u.id === activeTab);
-          const isFoervaltning = activeUnit?.name?.toLowerCase() === 'förvaltning';
+          const isUtemiljo = activeUnit?.name?.toLowerCase() === 'utemiljö';
+          const showLokalvardArbetsklader = !unitFilter || isUtemiljo;
           return (
             <div className="space-y-10">
               <MaskinerSection unitFilter={unitFilter} />
               <hr className="border-gray-200 dark:border-gray-800" />
               <HandredskapSection unitFilter={unitFilter} />
               <hr className="border-gray-200 dark:border-gray-800" />
-              {!isFoervaltning && (
+              {showLokalvardArbetsklader && (
                 <>
                   <ArbetskladerSection unitFilter={unitFilter} />
                   <hr className="border-gray-200 dark:border-gray-800" />
