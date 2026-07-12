@@ -58,7 +58,7 @@ export default function Dashboard() {
   const [showAddTool, setShowAddTool] = useState(false);
   const [showLoanRequest, setShowLoanRequest] = useState(false);
   const queryClient = useQueryClient();
-  const { activeUnitId, activeUnit } = useUnit();
+  const { activeUnitId, activeUnit, units } = useUnit();
 
   const { data: dashboardConfig } = useGlobalConfig('dashboard_layout');
   const widgets = dashboardConfig?.config_value?.widgets?.length
@@ -622,6 +622,9 @@ export default function Dashboard() {
         locations={locations}
         teamMembers={teamMembers}
         onSubmit={handleSaveTool}
+        units={units}
+        activeUnitId={activeUnitId}
+        activeUnit={activeUnit}
       />
       <LoanRequestModal isOpen={showLoanRequest} onClose={() => setShowLoanRequest(false)} />
     </div>
