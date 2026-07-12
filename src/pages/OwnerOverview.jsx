@@ -127,11 +127,12 @@ export default function OwnerOverview() {
               <hr className="border-gray-200 dark:border-gray-800" />
               <HandredskapSection unitFilter={unitFilter} />
               <hr className="border-gray-200 dark:border-gray-800" />
-              <ArbetskladerSection unitFilter={unitFilter} />
               {!isFoervaltning && (
                 <>
+                  <ArbetskladerSection unitFilter={unitFilter} />
                   <hr className="border-gray-200 dark:border-gray-800" />
                   <LokalvardSection unitFilter={unitFilter} />
+                  <hr className="border-gray-200 dark:border-gray-800" />
                 </>
               )}
               <hr className="border-gray-200 dark:border-gray-800" />
