@@ -90,6 +90,7 @@ export default function HandTools() {
 
   const AVSPARRNING_CATEGORY = 'Avspärrningsmaterial';
   const [activeTab, setActiveTab] = useState('handredskap');
+  const isFoervaltning = activeUnit?.name === 'Förvaltning';
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -98,7 +99,7 @@ export default function HandTools() {
   const mainHandTools = unitFilteredTools.filter(t => t.category !== AVSPARRNING_CATEGORY);
   const avsparrningTools = unitFilteredTools.filter(t => t.category === AVSPARRNING_CATEGORY);
 
-  const activeTools = activeTab === 'avsparrning' ? avsparrningTools : mainHandTools;
+  const activeTools = (isFoervaltning || activeTab !== 'avsparrning') ? mainHandTools : avsparrningTools;
 
   const categories = [...new Set(activeTools.map(t => t.category).filter(Boolean))].sort();
   const subcategories = [...new Set(activeTools.map(t => t.subcategory).filter(Boolean))].sort();
@@ -410,13 +411,15 @@ export default function HandTools() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="mb-2">
-          <TabsTrigger value="handredskap">Handredskap ({mainHandTools.length})</TabsTrigger>
-          <TabsTrigger value="avsparrning">Avspärrning ({avsparrningTools.length})</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* Tabs — hide Avspärrning tab when Förvaltning unit is active */}
+      {activeUnit?.name === 'Förvaltning' ? null : (
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="mb-2">
+            <TabsTrigger value="handredskap">Handredskap ({mainHandTools.length})</TabsTrigger>
+            <TabsTrigger value="avsparrning">Avspärrning ({avsparrningTools.length})</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       {/* Search & Filters */}
       <SearchFilterBar
