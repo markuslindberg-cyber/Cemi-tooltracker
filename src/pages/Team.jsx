@@ -124,8 +124,7 @@ export default function Team() {
     mutationFn: async (memberData) => {
       const shouldInvite = (memberData.send_invitation || memberData.send_new_invitation) && memberData.email;
       if (shouldInvite) {
-        const inviteRole = (memberData.role === 'admin' || memberData.role === 'ägare') ? 'admin' : 'user';
-        await base44.users.inviteUser(memberData.email, inviteRole);
+        await base44.functions.invoke('inviteUserAsService', { email: memberData.email, appRole: memberData.role });
       }
       const { send_invitation, send_new_invitation, ...data } = memberData;
       let result;
