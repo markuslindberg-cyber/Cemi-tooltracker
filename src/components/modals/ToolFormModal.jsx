@@ -612,11 +612,12 @@ export default function ToolFormModal({
               {/* Basic Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Verktygsnamn *</Label>
+                  <Label className={!formData.name ? 'text-red-500' : ''}>Verktygsnamn *</Label>
                   <Input
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
                     placeholder="t.ex. Slagskruvdragare"
+                    className={!formData.name ? 'border-red-400 focus-visible:ring-red-400' : ''}
                   />
                 </div>
                 <div className="space-y-2">
@@ -661,14 +662,14 @@ export default function ToolFormModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Kategori *</Label>
+                  <Label className={!formData.category ? 'text-red-500' : ''}>Kategori *</Label>
                   {!showCustomCategory ? (
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           role="combobox"
-                          className="w-full justify-between"
+                          className={cn("w-full justify-between", !formData.category && "border-red-400")}
                         >
                           {formData.category || "Välj kategori..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -1034,7 +1035,7 @@ export default function ToolFormModal({
               {/* Unit selection */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Enhet (verksamhet) *</Label>
+                  <Label className={!formData.unit_id ? 'text-red-500' : ''}>Enhet (verksamhet) *</Label>
                   <MobileSelect
                     value={formData.unit_id || ''}
                     onChange={(v) => {
@@ -1043,6 +1044,7 @@ export default function ToolFormModal({
                     }}
                     options={units.map(u => ({ value: u.id, label: u.name }))}
                     placeholder="Välj enhet"
+                    className={!formData.unit_id ? 'border-red-400' : ''}
                   />
                 </div>
               </div>
