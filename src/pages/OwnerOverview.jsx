@@ -114,7 +114,7 @@ export default function OwnerOverview() {
         </div>
 
         {/* Total Summary */}
-        <OwnerTotalSummary unitFilter={activeTab === 'all' ? null : activeTab} />
+        <OwnerTotalSummary unitFilter={activeTab === 'all' ? null : activeTab} units={units} />
 
         {/* Sections */}
         {(() => {

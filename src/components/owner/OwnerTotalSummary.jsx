@@ -5,7 +5,7 @@ import { TrendingUp, Package, Shovel, Shirt, SprayCan } from 'lucide-react';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
 
-export default function OwnerTotalSummary({ unitFilter }) {
+export default function OwnerTotalSummary({ unitFilter, units = [] }) {
   const { data: allTools = [] } = useQuery({
     queryKey: ['ownerTools'],
     queryFn: () => base44.entities.Tool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
@@ -70,15 +70,25 @@ export default function OwnerTotalSummary({ unitFilter }) {
     return sum + currentValue;
   }, 0);
   const handredskapValue = handTools.reduce((sum, t) => sum + (t.purchase_price || 0), 0);
-  const workwearValue = workwear.reduce((sum, t) => sum + (t.purchase_price || 0) * (t.quantity || 1), 0);
-  const lokalvardValue = unitFilter ? 0 : calculateLokalvardLagerValue(articles, uttag, inkop);
+  const activeUnit = units.find(u => u.id === unitFilter);
+  const isUtemiljo = activeUnit?.name?.toLowerCase() === 'utemiljö';
+  const showLokalvardArbetsklader = !unitFilter || isUtemiljo;
+
+  const workwearValue = showLokalvardArbetsklader
+    ? workwear.reduce((sum, t) => sum + (t.purchase_price || 0) * (t.quantity || 1), 0)
+    : 0;
+  const lokalvardValue = showLokalvardArbetsklader
+    ? calculateLokalvardLagerValue(articles, uttag, inkop)
+    : 0;
   const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue;
 
   const sections = [
     { label: 'Maskiner (bokfört)', value: maskinerValue, icon: Package, color: 'text-[#8B1E1E]', bg: 'bg-[#8B1E1E]/10', subtitle: maskinerPurchaseValue !== maskinerValue ? `Inköp: ${maskinerPurchaseValue.toLocaleString('sv-SE')} kr` : null },
     { label: 'Handredskap', value: handredskapValue, icon: Shovel, color: 'text-orange-600', bg: 'bg-orange-100 dark:bg-orange-900/30' },
-    { label: 'Arbetskläder', value: workwearValue, icon: Shirt, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
-    { label: 'Lokalvård (lager)', value: lokalvardValue, icon: SprayCan, color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+    ...(showLokalvardArbetsklader ? [
+      { label: 'Arbetskläder', value: workwearValue, icon: Shirt, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+      { label: 'Lokalvård (lager)', value: lokalvardValue, icon: SprayCan, color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+    ] : []),
   ];
 
   return (
