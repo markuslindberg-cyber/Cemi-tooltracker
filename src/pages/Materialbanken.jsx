@@ -9,6 +9,7 @@ import MaterialFormModal from '@/components/materialbank/MaterialFormModal';
 import MaterialUttagModal from '@/components/materialbank/MaterialUttagModal';
 import { Plus, Search, Boxes, Package, Trash2, RotateCcw, ScanLine } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { useUnit } from '@/hooks/useUnitContext';
 
 const STATUS_LABELS = { i_lager: 'I lager', reserverad: 'Reserverad', såld: 'Såld' };
 const STATUS_COLORS = { i_lager: 'bg-emerald-100 text-emerald-700', reserverad: 'bg-amber-100 text-amber-700', såld: 'bg-gray-100 text-gray-600' };
@@ -24,6 +25,7 @@ export default function Materialbanken() {
   const [filterSyfte, setFilterSyfte] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const queryClient = useQueryClient();
+  const { activeUnitId, activeUnit, units } = useUnit();
 
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['materialLager'],
@@ -59,10 +61,16 @@ export default function Materialbanken() {
     },
   });
 
-  const kategorier = useMemo(() => [...new Set(materials.map(m => m.kategori).filter(Boolean))].sort(), [materials]);
+  const kategorier = useMemo(() => [...new Set(unitFiltered.map(m => m.kategori).filter(Boolean))].sort(), [unitFiltered]);
+
+  // Filter by active unit
+  const unitFiltered = useMemo(() => {
+    if (!activeUnitId) return materials;
+    return materials.filter(m => m.unit_id === activeUnitId);
+  }, [materials, activeUnitId]);
 
   const filtered = useMemo(() => {
-    return materials.filter(m => {
+    return unitFiltered.filter(m => {
       if (filterKategori !== 'all' && m.kategori !== filterKategori) return false;
       if (filterSyfte !== 'all' && m.syfte !== filterSyfte) return false;
       if (filterStatus !== 'all' && m.status !== filterStatus) return false;
@@ -78,7 +86,7 @@ export default function Materialbanken() {
       }
       return true;
     });
-  }, [materials, search, filterKategori, filterSyfte, filterStatus]);
+  }, [unitFiltered, search, filterKategori, filterSyfte, filterStatus]);
 
   const totalInkopsvarde = filtered.reduce((s, m) => s + (m.inkopspris || 0) * (m.antal || 0), 0);
 
@@ -112,7 +120,7 @@ export default function Materialbanken() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
             <p className="text-xs text-gray-500 dark:text-gray-400">Artiklar i lager</p>
-            <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">{materials.filter(m => m.status === 'i_lager').length}</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">{unitFiltered.filter(m => m.status === 'i_lager').length}</p>
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
             <p className="text-xs text-gray-500 dark:text-gray-400">Inköpsvärde (filtrerat)</p>
@@ -120,7 +128,7 @@ export default function Materialbanken() {
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
             <p className="text-xs text-gray-500 dark:text-gray-400">Till försäljning</p>
-            <p className="text-xl font-bold text-amber-600 mt-1">{materials.filter(m => m.syfte === 'till_forsaljning' && m.status !== 'såld').length}</p>
+            <p className="text-xl font-bold text-amber-600 mt-1">{unitFiltered.filter(m => m.syfte === 'till_forsaljning' && m.status !== 'såld').length}</p>
           </div>
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
             <p className="text-xs text-gray-500 dark:text-gray-400">Kategorier</p>
@@ -272,6 +280,9 @@ export default function Materialbanken() {
         onClose={() => { setShowForm(false); setEditItem(null); }}
         material={editItem}
         locations={locations}
+        units={units}
+        activeUnitId={activeUnitId}
+        activeUnit={activeUnit}
         onSubmit={(data) => saveMutation.mutateAsync(data)}
       />
 

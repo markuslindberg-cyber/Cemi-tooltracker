@@ -21,7 +21,7 @@ const EMPTY_FORM = {
   image_url: '', notes: '',
 };
 
-export default function MaterialFormModal({ isOpen, onClose, material, locations = [], onSubmit }) {
+export default function MaterialFormModal({ isOpen, onClose, material, locations = [], units = [], activeUnitId, activeUnit, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -37,10 +37,14 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
           forsaljningspris_manuell: material.forsaljningspris_manuell?.toString() || '',
         });
       } else {
-        setForm(EMPTY_FORM);
+        setForm({
+          ...EMPTY_FORM,
+          unit_id: activeUnitId || '',
+          unit_name: activeUnit?.name || '',
+        });
       }
     }
-  }, [isOpen, material]);
+  }, [isOpen, material, activeUnitId, activeUnit]);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -153,6 +157,22 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
             <div>
               <Label>Mått</Label>
               <Input value={form.matt} onChange={e => set('matt', e.target.value)} placeholder="T.ex. 400x400x50mm" />
+            </div>
+          </div>
+
+          {/* Enhet (unit) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Enhet (verksamhet)</Label>
+              <Select value={form.unit_id || ''} onValueChange={v => {
+                const u = units.find(u => u.id === v);
+                setForm(prev => ({ ...prev, unit_id: v, unit_name: u?.name || '' }));
+              }}>
+                <SelectTrigger><SelectValue placeholder="Välj enhet" /></SelectTrigger>
+                <SelectContent>
+                  {units.map(u => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

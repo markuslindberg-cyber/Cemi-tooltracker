@@ -102,6 +102,16 @@
       "nullable": true,
       "description": "Kundnamn p\u00e5 jobbet materialet kommer ifr\u00e5n"
     },
+    "unit_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "Referens till Unit-entiteten"
+    },
+    "unit_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Namn p\u00e5 enheten (denormaliserat)"
+    },
     "location_id": {
       "type": "string",
       "nullable": true,
