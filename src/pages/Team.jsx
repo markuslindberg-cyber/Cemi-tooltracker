@@ -26,6 +26,7 @@ import {
   List,
   LogIn,
   Clock,
+  UserPlus,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -37,6 +38,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useUnit } from '@/hooks/useUnitContext';
+import InviteUserDialog from '@/components/modals/InviteUserDialog';
 
 const roleConfig = {
   admin: { label: 'Admin', color: 'bg-red-100 text-red-700' },
@@ -65,6 +67,7 @@ export default function Team() {
   const [memberToDelete, setMemberToDelete] = useState(null);
   const [memberToInactivate, setMemberToInactivate] = useState(null);
   const [inactivating, setInactivating] = useState(false);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   const { toast } = useToast();
   const { activeUnitId } = useUnit();
 
@@ -252,13 +255,22 @@ export default function Team() {
               {teamMembers.length} {teamMembers.length !== 1 ? 'teammedlemmar' : 'teammedlem'}
             </p>
           </div>
-          <Button
-            onClick={() => setShowAddMember(true)}
-            className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Lägg till medlem
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowInviteDialog(true)}
+            >
+              <UserPlus className="w-5 h-5 mr-2" />
+              Bjud in
+            </Button>
+            <Button
+              onClick={() => setShowAddMember(true)}
+              className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Lägg till medlem
+            </Button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -483,6 +495,10 @@ export default function Team() {
         activeMembers={teamMembers}
         onConfirm={confirmInactivate}
         isLoading={inactivateMutation.isPending}
+      />
+      <InviteUserDialog
+        open={showInviteDialog}
+        onOpenChange={setShowInviteDialog}
       />
       <DeleteConfirmationModal
         isOpen={!!memberToDelete}
