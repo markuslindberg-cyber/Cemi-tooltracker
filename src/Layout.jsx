@@ -33,6 +33,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from "@/lib/utils";
 import DeactivateAccountDialog from '@/components/modals/DeactivateAccountDialog';
+import UnitSwitcher from '@/components/UnitSwitcher';
 
 const LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare'];
 const NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'];
@@ -270,6 +271,9 @@ export default function Layout({ children }) {
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-gray-100">ToolTrack</span>
             </Link>
+            <div className="hidden lg:block">
+              <UnitSwitcher />
+            </div>
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-2.5 -mr-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all"
@@ -522,13 +526,8 @@ export default function Layout({ children }) {
             </button>
           )}
 
-          {/* Center: always show logo linking to dashboard */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-[#8B1E1E] rounded-lg flex items-center justify-center">
-              <Wrench className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-semibold text-gray-900 dark:text-gray-100 text-sm">ToolTrack</span>
-          </Link>
+          {/* Center: unit switcher on mobile for owners, logo for others */}
+          <UnitSwitcher />
 
           {/* Right: menu button always visible */}
           {!isRootPath ? (

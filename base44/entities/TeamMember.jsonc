@@ -26,6 +26,14 @@
       ],
       "default": "lokalv\u00e5rdare"
     },
+    "unit_id": {
+      "type": "string",
+      "description": "Referens till Unit-entiteten"
+    },
+    "unit_name": {
+      "type": "string",
+      "description": "Namn p\u00e5 enheten (denormaliserat)"
+    },
     "default_location_id": {
       "type": "string"
     },

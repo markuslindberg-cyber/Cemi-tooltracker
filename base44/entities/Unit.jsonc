@@ -1,0 +1,44 @@
+{
+  "name": "Unit",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Enhetens namn, t.ex. Utemilj\u00f6, F\u00f6rvaltning"
+    },
+    "description": {
+      "type": "string",
+      "nullable": true,
+      "description": "Kort beskrivning av enheten"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "read": {
+      "id": {
+        "$exists": true
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    }
+  }
+}

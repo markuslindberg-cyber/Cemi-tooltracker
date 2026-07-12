@@ -52,6 +52,7 @@ import Materialbanken from './pages/Materialbanken';
 import MaterialUttagHistorik from './pages/MaterialUttagHistorik';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { UnitProvider } from '@/hooks/useUnitContext';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -179,8 +180,10 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <NavigationTracker />
-          <AuthenticatedApp />
+          <UnitProvider>
+            <NavigationTracker />
+            <AuthenticatedApp />
+          </UnitProvider>
         </Router>
         <Toaster />
         <VisualEditAgent />
