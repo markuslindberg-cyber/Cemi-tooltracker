@@ -74,8 +74,8 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
   };
 
   const handleSubmit = async () => {
-    if (!form.benamning || !form.kategori || !form.antal || !form.inkopspris || !form.artikelnummer) {
-      toast({ title: 'Obligatoriska fält saknas', description: 'Fyll i benämning, kategori, antal, inköpspris och artikelnummer.', variant: 'destructive' });
+    if (!form.benamning || !form.kategori || !form.antal || !form.inkopspris || !form.artikelnummer || !form.unit_id) {
+      toast({ title: 'Obligatoriska fält saknas', description: 'Fyll i benämning, kategori, antal, inköpspris, artikelnummer och välj enhet.', variant: 'destructive' });
       return;
     }
     // Check for duplicate barcode
@@ -172,7 +172,7 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
           {/* Enhet (unit) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label>Enhet (verksamhet)</Label>
+              <Label>Enhet (verksamhet) *</Label>
               <Select value={form.unit_id || ''} onValueChange={v => {
                 const u = units.find(u => u.id === v);
                 setForm(prev => ({ ...prev, unit_id: v, unit_name: u?.name || '' }));

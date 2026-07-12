@@ -25,7 +25,9 @@ const defaultForm = {
   notes: '',
 };
 
-export default function HandToolBatchModal({ isOpen, onClose, onSuccess }) {
+export default function HandToolBatchModal({ isOpen, onClose, onSuccess, units = [], activeUnitId, activeUnit }) {
+  const [unitId, setUnitId] = useState('');
+  const [unitName, setUnitName] = useState('');
   const [form, setForm] = useState(defaultForm);
   const [quantity, setQuantity] = useState(1);
   const [distributions, setDistributions] = useState([{ location_id: '', location_name: '', count: 1 }]);
@@ -85,8 +87,13 @@ const availableSubcategories = [...new Set([
       setForm(defaultForm);
       setQuantity(1);
       setDistributions([{ location_id: '', location_name: '', count: 1, condition: 'bra' }]);
+      setUnitId(activeUnitId || '');
+      setUnitName(activeUnit?.name || '');
+    } else {
+      setUnitId(activeUnitId || '');
+      setUnitName(activeUnit?.name || '');
     }
-  }, [isOpen]);
+  }, [isOpen, activeUnitId, activeUnit]);
 
   const handleUploadImage = async (e) => {
     const file = e.target.files?.[0];
@@ -148,7 +155,7 @@ const availableSubcategories = [...new Set([
     onClose();
   };
 
-  const isValid = form.name && form.category && totalDistributed === quantity && quantity > 0;
+  const isValid = form.name && form.category && unitId && totalDistributed === quantity && quantity > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -260,6 +267,21 @@ const availableSubcategories = [...new Set([
                 {availableSubcategories.map(s => <option key={s} value={s} />)}
               </datalist>
             </div>
+          </div>
+
+          {/* Unit selection */}
+          <div className="space-y-1">
+            <Label>Enhet (verksamhet) *</Label>
+            <Select value={unitId} onValueChange={v => {
+              const u = units.find(u => u.id === v);
+              setUnitId(v);
+              setUnitName(u?.name || '');
+            }}>
+              <SelectTrigger><SelectValue placeholder="Välj enhet" /></SelectTrigger>
+              <SelectContent>
+                {units.map(u => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1">

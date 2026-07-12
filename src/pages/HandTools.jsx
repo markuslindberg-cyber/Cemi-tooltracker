@@ -30,7 +30,7 @@ const statusConfig = {
 
 export default function HandTools() {
    const queryClient = useQueryClient();
-   const { activeUnitId, activeUnit } = useUnit();
+   const { activeUnitId, activeUnit, units } = useUnit();
    const [search, setSearch] = useState('');
    
    const { data: handTools = [], isLoading } = useQuery({
@@ -656,6 +656,9 @@ export default function HandTools() {
         isOpen={showBatchModal}
         onClose={() => setShowBatchModal(false)}
         onSuccess={() => queryClient.invalidateQueries(['handtools'])}
+        units={units}
+        activeUnitId={activeUnitId}
+        activeUnit={activeUnit}
       />
 
       {editTool && (
@@ -663,6 +666,7 @@ export default function HandTools() {
           isOpen={!!editTool}
           tool={editTool}
           locations={locations}
+          units={units}
           onClose={() => setEditTool(null)}
           onSuccess={() => {
             queryClient.invalidateQueries(['handtools']);

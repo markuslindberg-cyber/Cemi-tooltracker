@@ -84,7 +84,7 @@ const categoryLabels = {
 
 export default function Inventory() {
    const queryClient = useQueryClient();
-   const { activeUnitId, activeUnit } = useUnit();
+   const { activeUnitId, activeUnit, units } = useUnit();
    
   const { data: tools = [], isLoading } = useQuery({
     queryKey: ['tools'],
@@ -1011,6 +1011,9 @@ export default function Inventory() {
         locations={locations}
         teamMembers={teamMembers}
         onSubmit={handleSaveTool}
+        units={units}
+        activeUnitId={activeUnitId}
+        activeUnit={activeUnit}
       />
 
       {importPreview && (

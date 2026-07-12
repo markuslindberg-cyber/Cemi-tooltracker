@@ -25,7 +25,7 @@ import { Loader2, Upload, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LocationSatellitePicker from '@/components/LocationSatellitePicker';
 
-export default function HandToolEditModal({ isOpen, onClose, tool, locations, onSuccess }) {
+export default function HandToolEditModal({ isOpen, onClose, tool, locations, onSuccess, units = [] }) {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -171,6 +171,20 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
             )}
           </div>
 
+          {/* Unit selection */}
+          <div className="space-y-1">
+            <Label>Enhet (verksamhet) *</Label>
+            <Select value={form.unit_id || ''} onValueChange={v => {
+              const u = units.find(u => u.id === v);
+              setForm(p => ({ ...p, unit_id: v, unit_name: u?.name || '' }));
+            }}>
+              <SelectTrigger><SelectValue placeholder="Välj enhet" /></SelectTrigger>
+              <SelectContent>
+                {units.map(u => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Status</Label>
@@ -230,7 +244,7 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
 
         <DialogFooter className="gap-3">
           <Button variant="outline" onClick={onClose}>Avbryt</Button>
-          <Button onClick={handleSubmit} disabled={saving} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
+          <Button onClick={handleSubmit} disabled={saving || !form.unit_id} className="bg-[#8B1E1E] hover:bg-[#6B1515]">
             {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sparar...</> : 'Spara ändringar'}
           </Button>
         </DialogFooter>

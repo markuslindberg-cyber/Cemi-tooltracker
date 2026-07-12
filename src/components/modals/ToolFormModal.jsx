@@ -62,6 +62,9 @@ export default function ToolFormModal({
   teamMembers,
   onSubmit,
   isLoading,
+  units = [],
+  activeUnitId,
+  activeUnit,
 }) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState(defaultTool);
@@ -127,11 +130,15 @@ export default function ToolFormModal({
     if (tool) {
       setFormData({ ...defaultTool, ...tool });
     } else {
-      setFormData(defaultTool);
+      setFormData({
+        ...defaultTool,
+        unit_id: activeUnitId || '',
+        unit_name: activeUnit?.name || '',
+      });
       setTemplateToolId('');
     }
     setActiveTab('details');
-  }, [tool, isOpen]);
+  }, [tool, isOpen, activeUnitId, activeUnit]);
 
   const handleTemplateSelect = (toolId) => {
     setTemplateToolId(toolId);
@@ -1010,6 +1017,22 @@ export default function ToolFormModal({
                 </div>
               </div>
 
+              {/* Unit selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Enhet (verksamhet) *</Label>
+                  <MobileSelect
+                    value={formData.unit_id || ''}
+                    onChange={(v) => {
+                      const u = units.find(u => u.id === v);
+                      setFormData(prev => ({ ...prev, unit_id: v, unit_name: u?.name || '' }));
+                    }}
+                    options={units.map(u => ({ value: u.id, label: u.name }))}
+                    placeholder="Välj enhet"
+                  />
+                </div>
+              </div>
+
               {/* Assignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <LocationSatellitePicker
@@ -1064,7 +1087,7 @@ export default function ToolFormModal({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={!formData.name || !formData.category || isLoading}
+                disabled={!formData.name || !formData.category || !formData.unit_id || isLoading}
                 className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 {isLoading ? (
