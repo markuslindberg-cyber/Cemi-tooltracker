@@ -60,6 +60,7 @@ export default function Team() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('active');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [unitFilter, setUnitFilter] = useState('all');
   const [editMember, setEditMember] = useState(null);
   const [showAddMember, setShowAddMember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

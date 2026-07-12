@@ -27,8 +27,13 @@ export default function InviteUserDialog({ open, onOpenChange }) {
     if (!email.trim()) return;
     setLoading(true);
     try {
-      const inviteRole = (role === 'admin' || role === 'ägare') ? 'admin' : 'user';
-      await base44.users.inviteUser(email.trim(), inviteRole);
+      await base44.users.inviteUser(email.trim(), 'user');
+      // Sync the app-specific role after invite
+      try {
+        await base44.functions.invoke('setUserRole', { email: email.trim(), role });
+      } catch (e) {
+        console.warn('Kunde inte synka roll:', e);
+      }
       toast({ title: 'Inbjudan skickad', description: `En inbjudan har skickats till ${email.trim()}` });
       setEmail('');
       setRole('verktygsförvaltare');
