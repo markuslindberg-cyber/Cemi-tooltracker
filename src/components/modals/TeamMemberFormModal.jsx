@@ -239,7 +239,7 @@ export default function TeamMemberFormModal({
             <Label>Standardplats</Label>
             <MobileSelect
               value={formData.default_location_id}
-              onChange={(v) => handleChange('default_location_id', v)}
+              onChange={(v) => handleChange('default_location_id', typeof v === 'object' ? v.target.value : v)}
               options={[
                 { value: '', label: 'Ingen' },
                 ...(locations?.filter(l => !l.parent_location_id).map((location) => ({ value: location.id, label: location.name })) || [])
