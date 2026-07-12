@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -35,6 +35,7 @@ export default function LokalvardSection() {
       : Promise.resolve([]),
   });
 
+  const [usagePeriod, setUsagePeriod] = useState('all');
   const pendingRequests = requests.filter(r => r.status === 'pending').length;
   const totalLagerValue = calculateLokalvardLagerValue(articles, uttag, inkop, checkout);
 
@@ -90,44 +91,74 @@ export default function LokalvardSection() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Most used articles */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 text-sm flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-emerald-500" />
-            Mest använda artiklar
-          </h3>
-          {(() => {
-            const articleUsage = {};
-            const allUttag = [...uttag, ...checkout.map(c => ({ artiklar: c.checked_out_items?.map(ci => ({ artikel_id: ci.item_id, benamning: ci.name, antal: ci.scanned_quantity || ci.quantity || 0 })) || [] }))];
-            allUttag.forEach(u => {
-              (u.artiklar || []).forEach(a => {
-                const id = a.artikel_id;
-                if (!id) return;
-                if (!articleUsage[id]) articleUsage[id] = { name: a.benamning || '', total: 0 };
-                articleUsage[id].total += (a.antal || 0);
-              });
+        {(() => {
+          const usagePeriodLabel = usagePeriod === 'month'
+            ? now.toLocaleString('sv-SE', { month: 'long', year: 'numeric' })
+            : 'Alla perioder';
+
+          const filteredUttag = usagePeriod === 'month' ? uttag.filter(u => u.manad === currentMonth) : uttag;
+          const filteredCheckout = usagePeriod === 'month'
+            ? checkout.filter(c => c.checked_out_date && c.checked_out_date.startsWith(currentMonth))
+            : checkout;
+
+          const articleUsage = {};
+          const allUttag = [...filteredUttag, ...filteredCheckout.map(c => ({ artiklar: c.checked_out_items?.map(ci => ({ artikel_id: ci.item_id, benamning: ci.name, antal: ci.scanned_quantity || ci.quantity || 0 })) || [] }))];
+          allUttag.forEach(u => {
+            (u.artiklar || []).forEach(a => {
+              const id = a.artikel_id;
+              if (!id) return;
+              if (!articleUsage[id]) articleUsage[id] = { name: a.benamning || '', total: 0 };
+              articleUsage[id].total += (a.antal || 0);
             });
-            // Enrich names from articles list
-            articles.forEach(a => { if (articleUsage[a.id] && a.benamning) articleUsage[a.id].name = a.benamning; });
-            const top = Object.values(articleUsage).filter(a => a.total > 0).sort((a, b) => b.total - a.total).slice(0, 7);
-            const maxVal = top[0]?.total || 1;
-            if (top.length === 0) return <p className="text-sm text-gray-400">Ingen uttagsdata ännu</p>;
-            return (
-              <div className="space-y-2">
-                {top.map((item, i) => (
-                  <div key={i}>
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[70%]">{item.name}</span>
-                      <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{item.total} st</span>
-                    </div>
-                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
-                      <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${(item.total / maxVal) * 100}%` }} />
-                    </div>
-                  </div>
-                ))}
+          });
+          articles.forEach(a => { if (articleUsage[a.id] && a.benamning) articleUsage[a.id].name = a.benamning; });
+          const top = Object.values(articleUsage).filter(a => a.total > 0).sort((a, b) => b.total - a.total).slice(0, 7);
+          const maxVal = top[0]?.total || 1;
+
+          return (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-emerald-500" />
+                  Mest använda artiklar
+                </h3>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setUsagePeriod('month')}
+                    className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors ${usagePeriod === 'month' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  >
+                    Denna månad
+                  </button>
+                  <button
+                    onClick={() => setUsagePeriod('all')}
+                    className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors ${usagePeriod === 'all' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  >
+                    Totalt
+                  </button>
+                </div>
               </div>
-            );
-          })()}
-        </div>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-3">{usagePeriodLabel}</p>
+              {top.length === 0
+                ? <p className="text-sm text-gray-400">Ingen uttagsdata ännu</p>
+                : (
+                  <div className="space-y-2">
+                    {top.map((item, i) => (
+                      <div key={i}>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[70%]">{item.name}</span>
+                          <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{item.total} st</span>
+                        </div>
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+                          <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${(item.total / maxVal) * 100}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+          );
+        })()}
+
 
         {/* Recent requests */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
