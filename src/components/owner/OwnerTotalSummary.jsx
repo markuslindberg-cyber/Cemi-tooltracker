@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { TrendingUp, Package, Shovel, Shirt, SprayCan } from 'lucide-react';
+import { TrendingUp, Package, Shovel, Shirt, SprayCan, Boxes } from 'lucide-react';
 import { calculateDepreciatedValue } from '@/lib/depreciationUtils';
 import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
 
@@ -53,6 +53,11 @@ export default function OwnerTotalSummary({ unitFilter, units = [] }) {
     queryFn: () => base44.entities.Location.list(),
   });
 
+  const { data: allMaterials = [] } = useQuery({
+    queryKey: ['ownerMaterials'],
+    queryFn: () => base44.entities.MaterialLager.filter({ is_deleted: false }),
+  });
+
   const unitLocationIds = React.useMemo(() => {
     if (!unitFilter) return null;
     return new Set(locations.filter(l => l.unit_id === unitFilter).map(l => l.id));
@@ -88,7 +93,13 @@ export default function OwnerTotalSummary({ unitFilter, units = [] }) {
   const lokalvardValue = showLokalvardArbetsklader
     ? calculateLokalvardLagerValue(articles, uttag, inkop, checkout)
     : 0;
-  const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue;
+
+  const materials = unitFilter
+    ? allMaterials.filter(m => m.unit_id === unitFilter)
+    : allMaterials;
+  const materialValue = materials.filter(m => m.status === 'i_lager').reduce((sum, m) => sum + (m.inkopspris || 0) * (m.antal || 0), 0);
+
+  const totalValue = maskinerValue + handredskapValue + workwearValue + lokalvardValue + materialValue;
 
   const sections = [
     { label: 'Maskiner (bokfört)', value: maskinerValue, icon: Package, color: 'text-[#8B1E1E]', bg: 'bg-[#8B1E1E]/10', subtitle: unitFilter && unassignedTools.filter(t => !['såld','sålda','retired'].includes(t.status)).length > 0 ? `${unassignedTools.filter(t => !['såld','sålda','retired'].includes(t.status)).length} utan plats ej inkl.` : (maskinerPurchaseValue !== maskinerValue ? `Inköp: ${maskinerPurchaseValue.toLocaleString('sv-SE')} kr` : null) },
@@ -97,6 +108,7 @@ export default function OwnerTotalSummary({ unitFilter, units = [] }) {
       { label: 'Arbetskläder', value: workwearValue, icon: Shirt, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
       { label: 'Lokalvård (lager)', value: lokalvardValue, icon: SprayCan, color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
     ] : []),
+    { label: 'Materialbanken', value: materialValue, icon: Boxes, color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' },
   ];
 
   return (
