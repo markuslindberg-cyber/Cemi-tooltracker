@@ -25,6 +25,14 @@
       "nullable": true,
       "description": "Bild p\u00e5 platsen"
     },
+    "unit_id": {
+      "type": "string",
+      "description": "Referens till Unit-entiteten"
+    },
+    "unit_name": {
+      "type": "string",
+      "description": "Namn p\u00e5 enheten (denormaliserat)"
+    },
     "responsible_person_id": {
       "type": "string",
       "nullable": true,
