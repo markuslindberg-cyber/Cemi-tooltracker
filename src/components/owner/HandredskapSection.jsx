@@ -22,7 +22,7 @@ export default function HandredskapSection({ unitFilter }) {
   }, [locations, unitFilter]);
 
   const tools = unitLocationIds
-    ? allTools.filter(t => !t.location_id || unitLocationIds.has(t.location_id))
+    ? allTools.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allTools;
 
   const statusMap = {

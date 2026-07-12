@@ -22,7 +22,7 @@ export default function ArbetskladerSection({ unitFilter }) {
   }, [locations, unitFilter]);
 
   const items = unitLocationIds
-    ? allItems.filter(i => !i.location_id || unitLocationIds.has(i.location_id))
+    ? allItems.filter(i => i.location_id && unitLocationIds.has(i.location_id))
     : allItems;
 
   const { data: requests = [] } = useQuery({

@@ -35,7 +35,7 @@ export default function MaskinerSection({ unitFilter }) {
   const HIDDEN = ['såld', 'sålda', 'retired'];
   const allActive = tools.filter(t => !HIDDEN.includes(t.status));
   const active = unitLocationIds
-    ? allActive.filter(t => !t.location_id || unitLocationIds.has(t.location_id))
+    ? allActive.filter(t => t.location_id && unitLocationIds.has(t.location_id))
     : allActive;
   const available = active.filter(t => t.status === 'available' || t.status === 'Tillgänglig').length;
   const inUse = active.filter(t => t.status === 'in_use').length;
