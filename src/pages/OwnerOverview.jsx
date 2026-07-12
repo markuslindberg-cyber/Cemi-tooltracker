@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Navigate } from 'react-router-dom';
-import { Shield, Download, Loader2, Network } from 'lucide-react';
+import { Shield, Download, Loader2, Network, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { useUnit } from '@/hooks/useUnitContext';
+import { cn } from '@/lib/utils';
 import MaskinerSection from '@/components/owner/MaskinerSection';
 import HandredskapSection from '@/components/owner/HandredskapSection';
 import ArbetskladerSection from '@/components/owner/ArbetskladerSection';
@@ -15,6 +17,8 @@ import OwnerTotalSummary from '@/components/owner/OwnerTotalSummary';
 
 export default function OwnerOverview() {
   const [exporting, setExporting] = React.useState(false);
+  const { units } = useUnit();
+  const [activeTab, setActiveTab] = useState('all'); // 'all' = Företag, or unit id
   const { data: user, isLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -79,20 +83,50 @@ export default function OwnerOverview() {
           </div>
         </div>
 
+        {/* Unit Tabs */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1">
+          <button
+            onClick={() => setActiveTab('all')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+              activeTab === 'all'
+                ? "bg-[#8B1E1E] text-white shadow-sm"
+                : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
+            )}
+          >
+            <Building2 className="w-4 h-4" />
+            Företag (alla enheter)
+          </button>
+          {units.map(unit => (
+            <button
+              key={unit.id}
+              onClick={() => setActiveTab(unit.id)}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+                activeTab === unit.id
+                  ? "bg-[#8B1E1E] text-white shadow-sm"
+                  : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700"
+              )}
+            >
+              {unit.name}
+            </button>
+          ))}
+        </div>
+
         {/* Total Summary */}
-        <OwnerTotalSummary />
+        <OwnerTotalSummary unitFilter={activeTab === 'all' ? null : activeTab} />
 
         {/* Sections */}
         <div className="space-y-10">
-          <MaskinerSection />
+          <MaskinerSection unitFilter={activeTab === 'all' ? null : activeTab} />
           <hr className="border-gray-200 dark:border-gray-800" />
-          <HandredskapSection />
+          <HandredskapSection unitFilter={activeTab === 'all' ? null : activeTab} />
           <hr className="border-gray-200 dark:border-gray-800" />
-          <ArbetskladerSection />
+          <ArbetskladerSection unitFilter={activeTab === 'all' ? null : activeTab} />
           <hr className="border-gray-200 dark:border-gray-800" />
-          <LokalvardSection />
+          <LokalvardSection unitFilter={activeTab === 'all' ? null : activeTab} />
           <hr className="border-gray-200 dark:border-gray-800" />
-          <MaterialSection />
+          <MaterialSection unitFilter={activeTab === 'all' ? null : activeTab} />
         </div>
       </div>
     </div>
