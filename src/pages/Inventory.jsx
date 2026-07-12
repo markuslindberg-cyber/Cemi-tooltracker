@@ -204,6 +204,11 @@ export default function Inventory() {
 
 
 
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => base44.entities.Location.list(),
+  });
+
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
 
@@ -221,11 +226,6 @@ export default function Inventory() {
     }
     return items.map(t => ({ ...t, type: 'tool' }));
   }, [tools, unitLocationIds]);
-
-  const { data: locations = [] } = useQuery({
-    queryKey: ['locations'],
-    queryFn: () => base44.entities.Location.list(),
-  });
 
   const { data: huvudmaskiner = [] } = useQuery({
     queryKey: ['huvudmaskiner'],
