@@ -78,6 +78,15 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
       toast({ title: 'Obligatoriska fält saknas', description: 'Fyll i benämning, kategori, antal, inköpspris och artikelnummer.', variant: 'destructive' });
       return;
     }
+    // Check for duplicate barcode
+    if (form.streckkod) {
+      const existing = await base44.entities.MaterialLager.filter({ streckkod: form.streckkod });
+      const duplicate = existing.find(m => m.id !== material?.id);
+      if (duplicate) {
+        toast({ title: 'Streckkoden finns redan', description: `"${duplicate.benamning}" har redan streckkod ${form.streckkod}.`, variant: 'destructive' });
+        return;
+      }
+    }
     setSaving(true);
     try {
       await onSubmit({
