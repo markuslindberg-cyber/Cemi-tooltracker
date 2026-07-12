@@ -272,6 +272,15 @@ export default function ToolFormModal({
   };
 
   const handleSubmit = async () => {
+    // Check for duplicate barcode
+    if (formData.barcode) {
+      const duplicate = allTools.find(t => t.barcode === formData.barcode && t.id !== tool?.id);
+      if (duplicate) {
+        alert(`Streckkoden "${formData.barcode}" används redan av "${duplicate.name}".`);
+        return;
+      }
+    }
+
     const data = {
       ...formData,
       purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
