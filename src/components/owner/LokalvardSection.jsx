@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SprayCan, ArrowRight, AlertTriangle, TrendingUp } from 'lucide-react';
 import { calculateLokalvardLagerValue } from '@/lib/lokalvardLagerUtils';
+import { buildArtikelSaldoMap } from '@/lib/calculateArtikelSaldo';
 
 export default function LokalvardSection() {
   const { data: articles = [] } = useQuery({
@@ -35,9 +36,16 @@ export default function LokalvardSection() {
   });
 
   const pendingRequests = requests.filter(r => r.status === 'pending').length;
-  const lowStock = articles.filter(a => (a.current_quantity || 0) <= (a.lagertroskelvarde || 10)).length;
-  const totalArticles = articles.length;
   const totalLagerValue = calculateLokalvardLagerValue(articles, uttag, inkop, checkout);
+
+  // Build saldo map to count articles with actual stock
+  const saldoMap = React.useMemo(() => {
+    if (articles.length === 0) return new Map();
+    return buildArtikelSaldoMap(articles, inkop, uttag, checkout);
+  }, [articles, inkop, uttag, checkout]);
+
+  const activeArticles = articles.filter(a => !a.utgaende);
+  const articlesInStock = articles.filter(a => (saldoMap.get(a.id) ?? 0) > 0);
 
   // Uttag this month
   const now = new Date();
@@ -62,7 +70,8 @@ export default function LokalvardSection() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400">Artiklar i lager</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalArticles}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{articlesInStock.length}</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Aktiva: {activeArticles.length} · Totalt: {articles.length}</p>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
           <p className="text-xs text-gray-500 dark:text-gray-400">Lagervärde</p>
