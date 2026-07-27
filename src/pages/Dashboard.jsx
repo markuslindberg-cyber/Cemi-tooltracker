@@ -420,9 +420,9 @@ export default function Dashboard() {
             pending_chart: isVisible('pending_chart') && !LOKALVARD_ONLY_ROLES.includes(user?.role) && (
               <PendingRequestsChart key="pending_chart"
                 loanCount={pendingLoanCount}
-                workwearCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? pendingWorkwearCount : 0}
-                lokalvardCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? pendingLokalvardCount : 0}
-                lokalvardApprovedCount={activeUnit?.name === FORVALTNING_UNIT_NAME ? approvedNotCheckedOutLokalvardCount : 0}
+                workwearCount={pendingWorkwearCount}
+                lokalvardCount={pendingLokalvardCount}
+                lokalvardApprovedCount={approvedNotCheckedOutLokalvardCount}
               />
             ),
             inventory_value: isVisible('inventory_value') && (
