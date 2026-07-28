@@ -211,7 +211,7 @@ export default function Inventory() {
   });
 
   // Required fields that define a "complete" tool record
-  const REQUIRED_FIELDS = ['name', 'category', 'manufacturer', 'model_number', 'location_name', 'status'];
+  const REQUIRED_FIELDS = ['name', 'category', 'manufacturer', 'location_name'];
 
   const isToolIncomplete = (tool) => REQUIRED_FIELDS.some(f => !tool[f] || tool[f] === '');
 
