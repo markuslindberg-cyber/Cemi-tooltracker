@@ -103,6 +103,7 @@ export default function Inventory() {
   const [manufacturerFilter, setManufacturerFilter] = useState([]);
   const [conditionFilter, setConditionFilter] = useState([]);
   const [locationFilter, setLocationFilter] = useState([]);
+  const [incompleteFilter, setIncompleteFilter] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
@@ -209,6 +210,11 @@ export default function Inventory() {
     queryFn: () => base44.entities.Location.list(),
   });
 
+  // Required fields that define a "complete" tool record
+  const REQUIRED_FIELDS = ['name', 'category', 'manufacturer', 'model_number', 'location_name', 'status'];
+
+  const isToolIncomplete = (tool) => REQUIRED_FIELDS.some(f => !tool[f] || tool[f] === '');
+
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
 
@@ -271,8 +277,10 @@ export default function Inventory() {
       const matchesCondition = conditionFilter.length === 0 || conditionFilter.includes(item.condition);
       const matchesLocation = locationFilter.length === 0 || locationFilter.includes(item.location_name);
       
+      const matchesIncomplete = !incompleteFilter || isToolIncomplete(item);
+
       return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory && 
-             matchesManufacturer && matchesCondition && matchesLocation;
+             matchesManufacturer && matchesCondition && matchesLocation && matchesIncomplete;
     });
 
     // Sort the filtered items
@@ -297,7 +305,7 @@ export default function Inventory() {
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, sortBy, sortDir]);
+  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, incompleteFilter, sortBy, sortDir]);
 
   const availableCategories = useMemo(() => {
     return [...new Set(allItems.map(t => t.category).filter(Boolean))].sort();
@@ -447,6 +455,7 @@ export default function Inventory() {
     setManufacturerFilter([]);
     setConditionFilter([]);
     setLocationFilter([]);
+    setIncompleteFilter(false);
   };
 
   const handleDownloadTemplate = () => {
@@ -680,7 +689,7 @@ export default function Inventory() {
             </div>
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
               {filteredTools.length} verktyg
-              {(statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || conditionFilter.length > 0 || locationFilter.length > 0 || searchQuery) && ' matchar filter'}
+              {(statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || conditionFilter.length > 0 || locationFilter.length > 0 || incompleteFilter || searchQuery) && ' matchar filter'}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 md:gap-2 shrink-0">
@@ -717,6 +726,24 @@ export default function Inventory() {
 
         {/* Search & Filters */}
         <div className="space-y-4">
+          {/* Incomplete filter toggle */}
+          {(() => {
+            const incompleteCount = allItems.filter(isToolIncomplete).length;
+            if (incompleteCount === 0 && !incompleteFilter) return null;
+            return (
+              <button
+                onClick={() => setIncompleteFilter(prev => !prev)}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  incompleteFilter
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-amber-900/20'
+                }`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Ej kompletta ({incompleteCount})
+              </button>
+            );
+          })()}
           <SearchFilterBar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
