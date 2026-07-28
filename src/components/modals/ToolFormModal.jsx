@@ -621,22 +621,24 @@ export default function ToolFormModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Tillverkare</Label>
+                  <Label className={!formData.manufacturer ? 'text-red-500' : ''}>Tillverkare *</Label>
                   <Input
                     value={formData.manufacturer}
                     onChange={(e) => handleChange('manufacturer', e.target.value)}
                     placeholder="t.ex. DeWalt, Milwaukee, Makita"
+                    className={!formData.manufacturer ? 'border-red-400 focus-visible:ring-red-400' : ''}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Modellnummer</Label>
+                  <Label className={!formData.model_number ? 'text-red-500' : ''}>Modellnummer *</Label>
                   <Input
                     value={formData.model_number}
                     onChange={(e) => handleChange('model_number', e.target.value)}
                     placeholder="t.ex. 2857-20"
+                    className={!formData.model_number ? 'border-red-400 focus-visible:ring-red-400' : ''}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1105,7 +1107,7 @@ export default function ToolFormModal({
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={!formData.name || !formData.category || !formData.unit_id || !formData.barcode || isLoading}
+                disabled={!formData.name || !formData.category || !formData.manufacturer || !formData.model_number || !formData.location_id || !formData.barcode || !formData.unit_id || isLoading}
                 className="bg-[#8B1E1E] hover:bg-[#6B1515]"
               >
                 {isLoading ? (
