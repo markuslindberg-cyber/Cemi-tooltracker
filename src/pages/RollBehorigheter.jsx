@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Shield, Save, RotateCcw, Database, Layout } from 'lucide-react';
+import { Loader2, Shield, Save, RotateCcw, Database, Layout, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
+import UnitNavigationConfig from '@/components/admin/UnitNavigationConfig';
 
 const PAGE_OPERATIONS = [
   { id: 'can_view', label: 'Visa' },
@@ -293,7 +294,7 @@ export default function RollBehorigheter() {
   });
 
   const [selectedRole, setSelectedRole] = useState(ROLES[0].id);
-  const [activeTab, setActiveTab] = useState('entities'); // 'entities' | 'pages'
+  const [activeTab, setActiveTab] = useState('entities'); // 'entities' | 'pages' | 'units'
 
   if (isLoading) {
     return (
@@ -377,6 +378,17 @@ export default function RollBehorigheter() {
         >
           <Layout className="w-4 h-4" />
           Sidåtkomst
+        </button>
+        <button
+          onClick={() => setActiveTab('units')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'units'
+              ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          Enhetsåtkomst
         </button>
       </div>
 
@@ -555,6 +567,10 @@ export default function RollBehorigheter() {
             </div>
           </div>
         </>
+      )}
+
+      {activeTab === 'units' && (
+        <UnitNavigationConfig />
       )}
 
       <p className="text-xs text-gray-400 dark:text-gray-500 text-center">

@@ -34,6 +34,19 @@ import { useTheme } from '@/hooks/useTheme';
 import { cn } from "@/lib/utils";
 import DeactivateAccountDialog from '@/components/modals/DeactivateAccountDialog';
 import UnitSwitcher from '@/components/UnitSwitcher';
+import { useUnit } from '@/hooks/useUnitContext';
+
+// Map navigation item names to unit config IDs
+const NAV_NAME_TO_UNIT_ID = {
+  'Dashboard': 'dashboard',
+  'Maskiner': 'maskiner',
+  'Handredskap': 'handredskap',
+  'Arbetskläder': 'arbetsklader',
+  'Lokalvård': 'lokalvard',
+  'Inventeringskontroll': 'inventering',
+  'Materialbanken': 'materialbanken',
+  'Administration': 'administration',
+};
 
 const LOKALVARDARE_ROLES = ['lokalvårdare', 'admin_lokalvård', 'ägare'];
 const NOT_LOKALVARDARE = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare'];
@@ -166,6 +179,8 @@ export default function Layout({ children }) {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [bottomTabs, setBottomTabs] = useState(DEFAULT_BOTTOM_TABS);
   const { data: navConfig } = useGlobalConfig('navigation_order');
+  const { data: unitNavConfig } = useGlobalConfig('unit_navigation_config');
+  const { activeUnitId } = useUnit();
   useTheme();
 
   const toggleMenu = (name) => setOpenMenus(prev => ({ ...prev, [name]: !prev[name] }));
@@ -299,10 +314,23 @@ export default function Layout({ children }) {
               }
               return navItems;
             })().filter(item => {
-              if (!item.roles) return true;
-              // Lokalvård menu always visible for lokalvårdare, regardless of parent roles
-              if (item.name === 'Lokalvård' && LOKALVARDARE_ROLES.includes(user?.role)) return true;
-              return item.roles.includes(user?.role);
+              // Role-based filtering (security)
+              const allowedByRole = (() => {
+                if (!item.roles) return true;
+                if (item.name === 'Lokalvård' && LOKALVARDARE_ROLES.includes(user?.role)) return true;
+                return item.roles.includes(user?.role);
+              })();
+              if (!allowedByRole) return false;
+
+              // Unit-based filtering (relevance/UI)
+              if (activeUnitId && unitNavConfig?.config_value) {
+                const unitMenus = unitNavConfig.config_value[activeUnitId];
+                if (unitMenus) {
+                  const unitId = NAV_NAME_TO_UNIT_ID[item.name];
+                  if (unitId && !unitMenus.includes(unitId)) return false;
+                }
+              }
+              return true;
             }).map((item) => {
               const isActive = isActivePath(item.path);
 
