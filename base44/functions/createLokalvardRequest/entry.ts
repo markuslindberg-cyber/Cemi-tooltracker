@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
     const admins = teamMembers.filter(m =>
       m.is_active &&
       m.email &&
-      (m.role === 'admin lokalvård' || m.role === 'admin_lokalvård' || m.role === 'ägare')
+      (m.role === 'admin lokalvård' || m.role === 'admin_lokalvård')
     );
 
     const itemList = (payload.requested_items || [])
