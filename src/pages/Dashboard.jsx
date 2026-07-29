@@ -155,9 +155,9 @@ export default function Dashboard() {
   }, [unitLocations, activeUnitId]);
 
   const unitTools = React.useMemo(() => {
-    if (!unitLocationIds) return tools;
-    return tools.filter(t => t.location_id && unitLocationIds.has(t.location_id));
-  }, [tools, unitLocationIds]);
+    if (!activeUnitId) return tools;
+    return tools.filter(t => t.unit_id === activeUnitId || (t.location_id && unitLocationIds?.has(t.location_id)));
+  }, [tools, activeUnitId, unitLocationIds]);
 
   const activeTools = unitTools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
