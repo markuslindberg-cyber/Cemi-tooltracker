@@ -31,21 +31,22 @@ export function UnitProvider({ children }) {
   const myProfile = teamMembers[0];
   const isOwner = user?.role === 'ägare';
 
-  // Set initial active unit from: localStorage > TeamMember.unit_id > first unit
+  // Set initial active unit from: TeamMember.unit_id > localStorage > first unit
   useEffect(() => {
     if (units.length === 0) return;
 
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const storedUnit = stored && units.find(u => u.id === stored);
-
-    if (storedUnit) {
-      setActiveUnitId(storedUnit.id);
-    } else if (myProfile?.unit_id) {
+    if (myProfile?.unit_id && units.find(u => u.id === myProfile.unit_id)) {
       setActiveUnitId(myProfile.unit_id);
       localStorage.setItem(STORAGE_KEY, myProfile.unit_id);
-    } else if (units.length > 0) {
-      setActiveUnitId(units[0].id);
-      localStorage.setItem(STORAGE_KEY, units[0].id);
+    } else {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const storedUnit = stored && units.find(u => u.id === stored);
+      if (storedUnit) {
+        setActiveUnitId(storedUnit.id);
+      } else if (units.length > 0) {
+        setActiveUnitId(units[0].id);
+        localStorage.setItem(STORAGE_KEY, units[0].id);
+      }
     }
   }, [units, myProfile]);
 
