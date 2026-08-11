@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import DeactivateAccountDialog from '@/components/modals/DeactivateAccountDialog';
 import UnitSwitcher from '@/components/UnitSwitcher';
 import { useUnit } from '@/hooks/useUnitContext';
+import MobileMoreMenu from '@/components/MobileMoreMenu';
 
 // Map navigation item names to unit config IDs
 const NAV_NAME_TO_UNIT_ID = {
@@ -144,13 +145,49 @@ const ICON_MAP = {
 
 const DASHBOARD_TAB = { name: 'Dashboard', path: '/', icon: LayoutDashboard };
 
-// Default bottom tab bar items (used if user has no shortcuts set)
+// Role-specific default bottom tabs
+const ROLE_BOTTOM_TABS = {
+  'lokalvårdare': [
+    DASHBOARD_TAB,
+    { name: 'Begäran', path: '/LokalvardRequestArtikel', icon: SprayCan },
+    { name: 'Kläder', path: '/ArbetskläderRequestWorkwear', icon: Shirt },
+  ],
+  'admin_lokalvård': [
+    DASHBOARD_TAB,
+    { name: 'Lager', path: '/Lokalvard/Lager', icon: SprayCan },
+    { name: 'Godkänna', path: '/Lokalvard/BegaranAttGodkanna', icon: SprayCan },
+    { name: 'Kläder', path: '/ArbetskladerUtrustning', icon: Shirt },
+  ],
+  'verktygsförvaltare': [
+    DASHBOARD_TAB,
+    { name: 'Maskiner', path: '/Inventory', icon: Package },
+    { name: 'Handredskap', path: '/HandTools', icon: Shovel },
+    { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
+  ],
+  'mekaniker': [
+    DASHBOARD_TAB,
+    { name: 'Maskiner', path: '/Inventory', icon: Package },
+    { name: 'Service', path: '/Service', icon: Wrench },
+    { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
+  ],
+  'ägare': [
+    DASHBOARD_TAB,
+    { name: 'Maskiner', path: '/Inventory', icon: Package },
+    { name: 'Lokalvård', path: '/Lokalvard/Lager', icon: SprayCan },
+    { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
+  ],
+};
+
 const DEFAULT_BOTTOM_TABS = [
   DASHBOARD_TAB,
   { name: 'Maskiner', path: '/Inventory', icon: Package },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel },
   { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
 ];
+
+function getDefaultTabsForRole(role) {
+  return ROLE_BOTTOM_TABS[role] || DEFAULT_BOTTOM_TABS;
+}
 
 const slideVariants = {
   initial: { x: '4%', opacity: 0 },
@@ -221,6 +258,7 @@ export default function Layout({ children }) {
     base44.auth.me().then(u => {
       setUser(u);
       if (u?.bottom_nav_shortcuts?.length > 0) {
+        // User has custom shortcuts — use those
         setBottomTabs([
           DASHBOARD_TAB,
           ...u.bottom_nav_shortcuts.map(s => ({
@@ -229,6 +267,9 @@ export default function Layout({ children }) {
             icon: ICON_MAP[s.icon] || Star,
           }))
         ]);
+      } else {
+        // No custom shortcuts — use role-specific defaults
+        setBottomTabs(getDefaultTabsForRole(u?.role));
       }
     }).catch(() => {});
   }, []);
@@ -603,15 +644,7 @@ export default function Layout({ children }) {
               </Link>
             );
           })}
-          <Link
-            to="/NavInstellningar"
-            className={cn(
-              "flex-none w-12 flex flex-col items-center justify-center py-3 gap-0.5 text-xs font-medium transition-colors min-h-[56px]",
-              location.pathname === '/NavInstellningar' ? "text-[#8B1E1E]" : "text-gray-400 dark:text-gray-500"
-            )}
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-          </Link>
+          <MobileMoreMenu user={user} />
         </nav>
       </div>
     </div>
