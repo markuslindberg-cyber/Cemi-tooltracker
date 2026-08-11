@@ -9,7 +9,6 @@ import {
   Package,
   Users,
   Menu,
-  X,
   LogOut,
   ChevronDown,
   ChevronLeft,
@@ -36,6 +35,7 @@ import DeactivateAccountDialog from '@/components/modals/DeactivateAccountDialog
 import UnitSwitcher from '@/components/UnitSwitcher';
 import { useUnit } from '@/hooks/useUnitContext';
 import MobileMoreMenu from '@/components/MobileMoreMenu';
+import MobileSidebarDrawer from '@/components/MobileSidebarDrawer';
 
 // Map navigation item names to unit config IDs
 const NAV_NAME_TO_UNIT_ID = {
@@ -208,7 +208,6 @@ const NAV_ID_MAP = {
 };
 
 export default function Layout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
   const [user, setUser] = useState(null);
   const [deactivateOpen, setDeactivateOpen] = useState(false);
@@ -303,37 +302,18 @@ export default function Layout({ children }) {
       user={user}
     />
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside className={cn(
-        "fixed top-0 left-0 z-50 h-screen w-[280px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      {/* Desktop Sidebar (hidden on mobile — mobile uses grid drawer) */}
+      <aside className="hidden lg:flex fixed top-0 left-0 z-50 h-screen w-[280px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-col">
         <div className="flex flex-col h-full overflow-hidden">
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800" style={{ paddingTop: 'var(--sat)' }}>
-            <Link to="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3">
               <div className="w-9 h-9 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
                 <Wrench className="w-4 h-4 text-white" />
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-gray-100">ToolTrack</span>
             </Link>
-            <div className="hidden lg:block">
-              <UnitSwitcher />
-            </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2.5 -mr-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <UnitSwitcher />
           </div>
 
           {/* Navigation */}
@@ -449,7 +429,7 @@ export default function Layout({ children }) {
                           <Link
                             key={child.name}
                             to={child.path}
-                            onClick={() => setSidebarOpen(false)}
+
                             className={cn(
                               "flex items-center px-3 py-2 lg:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                               child.desktopOnly ? "hidden lg:flex" : "",
@@ -471,7 +451,7 @@ export default function Layout({ children }) {
                 <Link
                   key={item.name}
                   to={item.path}
-                  onClick={() => setSidebarOpen(false)}
+
                   className={cn(
                     "flex items-center gap-2 lg:gap-3 px-3 py-2 lg:py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                     isActive
@@ -499,7 +479,6 @@ export default function Layout({ children }) {
             <div className="px-3 pb-1 space-y-0.5">
               <Link
                 to="/OwnerOverview"
-                onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                   location.pathname === '/OwnerOverview'
@@ -514,7 +493,6 @@ export default function Layout({ children }) {
               </Link>
               <Link
                 to="/AdminLayoutEditor"
-                onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                   location.pathname === '/AdminLayoutEditor'
@@ -576,14 +554,9 @@ export default function Layout({ children }) {
       <div className="lg:pl-[280px]">
         {/* Mobile Header */}
         <header className="lg:hidden h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sticky top-0 z-30" style={{ paddingTop: 'var(--sat)' }}>
-          {/* Left: back button on child routes, menu on root routes */}
+          {/* Left: back button on child routes, menu drawer on root */}
           {isRootPath ? (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            <MobileSidebarDrawer user={user} onDeactivate={() => setDeactivateOpen(true)} />
           ) : (
             <button
               onClick={() => navigate(-1)}
@@ -593,17 +566,12 @@ export default function Layout({ children }) {
             </button>
           )}
 
-          {/* Center: unit switcher on mobile for owners, logo for others */}
+          {/* Center: unit switcher */}
           <UnitSwitcher />
 
-          {/* Right: menu button always visible */}
+          {/* Right: menu drawer on child routes */}
           {!isRootPath ? (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            <MobileSidebarDrawer user={user} onDeactivate={() => setDeactivateOpen(true)} />
           ) : (
             <div className="w-10" />
           )}
