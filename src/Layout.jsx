@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import DeactivateAccountDialog from '@/components/modals/DeactivateAccountDialog';
 import UnitSwitcher from '@/components/UnitSwitcher';
 import { useUnit } from '@/hooks/useUnitContext';
-import MobileMoreMenu from '@/components/MobileMoreMenu';
+
 import MobileSidebarDrawer from '@/components/MobileSidebarDrawer';
 
 // Map navigation item names to unit config IDs
@@ -606,7 +606,6 @@ export default function Layout({ children }) {
               </Link>
             );
           })}
-          <MobileMoreMenu user={user} />
         </nav>
       </div>
     </div>
