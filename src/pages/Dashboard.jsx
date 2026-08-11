@@ -38,6 +38,16 @@ const SIDEBAR_CAPABLE = ['loan_summary', 'pending_chart', 'inventory_value', 'lo
 const LOKALVARD_ONLY_ROLES = ['lokalvårdare', 'admin_lokalvård'];
 const FORVALTNING_UNIT_NAME = 'Förvaltning';
 
+// Which widgets each role can see
+const ROLE_WIDGETS = {
+  'lokalvårdare': ['lokalvard_pending_chart'],
+  'admin_lokalvård': ['stats', 'missing_alert', 'pending_chart', 'lokalvard_pending_chart', 'recent_tools', 'inventory_value'],
+  'verktygsförvaltare': ['stats', 'loan_alert', 'missing_alert', 'loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers', 'recent_tools', 'material_summary'],
+  'mekaniker': ['stats', 'loan_alert', 'missing_alert', 'loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers', 'recent_tools', 'material_summary'],
+  'admin': ['stats', 'loan_alert', 'missing_alert', 'loan_summary', 'pending_chart', 'inventory_value', 'loans_by_location', 'recent_transfers', 'recent_tools', 'material_summary'],
+  'ägare': null, // null = see everything
+};
+
 const DEFAULT_WIDGETS = [
   { id: 'stats', visible: true, column: 'main' },
   { id: 'loan_alert', visible: true, column: 'main' },
@@ -67,7 +77,11 @@ export default function Dashboard() {
 
   const isVisible = (id) => {
     const w = widgets.find(w => w.id === id);
-    return w ? w.visible : true;
+    if (w && !w.visible) return false;
+    // Role-based filtering
+    const allowed = ROLE_WIDGETS[user?.role];
+    if (allowed !== null && allowed !== undefined && !allowed.includes(id)) return false;
+    return true;
   };
   const getColumn = (id) => {
     const w = widgets.find(w => w.id === id);
@@ -282,28 +296,33 @@ export default function Dashboard() {
                <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
              </div>
              {/* Desktop/tablet: inline buttons */}
-             <div className="hidden sm:flex gap-2 shrink-0">
+             <div className="hidden sm:flex flex-wrap gap-2 shrink-0 items-center">
                {user?.role === 'ägare' && (
                  <Link to="/AdminLayoutEditor">
-                   <Button size="sm" variant="outline" className="gap-1">
-                     <Settings className="w-4 h-4" />
-                     <span>Redigera layout</span>
+                   <Button size="sm" variant="outline" className="gap-1.5">
+                     <Settings className="w-3.5 h-3.5" />
+                     <span className="hidden lg:inline">Redigera layout</span>
                    </Button>
                  </Link>
                )}
                <DashboardScanSearch tools={tools} onSelectTool={(tool) => setEditTool(tool)} />
-               <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="gap-1">
-                 <RotateCw className="w-4 h-4" />
-                 <span>Låneförfrågan</span>
-               </Button>
-               <Button
-                 onClick={() => setShowAddTool(true)}
-                 size="sm"
-                 className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 gap-1"
-               >
-                 <Plus className="w-4 h-4" />
-                 <span>Lägg till</span>
-               </Button>
+               {!LOKALVARD_ONLY_ROLES.includes(user?.role) && (
+                 <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="gap-1.5">
+                   <RotateCw className="w-3.5 h-3.5" />
+                   <span className="hidden lg:inline">Låneförfrågan</span>
+                   <span className="lg:hidden">Lån</span>
+                 </Button>
+               )}
+               {!LOKALVARD_ONLY_ROLES.includes(user?.role) && (
+                 <Button
+                   onClick={() => setShowAddTool(true)}
+                   size="sm"
+                   className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 gap-1.5"
+                 >
+                   <Plus className="w-3.5 h-3.5" />
+                   <span>Lägg till</span>
+                 </Button>
+               )}
              </div>
            </div>
            {/* Mobile: compact action row */}
@@ -316,25 +335,29 @@ export default function Dashboard() {
                  </Button>
                </Link>
              )}
-             <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="flex-1 gap-1">
-               <RotateCw className="w-4 h-4" />
-               <span className="text-xs">Lån</span>
-             </Button>
-             <Button
-               onClick={() => setShowAddTool(true)}
-               size="sm"
-               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 gap-1"
-             >
-               <Plus className="w-4 h-4" />
-               <span className="text-xs">Lägg till</span>
-             </Button>
+             {!LOKALVARD_ONLY_ROLES.includes(user?.role) && (
+               <>
+                 <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="flex-1 gap-1">
+                   <RotateCw className="w-4 h-4" />
+                   <span className="text-xs">Lån</span>
+                 </Button>
+                 <Button
+                   onClick={() => setShowAddTool(true)}
+                   size="sm"
+                   className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 gap-1"
+                 >
+                   <Plus className="w-4 h-4" />
+                   <span className="text-xs">Lägg till</span>
+                 </Button>
+               </>
+             )}
            </div>
          </div>
 
         {/* Stats */}
         {isVisible('stats') && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <StatsCard title="Totalt antal verktyg" value={totalTools} icon={Wrench} iconClassName="bg-[#8B1E1E]/10" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatsCard title="Totalt verktyg" value={totalTools} icon={Wrench} iconClassName="bg-[#8B1E1E]/10" />
             <StatsCard title="Tillgängliga" value={availableTools} icon={TrendingUp} iconClassName="bg-emerald-50" />
             <StatsCard title="I bruk" value={inUseTools} icon={Users} iconClassName="bg-blue-50" />
             {missingTools > 0 ? (
@@ -620,11 +643,11 @@ export default function Dashboard() {
               {fullWidgets.map(id => (
                 <div key={id}>{widgetContent[id]}</div>
               ))}
-              {/* Compact widgets – masonry columns */}
+              {/* Compact widgets – responsive grid */}
               {smallWidgets.length > 0 && (
-                <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4" style={{ orphans: 1, widows: 1 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {smallWidgets.map(id => (
-                    <div key={id} className="break-inside-avoid">{widgetContent[id]}</div>
+                    <div key={id}>{widgetContent[id]}</div>
                   ))}
                 </div>
               )}
