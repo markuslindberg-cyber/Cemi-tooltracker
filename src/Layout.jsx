@@ -554,24 +554,23 @@ export default function Layout({ children }) {
       <div className="lg:pl-[280px]">
         {/* Mobile Header */}
         <header className="lg:hidden h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sticky top-0 z-30" style={{ paddingTop: 'var(--sat)' }}>
-          {/* Left: menu drawer (always here) + back button on child routes */}
-          <div className="flex items-center gap-0.5">
-            <MobileSidebarDrawer user={user} onDeactivate={() => setDeactivateOpen(true)} />
-            {!isRootPath && (
-              <button
-                onClick={() => navigate(-1)}
-                className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-            )}
-          </div>
+          {/* Left: back button on child routes, spacer on root */}
+          {!isRootPath ? (
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          ) : (
+            <div className="w-10" />
+          )}
 
           {/* Center: unit switcher */}
           <UnitSwitcher />
 
-          {/* Right: spacer for balance */}
-          <div className={isRootPath ? "w-10" : "w-[4.5rem]"} />
+          {/* Right: menu drawer (always here) */}
+          <MobileSidebarDrawer user={user} onDeactivate={() => setDeactivateOpen(true)} />
         </header>
 
         {/* Page Content - Preserve scroll position per tab */}
