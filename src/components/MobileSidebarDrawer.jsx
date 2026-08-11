@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Shovel, Shirt, SprayCan, Wrench,
-  Users, Settings, Star, Boxes, X, ChevronRight, LogOut,
+  Users, Settings, Star, Boxes, ChevronRight,
   SlidersHorizontal, Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { base44 } from '@/api/base44Client';
-import UnitSwitcher from '@/components/UnitSwitcher';
 
 const NOT_LOKALVARDARE_ROLES = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'];
 
@@ -96,12 +94,7 @@ const SECTIONS = [
   },
 ];
 
-function getInitials(name) {
-  if (!name) return 'U';
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-}
-
-export default function MobileSidebarDrawer({ user, onDeactivate }) {
+export default function MobileSidebarDrawer({ user }) {
   const [open, setOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
   const location = useLocation();
@@ -139,30 +132,16 @@ export default function MobileSidebarDrawer({ user, onDeactivate }) {
 
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setExpandedSection(null); }}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-0 gap-0">
-          {/* Header with user info */}
+          {/* Header */}
           <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-[#8B1E1E] rounded-xl flex items-center justify-center shadow-lg shadow-[#8B1E1E]/25">
                   <Wrench className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-lg font-bold text-gray-900 dark:text-gray-100">ToolTrack</span>
               </div>
-              <UnitSwitcher />
             </div>
-            {user && (
-              <div className="flex items-center gap-3">
-                <Avatar className="w-9 h-9 border-2 border-gray-100">
-                  <AvatarFallback className="bg-[#8B1E1E]/10 text-[#8B1E1E] font-semibold text-sm">
-                    {getInitials(user.full_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user.full_name || 'User'}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Grid navigation */}
@@ -299,22 +278,7 @@ export default function MobileSidebarDrawer({ user, onDeactivate }) {
             )}
           </div>
 
-          {/* Footer: sign out */}
-          <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 space-y-1">
-            <button
-              onClick={() => { handleLinkClick(); base44.auth.logout(); }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-[#8B1E1E] hover:bg-[#8B1E1E]/5 transition-colors active:scale-[0.98]"
-            >
-              <LogOut className="w-4 h-4" />
-              Logga ut
-            </button>
-            <button
-              onClick={() => { handleLinkClick(); onDeactivate?.(); }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors active:scale-[0.98]"
-            >
-              Inaktivera konto
-            </button>
-          </div>
+
         </DialogContent>
       </Dialog>
     </>
