@@ -1,22 +1,17 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // Scheduled function: permanently delete items soft-deleted more than 30 days ago
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
-    // If called with an auth token (manual invocation), enforce role check
-    const authHeader = req.headers.get('authorization');
-    if (authHeader) {
-      const user = await base44.auth.me();
-      if (!user) {
-        return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-      if (!['admin', 'ägare'].includes(user.role)) {
-        return Response.json({ error: 'Insufficient permissions' }, { status: 403 });
-      }
-    } else {
-      console.log('Scheduled system call — no auth header, proceeding as service role');
+    // Always require authentication (scheduled automations pass auth headers)
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!['admin', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -47,4 +42,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}
