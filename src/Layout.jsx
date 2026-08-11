@@ -36,6 +36,7 @@ import UnitSwitcher from '@/components/UnitSwitcher';
 import { useUnit } from '@/hooks/useUnitContext';
 
 import MobileSidebarDrawer from '@/components/MobileSidebarDrawer';
+import SwipeBack from '@/components/SwipeBack';
 
 // Map navigation item names to unit config IDs
 const NAV_NAME_TO_UNIT_ID = {
@@ -574,9 +575,11 @@ export default function Layout({ children }) {
         </header>
 
         {/* Page Content - Preserve scroll position per tab */}
-        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen pb-16 lg:pb-0" style={{ paddingBottom: 'calc(4rem + var(--sab))' }}>
-          {children}
-        </main>
+        <SwipeBack>
+          <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen pb-16 lg:pb-0" style={{ paddingBottom: 'calc(4rem + var(--sab))' }}>
+            {children}
+          </main>
+        </SwipeBack>
 
         {/* Mobile Bottom Tab Bar */}
         <nav
