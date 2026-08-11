@@ -1,6 +1,6 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -16,17 +16,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Can only delete your own account' }, { status: 403 });
     }
 
-    // Delete the TeamMember record
+    // Delete the TeamMember record — verify it belongs to the caller
     if (targetMemberId) {
+      const member = await base44.asServiceRole.entities.TeamMember.get(targetMemberId);
+      if (!member || member.email !== user.email) {
+        return Response.json({ error: 'Forbidden: TeamMember does not belong to you' }, { status: 403 });
+      }
       await base44.asServiceRole.entities.TeamMember.delete(targetMemberId);
     }
-
-    // Delete associated records (you may want to be more selective here)
-    // For now we'll keep history intact per data protection, just remove the member
 
     return Response.json({ success: true, message: 'Account permanently deleted' });
   } catch (error) {
     console.error('Permanent delete failed:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}
