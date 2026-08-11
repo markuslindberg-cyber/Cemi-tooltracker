@@ -268,39 +268,65 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto space-y-5 lg:space-y-8">
         {/* Header */}
-         <div className="flex items-center justify-between gap-3">
-           <div className="min-w-0">
-             <div className="flex items-center gap-2">
-               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-               {activeUnit && (
-                 <UnitBadge className={`border-0 text-xs ${activeUnit.name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                   {activeUnit.name}
-                 </UnitBadge>
-               )}
+         <div className="space-y-3">
+           <div className="flex items-center justify-between gap-3">
+             <div className="min-w-0">
+               <div className="flex items-center gap-2">
+                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+                 {activeUnit && (
+                   <UnitBadge className={`border-0 text-xs ${activeUnit.name === 'Utemiljö' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                     {activeUnit.name}
+                   </UnitBadge>
+                 )}
+               </div>
+               <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
              </div>
-             <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5 hidden sm:block">Spåra, hantera och anpassa dina verktyg</p>
+             {/* Desktop/tablet: inline buttons */}
+             <div className="hidden sm:flex gap-2 shrink-0">
+               {user?.role === 'ägare' && (
+                 <Link to="/AdminLayoutEditor">
+                   <Button size="sm" variant="outline" className="gap-1">
+                     <Settings className="w-4 h-4" />
+                     <span>Redigera layout</span>
+                   </Button>
+                 </Link>
+               )}
+               <DashboardScanSearch tools={tools} onSelectTool={(tool) => setEditTool(tool)} />
+               <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="gap-1">
+                 <RotateCw className="w-4 h-4" />
+                 <span>Låneförfrågan</span>
+               </Button>
+               <Button
+                 onClick={() => setShowAddTool(true)}
+                 size="sm"
+                 className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 gap-1"
+               >
+                 <Plus className="w-4 h-4" />
+                 <span>Lägg till</span>
+               </Button>
+             </div>
            </div>
-           <div className="flex gap-2 shrink-0">
+           {/* Mobile: compact action row */}
+           <div className="flex sm:hidden gap-2">
+             <DashboardScanSearch tools={tools} onSelectTool={(tool) => setEditTool(tool)} />
              {user?.role === 'ägare' && (
                <Link to="/AdminLayoutEditor">
-                 <Button size="sm" variant="outline" className="sm:gap-1">
+                 <Button size="sm" variant="outline">
                    <Settings className="w-4 h-4" />
-                   <span className="hidden sm:inline">Redigera layout</span>
                  </Button>
                </Link>
              )}
-             <DashboardScanSearch tools={tools} onSelectTool={(tool) => setEditTool(tool)} />
-             <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="sm:gap-1">
+             <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="flex-1 gap-1">
                <RotateCw className="w-4 h-4" />
-               <span className="hidden sm:inline">Låneförfrågan</span>
+               <span className="text-xs">Lån</span>
              </Button>
              <Button
                onClick={() => setShowAddTool(true)}
                size="sm"
-               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 sm:gap-1"
+               className="bg-[#8B1E1E] hover:bg-[#6B1515] shadow-lg shadow-[#8B1E1E]/25 flex-1 gap-1"
              >
                <Plus className="w-4 h-4" />
-               <span className="hidden sm:inline">Lägg till</span>
+               <span className="text-xs">Lägg till</span>
              </Button>
            </div>
          </div>
