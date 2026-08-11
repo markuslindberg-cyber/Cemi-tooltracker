@@ -350,10 +350,10 @@ export default function MobileSidebarDrawer({ user }) {
                 </div>
               </nav>
 
-              {/* User profile & logout */}
-              {user && (
-                <div className="shrink-0 border-t border-gray-100 dark:border-gray-800 px-4 py-3">
-                  <div className="flex items-center gap-3">
+              {/* User profile & logout — always visible at bottom */}
+              <div className="shrink-0 border-t border-gray-100 dark:border-gray-800 px-4 py-3">
+                {user && (
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-full bg-[#8B1E1E]/10 flex items-center justify-center shrink-0">
                       <span className="text-sm font-semibold text-[#8B1E1E]">
                         {user.full_name ? user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
@@ -363,15 +363,16 @@ export default function MobileSidebarDrawer({ user }) {
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user.full_name || 'Användare'}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
-                    <button
-                      onClick={() => base44.auth.logout()}
-                      className="p-2 text-gray-400 hover:text-[#8B1E1E] transition-colors"
-                    >
-                      <LogOut className="w-5 h-5" />
-                    </button>
                   </div>
-                </div>
-              )}
+                )}
+                <button
+                  onClick={() => base44.auth.logout()}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-[#8B1E1E] bg-[#8B1E1E]/10 hover:bg-[#8B1E1E]/20 transition-colors active:scale-[0.98]"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logga ut
+                </button>
+              </div>
             </motion.div>
           </>
         )}
