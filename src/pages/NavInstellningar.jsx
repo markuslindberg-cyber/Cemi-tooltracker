@@ -51,7 +51,7 @@ const ALL_SHORTCUTS = [
   { path: '/Administration/Kategorier', label: 'Kategorier', icon: 'Settings', roles: ['admin', 'ägare'] },
 ];
 
-const MAX = 4;
+const MAX = 3;
 
 export default function NavInstellningar() {
   const [user, setUser] = useState(null);
@@ -95,7 +95,7 @@ export default function NavInstellningar() {
   return (
     <div className="max-w-2xl mx-auto p-4 pb-32">
       <h1 className="text-2xl font-bold mb-1">Mina genvägar</h1>
-      <p className="text-gray-500 text-sm mb-6">Dashboard är alltid fast. Välj upp till {MAX} extra genvägar.</p>
+      <p className="text-gray-500 text-sm mb-6">Dashboard är alltid fast. Välj upp till 3 extra genvägar.</p>
 
       {/* Fast genväg */}
       <div className="mb-4">

@@ -17,11 +17,14 @@ const ICON_MAP = {
 };
 
 // All sections available in the "More" grid menu, role-filtered at render
+// Sidebar navigation roles from Layout.jsx
+const NOT_LOKALVARDARE_ROLES = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'];
+
 const MORE_SECTIONS = [
   {
     name: 'Maskiner',
     icon: Package,
-    roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'],
+    roles: NOT_LOKALVARDARE_ROLES,
     children: [
       { name: 'Översikt', path: '/Inventory' },
       { name: 'Huvudmaskiner', path: '/Huvudmaskiner' },
@@ -34,14 +37,15 @@ const MORE_SECTIONS = [
     name: 'Handredskap',
     icon: Shovel,
     path: '/HandTools',
-    roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'],
+    roles: NOT_LOKALVARDARE_ROLES,
   },
   {
     name: 'Arbetskläder',
     icon: Shirt,
+    // No top-level roles — children define their own access
     children: [
-      { name: 'Översikt', path: '/ArbetskladerUtrustning', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'] },
-      { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports', roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'] },
+      { name: 'Översikt', path: '/ArbetskladerUtrustning', roles: NOT_LOKALVARDARE_ROLES },
+      { name: 'Uttagsrapporter', path: '/Arbetsklader/CheckoutReports', roles: NOT_LOKALVARDARE_ROLES },
       { name: 'Begäran', path: '/ArbetskläderRequestWorkwear' },
       { name: 'Förfrågan', path: '/Arbetsklader/Forfragan', roles: ['admin_lokalvård', 'ägare'] },
       { name: 'Streckkoder', path: '/Arbetsklader/Streckkodhantering', roles: ['admin_lokalvård', 'ägare'] },
@@ -67,7 +71,7 @@ const MORE_SECTIONS = [
   {
     name: 'Inventering',
     icon: Wrench,
-    roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'],
+    roles: NOT_LOKALVARDARE_ROLES,
     children: [
       { name: 'Inventering', path: '/InventoryCheck' },
       { name: 'Rapporter', path: '/InventoryReports' },
@@ -77,7 +81,7 @@ const MORE_SECTIONS = [
   {
     name: 'Materialbanken',
     icon: Boxes,
-    roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'],
+    roles: NOT_LOKALVARDARE_ROLES,
     children: [
       { name: 'Översikt', path: '/Materialbanken' },
       { name: 'Uttag', path: '/Materialbanken/Uttag' },
@@ -86,7 +90,7 @@ const MORE_SECTIONS = [
   {
     name: 'Administration',
     icon: Users,
-    roles: ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'],
+    roles: NOT_LOKALVARDARE_ROLES,
     children: [
       { name: 'Platser', path: '/Locations' },
       { name: 'Personal', path: '/Team' },
@@ -103,8 +107,16 @@ export default function MobileMoreMenu({ user }) {
   const userRole = user?.role;
 
   const filteredSections = MORE_SECTIONS.filter(section => {
-    if (!section.roles) return true;
-    return section.roles.includes(userRole);
+    // Top-level role check
+    if (section.roles && !section.roles.includes(userRole)) return false;
+    // If section has children, hide if no child is accessible
+    if (section.children) {
+      const hasAccessibleChild = section.children.some(child =>
+        !child.roles || child.roles.includes(userRole)
+      );
+      if (!hasAccessibleChild) return false;
+    }
+    return true;
   });
 
   const handleLinkClick = () => {

@@ -168,13 +168,12 @@ const ROLE_BOTTOM_TABS = {
     DASHBOARD_TAB,
     { name: 'Maskiner', path: '/Inventory', icon: Package },
     { name: 'Service', path: '/Service', icon: Wrench },
-    { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
+    { name: 'Handredskap', path: '/HandTools', icon: Shovel },
   ],
   'ägare': [
     DASHBOARD_TAB,
     { name: 'Maskiner', path: '/Inventory', icon: Package },
     { name: 'Lokalvård', path: '/Lokalvard/Lager', icon: SprayCan },
-    { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
   ],
 };
 
@@ -182,7 +181,6 @@ const DEFAULT_BOTTOM_TABS = [
   DASHBOARD_TAB,
   { name: 'Maskiner', path: '/Inventory', icon: Package },
   { name: 'Handredskap', path: '/HandTools', icon: Shovel },
-  { name: 'Inventering', path: '/InventoryCheck', icon: Wrench },
 ];
 
 function getDefaultTabsForRole(role) {
