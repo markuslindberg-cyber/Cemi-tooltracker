@@ -3,10 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Shovel, Shirt, SprayCan, Wrench,
   Users, Settings, Star, Boxes, ChevronDown,
-  SlidersHorizontal, Menu, X,
+  SlidersHorizontal, Menu, X, LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
 
 const NOT_LOKALVARDARE_ROLES = ['admin', 'verktygsförvaltare', 'admin_lokalvård', 'ägare', 'mekaniker'];
 
@@ -348,6 +349,29 @@ export default function MobileSidebarDrawer({ user }) {
                   )}
                 </div>
               </nav>
+
+              {/* User profile & logout */}
+              {user && (
+                <div className="shrink-0 border-t border-gray-100 dark:border-gray-800 px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-[#8B1E1E]/10 flex items-center justify-center shrink-0">
+                      <span className="text-sm font-semibold text-[#8B1E1E]">
+                        {user.full_name ? user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{user.full_name || 'Användare'}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                    </div>
+                    <button
+                      onClick={() => base44.auth.logout()}
+                      className="p-2 text-gray-400 hover:text-[#8B1E1E] transition-colors"
+                    >
+                      <LogOut className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </>
         )}
