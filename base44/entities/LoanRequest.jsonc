@@ -175,7 +175,7 @@
           }
         },
         {
-          "created_by": "{{user.email}}"
+          "created_by_id": "{{user.id}}"
         }
       ]
     },
@@ -264,7 +264,7 @@
           }
         },
         {
-          "created_by": "{{user.email}}",
+          "created_by_id": "{{user.id}}",
           "data.status": "pending"
         }
       ]
