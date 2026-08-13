@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // Map TeamMember role names to User entity role names
 function toUserRole(teamMemberRole) {
@@ -9,23 +9,17 @@ function toUserRole(teamMemberRole) {
     'admin': 'admin',
     'verktygsförvaltare': 'verktygsförvaltare',
     'ägare': 'ägare',
+    'mekaniker': 'mekaniker',
     'technician': 'verktygsförvaltare',
-    'apprentice': 'user',
-    'contractor': 'user',
+    'apprentice': 'verktygsförvaltare',
+    'contractor': 'verktygsförvaltare',
   };
-  return map[teamMemberRole] || 'user';
+  return map[teamMemberRole] || 'verktygsförvaltare';
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!['admin', 'ägare'].includes(user.role)) {
-      return Response.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
 
     const { data, old_data, event } = await req.json();
 
@@ -58,4 +52,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}
