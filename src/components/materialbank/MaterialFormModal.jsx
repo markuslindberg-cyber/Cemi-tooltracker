@@ -37,10 +37,12 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
           forsaljningspris_manuell: material.forsaljningspris_manuell?.toString() || '',
         });
       } else {
+        // Default till Utemiljö-enheten
+        const utemiljoUnit = units.find(u => u.name === 'Utemiljö');
         setForm({
           ...EMPTY_FORM,
-          unit_id: activeUnitId || '',
-          unit_name: activeUnit?.name || '',
+          unit_id: utemiljoUnit?.id || activeUnitId || '',
+          unit_name: utemiljoUnit?.name || activeUnit?.name || '',
         });
       }
     }
