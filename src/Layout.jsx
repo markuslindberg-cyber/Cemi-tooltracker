@@ -492,20 +492,7 @@ export default function Layout({ children }) {
                 </div>
                 Ägaröversikt
               </Link>
-              <Link
-                to="/AdminLayoutEditor"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                  location.pathname === '/AdminLayoutEditor'
-                    ? "bg-[#8B1E1E]/10 text-[#8B1E1E]"
-                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                )}
-              >
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", location.pathname === '/AdminLayoutEditor' ? "bg-[#8B1E1E]/15" : "bg-gray-100 dark:bg-gray-800")}>
-                  <SlidersHorizontal className="w-4 h-4" />
-                </div>
-                Redigera layout
-              </Link>
+
             </div>
           )}
 

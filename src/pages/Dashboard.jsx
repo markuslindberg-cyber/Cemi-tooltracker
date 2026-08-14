@@ -297,14 +297,6 @@ export default function Dashboard() {
              </div>
              {/* Desktop/tablet: inline buttons */}
              <div className="hidden sm:flex flex-wrap gap-2 shrink-0 items-center">
-               {user?.role === 'ägare' && (
-                 <Link to="/AdminLayoutEditor">
-                   <Button size="sm" variant="outline" className="gap-1.5">
-                     <Settings className="w-3.5 h-3.5" />
-                     <span className="hidden lg:inline">Redigera layout</span>
-                   </Button>
-                 </Link>
-               )}
                <DashboardScanSearch tools={tools} onSelectTool={(tool) => setEditTool(tool)} />
                {!LOKALVARD_ONLY_ROLES.includes(user?.role) && (
                  <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="gap-1.5">
@@ -328,13 +320,6 @@ export default function Dashboard() {
            {/* Mobile: compact action row */}
            <div className="flex sm:hidden gap-2">
              <DashboardScanSearch tools={tools} onSelectTool={(tool) => setEditTool(tool)} />
-             {user?.role === 'ägare' && (
-               <Link to="/AdminLayoutEditor">
-                 <Button size="sm" variant="outline">
-                   <Settings className="w-4 h-4" />
-                 </Button>
-               </Link>
-             )}
              {!LOKALVARD_ONLY_ROLES.includes(user?.role) && (
                <>
                  <Button onClick={() => setShowLoanRequest(true)} size="sm" variant="outline" className="flex-1 gap-1">
