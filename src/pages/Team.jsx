@@ -401,18 +401,10 @@ export default function Team() {
                         <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Wrench className="w-4 h-4" /><span>Tilldelade verktyg</span></div>
                         <span className="font-medium text-gray-900 dark:text-gray-100">{toolCount}</span>
                       </div>
-                      {(() => {
-                        const userInfo = getUserInfo(member.email);
-                        if (!userInfo) return (
-                          <div className="flex items-center gap-2 text-xs text-gray-400"><LogIn className="w-3.5 h-3.5" /><span>Ej inloggad i appen</span></div>
-                        );
-                        return (
-                          <div className="flex items-center gap-2 text-xs text-emerald-600">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Senast aktiv {formatDistanceToNow(new Date(userInfo.updated_date), { addSuffix: true, locale: sv })}</span>
-                          </div>
-                        );
-                      })()}
+                      {getUserInfo(member.email)
+                        ? <div className="flex items-center gap-2 text-xs text-emerald-600"><LogIn className="w-3.5 h-3.5" /><span>Registrerad</span></div>
+                        : <div className="flex items-center gap-2 text-xs text-gray-400"><LogIn className="w-3.5 h-3.5" /><span>Ej registrerad</span></div>
+                      }
                     </div>
                   </div>
                 </div>
@@ -451,16 +443,10 @@ export default function Team() {
                         return displayLoc ? <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{displayLoc}</span> : null;
                       })()}
                       <span className="flex items-center gap-1"><Wrench className="w-4 h-4" />{toolCount}</span>
-                      {(() => {
-                        const userInfo = getUserInfo(member.email);
-                        if (!userInfo) return <span className="flex items-center gap-1 text-gray-400"><LogIn className="w-4 h-4" />Ej inloggad</span>;
-                        return (
-                          <span className="flex items-center gap-1 text-emerald-600">
-                            <Clock className="w-4 h-4" />
-                            {formatDistanceToNow(new Date(userInfo.updated_date), { addSuffix: true, locale: sv })}
-                          </span>
-                        );
-                      })()}
+                      {getUserInfo(member.email)
+                        ? <span className="flex items-center gap-1 text-emerald-600"><LogIn className="w-4 h-4" />Registrerad</span>
+                        : <span className="flex items-center gap-1 text-gray-400"><LogIn className="w-4 h-4" />Ej registrerad</span>
+                      }
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
