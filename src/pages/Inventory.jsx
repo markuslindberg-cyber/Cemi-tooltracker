@@ -226,12 +226,12 @@ export default function Inventory() {
 
   const allItems = useMemo(() => {
     let items = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
-    // Filter by active unit via location — exclude tools without a location
-    if (unitLocationIds) {
-      items = items.filter(t => t.location_id && unitLocationIds.has(t.location_id));
+    // Filter by active unit via unit_id on the tool
+    if (activeUnitId) {
+      items = items.filter(t => t.unit_id === activeUnitId);
     }
     return items.map(t => ({ ...t, type: 'tool' }));
-  }, [tools, unitLocationIds]);
+  }, [tools, activeUnitId]);
 
   const { data: huvudmaskiner = [] } = useQuery({
     queryKey: ['huvudmaskiner'],

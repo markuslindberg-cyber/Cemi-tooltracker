@@ -170,8 +170,8 @@ export default function Dashboard() {
 
   const unitTools = React.useMemo(() => {
     if (!activeUnitId) return tools;
-    return tools.filter(t => t.unit_id === activeUnitId || (t.location_id && unitLocationIds?.has(t.location_id)));
-  }, [tools, activeUnitId, unitLocationIds]);
+    return tools.filter(t => t.unit_id === activeUnitId);
+  }, [tools, activeUnitId]);
 
   const activeTools = unitTools.filter(t => !HIDDEN_STATUSES.includes(t.status));
   const totalTools = activeTools.length;
