@@ -32,25 +32,41 @@ export function UnitProvider({ children }) {
   const isOwner = user?.role === 'ägare';
 
   // Set initial active unit from: TeamMember.unit_id > localStorage > first unit
+  // Non-owner users always lock to their TeamMember unit
   useEffect(() => {
     if (units.length === 0) return;
 
-    if (myProfile?.unit_id && units.find(u => u.id === myProfile.unit_id)) {
+    // Non-owner users: always use their TeamMember unit (no override)
+    if (!isOwner && myProfile?.unit_id && units.find(u => u.id === myProfile.unit_id)) {
       setActiveUnitId(myProfile.unit_id);
       localStorage.setItem(STORAGE_KEY, myProfile.unit_id);
-    } else {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const storedUnit = stored && units.find(u => u.id === stored);
-      if (storedUnit) {
-        setActiveUnitId(storedUnit.id);
-      } else if (units.length > 0) {
-        setActiveUnitId(units[0].id);
-        localStorage.setItem(STORAGE_KEY, units[0].id);
-      }
+      return;
     }
-  }, [units, myProfile]);
+
+    // Owner or no profile yet: allow localStorage / manual switching
+    if (isOwner && myProfile?.unit_id && !localStorage.getItem(STORAGE_KEY)) {
+      // Owner first visit: default to their own unit
+      setActiveUnitId(myProfile.unit_id);
+      localStorage.setItem(STORAGE_KEY, myProfile.unit_id);
+      return;
+    }
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const storedUnit = stored && units.find(u => u.id === stored);
+    if (storedUnit) {
+      setActiveUnitId(storedUnit.id);
+    } else if (myProfile?.unit_id && units.find(u => u.id === myProfile.unit_id)) {
+      setActiveUnitId(myProfile.unit_id);
+      localStorage.setItem(STORAGE_KEY, myProfile.unit_id);
+    } else if (units.length > 0) {
+      setActiveUnitId(units[0].id);
+      localStorage.setItem(STORAGE_KEY, units[0].id);
+    }
+  }, [units, myProfile, isOwner]);
 
   const switchUnit = (unitId) => {
+    // Non-owner users are locked to their TeamMember unit
+    if (!isOwner && myProfile?.unit_id) return;
     setActiveUnitId(unitId);
     localStorage.setItem(STORAGE_KEY, unitId);
   };
