@@ -997,7 +997,7 @@ export default function Inventory() {
         isOpen={showBulkMove}
         onClose={() => setShowBulkMove(false)}
         selectedCount={selectedTools.size}
-        locations={locations}
+        locations={locations.filter(l => !activeUnitId || l.unit_id === activeUnitId)}
         onSubmit={handleBulkMove}
       />
 
@@ -1006,7 +1006,7 @@ export default function Inventory() {
         onClose={() => setShowBulkEdit(false)}
         selectedCount={selectedTools.size}
         selectedTools={tools.filter(t => selectedTools.has(t.id))}
-        locations={locations}
+        locations={locations.filter(l => !activeUnitId || l.unit_id === activeUnitId)}
         categories={availableCategories}
         huvudmaskiner={huvudmaskiner}
         onSubmit={handleBulkEdit}
@@ -1017,7 +1017,7 @@ export default function Inventory() {
         isOpen={!!transferTool}
         onClose={() => setTransferTool(null)}
         tool={transferTool}
-        locations={locations}
+        locations={locations.filter(l => !activeUnitId || l.unit_id === activeUnitId)}
         teamMembers={teamMembers}
         onSubmit={handleTransfer}
       />

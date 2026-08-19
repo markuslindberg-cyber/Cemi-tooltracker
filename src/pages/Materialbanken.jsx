@@ -279,7 +279,7 @@ export default function Materialbanken() {
         isOpen={showForm}
         onClose={() => { setShowForm(false); setEditItem(null); }}
         material={editItem}
-        locations={locations}
+        locations={locations.filter(l => !activeUnitId || l.unit_id === activeUnitId)}
         units={units}
         activeUnitId={activeUnitId}
         activeUnit={activeUnit}

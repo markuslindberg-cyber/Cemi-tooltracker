@@ -177,7 +177,7 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
               <Label>Enhet (verksamhet) *</Label>
               <Select value={form.unit_id || ''} onValueChange={v => {
                 const u = units.find(u => u.id === v);
-                setForm(prev => ({ ...prev, unit_id: v, unit_name: u?.name || '' }));
+                setForm(prev => ({ ...prev, unit_id: v, unit_name: u?.name || '', location_id: '', location_name: '', satellite_location_id: '', satellite_location_name: '' }));
               }}>
                 <SelectTrigger><SelectValue placeholder="Välj enhet" /></SelectTrigger>
                 <SelectContent>
@@ -267,7 +267,7 @@ export default function MaterialFormModal({ isOpen, onClose, material, locations
               <Input value={form.kund_namn} onChange={e => set('kund_namn', e.target.value)} placeholder="T.ex. BRF Solgläntan" />
             </div>
             <LocationSatellitePicker
-              locations={locations}
+              locations={(locations || []).filter(l => !form.unit_id || l.unit_id === form.unit_id)}
               locationId={form.location_id}
               satelliteLocationId={form.satellite_location_id}
               onLocationChange={(id, name) => setForm(prev => ({ ...prev, location_id: id, location_name: name }))}

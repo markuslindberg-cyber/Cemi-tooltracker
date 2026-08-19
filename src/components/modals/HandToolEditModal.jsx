@@ -179,7 +179,7 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
             <Label>Enhet (verksamhet) *</Label>
             <Select value={form.unit_id || ''} onValueChange={v => {
               const u = units.find(u => u.id === v);
-              setForm(p => ({ ...p, unit_id: v, unit_name: u?.name || '' }));
+              setForm(p => ({ ...p, unit_id: v, unit_name: u?.name || '', location_id: '', location_name: '', satellite_location_id: '', satellite_location_name: '' }));
             }}>
               <SelectTrigger><SelectValue placeholder="Välj enhet" /></SelectTrigger>
               <SelectContent>
@@ -232,7 +232,7 @@ export default function HandToolEditModal({ isOpen, onClose, tool, locations, on
           </div>
 
           <LocationSatellitePicker
-            locations={locations || []}
+            locations={(locations || []).filter(l => !form.unit_id || l.unit_id === form.unit_id)}
             locationId={form.location_id}
             satelliteLocationId={form.satellite_location_id}
             onLocationChange={(id, name) => setForm(p => ({ ...p, location_id: id, location_name: name }))}

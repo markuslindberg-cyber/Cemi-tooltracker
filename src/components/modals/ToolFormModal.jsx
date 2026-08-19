@@ -1035,7 +1035,7 @@ export default function ToolFormModal({
                 </div>
               </div>
 
-              {/* Unit selection */}
+              {/* Unit selection - locked for non-owners */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className={!formData.unit_id ? 'text-red-500' : ''}>Enhet (verksamhet) *</Label>
@@ -1043,11 +1043,12 @@ export default function ToolFormModal({
                     value={formData.unit_id || ''}
                     onChange={(v) => {
                       const u = units.find(u => u.id === v);
-                      setFormData(prev => ({ ...prev, unit_id: v, unit_name: u?.name || '' }));
+                      setFormData(prev => ({ ...prev, unit_id: v, unit_name: u?.name || '', location_id: '', location_name: '', satellite_location_id: '', satellite_location_name: '' }));
                     }}
                     options={units.map(u => ({ value: u.id, label: u.name }))}
                     placeholder="Välj enhet"
                     className={!formData.unit_id ? '!border-red-400' : ''}
+                    disabled={!!activeUnitId && units.length > 0 && !units.find(u => u.id !== activeUnitId)}
                   />
                 </div>
               </div>
@@ -1055,7 +1056,7 @@ export default function ToolFormModal({
               {/* Assignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <LocationSatellitePicker
-                  locations={locations || []}
+                  locations={(locations || []).filter(l => !activeUnitId || l.unit_id === activeUnitId)}
                   locationId={formData.location_id}
                   satelliteLocationId={formData.satellite_location_id}
                   onLocationChange={(id, name) => setFormData(prev => ({ ...prev, location_id: id, location_name: name }))}

@@ -665,7 +665,7 @@ export default function HandTools() {
         <HandToolEditModal
           isOpen={!!editTool}
           tool={editTool}
-          locations={locations}
+          locations={locations.filter(l => !activeUnitId || l.unit_id === activeUnitId)}
           units={units}
           onClose={() => setEditTool(null)}
           onSuccess={() => {
