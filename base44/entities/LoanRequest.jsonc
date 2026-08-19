@@ -248,8 +248,7 @@
           }
         },
         {
-          "data.requested_by_email": "{{user.email}}",
-          "data.status": "pending"
+          "data.requested_by_email": "{{user.email}}"
         },
         {
           "data.approver_email": "{{user.email}}"
@@ -264,8 +263,7 @@
           }
         },
         {
-          "created_by_id": "{{user.id}}",
-          "data.status": "pending"
+          "created_by_id": "{{user.id}}"
         }
       ]
     }
