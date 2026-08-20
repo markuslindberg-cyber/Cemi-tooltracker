@@ -26,6 +26,12 @@ export default async function(req) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Only admins and owners can sync roles
+    const ALLOWED_ROLES = ['admin', 'mekaniker', 'ägare'];
+    if (!ALLOWED_ROLES.includes(user.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { data, old_data, event } = await req.json();
 
     if (!data?.email || !data?.role) {
