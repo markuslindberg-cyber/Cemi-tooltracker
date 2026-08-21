@@ -60,6 +60,7 @@ import { format } from 'date-fns';
 import { useUnit } from '@/hooks/useUnitContext';
 import { Badge as UnitBadge } from '@/components/ui/badge';
 import { isToolIncomplete } from '@/lib/toolRequiredFields';
+import { ClipboardX } from 'lucide-react';
 
 const statusConfig = {
   available: { label: "Tillgänglig", color: "bg-emerald-100 text-emerald-700" },
@@ -105,6 +106,7 @@ export default function Inventory() {
   const [conditionFilter, setConditionFilter] = useState([]);
   const [locationFilter, setLocationFilter] = useState([]);
   const [incompleteFilter, setIncompleteFilter] = useState(false);
+  const [neverInventoriedFilter, setNeverInventoriedFilter] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
@@ -211,6 +213,24 @@ export default function Inventory() {
     queryFn: () => base44.entities.Location.list(),
   });
 
+  // Fetch inventory reports to determine which tools have been inventoried
+  const { data: inventoryReports = [] } = useQuery({
+    queryKey: ['inventoryReports'],
+    queryFn: () => base44.entities.InventoryReport.list('-performed_at', 500),
+  });
+
+  const inventoriedToolIds = useMemo(() => {
+    const ids = new Set();
+    for (const report of inventoryReports) {
+      if (report.checked_list) {
+        for (const item of report.checked_list) {
+          if (item.id) ids.add(item.id);
+        }
+      }
+    }
+    return ids;
+  }, [inventoryReports]);
+
   // isToolIncomplete imported from shared module
 
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
@@ -279,9 +299,10 @@ export default function Inventory() {
       const matchesLocation = locationFilter.length === 0 || locationFilter.includes(item.location_name);
       
       const matchesIncomplete = !incompleteFilter || isToolIncomplete(item);
+      const matchesNeverInventoried = !neverInventoriedFilter || !inventoriedToolIds.has(item.id);
 
       return matchesSearch && matchesStatus && matchesCategory && matchesSubcategory && 
-             matchesManufacturer && matchesCondition && matchesLocation && matchesIncomplete;
+             matchesManufacturer && matchesCondition && matchesLocation && matchesIncomplete && matchesNeverInventoried;
     });
 
     // Sort the filtered items
@@ -306,7 +327,7 @@ export default function Inventory() {
       }
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, incompleteFilter, sortBy, sortDir]);
+  }, [allItems, searchQuery, statusFilter, categoryFilter, subcategoryFilter, manufacturerFilter, conditionFilter, locationFilter, incompleteFilter, neverInventoriedFilter, inventoriedToolIds, sortBy, sortDir]);
 
   const availableCategories = useMemo(() => {
     return [...new Set(allItems.map(t => t.category).filter(Boolean))].sort();
@@ -457,6 +478,7 @@ export default function Inventory() {
     setConditionFilter([]);
     setLocationFilter([]);
     setIncompleteFilter(false);
+    setNeverInventoriedFilter(false);
   };
 
   const handleDownloadTemplate = () => {
@@ -690,7 +712,7 @@ export default function Inventory() {
             </div>
             <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
               {filteredTools.length} verktyg
-              {(statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || conditionFilter.length > 0 || locationFilter.length > 0 || incompleteFilter || searchQuery) && ' matchar filter'}
+              {(statusFilter.length > 0 || categoryFilter.length > 0 || subcategoryFilter.length > 0 || manufacturerFilter.length > 0 || conditionFilter.length > 0 || locationFilter.length > 0 || incompleteFilter || neverInventoriedFilter || searchQuery) && ' matchar filter'}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 md:gap-2 shrink-0">
@@ -742,6 +764,24 @@ export default function Inventory() {
               >
                 <AlertTriangle className="w-3.5 h-3.5" />
                 Ej kompletta ({incompleteCount})
+              </button>
+            );
+          })()}
+          {/* Never inventoried filter — desktop only */}
+          {(() => {
+            const neverCount = allItems.filter(t => !inventoriedToolIds.has(t.id)).length;
+            if (neverCount === 0 && !neverInventoriedFilter) return null;
+            return (
+              <button
+                onClick={() => setNeverInventoriedFilter(prev => !prev)}
+                className={`hidden lg:inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  neverInventoriedFilter
+                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-purple-900/20'
+                }`}
+              >
+                <ClipboardX className="w-3.5 h-3.5" />
+                Aldrig inventerade ({neverCount})
               </button>
             );
           })()}
