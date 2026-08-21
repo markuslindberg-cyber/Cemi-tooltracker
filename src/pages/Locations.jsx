@@ -289,8 +289,8 @@ export default function Locations() {
                       {location.address && <p className="text-sm text-gray-500 mt-3 line-clamp-2">{location.address}</p>}
                       <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Package className="w-4 h-4" /><span>Maskiner</span></div>
-                          <span className="font-medium text-gray-900 dark:text-gray-100">{toolCount}</span>
+                          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Package className="w-4 h-4" /><span>Maskiner (inkl. satelliter)</span></div>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{tools.filter(t => t.location_id === location.id).length}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
