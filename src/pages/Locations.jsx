@@ -91,8 +91,11 @@ export default function Locations() {
     return locations.filter(l => l.parent_location_id === locationId).sort((a, b) => a.name.localeCompare(b.name, 'sv'));
   };
 
-  const getToolCount = (locationId) => {
-    return tools.filter(t => t.location_id === locationId).length;
+  const getToolCount = (locationId, isSatellite = false) => {
+    if (isSatellite) {
+      return tools.filter(t => t.satellite_location_id === locationId).length;
+    }
+    return tools.filter(t => t.location_id === locationId && !t.satellite_location_id).length;
   };
 
   const getHandToolCount = (locationId) => {
@@ -327,7 +330,7 @@ export default function Locations() {
                             >
                               <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                               <span className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{subLoc.name}</span>
-                              <span className="text-xs text-gray-400 ml-auto shrink-0">{getToolCount(subLoc.id)} maskiner</span>
+                              <span className="text-xs text-gray-400 ml-auto shrink-0">{getToolCount(subLoc.id, true)} maskiner</span>
                             </div>
                           ))}
                         </div>
@@ -408,7 +411,7 @@ export default function Locations() {
             ? `Platsen har ${getToolCount(locationToDelete.id) + getHandToolCount(locationToDelete.id)} verktyg/handredskap kopplade. Vad vill du göra med dessa?`
             : `Är du säker på att du vill ta bort ${locationToDelete?.name}? Åtgärden kan inte ångras.`
         }
-        hasTools={locationToDelete ? (getToolCount(locationToDelete.id) + getHandToolCount(locationToDelete.id)) > 0 : false}
+        hasTools={locationToDelete ? (tools.filter(t => t.location_id === locationToDelete.id).length + getHandToolCount(locationToDelete.id)) > 0 : false}
         onUnassignAndDelete={() => confirmDeleteLocation(true)}
         onDeleteOnly={() => confirmDeleteLocation(false)}
         onConfirmNoTools={() => confirmDeleteLocation(false)}
