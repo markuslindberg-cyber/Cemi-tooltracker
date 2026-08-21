@@ -23,6 +23,7 @@ import ServiceRecordModal from '@/components/modals/ServiceRecordModal';
 import ToolLogTab from '@/components/ToolLogTab';
 import LocationSatellitePicker from '@/components/LocationSatellitePicker';
 import { useMemo, useState, useEffect } from 'react';
+import { getMissingFieldLabels } from '@/lib/toolRequiredFields';
 
 const defaultTool = {
 name: '',
@@ -286,8 +287,21 @@ export default function ToolFormModal({
       }
     }
 
+    // Resolve unit_id/unit_name from selected location if not explicitly set
+    let resolvedUnitId = formData.unit_id;
+    let resolvedUnitName = formData.unit_name;
+    if (!resolvedUnitId && formData.location_id) {
+      const loc = locations?.find(l => l.id === formData.location_id);
+      if (loc?.unit_id) {
+        resolvedUnitId = loc.unit_id;
+        resolvedUnitName = loc.unit_name || '';
+      }
+    }
+
     const data = {
       ...formData,
+      unit_id: resolvedUnitId || '',
+      unit_name: resolvedUnitName || '',
       purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
     };
     onSubmit(data);
@@ -461,20 +475,9 @@ export default function ToolFormModal({
             </TabsList>
 
             <TabsContent value="details" className="space-y-6 py-4">
-              {/* Missing fields banner */}
-              {isEditing && (() => {
-                const REQUIRED_FIELD_LABELS = {
-                  name: 'Verktygsnamn',
-                  category: 'Kategori',
-                  manufacturer: 'Tillverkare',
-                  model_number: 'Modellnummer',
-                  location_name: 'Plats',
-                  barcode: 'Streckkod',
-                  unit_id: 'Enhet',
-                };
-                const missing = Object.entries(REQUIRED_FIELD_LABELS)
-                  .filter(([key]) => !formData[key] || formData[key] === '')
-                  .map(([, label]) => label);
+              {/* Missing fields banner — checks ACTUAL tool data, not auto-filled formData */}
+              {isEditing && tool && (() => {
+                const missing = getMissingFieldLabels(tool);
                 if (missing.length === 0) return null;
                 return (
                   <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3">

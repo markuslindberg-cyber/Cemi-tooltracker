@@ -59,6 +59,7 @@ import {
 import { format } from 'date-fns';
 import { useUnit } from '@/hooks/useUnitContext';
 import { Badge as UnitBadge } from '@/components/ui/badge';
+import { isToolIncomplete } from '@/lib/toolRequiredFields';
 
 const statusConfig = {
   available: { label: "Tillgänglig", color: "bg-emerald-100 text-emerald-700" },
@@ -210,10 +211,7 @@ export default function Inventory() {
     queryFn: () => base44.entities.Location.list(),
   });
 
-  // Required fields that define a "complete" tool record
-  const REQUIRED_FIELDS = ['name', 'category', 'manufacturer', 'model_number', 'location_name', 'barcode', 'unit_id'];
-
-  const isToolIncomplete = (tool) => REQUIRED_FIELDS.some(f => !tool[f] || tool[f] === '');
+  // isToolIncomplete imported from shared module
 
   // Only display active tools — exclude sold/retired/missing (those go to SåldaRedskap). Include i_lager
   const HIDDEN_STATUSES = ['såld', 'sålda', 'retired', 'missing'];
@@ -226,9 +224,12 @@ export default function Inventory() {
 
   const allItems = useMemo(() => {
     let items = tools.filter(t => !HIDDEN_STATUSES.includes(t.status));
-    // Filter by active unit via location's unit membership
-    if (activeUnitId && unitLocationIds) {
-      items = items.filter(t => unitLocationIds.has(t.location_id));
+    // Filter by active unit — prefer tool.unit_id, fallback to location-based lookup
+    if (activeUnitId) {
+      items = items.filter(t => {
+        if (t.unit_id) return t.unit_id === activeUnitId;
+        return unitLocationIds ? unitLocationIds.has(t.location_id) : false;
+      });
     }
     return items.map(t => ({ ...t, type: 'tool' }));
   }, [tools, activeUnitId, unitLocationIds]);

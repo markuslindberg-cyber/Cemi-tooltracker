@@ -169,8 +169,11 @@ export default function Dashboard() {
   }, [unitLocations, activeUnitId]);
 
   const unitTools = React.useMemo(() => {
-    if (!activeUnitId || !unitLocationIds) return tools;
-    return tools.filter(t => unitLocationIds.has(t.location_id));
+    if (!activeUnitId) return tools;
+    return tools.filter(t => {
+      if (t.unit_id) return t.unit_id === activeUnitId;
+      return unitLocationIds ? unitLocationIds.has(t.location_id) : false;
+    });
   }, [tools, activeUnitId, unitLocationIds]);
 
   const activeTools = unitTools.filter(t => !HIDDEN_STATUSES.includes(t.status));
