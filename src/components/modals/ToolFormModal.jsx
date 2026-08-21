@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Upload, X, Wrench, Check, ChevronsUpDown } from "lucide-react";
+import { Loader2, Upload, X, Wrench, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
 import MobileSelect from "@/components/ui/mobile-select";
 import { base44 } from "@/api/base44Client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -461,6 +461,36 @@ export default function ToolFormModal({
             </TabsList>
 
             <TabsContent value="details" className="space-y-6 py-4">
+              {/* Missing fields banner */}
+              {isEditing && (() => {
+                const REQUIRED_FIELD_LABELS = {
+                  name: 'Verktygsnamn',
+                  category: 'Kategori',
+                  manufacturer: 'Tillverkare',
+                  model_number: 'Modellnummer',
+                  location_name: 'Plats',
+                  barcode: 'Streckkod',
+                  unit_id: 'Enhet',
+                };
+                const missing = Object.entries(REQUIRED_FIELD_LABELS)
+                  .filter(([key]) => !formData[key] || formData[key] === '')
+                  .map(([, label]) => label);
+                if (missing.length === 0) return null;
+                return (
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Saknade uppgifter</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                          {missing.join(', ')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Template Selection - only show when adding new tool */}
               {!isEditing && (
                 <div className="space-y-2 pb-4 border-b border-gray-200">
