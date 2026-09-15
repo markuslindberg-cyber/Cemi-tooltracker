@@ -50,6 +50,7 @@ import LokalvardFakturering from './pages/LokalvardFakturering';
 import InventeringsManual from './pages/InventeringsManual';
 import Materialbanken from './pages/Materialbanken';
 import MaterialUttagHistorik from './pages/MaterialUttagHistorik';
+import UnitsAdmin from './pages/UnitsAdmin';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { UnitProvider } from '@/hooks/useUnitContext';
@@ -167,6 +168,7 @@ const AuthenticatedApp = () => {
       <Route path="/Materialbanken" element={<LayoutWrapper currentPageName="Materialbanken"><Materialbanken /></LayoutWrapper>} />
       <Route path="/Materialbanken/Uttag" element={<LayoutWrapper currentPageName="MaterialUttagHistorik"><MaterialUttagHistorik /></LayoutWrapper>} />
       <Route path="/InventeringsManual" element={<LayoutWrapper currentPageName="InventeringsManual"><InventeringsManual /></LayoutWrapper>} />
+      <Route path="/Administration/Enheter" element={<LayoutWrapper currentPageName="UnitsAdmin"><UnitsAdmin /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </AnimatePresence>

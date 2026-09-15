@@ -8,18 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Save, RotateCcw, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const MENU_GROUPS = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'maskiner', label: 'Maskiner' },
-  { id: 'handredskap', label: 'Handredskap' },
-  { id: 'arbetsklader', label: 'Arbetskläder' },
-  { id: 'lokalvard', label: 'Lokalvård' },
-  { id: 'inventering', label: 'Inventeringskontroll' },
-  { id: 'materialbanken', label: 'Materialbanken' },
-  { id: 'administration', label: 'Administration' },
-];
+import { MENU_GROUPS, UNIT_NAV_CONFIG_KEY } from '@/lib/unitMenus';
 
-const CONFIG_KEY = 'unit_navigation_config';
+const CONFIG_KEY = UNIT_NAV_CONFIG_KEY;
 
 export default function UnitNavigationConfig() {
   const { data: units = [], isLoading: unitsLoading } = useQuery({
