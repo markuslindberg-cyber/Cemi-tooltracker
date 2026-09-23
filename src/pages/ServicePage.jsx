@@ -49,7 +49,7 @@ function RecentlyServicedSection({ onSelectTool }) {
 
   const { data: tools = [] } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    queryFn: () => base44.entities.Tool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
   });
 
   const toolMap = React.useMemo(() => {
@@ -508,7 +508,7 @@ export default function ServicePage() {
 
   const { data: tools = [] } = useQuery({
     queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list('-updated_date', 500),
+    queryFn: () => base44.entities.Tool.list('-updated_date', 10000).then(r => r.filter(t => !t.is_deleted)),
   });
 
   useEffect(() => {
@@ -526,7 +526,11 @@ export default function ServicePage() {
     const trimmed = (code || barcode).trim();
     if (!trimmed) return;
     setBarcode(trimmed);
-    const found = tools.find(t => t.barcode === trimmed || t.model_number === trimmed || t.name?.toLowerCase() === trimmed.toLowerCase());
+    const q = trimmed.toLowerCase();
+    const found = tools.find(t =>
+      [t.barcode, t.serial_number, t.tool_number, t.model_number, t.name]
+        .some(v => v && String(v).trim().toLowerCase() === q)
+    );
     if (found) {
       setSelectedTool(found);
       setNotFound(false);
@@ -540,10 +544,10 @@ export default function ServicePage() {
     setBarcode(value);
     setNotFound(false);
     if (value.trim()) {
+      const q = value.toLowerCase();
       const filtered = tools.filter(t =>
-        t.name?.toLowerCase().includes(value.toLowerCase()) ||
-        t.barcode?.includes(value) ||
-        t.model_number?.toLowerCase().includes(value.toLowerCase())
+        [t.name, t.manufacturer, t.barcode, t.serial_number, t.tool_number, t.model_number]
+          .some(v => v && String(v).toLowerCase().includes(q))
       );
       setSuggestedTools(filtered.slice(0, 8));
     } else {
