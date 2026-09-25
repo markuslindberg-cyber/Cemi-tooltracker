@@ -63,8 +63,8 @@ export default function LocationDetails() {
   const { data: tools = [], isLoading: loadingTools } = useQuery({
     queryKey: ['tools-for-location', locationId],
     queryFn: async () => {
-      const all = await base44.entities.Tool.list();
-      return all.filter(t => t.location_id === locationId);
+      const all = await base44.entities.Tool.list('-updated_date', 10000);
+      return all.filter(t => !t.is_deleted && (t.location_id === locationId || t.satellite_location_id === locationId));
     },
   });
 
@@ -113,8 +113,8 @@ export default function LocationDetails() {
   const { data: handTools = [], isLoading: loadingHandTools } = useQuery({
     queryKey: ['handtools-for-location', locationId],
     queryFn: async () => {
-      const all = await base44.entities.HandTool.list();
-      return all.filter(t => t.location_id === locationId);
+      const all = await base44.entities.HandTool.list('-updated_date', 10000);
+      return all.filter(t => !t.is_deleted && (t.location_id === locationId || t.satellite_location_id === locationId));
     },
   });
 
