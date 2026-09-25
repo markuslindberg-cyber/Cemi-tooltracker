@@ -26,9 +26,14 @@ export default async function(req) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Only admins and owners can sync roles
-    const ALLOWED_ROLES = ['admin', 'mekaniker', 'ägare'];
-    if (!ALLOWED_ROLES.includes(user.role)) {
+    // Roles each caller role is allowed to assign (only ägare can grant privileged roles)
+    const ASSIGNABLE_ROLES = {
+      'ägare': ['admin', 'admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare', 'mekaniker', 'ägare'],
+      'admin': ['admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare', 'mekaniker'],
+      'mekaniker': ['admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare'],
+    };
+    const allowed = ASSIGNABLE_ROLES[user.role];
+    if (!allowed) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -44,6 +49,9 @@ export default async function(req) {
     }
 
     const userRole = toUserRole(data.role);
+    if (!allowed.includes(userRole)) {
+      return Response.json({ error: `Du har inte behörighet att tilldela rollen "${userRole}"` }, { status: 403 });
+    }
 
     // Find user by email
     const users = await base44.asServiceRole.entities.User.list();

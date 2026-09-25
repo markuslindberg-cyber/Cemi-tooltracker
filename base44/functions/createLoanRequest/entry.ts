@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeDeep, APP_URL } from '../../shared/emailSafe.ts';
 
 const emailStyle = `
   font-family: Arial, sans-serif;
@@ -82,7 +83,8 @@ const footerStyle = `
   border-top: 1px solid #f0f0f0;
 `;
 
-function buildApproverEmail({ approver_name, tool_names, requester_name, assigned_to_name, destination, return_date, comment, origin }) {
+function buildApproverEmail(raw) {
+  const { approver_name, tool_names, requester_name, assigned_to_name, destination, return_date, comment, origin } = escapeDeep(raw);
   const toolList = tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
   const commentSection = comment
     ? `<div style="${commentBoxStyle}"><strong>Kommentar:</strong> ${comment}</div>`
@@ -133,7 +135,8 @@ function buildApproverEmail({ approver_name, tool_names, requester_name, assigne
 </div>`;
 }
 
-function buildDestManagerEmail({ manager_name, tool_names, assigned_to_name, return_date, comment, origin }) {
+function buildDestManagerEmail(raw) {
+  const { manager_name, tool_names, assigned_to_name, return_date, comment, origin } = escapeDeep(raw);
   const toolList = tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
   const commentSection = comment
     ? `<div style="${commentBoxStyle}"><strong>Kommentar:</strong> ${comment}</div>`
@@ -184,7 +187,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/+$/, '') || '';
+    const origin = APP_URL;
     const {
       tool_ids, tool_names, tool_details,
       assigned_to_email, assigned_to_name,
@@ -249,6 +252,7 @@ Deno.serve(async (req) => {
     }
 
     // Bekräftelsemail till beställaren - alltid skicka denna
+    const s = escapeDeep({ full_name: user.full_name, approver_name, tool_names, destination_location_name });
     await base44.integrations.Core.SendEmail({
       to: user.email,
       subject: `Låneförfrågan skapad: ${tool_names.join(', ')}`,
@@ -258,16 +262,16 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">📋 Låneförfrågan registrerad</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${user.full_name}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din låneförfrågan har registrerats och skickats för godkännande till <strong>${approver_name || '—'}</strong>.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${s.full_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din låneförfrågan har registrerats och skickats för godkännande till <strong>${s.approver_name || '—'}</strong>.</p>
       <p style="font-size:13px; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
-        ${tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('')}
+        ${s.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('')}
       </ul>
       <table style="${tableStyle}">
-        <tr><td style="${labelCellStyle}">Destination</td><td style="${valueCellStyle}">${destination_location_name}</td></tr>
+        <tr><td style="${labelCellStyle}">Destination</td><td style="${valueCellStyle}">${s.destination_location_name}</td></tr>
         <tr><td style="${labelCellStyle}">Återlämning</td><td style="${valueCellStyle}">${new Date(default_return_date).toLocaleDateString('sv-SE')}</td></tr>
-        <tr><td style="${labelCellStyle}">Godkänns av</td><td style="${valueCellStyle}">${approver_name || '—'}</td></tr>
+        <tr><td style="${labelCellStyle}">Godkänns av</td><td style="${valueCellStyle}">${s.approver_name || '—'}</td></tr>
       </table>
     </div>
     <div style="${footerStyle}">ToolTrack – Automatiskt genererat meddelande</div>

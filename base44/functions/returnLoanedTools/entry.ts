@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeDeep, escapeHtml } from '../../shared/emailSafe.ts';
 
 // Låntagaren markerar utrustning som returnerad -> status pending_return
 // Ansvarig måste sedan bekräfta mottagning via confirmReturn
@@ -39,7 +40,8 @@ Deno.serve(async (req) => {
       returned_date: new Date().toISOString()
     });
 
-    const toolList = loanRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const safe = escapeDeep(loanRequest);
+    const toolList = safe.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
     const returnedDate = new Date().toLocaleDateString('sv-SE');
 
     // Fetch TeamMember data to check subscriptions
@@ -55,8 +57,8 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">⏳ ${isApprover ? 'Bekräfta mottagning av maskiner' : 'Maskiner på väg tillbaka'}</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${recipientName}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${loanRequest.assigned_to_name}</strong> har markerat att följande maskiner är på väg tillbaka${isApprover ? ' och väntar på din mottagningsbekräftelse' : ''}.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${escapeHtml(recipientName)}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${safe.assigned_to_name}</strong> har markerat att följande maskiner är på väg tillbaka${isApprover ? ' och väntar på din mottagningsbekräftelse' : ''}.</p>
 
       <p style="font-size:13px; font-weight:700; color:#d97706; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
@@ -66,15 +68,15 @@ Deno.serve(async (req) => {
       <table style="${tableStyle}">
         <tr>
           <td style="${labelCellStyle}">Låntagare</td>
-          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+          <td style="${valueCellStyle}">${safe.assigned_to_name}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Lånad från</td>
-          <td style="${valueCellStyle}">${loanRequest.tool_details?.[0]?.location_name || '–'}</td>
+          <td style="${valueCellStyle}">${safe.tool_details?.[0]?.location_name || '–'}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Destination</td>
-          <td style="${valueCellStyle}">${loanRequest.destination_location_name || '–'}</td>
+          <td style="${valueCellStyle}">${safe.destination_location_name || '–'}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Markerad returnerad</td>

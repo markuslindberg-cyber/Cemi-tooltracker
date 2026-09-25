@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeDeep, escapeHtml } from '../../shared/emailSafe.ts';
 
 const emailStyle = `
   font-family: Arial, sans-serif;
@@ -131,9 +132,10 @@ Deno.serve(async (req) => {
       return member?.subscribed_to_emails !== false;
     };
 
-    const toolList = loanRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const safe = escapeDeep(loanRequest);
+    const toolList = safe.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
     const commentSection = approver_comment
-      ? `<div style="${commentBoxStyle(approved ? '#16a34a' : '#dc2626')}"><strong>Kommentar från godkännaren:</strong> ${approver_comment}</div>`
+      ? `<div style="${commentBoxStyle(approved ? '#16a34a' : '#dc2626')}"><strong>Kommentar från godkännaren:</strong> ${escapeHtml(approver_comment)}</div>`
       : '';
 
     if (approved) {
@@ -148,8 +150,8 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">✅ Låneförfrågan godkänd</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.requested_by_name}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din förfrågan om lån av maskiner har <strong style="color:#16a34a;">godkänts</strong> av ${loanRequest.approver_name}.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${safe.requested_by_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din förfrågan om lån av maskiner har <strong style="color:#16a34a;">godkänts</strong> av ${safe.approver_name}.</p>
 
       <p style="font-size:13px; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Godkända maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
@@ -159,15 +161,15 @@ Deno.serve(async (req) => {
       <table style="${tableStyle}">
         <tr>
           <td style="${labelCellStyle}">Godkänd av</td>
-          <td style="${valueCellStyle}">${loanRequest.approver_name}</td>
+          <td style="${valueCellStyle}">${safe.approver_name}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Låntagare</td>
-          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+          <td style="${valueCellStyle}">${safe.assigned_to_name}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Destination</td>
-          <td style="${valueCellStyle}">${loanRequest.destination_location_name}</td>
+          <td style="${valueCellStyle}">${safe.destination_location_name}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Återlämning</td>
@@ -193,7 +195,7 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">📦 Maskiner godkända för lån till er</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.destination_location_manager_name}</strong>,</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${safe.destination_location_manager_name}</strong>,</p>
       <p style="margin:0 0 20px; color:#555; font-size:14px;">Följande maskiner har godkänts och är på väg till er plats.</p>
 
       <p style="font-size:13px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
@@ -204,7 +206,7 @@ Deno.serve(async (req) => {
       <table style="${tableStyle}">
         <tr>
           <td style="${labelCellStyle}">Lånas av</td>
-          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+          <td style="${valueCellStyle}">${safe.assigned_to_name}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Återlämning</td>
@@ -229,12 +231,12 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">✅ Du godkände en låneförfrågan</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.approver_name}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;">Du har godkänt följande låneförfrågan från <strong>${loanRequest.requested_by_name}</strong>.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${safe.approver_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Du har godkänt följande låneförfrågan från <strong>${safe.requested_by_name}</strong>.</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">${toolList}</ul>
       <table style="${tableStyle}">
-        <tr><td style="${labelCellStyle}">Begärd av</td><td style="${valueCellStyle}">${loanRequest.requested_by_name}</td></tr>
-        <tr><td style="${labelCellStyle}">Destination</td><td style="${valueCellStyle}">${loanRequest.destination_location_name}</td></tr>
+        <tr><td style="${labelCellStyle}">Begärd av</td><td style="${valueCellStyle}">${safe.requested_by_name}</td></tr>
+        <tr><td style="${labelCellStyle}">Destination</td><td style="${valueCellStyle}">${safe.destination_location_name}</td></tr>
         <tr><td style="${labelCellStyle}">Återlämning</td><td style="${valueCellStyle}">${new Date(loanRequest.default_return_date).toLocaleDateString('sv-SE')}</td></tr>
       </table>
       ${commentSection}
@@ -257,8 +259,8 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">❌ Låneförfrågan nekad</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.requested_by_name}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din förfrågan om lån av maskiner har tyvärr <strong style="color:#dc2626;">nekats</strong> av ${loanRequest.approver_name}.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${safe.requested_by_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Din förfrågan om lån av maskiner har tyvärr <strong style="color:#dc2626;">nekats</strong> av ${safe.approver_name}.</p>
 
       <p style="font-size:13px; font-weight:700; color:#dc2626; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Berörda maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
@@ -268,11 +270,11 @@ Deno.serve(async (req) => {
       <table style="${tableStyle}">
         <tr>
           <td style="${labelCellStyle}">Nekad av</td>
-          <td style="${valueCellStyle}">${loanRequest.approver_name}</td>
+          <td style="${valueCellStyle}">${safe.approver_name}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Destination</td>
-          <td style="${valueCellStyle}">${loanRequest.destination_location_name}</td>
+          <td style="${valueCellStyle}">${safe.destination_location_name}</td>
         </tr>
       </table>
       ${commentSection}
@@ -294,8 +296,8 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">❌ Du nekade en låneförfrågan</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.approver_name}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;">Du har nekat följande låneförfrågan från <strong>${loanRequest.requested_by_name}</strong>.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${safe.approver_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Du har nekat följande låneförfrågan från <strong>${safe.requested_by_name}</strong>.</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">${toolList}</ul>
       ${commentSection}
     </div>

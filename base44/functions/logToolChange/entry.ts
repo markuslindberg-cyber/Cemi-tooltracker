@@ -11,13 +11,24 @@ export default async function(req) {
       return Response.json({ error: 'Missing event or data' }, { status: 400 });
     }
 
+    const ALLOWED_ROLES = ['verktygsförvaltare', 'admin', 'mekaniker', 'admin_lokalvård', 'ägare'];
+    if (!ALLOWED_ROLES.includes(user.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const tool_id = event.entity_id || data.id;
     const change_date = new Date().toISOString();
+
+    // Use the stored tool record (not client-supplied data) for attribution
+    const storedTool = await base44.asServiceRole.entities.Tool.get(tool_id).catch(() => null);
+    if (!storedTool) {
+      return Response.json({ error: 'Tool not found' }, { status: 404 });
+    }
 
     // Look up the user who made the change
     let changed_by_email = 'system';
     let changed_by_name = 'System';
-    const userId = data.created_by_id;
+    const userId = storedTool.created_by_id;
     if (userId && !userId.startsWith('service_')) {
       try {
         const users = await base44.asServiceRole.entities.User.filter({ id: userId });

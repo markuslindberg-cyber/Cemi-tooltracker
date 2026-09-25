@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { escapeDeep, escapeHtml } from '../../shared/emailSafe.ts';
 
 export default async function(req) {
   try {
@@ -18,7 +19,8 @@ export default async function(req) {
       return Response.json({ skipped: true, reason: 'Request not found or no email' });
     }
 
-    const itemList = (data.checked_out_items || [])
+    const s = escapeDeep(data);
+    const itemList = (s.checked_out_items || [])
       .map(i => `<li style="margin:4px 0;">${i.name} — ${i.scanned_quantity || i.quantity} st</li>`)
       .join('');
 
@@ -33,7 +35,7 @@ export default async function(req) {
       <h2 style="margin:0; color:#fff; font-size:20px;">✅ Begäran godkänd och uttagen</h2>
     </div>
     <div style="padding: 32px; color: #333;">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${request.requested_by_name || ''}</strong>,</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${escapeHtml(request.requested_by_name)}</strong>,</p>
       <p style="margin:0 0 20px; color:#555; font-size:14px;">Din begäran om lokalvårdsartiklar har godkänts och artiklarna har plockats ut.</p>
 
       <table style="width:100%; border-collapse:collapse; margin:20px 0;">
@@ -43,11 +45,11 @@ export default async function(req) {
         </tr>` : ''}
         <tr>
           <td style="padding:10px 14px; background:#f9f9f9; font-size:13px; color:#777; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; width:42%; border-bottom:1px solid #eee;">Kund</td>
-          <td style="padding:10px 14px; font-size:14px; color:#222; border-bottom:1px solid #eee;">${data.customer_name || '—'}</td>
+          <td style="padding:10px 14px; font-size:14px; color:#222; border-bottom:1px solid #eee;">${s.customer_name || '—'}</td>
         </tr>
         <tr>
           <td style="padding:10px 14px; background:#f9f9f9; font-size:13px; color:#777; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; width:42%; border-bottom:1px solid #eee;">Utfört av</td>
-          <td style="padding:10px 14px; font-size:14px; color:#222; border-bottom:1px solid #eee;">${data.checked_out_by_name || ''}</td>
+          <td style="padding:10px 14px; font-size:14px; color:#222; border-bottom:1px solid #eee;">${s.checked_out_by_name || ''}</td>
         </tr>
         <tr>
           <td style="padding:10px 14px; background:#f9f9f9; font-size:13px; color:#777; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; width:42%; border-bottom:1px solid #eee;">Datum</td>

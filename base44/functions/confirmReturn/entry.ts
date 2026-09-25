@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeDeep, escapeHtml } from '../../shared/emailSafe.ts';
 
 // Ansvarig bekräftar att de tagit emot den returnerade utrustningen
 
@@ -70,9 +71,11 @@ Deno.serve(async (req) => {
       }
     }));
 
-    const toolList = loanRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const safe = escapeDeep(loanRequest);
+    const safeUserName = escapeHtml(user.full_name);
+    const toolList = safe.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
     const commentSection = comment
-      ? `<div style="background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 4px; padding: 14px 18px; margin: 20px 0; font-size: 14px; color: #333; font-style: italic;"><strong>Kommentar från mottagaren:</strong> ${comment}</div>`
+      ? `<div style="background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 4px; padding: 14px 18px; margin: 20px 0; font-size: 14px; color: #333; font-style: italic;"><strong>Kommentar från mottagaren:</strong> ${escapeHtml(comment)}</div>`
       : '';
 
     // Mail till låntagaren
@@ -85,8 +88,8 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">✅ Återlämning bekräftad</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${loanRequest.assigned_to_name}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${user.full_name}</strong> har bekräftat mottagningen av maskinerna. Lånet är nu avslutat.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${safe.assigned_to_name}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${safeUserName}</strong> har bekräftat mottagningen av maskinerna. Lånet är nu avslutat.</p>
 
       <p style="font-size:13px; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Återlämnade maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
@@ -96,7 +99,7 @@ Deno.serve(async (req) => {
       <table style="${tableStyle}">
         <tr>
           <td style="${labelCellStyle}">Bekräftad av</td>
-          <td style="${valueCellStyle}">${user.full_name}</td>
+          <td style="${valueCellStyle}">${safeUserName}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Bekräftelsedatum</td>
@@ -126,8 +129,8 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">✅ Återlämning bekräftad</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${recipientName}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;">Utrustning som lånades till <strong>${loanRequest.destination_location_name}</strong> har nu returnerats och bekräftats mottagen av ${user.full_name}. Lånet är nu avslutat.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${escapeHtml(recipientName)}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;">Utrustning som lånades till <strong>${safe.destination_location_name}</strong> har nu returnerats och bekräftats mottagen av ${safeUserName}. Lånet är nu avslutat.</p>
 
       <p style="font-size:13px; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Återlämnade maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
@@ -137,11 +140,11 @@ Deno.serve(async (req) => {
       <table style="${tableStyle}">
         <tr>
           <td style="${labelCellStyle}">Låntagare</td>
-          <td style="${valueCellStyle}">${loanRequest.assigned_to_name}</td>
+          <td style="${valueCellStyle}">${safe.assigned_to_name}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Bekräftad av</td>
-          <td style="${valueCellStyle}">${user.full_name}</td>
+          <td style="${valueCellStyle}">${safeUserName}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Datum</td>

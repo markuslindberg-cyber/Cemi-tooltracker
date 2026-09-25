@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeDeep, escapeHtml, APP_URL } from '../../shared/emailSafe.ts';
 
 const emailStyle = `
   font-family: Arial, sans-serif;
@@ -80,8 +81,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/+$/, '') || '';
+    const origin = APP_URL;
     const payload = await req.json();
+    const s = escapeDeep(payload);
+    const safeUserName = escapeHtml(user.full_name);
 
     // Generate request number
     const all = await base44.entities.LokalvardArtikelRequest.list('-request_number', 1);
@@ -100,7 +103,7 @@ Deno.serve(async (req) => {
       (m.role === 'admin lokalvård' || m.role === 'admin_lokalvård')
     );
 
-    const itemList = (payload.requested_items || [])
+    const itemList = (s.requested_items || [])
       .map(i => `<li style="margin:4px 0;">${i.name} — ${i.quantity} st</li>`)
       .join('');
 
@@ -111,7 +114,7 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">🧹 Ny begäran – Lokalvårdsartiklar</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${admin.name}</strong>,</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${escapeHtml(admin.name)}</strong>,</p>
       <p style="margin:0 0 20px; color:#555; font-size:14px;">En ny begäran om uttag av lokalvårdsartiklar har inkommit och väntar på godkännande.</p>
 
       <table style="${tableStyle}">
@@ -121,15 +124,15 @@ Deno.serve(async (req) => {
         </tr>
         <tr>
           <td style="${labelCellStyle}">Begärd av</td>
-          <td style="${valueCellStyle}">${payload.requested_by_name || user.full_name}</td>
+          <td style="${valueCellStyle}">${s.requested_by_name || safeUserName}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Kund</td>
-          <td style="${valueCellStyle}">${payload.customer_name || '—'}</td>
+          <td style="${valueCellStyle}">${s.customer_name || '—'}</td>
         </tr>
         ${payload.ordernummer ? `<tr>
           <td style="${labelCellStyle}">Ordernummer</td>
-          <td style="${valueCellStyle}">${payload.ordernummer}</td>
+          <td style="${valueCellStyle}">${s.ordernummer}</td>
         </tr>` : ''}
       </table>
 
@@ -138,7 +141,7 @@ Deno.serve(async (req) => {
         ${itemList}
       </ul>
 
-      ${payload.notes ? `<div style="background:#f0f4ff; border-left:4px solid #4a6cf7; border-radius:4px; padding:14px 18px; margin:20px 0; font-size:14px; color:#333; font-style:italic;"><strong>Anteckning:</strong> ${payload.notes}</div>` : ''}
+      ${payload.notes ? `<div style="background:#f0f4ff; border-left:4px solid #4a6cf7; border-radius:4px; padding:14px 18px; margin:20px 0; font-size:14px; color:#333; font-style:italic;"><strong>Anteckning:</strong> ${s.notes}</div>` : ''}
 
       <div style="text-align: center; margin-top: 24px;">
         <a href="${origin}/Lokalvard/BegaranAttGodkanna" style="${buttonStyle}">Öppna ToolTrack</a>

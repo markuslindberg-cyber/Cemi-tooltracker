@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeDeep, escapeHtml } from '../../shared/emailSafe.ts';
 
 const emailStyle = `font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px 20px;`;
 const cardStyle = `background: #ffffff; border-radius: 8px; max-width: 560px; margin: 0 auto; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1);`;
@@ -52,9 +53,11 @@ Deno.serve(async (req) => {
       status: 'pending'
     });
 
-    const toolList = originalRequest.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
+    const safe = escapeDeep(originalRequest);
+    const safeUserName = escapeHtml(user.full_name);
+    const toolList = safe.tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
     const commentSection = extension_comment
-      ? `<div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 4px; padding: 14px 18px; margin: 20px 0; font-size: 14px; color: #333; font-style: italic;"><strong>Kommentar:</strong> ${extension_comment}</div>`
+      ? `<div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 4px; padding: 14px 18px; margin: 20px 0; font-size: 14px; color: #333; font-style: italic;"><strong>Kommentar:</strong> ${escapeHtml(extension_comment)}</div>`
       : '';
     const oldDate = new Date(originalRequest.default_return_date).toLocaleDateString('sv-SE');
     const newDate = new Date(new_return_date).toLocaleDateString('sv-SE');
@@ -72,8 +75,8 @@ Deno.serve(async (req) => {
       <h2 style="margin:0; color:#fff; font-size:20px;">🔄 Förlängningsbegäran för lån</h2>
     </div>
     <div style="${bodyStyle}">
-      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${recipientName}</strong>,</p>
-      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${user.full_name}</strong> har begärt en förlängning av lånet för följande maskiner.</p>
+      <p style="margin:0 0 8px; font-size:15px;">Hej <strong>${escapeHtml(recipientName)}</strong>,</p>
+      <p style="margin:0 0 20px; color:#555; font-size:14px;"><strong>${safeUserName}</strong> har begärt en förlängning av lånet för följande maskiner.</p>
 
       <p style="font-size:13px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Maskiner</p>
       <ul style="margin:0 0 20px; padding-left:20px; font-size:14px; color:#333; line-height:1.7;">
@@ -83,7 +86,7 @@ Deno.serve(async (req) => {
       <table style="${tableStyle}">
         <tr>
           <td style="${labelCellStyle}">Begärd av</td>
-          <td style="${valueCellStyle}">${user.full_name}</td>
+          <td style="${valueCellStyle}">${safeUserName}</td>
         </tr>
         <tr>
           <td style="${labelCellStyle}">Nuvarande datum</td>
@@ -95,7 +98,7 @@ Deno.serve(async (req) => {
         </tr>
         <tr>
           <td style="${labelCellStyle}">Destination</td>
-          <td style="${valueCellStyle}">${originalRequest.destination_location_name}</td>
+          <td style="${valueCellStyle}">${safe.destination_location_name}</td>
         </tr>
       </table>
 

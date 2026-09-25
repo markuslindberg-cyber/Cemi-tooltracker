@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeDeep } from '../../shared/emailSafe.ts';
 
 const emailStyle = `font-family: Arial, sans-serif; background: #f5f5f5; padding: 40px 20px;`;
 const cardStyle = `background: #ffffff; border-radius: 8px; max-width: 560px; margin: 0 auto; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1);`;
@@ -8,7 +9,8 @@ const labelCellStyle = `padding: 10px 14px; background: #f9f9f9; font-size: 13px
 const valueCellStyle = `padding: 10px 14px; font-size: 14px; color: #222; border-bottom: 1px solid #eee;`;
 const footerStyle = `text-align: center; padding: 20px 32px; font-size: 12px; color: #aaa; border-top: 1px solid #f0f0f0;`;
 
-function buildCancelEmail({ recipient_name, tool_names, requester_name, destination, return_date, cancelled_by, comment }) {
+function buildCancelEmail(raw) {
+  const { recipient_name, tool_names, requester_name, destination, return_date, cancelled_by, comment } = escapeDeep(raw);
   const toolList = tool_names.map(t => `<li style="margin:4px 0;">${t}</li>`).join('');
   const commentSection = comment
     ? `<div style="background:#fef9c3;border-left:4px solid #ca8a04;border-radius:4px;padding:14px 18px;margin:20px 0;font-size:14px;color:#333;font-style:italic;"><strong>Kommentar:</strong> ${comment}</div>`
