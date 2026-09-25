@@ -397,7 +397,7 @@ export default function LoanRequestModal({ isOpen, onClose }) {
                   <CommandList>
                     <CommandEmpty>Ingen plats hittad</CommandEmpty>
                     <CommandGroup>
-                      {locations.filter(loc => !loc.parent_location_id).map(loc => (
+                      {locations.filter(loc => !loc.parent_location_id && !(loc.type === 'vehicle' && loc.unit_name === 'Förvaltning')).map(loc => (
                         <CommandItem key={loc.id} onSelect={() => { setDestinationLocation(loc); setDestinationOpen(false); }}>
                           {loc.name}
                         </CommandItem>
