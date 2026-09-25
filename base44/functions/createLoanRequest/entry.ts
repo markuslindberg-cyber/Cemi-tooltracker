@@ -188,14 +188,50 @@ Deno.serve(async (req) => {
     }
 
     const origin = APP_URL;
+    const payload = await req.json();
     const {
-      tool_ids, tool_names, tool_details,
+      tool_ids, tool_details,
       assigned_to_email, assigned_to_name,
-      destination_location_id, destination_location_name,
+      destination_location_id,
       default_return_date, requester_comment,
-      approver_email, approver_name,
-      destination_location_manager_email, destination_location_manager_name
-    } = await req.json();
+    } = payload;
+
+    if (!Array.isArray(tool_ids) || tool_ids.length === 0 || !destination_location_id || !payload.approver_email) {
+      return Response.json({ error: 'Maskiner, destination och godkännare krävs' }, { status: 400 });
+    }
+
+    // Resolve email recipients and displayed data from stored records, not from the request
+    const teamMembers = await base44.asServiceRole.entities.TeamMember.list();
+    const activeMembers = teamMembers.filter(m => m.email && m.is_active !== false);
+
+    const approver = activeMembers.find(m => m.email === payload.approver_email);
+    if (!approver) {
+      return Response.json({ error: 'Ogiltig godkännare' }, { status: 400 });
+    }
+    const approver_email = approver.email;
+    const approver_name = approver.name;
+
+    const destLocation = await base44.asServiceRole.entities.Location.get(destination_location_id).catch(() => null);
+    if (!destLocation) {
+      return Response.json({ error: 'Ogiltig destination' }, { status: 400 });
+    }
+    const destination_location_name = destLocation.name;
+    const destManager = destLocation.team_member_ids?.[0]
+      ? teamMembers.find(m => m.id === destLocation.team_member_ids[0])
+      : null;
+    const destination_location_manager_email = destManager?.email;
+    const destination_location_manager_name = destManager?.name;
+
+    const [storedTools, storedHandTools] = await Promise.all([
+      base44.asServiceRole.entities.Tool.filter({ id: { $in: tool_ids } }),
+      base44.asServiceRole.entities.HandTool.filter({ id: { $in: tool_ids } }),
+    ]);
+    const nameById = {};
+    [...storedTools, ...storedHandTools].forEach(t => { nameById[t.id] = t.name; });
+    if (tool_ids.some(id => !nameById[id])) {
+      return Response.json({ error: 'Ogiltiga maskiner' }, { status: 400 });
+    }
+    const tool_names = tool_ids.map(id => nameById[id]);
 
     const loanRequest = await base44.entities.LoanRequest.create({
       tool_ids, tool_names, tool_details,
@@ -205,15 +241,14 @@ Deno.serve(async (req) => {
       destination_location_id, destination_location_name,
       default_return_date,
       requester_comment: requester_comment || '',
-      approver_email: approver_email || user.email,
-      approver_name: approver_name || user.full_name,
+      approver_email,
+      approver_name,
       destination_location_manager_email,
       destination_location_manager_name,
       status: 'pending'
     });
 
-    // Fetch TeamMember data to check subscriptions
-    const teamMembers = await base44.entities.TeamMember.list();
+    // Check subscriptions
     const getSubscriptionStatus = (email) => {
       const member = teamMembers.find(m => m.email === email);
       return member?.subscribed_to_emails !== false;

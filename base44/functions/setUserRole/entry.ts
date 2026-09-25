@@ -48,6 +48,12 @@ export default async function(req) {
       return Response.json({ success: false, error: 'Användaren finns inte i systemet ännu (ej inloggad)' });
     }
 
+    // Caller may only change users whose current role they could themselves assign
+    const KNOWN_ROLES = ['admin', 'admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare', 'mekaniker', 'ägare'];
+    if (KNOWN_ROLES.includes(targetUser.role) && !allowed.includes(targetUser.role)) {
+      return Response.json({ error: 'Du har inte behörighet att ändra denna användares roll' }, { status: 403 });
+    }
+
     await base44.asServiceRole.entities.User.update(targetUser.id, { role: userRole });
     return Response.json({ success: true, email, newRole: userRole });
   } catch (error) {

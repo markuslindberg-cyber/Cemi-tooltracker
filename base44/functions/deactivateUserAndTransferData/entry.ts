@@ -26,6 +26,11 @@ Deno.serve(async (req) => {
     }
     const deactivatedUser = deactivatedUsers[0];
 
+    // Only ägare may deactivate admin/ägare accounts (other than themselves)
+    if (deactivatedUser.id !== user.id && ['admin', 'ägare'].includes(deactivatedUser.role) && user.role !== 'ägare') {
+      return Response.json({ error: 'Forbidden: endast ägare kan inaktivera admin- eller ägarkonton' }, { status: 403 });
+    }
+
     // Get replacement user info if provided
     let replacementUser = null;
     if (replacement_user_id) {

@@ -1,4 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { escapeHtml, APP_URL } from '../../shared/emailSafe.ts';
+
+// Roles each inviter role may assign
+const ASSIGNABLE_ROLES = {
+  'ägare': ['admin', 'admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare', 'mekaniker', 'ägare'],
+  'admin': ['admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare', 'mekaniker'],
+  'mekaniker': ['admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare'],
+  'admin_lokalvård': ['lokalvårdare'],
+};
+const normalizeRole = (r) => (r === 'admin lokalvård' ? 'admin_lokalvård' : r);
 
 Deno.serve(async (req) => {
   try {
@@ -13,18 +23,20 @@ Deno.serve(async (req) => {
 
     const { email, appRole } = await req.json();
     if (!email) return Response.json({ error: 'Email krävs' }, { status: 400 });
+    if (appRole && !ASSIGNABLE_ROLES[user.role].includes(normalizeRole(appRole))) {
+      return Response.json({ error: `Du har inte behörighet att tilldela rollen "${appRole}"` }, { status: 403 });
+    }
 
     // Invite via user token (requires platform admin role on the caller)
     try {
       await base44.users.inviteUser(email.trim(), 'user');
     } catch (inviteErr) {
       // If caller lacks platform admin role, send a manual email invitation as fallback
-      const appId = Deno.env.get('BASE44_APP_ID');
-      const appUrl = appId ? `https://${appId}.base44.app` : 'appen';
+      const appUrl = APP_URL;
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: email.trim(),
         subject: 'Du har blivit inbjuden till ToolTrack',
-        body: `<p>Hej!</p><p>${user.full_name || 'En kollega'} har bjudit in dig till ToolTrack.</p><p>Klicka på länken nedan för att komma igång:</p><p><a href="${appUrl}">${appUrl}</a></p><p>Välkommen!</p>`,
+        body: `<p>Hej!</p><p>${escapeHtml(user.full_name) || 'En kollega'} har bjudit in dig till ToolTrack.</p><p>Klicka på länken nedan för att komma igång:</p><p><a href="${appUrl}">${appUrl}</a></p><p>Välkommen!</p>`,
       });
     }
 

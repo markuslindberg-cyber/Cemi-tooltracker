@@ -29,10 +29,10 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
 
   // Fetch active users for replacement selection
   useEffect(() => {
-    if (open && canSelfDeactivate) {
+    if (open && needsReplacement) {
       const fetchUsers = async () => {
         try {
-          const users = await base44.asServiceRole.entities.User.filter({ is_active: true });
+          const users = await base44.entities.User.filter({ is_active: true });
           // Filter out current user
           setActiveUsers(users.filter(u => u.id !== user?.id));
         } catch (err) {
@@ -41,7 +41,7 @@ export default function DeactivateAccountDialog({ open, onOpenChange, user }) {
       };
       fetchUsers();
     }
-  }, [open, canSelfDeactivate, user?.id]);
+  }, [open, needsReplacement, user?.id]);
 
   const handleDeactivate = async () => {
     if (needsReplacement && !replacementUserId) {
