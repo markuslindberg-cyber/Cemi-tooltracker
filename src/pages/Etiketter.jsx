@@ -23,8 +23,12 @@ export default function Etiketter() {
   const { data: raw = [], isLoading } = useQuery({
     queryKey: ['labels', typeId], enabled: user?.role === 'ägare', queryFn: type.load,
   });
-  const items = useMemo(() => raw.filter(r => !r.is_deleted).map(type.map), [raw, type]);
-  const filtered = items.filter(i => `${i.name} ${i.code}`.toLowerCase().includes(search.toLowerCase()));
+  const [sort, setSort] = useState('newest');
+  const items = useMemo(() => raw.filter(r => !r.is_deleted).map(r => ({ ...type.map(r), created: r.created_date })), [raw, type]);
+  const filtered = items
+    .filter(i => `${i.name} ${i.code}`.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => sort === 'name' ? (a.name || '').localeCompare(b.name || '', 'sv')
+      : sort === 'oldest' ? new Date(a.created) - new Date(b.created) : new Date(b.created) - new Date(a.created));
   const chosen = items.filter(i => selected.includes(i.id));
 
   if (!user) return null;
@@ -66,7 +70,7 @@ export default function Etiketter() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
         <div className="print:hidden">
-          <LabelItemList items={filtered} loading={isLoading} selected={selected} setSelected={setSelected} search={search} setSearch={setSearch} />
+          <LabelItemList items={filtered} loading={isLoading} selected={selected} setSelected={setSelected} search={search} setSearch={setSearch} sort={sort} setSort={setSort} />
         </div>
         <div className="print-area bg-gray-100 dark:bg-gray-800 print:bg-white rounded-2xl p-4 min-h-[300px] overflow-x-auto">
           {chosen.length === 0
