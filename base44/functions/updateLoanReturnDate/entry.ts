@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { escapeHtml } from '../../shared/emailSafe.ts';
 
 // Directly update the return date on an approved loan (no approval needed)
 // Used for setting an EARLIER return date
@@ -29,7 +30,7 @@ Deno.serve(async (req) => {
     await base44.integrations.Core.SendEmail({
       to: loanRequest.approver_email,
       subject: `Ändrat återlämningsdatum: ${loanRequest.tool_names.join(', ')}`,
-      body: `Hej ${loanRequest.approver_name},\n\nÅterlämningsdatumet för lånade maskiner har ändrats:\n\nMaskiner: ${loanRequest.tool_names.join(', ')}\nNytt återlämningsdatum: ${new_return_date}\nÄndrat av: ${user.full_name}\n\nKommentar: ${comment || 'Ingen kommentar'}`
+      body: `Hej ${escapeHtml(loanRequest.approver_name)},<br><br>Återlämningsdatumet för lånade maskiner har ändrats:<br><br>Maskiner: ${escapeHtml(loanRequest.tool_names.join(', '))}<br>Nytt återlämningsdatum: ${escapeHtml(new_return_date)}<br>Ändrat av: ${escapeHtml(user.full_name)}<br><br>Kommentar: ${escapeHtml(comment || 'Ingen kommentar')}`
     });
 
     return Response.json({ success: true });

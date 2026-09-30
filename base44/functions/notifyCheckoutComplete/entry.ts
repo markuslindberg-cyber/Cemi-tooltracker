@@ -6,6 +6,9 @@ export default async function(req) {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!['admin_lokalvård', 'admin', 'mekaniker', 'ägare'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const body = await req.json();
     // Stöd både automation-payload (event, data) och manuellt anrop (request_id, checked_out_items, ...)
