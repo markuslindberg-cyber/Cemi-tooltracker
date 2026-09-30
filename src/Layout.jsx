@@ -135,6 +135,7 @@ const navigation = [
       { name: 'Kategorier', path: '/Administration/Kategorier' },
       { name: 'Papperskorg', path: '/Administration/Papperskorg', desktopOnly: true, devOnly: true },
       { name: 'Enheter', path: '/Administration/Enheter', roles: ['ägare'] },
+      { name: 'Etiketter', path: '/Administration/Etiketter', roles: ['ägare'] },
       { name: 'Roller & Behörigheter', path: '/Administration/RollBehorigheter', roles: ['ägare'] },
       { name: 'Avskrivningar', path: '/Administration/Avskrivningar', roles: ['ägare'] },
     ]
