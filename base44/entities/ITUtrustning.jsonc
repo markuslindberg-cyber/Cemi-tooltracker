@@ -1,0 +1,158 @@
+{
+  "name": "ITUtrustning",
+  "type": "object",
+  "properties": {
+    "benamning": {
+      "type": "string"
+    },
+    "typ": {
+      "type": "string",
+      "enum": [
+        "dator",
+        "sk\u00e4rm",
+        "tangentbord",
+        "mus",
+        "mobiltelefon",
+        "surfplatta",
+        "headset",
+        "dockningsstation",
+        "\u00f6vrigt"
+      ]
+    },
+    "tillverkare": {
+      "type": "string"
+    },
+    "modell": {
+      "type": "string"
+    },
+    "serienummer": {
+      "type": "string"
+    },
+    "barcode": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "i_bruk",
+        "i_lager",
+        "repareras",
+        "saknas",
+        "kasserad"
+      ],
+      "default": "i_lager"
+    },
+    "skick": {
+      "type": "string",
+      "enum": [
+        "ny",
+        "bra",
+        "okej",
+        "d\u00e5lig"
+      ],
+      "default": "bra"
+    },
+    "assigned_to_person_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "assigned_to_person_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "unit_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "unit_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "location_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "location_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "inkopsdatum": {
+      "type": "string",
+      "format": "date",
+      "nullable": true
+    },
+    "inkopsstalle": {
+      "type": "string",
+      "nullable": true
+    },
+    "fakturanummer": {
+      "type": "string",
+      "nullable": true
+    },
+    "inkopspris": {
+      "type": "number",
+      "nullable": true
+    },
+    "garanti_till": {
+      "type": "string",
+      "format": "date",
+      "nullable": true
+    },
+    "imei": {
+      "type": "string",
+      "nullable": true
+    },
+    "telefonnummer": {
+      "type": "string",
+      "nullable": true
+    },
+    "image_url": {
+      "type": "string",
+      "nullable": true
+    },
+    "notes": {
+      "type": "string",
+      "nullable": true
+    },
+    "last_inventerad_date": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  },
+  "required": [
+    "benamning",
+    "typ"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    }
+  }
+}

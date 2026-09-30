@@ -11,6 +11,8 @@ export const LABEL_TYPES = [
     map: (t) => ({ id: t.id, name: t.benamning, code: t.streckkod || t.artikelnummer || t.id, sub: t.artikelnummer ? `Art.nr ${t.artikelnummer}` : '' }) },
   { id: 'material', label: 'Material', load: () => base44.entities.MaterialLager.list('-created_date', 2000),
     map: (t) => ({ id: t.id, name: t.benamning, code: t.streckkod || t.artikelnummer || t.id, sub: [t.kategori, t.matt].filter(Boolean).join(' · ') }) },
+  { id: 'it', label: 'IT-utrustning', load: () => base44.entities.ITUtrustning.list('-created_date', 5000),
+    map: (t) => ({ id: t.id, name: t.benamning, code: t.barcode || t.id, sub: [t.tillverkare, t.modell, t.serienummer].filter(Boolean).join(' · ') }) },
 ];
 
 export const LABEL_SIZES = [

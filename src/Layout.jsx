@@ -21,6 +21,7 @@ import {
   Star,
   SlidersHorizontal,
   Boxes,
+  Laptop,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -124,6 +125,7 @@ const navigation = [
       { name: 'Uttag', path: '/Materialbanken/Uttag' },
     ]
   },
+  { name: 'IT-utrustning', path: '/ITUtrustning', icon: Laptop, roles: ['ägare'] },
   {
     name: 'Administration',
     path: '/Administration',
