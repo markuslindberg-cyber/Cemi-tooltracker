@@ -16,9 +16,9 @@ export const LABEL_TYPES = [
 ];
 
 export const LABEL_SIZES = [
-  { id: 'small', label: 'Liten (38×21 mm)', cls: 'w-[38mm] h-[21mm]', qr: 60, qrMm: 17, font: 2.2, barMm: 5 },
-  { id: 'medium', label: 'Mellan (63×38 mm)', cls: 'w-[63mm] h-[38mm]', qr: 100, qrMm: 32, font: 3.2, barMm: 9 },
-  { id: 'large', label: 'Stor (99×57 mm)', cls: 'w-[99mm] h-[57mm]', qr: 150, qrMm: 50, font: 4.5, barMm: 14 },
+  { id: 'small', label: 'Liten (38×21 mm)', cls: 'w-[38mm] h-[21mm]', qr: 60, qrMm: 15, font: 2.2, barMm: 5 },
+  { id: 'medium', label: 'Mellan (63×38 mm)', cls: 'w-[63mm] h-[38mm]', qr: 100, qrMm: 24, font: 3, barMm: 9 },
+  { id: 'large', label: 'Stor (99×57 mm)', cls: 'w-[99mm] h-[57mm]', qr: 150, qrMm: 38, font: 4.2, barMm: 14 },
 ];
 
 export const qrUrl = (text, size) =>
