@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Laptop, Plus, UserMinus, UserPlus, Loader2 } from 'lucide-react';
+import { Laptop, Plus, Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { IT_TYPES, IT_STATUS } from '@/lib/itConstants';
 import ITStats from '@/components/it/ITStats';
 import ITList from '@/components/it/ITList';
@@ -17,6 +18,7 @@ export default function ITUtrustning() {
   const [search, setSearch] = useState('');
   const [typ, setTyp] = useState('all');
   const [status, setStatus] = useState('all');
+  const [tab, setTab] = useState('i_lager');
   const [modal, setModal] = useState(null);
   const [editing, setEditing] = useState(null);
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser({})); }, []);
@@ -27,7 +29,8 @@ export default function ITUtrustning() {
   });
   const items = data.filter(i => !i.is_deleted);
   const q = search.toLowerCase();
-  const filtered = items.filter(i => (typ === 'all' || i.typ === typ) && (status === 'all' || i.status === status)
+  const inTab = i => tab === 'ovrigt' ? !['i_lager', 'i_bruk'].includes(i.status) && (status === 'all' || i.status === status) : i.status === tab;
+  const filtered = items.filter(i => (typ === 'all' || i.typ === typ) && inTab(i)
     && [i.benamning, i.barcode, i.serienummer, i.assigned_to_person_name, i.modell].some(v => v?.toLowerCase().includes(q)));
 
   if (!user) return null;
@@ -42,18 +45,23 @@ export default function ITUtrustning() {
           <div><h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">IT-utrustning</h1><p className="text-sm text-gray-500">All IT-utrustning i företaget</p></div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => setModal('off')}><UserMinus /> Avsluta person</Button>
-          <Button variant="outline" onClick={() => setModal('on')}><UserPlus /> Ny anställd</Button>
           <Button onClick={() => setModal('form')} className="bg-[#8B1E1E] hover:bg-[#8B1E1E]/90 text-white"><Plus /> Registrera</Button>
         </div>
       </div>
       <ITStats items={items} />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="i_lager">I lager ({items.filter(i => i.status === 'i_lager').length})</TabsTrigger>
+          <TabsTrigger value="i_bruk">Används ({items.filter(i => i.status === 'i_bruk').length})</TabsTrigger>
+          <TabsTrigger value="ovrigt">Övrigt ({items.filter(i => !['i_lager', 'i_bruk'].includes(i.status)).length})</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <div className={`grid grid-cols-1 gap-3 ${tab === 'ovrigt' ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         <Input placeholder="Sök benämning, kod, serienr, person..." value={search} onChange={e => setSearch(e.target.value)} className="text-base" />
         <Select value={typ} onValueChange={setTyp}><SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent><SelectItem value="all">Alla typer</SelectItem>{IT_TYPES.map(t => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}</SelectContent></Select>
-        <Select value={status} onValueChange={setStatus}><SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="all">Alla statusar</SelectItem>{Object.entries(IT_STATUS).map(([k, s]) => <SelectItem key={k} value={k}>{s.label}</SelectItem>)}</SelectContent></Select>
+        {tab === 'ovrigt' && <Select value={status} onValueChange={setStatus}><SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">Alla statusar</SelectItem>{Object.entries(IT_STATUS).filter(([k]) => !['i_lager', 'i_bruk'].includes(k)).map(([k, s]) => <SelectItem key={k} value={k}>{s.label}</SelectItem>)}</SelectContent></Select>}
       </div>
       {isLoading ? <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
         : <ITList items={filtered} onOpen={i => { setEditing(i); setModal('form'); }} />}
