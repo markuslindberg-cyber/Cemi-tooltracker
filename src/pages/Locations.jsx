@@ -86,7 +86,7 @@ export default function Locations() {
     },
   });
 
-  const getAllToolCount = (locationId) => counts.all?.[locationId] || 0;
+  const getAllToolCount = (locationId) => (counts.all?.[locationId] || 0) + (counts.satellite?.[locationId] || 0);
 
   // Filter by active unit first, then by search
   const unitLocations = activeUnitId
@@ -105,7 +105,7 @@ export default function Locations() {
 
   const getToolCount = (locationId, isSatellite = false) => {
     if (isSatellite) return counts.satellite?.[locationId] || 0;
-    return counts.direct?.[locationId] || 0;
+    return (counts.direct?.[locationId] || 0) + (counts.satellite?.[locationId] || 0);
   };
 
   const getHandToolCount = (locationId) => counts.hand?.[locationId] || 0;
