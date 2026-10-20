@@ -464,7 +464,7 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     let list = [];
     if (include('tools')) {
       let t = tools.map(t => ({ ...t, _type: 'tool' }));
-      if (mode === 'location') t = t.filter(t => t.location_id === locationId);
+      if (mode === 'location') t = t.filter(t => t.location_id === locationId || t.satellite_location_id === locationId);
       list = [...list, ...t];
     }
     if (include('handtools')) {
@@ -543,7 +543,9 @@ function ActiveInventory({ sessionConfig, onEnd, onPause, sessionId }) {
     }
     // For lokalvård items, match only on streckkod (not old_streckkod)
     const getInventoryBarcode = (t) => t._type === 'lokalvards' ? t.streckkod : (t.barcode || t.streckkod);
-    const item = searchList.find(t => getInventoryBarcode(t)?.trim() === trimmedBarcode);
+    const item = searchList.find(t => getInventoryBarcode(t)?.trim() === trimmedBarcode)
+      || searchList.find(t => t._type === 'tool' && (t.tool_number?.trim() === trimmedBarcode || t.id === trimmedBarcode))
+      || searchList.find(t => t._type !== 'lokalvards' && t.id === trimmedBarcode);
     if (item) {
       setCheckedItems(prev => new Set([...prev, item.id]));
       setLastScanFeedback({ name: item.name || item.benamning, found: true });
