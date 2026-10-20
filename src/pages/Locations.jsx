@@ -66,15 +66,27 @@ export default function Locations() {
 
   const navigate = useNavigate();
 
-  const { data: tools = [] } = useQuery({
-    queryKey: ['tools'],
-    queryFn: () => base44.entities.Tool.list(),
+  const toMap = (res, key) => Object.fromEntries((res?.rows || []).map(r => [r[key], r.count]));
+
+  const { data: counts = {} } = useQuery({
+    queryKey: ['tools', 'handtools', 'location-counts'],
+    queryFn: async () => {
+      const [all, direct, satellite, hand] = await Promise.all([
+        base44.entities.Tool.aggregate({ groupBy: 'location_id', limit: 1000 }),
+        base44.entities.Tool.aggregate({ query: { satellite_location_id: { $in: [null, ''] } }, groupBy: 'location_id', limit: 1000 }),
+        base44.entities.Tool.aggregate({ groupBy: 'satellite_location_id', limit: 1000 }),
+        base44.entities.HandTool.aggregate({ groupBy: 'location_id', limit: 1000 }),
+      ]);
+      return {
+        all: toMap(all, 'location_id'),
+        direct: toMap(direct, 'location_id'),
+        satellite: toMap(satellite, 'satellite_location_id'),
+        hand: toMap(hand, 'location_id'),
+      };
+    },
   });
 
-  const { data: handTools = [] } = useQuery({
-    queryKey: ['handtools'],
-    queryFn: () => base44.entities.HandTool.list(),
-  });
+  const getAllToolCount = (locationId) => counts.all?.[locationId] || 0;
 
   // Filter by active unit first, then by search
   const unitLocations = activeUnitId
@@ -92,15 +104,11 @@ export default function Locations() {
   };
 
   const getToolCount = (locationId, isSatellite = false) => {
-    if (isSatellite) {
-      return tools.filter(t => t.satellite_location_id === locationId).length;
-    }
-    return tools.filter(t => t.location_id === locationId && !t.satellite_location_id).length;
+    if (isSatellite) return counts.satellite?.[locationId] || 0;
+    return counts.direct?.[locationId] || 0;
   };
 
-  const getHandToolCount = (locationId) => {
-    return handTools.filter(t => t.location_id === locationId).length;
-  };
+  const getHandToolCount = (locationId) => counts.hand?.[locationId] || 0;
 
   const saveLocationMutation = useMutation({
     mutationFn: async (locationData) => {
@@ -290,7 +298,7 @@ export default function Locations() {
                       <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Package className="w-4 h-4" /><span>Maskiner (inkl. satelliter)</span></div>
-                          <span className="font-medium text-gray-900 dark:text-gray-100">{tools.filter(t => t.location_id === location.id).length}</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{getAllToolCount(location.id)}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400"><Shovel className="w-4 h-4" /><span>Handredskap</span></div>
@@ -411,7 +419,7 @@ export default function Locations() {
             ? `Platsen har ${getToolCount(locationToDelete.id) + getHandToolCount(locationToDelete.id)} verktyg/handredskap kopplade. Vad vill du göra med dessa?`
             : `Är du säker på att du vill ta bort ${locationToDelete?.name}? Åtgärden kan inte ångras.`
         }
-        hasTools={locationToDelete ? (tools.filter(t => t.location_id === locationToDelete.id).length + getHandToolCount(locationToDelete.id)) > 0 : false}
+        hasTools={locationToDelete ? (getAllToolCount(locationToDelete.id) + getHandToolCount(locationToDelete.id)) > 0 : false}
         onUnassignAndDelete={() => confirmDeleteLocation(true)}
         onDeleteOnly={() => confirmDeleteLocation(false)}
         onConfirmNoTools={() => confirmDeleteLocation(false)}
