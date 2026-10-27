@@ -158,6 +158,16 @@
       "format": "date-time",
       "nullable": true,
       "description": "Tidpunkt f\u00f6r mjukradering"
+    },
+    "last_modified_by_email": {
+      "type": "string",
+      "nullable": true,
+      "description": "Senast \u00e4ndrad av (e-post)"
+    },
+    "last_modified_by_name": {
+      "type": "string",
+      "nullable": true,
+      "description": "Senast \u00e4ndrad av (namn)"
     }
   },
   "required": [

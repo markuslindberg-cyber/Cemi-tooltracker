@@ -13,7 +13,7 @@ const FIELD_LABELS = {
   purchase_price: 'Inköpspris', purchase_date: 'Inköpsdatum', unit_name: 'Enhet',
 };
 
-export default function ToolLogRow({ log, toolName }) {
+export default function ToolLogRow({ log, tool }) {
   const created = log.change_type === 'created';
   return (
     <div className="grid grid-cols-1 md:grid-cols-[150px_1fr_1.4fr_170px] gap-2 md:gap-4 px-5 py-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 transition-colors">
@@ -22,7 +22,8 @@ export default function ToolLogRow({ log, toolName }) {
         {format(new Date(log.change_date), 'HH:mm')}
       </div>
       <div className="min-w-0">
-        <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{toolName || 'Okänd maskin'}</p>
+        <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{tool?.name || 'Okänd maskin'}</p>
+        <p className="text-xs text-gray-500 truncate">S/N: {tool?.serial_number || '—'}{tool?.tool_number ? ` · Nr ${tool.tool_number}` : ''}</p>
         <p className="text-xs text-[#8B1E1E] font-medium">{created ? 'Skapad' : (FIELD_LABELS[log.field_name] || log.field_name || 'Ändring')}</p>
       </div>
       <div className="flex items-center gap-2 text-sm min-w-0 flex-wrap">

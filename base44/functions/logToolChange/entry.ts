@@ -29,7 +29,10 @@ export default async function(req) {
     let changed_by_email = 'system';
     let changed_by_name = 'System';
     const userId = storedTool.created_by_id;
-    if (userId && !userId.startsWith('service_')) {
+    if (storedTool.last_modified_by_email) {
+      changed_by_email = storedTool.last_modified_by_email;
+      changed_by_name = storedTool.last_modified_by_name || storedTool.last_modified_by_email;
+    } else if (userId && !userId.startsWith('service_')) {
       try {
         const users = await base44.asServiceRole.entities.User.filter({ id: userId });
         if (users.length > 0) {
@@ -47,10 +50,10 @@ export default async function(req) {
       'name', 'manufacturer', 'model_number', 'serial_number', 'tool_number',
       'category', 'subcategory', 'status', 'condition',
       'purchase_date', 'purchase_price', 'purchase_location',
-      'invoice_number', 'location_id', 'location_name',
-      'satellite_location_id', 'satellite_location_name',
-      'assigned_to_email', 'assigned_to_name',
-      'main_machine_id', 'main_machine_name', 'barcode', 'image_url', 'notes',
+      'invoice_number', 'location_name',
+      'satellite_location_name',
+      'assigned_to_name',
+      'main_machine_name', 'barcode', 'image_url', 'notes',
       'depreciation_level', 'service_cost'
     ];
 
