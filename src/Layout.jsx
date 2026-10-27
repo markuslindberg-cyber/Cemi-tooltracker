@@ -70,6 +70,7 @@ const navigation = [
       { name: 'Sålda & Kasserade', path: '/Inventory/SaldaRedskap' },
       { name: 'Lån av utrustning', path: '/Transfers' },
       { name: 'Service', path: '/Service' },
+      { name: 'Ändringshistorik', path: '/Inventory/Historik' },
       { name: 'Importera maskiner', path: '/Inventory/ToolImport', desktopOnly: true, devOnly: true },
     ]
   },
