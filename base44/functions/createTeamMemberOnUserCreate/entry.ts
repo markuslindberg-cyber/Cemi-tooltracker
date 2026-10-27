@@ -43,7 +43,15 @@ export default async function(req) {
       // Sync the TeamMember role to the new User record
       if (member.role) {
         const userRole = toUserRole(member.role);
-        await base44.asServiceRole.entities.User.update(userData.id, { role: userRole });
+        // Only ägare may grant privileged roles
+        if (['admin', 'ägare'].includes(userRole) && user.role !== 'ägare') {
+          return Response.json({ error: `Du har inte behörighet att tilldela rollen "${userRole}"` }, { status: 403 });
+        }
+        // Resolve the real user by email instead of trusting a caller-supplied id
+        const users = await base44.asServiceRole.entities.User.filter({ email: userData.email });
+        if (users.length > 0) {
+          await base44.asServiceRole.entities.User.update(users[0].id, { role: userRole });
+        }
       }
       return Response.json({ message: 'TeamMember already exists, role synced', id: member.id, syncedRole: member.role });
     }

@@ -12,6 +12,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Saknade fält: material_id, antal, kund_namn, ordernummer krävs' }, { status: 400 });
     }
 
+    if (typeof antal !== 'number' || !Number.isFinite(antal) || antal <= 0) {
+      return Response.json({ error: 'Antal måste vara ett positivt tal' }, { status: 400 });
+    }
+
     // Fetch the material
     const materials = await base44.entities.MaterialLager.filter({ id: material_id });
     if (!materials || materials.length === 0) {

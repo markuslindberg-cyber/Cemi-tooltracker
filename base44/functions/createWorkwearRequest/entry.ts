@@ -82,7 +82,19 @@ Deno.serve(async (req) => {
     }
 
     const origin = APP_URL;
-    const payload = await req.json();
+    const body = await req.json();
+    // Whitelist client fields; identity and status are set server-side
+    const payload = {
+      customer_id: body.customer_id,
+      customer_name: body.customer_name,
+      projektnummer: body.projektnummer,
+      requested_items: body.requested_items,
+      notes: body.notes,
+      request_date: body.request_date || new Date().toISOString(),
+      requested_by_name: user.full_name || user.email,
+      requested_by_email: user.email,
+      status: 'pending',
+    };
     const s = escapeDeep(payload);
     const safeUserName = escapeHtml(user.full_name);
 
