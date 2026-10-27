@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { ScanLine, Wrench, ChevronDown, ChevronRight } from 'lucide-react';
+import { fieldLabel, valueLabel, HIDDEN_LOG_FIELDS } from '@/lib/toolLogFormat';
 
 const SERVICE_LABELS = {
   repair: 'Reparation', maintenance: 'Underhåll', inspection: 'Inspektion',
@@ -69,15 +70,15 @@ function LogEntry({ entry }) {
       <div className="mt-1">
         {entry.change_type === 'created' ? (
           <div className="text-gray-700 dark:text-gray-300">
-            <p className="font-medium">✓ {entry.field_name}</p>
-            <p className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 mt-0.5 break-all text-[11px]">{entry.new_value}</p>
+            <p className="font-medium">✓ {fieldLabel(entry.field_name)}</p>
+            <p className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 mt-0.5 break-all text-[11px]">{valueLabel(entry.field_name, entry.new_value)}</p>
           </div>
         ) : (
           <div className="text-gray-700 dark:text-gray-300">
-            <p className="font-medium mb-0.5">{entry.field_name}</p>
+            <p className="font-medium mb-0.5">{fieldLabel(entry.field_name)}</p>
             <div className="flex flex-col gap-0.5">
-              <p className="font-mono bg-red-50 dark:bg-red-900/30 px-1.5 py-0.5 rounded text-red-700 dark:text-red-400 break-all text-[11px] line-through">{entry.old_value || '—'}</p>
-              <p className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 break-all text-[11px]">{entry.new_value || '—'}</p>
+              <p className="font-mono bg-red-50 dark:bg-red-900/30 px-1.5 py-0.5 rounded text-red-700 dark:text-red-400 break-all text-[11px] line-through">{valueLabel(entry.field_name, entry.old_value) || '—'}</p>
+              <p className="font-mono bg-green-50 dark:bg-green-900/30 px-1.5 py-0.5 rounded text-green-700 dark:text-green-400 break-all text-[11px]">{valueLabel(entry.field_name, entry.new_value) || '—'}</p>
             </div>
           </div>
         )}
@@ -93,11 +94,11 @@ function buildSummary(entries) {
   const services = entries.filter(e => e.type === 'service');
 
   if (logEntries.length > 0) {
-    const fields = [...new Set(logEntries.map(e => e.field_name))];
+    const fields = [...new Set(logEntries.map(e => fieldLabel(e.field_name)))];
     const created = logEntries.filter(e => e.change_type === 'created');
     const updated = logEntries.filter(e => e.change_type === 'updated');
     if (created.length > 0) parts.push(`Skapad (${created.length} fält)`);
-    if (updated.length > 0) parts.push(`Ändrat: ${fields.filter(f => updated.some(u => u.field_name === f)).join(', ')}`);
+    if (updated.length > 0) parts.push(`Ändrat: ${fields.filter(f => updated.some(u => fieldLabel(u.field_name) === f)).join(', ')}`);
   }
   if (scans.length > 0) parts.push(`Inventerad ${scans.length}x`);
   if (services.length > 0) parts.push(`Service ${services.length}x`);
@@ -190,7 +191,7 @@ export default function ToolLogTab({ toolId }) {
 
   // Group by date
   const dateGroups = useMemo(() => {
-    const logEntries = logs.map(log => ({ ...log, type: 'log', date: log.change_date }));
+    const logEntries = logs.filter(l => !HIDDEN_LOG_FIELDS.includes(l.field_name)).map(log => ({ ...log, type: 'log', date: log.change_date }));
     const all = [...logEntries, ...scanEntries, ...serviceEntries].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     const groups = {};

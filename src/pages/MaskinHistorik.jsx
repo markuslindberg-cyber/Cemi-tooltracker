@@ -6,7 +6,7 @@ import { History, Loader2 } from 'lucide-react';
 import ToolLogRow from '@/components/history/ToolLogRow';
 
 const PAGE_SIZE = 50;
-const HIDDEN_FIELDS = ['location_id', 'satellite_location_id', 'assigned_to_email', 'main_machine_id', 'image_url'];
+import { HIDDEN_LOG_FIELDS as HIDDEN_FIELDS } from '@/lib/toolLogFormat';
 const SORTS = [
   { value: '-change_date', label: 'Nyast först' },
   { value: 'change_date', label: 'Äldst först' },

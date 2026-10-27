@@ -4,14 +4,7 @@ import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { ArrowRight, User } from 'lucide-react';
 
-const FIELD_LABELS = {
-  name: 'Namn', status: 'Status', location_name: 'Plats', location_id: 'Plats-ID',
-  satellite_location_name: 'Satellitplats', condition: 'Skick', assigned_to_name: 'Tilldelad',
-  assigned_to_email: 'Tilldelad (e-post)', category: 'Kategori', subcategory: 'Underkategori',
-  notes: 'Anteckningar', manufacturer: 'Tillverkare', model_number: 'Modell',
-  serial_number: 'Serienummer', tool_number: 'Verktygsnummer', barcode: 'Streckkod',
-  purchase_price: 'Inköpspris', purchase_date: 'Inköpsdatum', unit_name: 'Enhet',
-};
+import { fieldLabel, valueLabel } from '@/lib/toolLogFormat';
 
 export default function ToolLogRow({ log, tool }) {
   const created = log.change_type === 'created';
@@ -24,13 +17,13 @@ export default function ToolLogRow({ log, tool }) {
       <div className="min-w-0">
         <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{tool?.name || 'Okänd maskin'}</p>
         <p className="text-xs text-gray-500 truncate">S/N: {tool?.serial_number || '—'}{tool?.tool_number ? ` · Nr ${tool.tool_number}` : ''}</p>
-        <p className="text-xs text-[#8B1E1E] font-medium">{created ? 'Skapad' : (FIELD_LABELS[log.field_name] || log.field_name || 'Ändring')}</p>
+        <p className="text-xs text-[#8B1E1E] font-medium">{created ? 'Skapad' : fieldLabel(log.field_name)}</p>
       </div>
       <div className="flex items-center gap-2 text-sm min-w-0 flex-wrap">
         {created ? <span className="text-gray-500">Maskinen registrerades</span> : (<>
-          <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 line-through break-all">{log.old_value || '—'}</span>
+          <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 line-through break-all">{valueLabel(log.field_name, log.old_value) || '—'}</span>
           <ArrowRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-          <span className="px-2 py-0.5 rounded-md bg-[#8B1E1E]/10 text-[#8B1E1E] font-medium break-all">{log.new_value || '—'}</span>
+          <span className="px-2 py-0.5 rounded-md bg-[#8B1E1E]/10 text-[#8B1E1E] font-medium break-all">{valueLabel(log.field_name, log.new_value) || '—'}</span>
         </>)}
         {log.comment && <p className="w-full text-xs text-gray-500 italic">{log.comment}</p>}
       </div>
@@ -41,5 +34,3 @@ export default function ToolLogRow({ log, tool }) {
     </div>
   );
 }
-
-export { FIELD_LABELS };
