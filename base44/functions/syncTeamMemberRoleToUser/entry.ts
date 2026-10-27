@@ -30,7 +30,6 @@ export default async function(req) {
     const ASSIGNABLE_ROLES = {
       'ägare': ['admin', 'admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare', 'mekaniker', 'ägare'],
       'admin': ['admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare', 'mekaniker'],
-      'mekaniker': ['admin_lokalvård', 'lokalvårdare', 'verktygsförvaltare'],
     };
     const allowed = ASSIGNABLE_ROLES[user.role];
     if (!allowed) {
@@ -48,7 +47,14 @@ export default async function(req) {
       return Response.json({ skipped: true, reason: 'Role unchanged' });
     }
 
-    const userRole = toUserRole(data.role);
+    // Never trust the payload: read the role from the real TeamMember record
+    const members = await base44.asServiceRole.entities.TeamMember.filter({ email: data.email });
+    const member = members.find(m => m.role === data.role);
+    if (!member) {
+      return Response.json({ error: 'Ingen matchande personal hittades' }, { status: 400 });
+    }
+
+    const userRole = toUserRole(member.role);
     if (!allowed.includes(userRole)) {
       return Response.json({ error: `Du har inte behörighet att tilldela rollen "${userRole}"` }, { status: 403 });
     }
