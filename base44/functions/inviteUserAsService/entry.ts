@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
-import { escapeHtml, APP_URL } from '../../shared/emailSafe.ts';
 
 // Roles each inviter role may assign
 const ASSIGNABLE_ROLES = {
@@ -28,17 +27,8 @@ Deno.serve(async (req) => {
     }
 
     // Invite via user token (requires platform admin role on the caller)
-    try {
-      await base44.users.inviteUser(email.trim(), 'user');
-    } catch (inviteErr) {
-      // If caller lacks platform admin role, send a manual email invitation as fallback
-      const appUrl = APP_URL;
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: email.trim(),
-        subject: 'Du har blivit inbjuden till ToolTrack',
-        body: `<p>Hej!</p><p>${escapeHtml(user.full_name) || 'En kollega'} har bjudit in dig till ToolTrack.</p><p>Klicka på länken nedan för att komma igång:</p><p><a href="${appUrl}">${appUrl}</a></p><p>Välkommen!</p>`,
-      });
-    }
+    // Use the platform's own invite flow only (no free-form fallback emails)
+    await base44.asServiceRole.users.inviteUser(email.trim(), 'user');
 
     // Sync the app-specific role if provided
     if (appRole) {

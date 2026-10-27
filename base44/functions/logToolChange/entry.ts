@@ -25,6 +25,12 @@ export default async function(req) {
       return Response.json({ error: 'Tool not found' }, { status: 404 });
     }
 
+    // Only log tools that were actually just written (prevents forged history on arbitrary tools)
+    const lastWrite = new Date(storedTool.updated_date || storedTool.created_date).getTime();
+    if (Date.now() - lastWrite > 5 * 60 * 1000) {
+      return Response.json({ error: 'No recent change to log' }, { status: 409 });
+    }
+
     // Look up the user who made the change
     let changed_by_email = 'system';
     let changed_by_name = 'System';
@@ -61,7 +67,7 @@ export default async function(req) {
 
     if (event.type === 'create') {
       fieldsToTrack.forEach(field => {
-        if (data[field] !== undefined && data[field] !== null && data[field] !== '') {
+        if (storedTool[field] !== undefined && storedTool[field] !== null && storedTool[field] !== '') {
           logsToCreate.push({
             tool_id,
             changed_by_email,
@@ -69,7 +75,7 @@ export default async function(req) {
             change_date,
             field_name: field,
             old_value: '',
-            new_value: String(data[field]),
+            new_value: String(storedTool[field]),
             change_type: 'created',
           });
         }
@@ -77,7 +83,8 @@ export default async function(req) {
     } else if (event.type === 'update' && old_data) {
       fieldsToTrack.forEach(field => {
         const oldVal = old_data[field];
-        const newVal = data[field];
+        // New values always come from the stored record, never the payload
+        const newVal = storedTool[field];
 
         const oldStr = (oldVal === null || oldVal === undefined || oldVal === '') ? '' : String(oldVal);
         const newStr = (newVal === null || newVal === undefined || newVal === '') ? '' : String(newVal);
