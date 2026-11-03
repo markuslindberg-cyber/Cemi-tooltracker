@@ -64,13 +64,6 @@ const buttonStyle = `
   margin: 20px 0;
 `;
 
-const footerStyle = `
-  text-align: center;
-  padding: 20px 32px;
-  font-size: 12px;
-  color: #aaa;
-  border-top: 1px solid #f0f0f0;
-`;
 
 Deno.serve(async (req) => {
   try {
