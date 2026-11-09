@@ -12,28 +12,19 @@ export const base44 = createClient({
   requiresAuth: false
 });
 
-// Stamp every Tool write with the logged-in user so the change log can show who made it
-let mePromise = null;
-const getMe = () => (mePromise ||= base44.auth.me().catch(() => { mePromise = null; return null; }));
-const stamp = async (data) => {
-  const me = await getMe();
-  return me ? { ...data, last_modified_by_email: me.email, last_modified_by_name: me.full_name || me.email } : data;
-};
-
+// Route Tool create/update through the server so the change log records the real writer
 const rawEntities = base44.entities;
 base44.entities = new Proxy(rawEntities, {
   get(target, name) {
     const handler = target[name];
     if (name !== 'Tool' || !handler) return handler;
-    return {
-      ...handler,
-      list: handler.list.bind(handler),
-      filter: handler.filter.bind(handler),
-      get: handler.get.bind(handler),
-      create: async (data) => handler.create(await stamp(data)),
-      update: async (id, data) => handler.update(id, await stamp(data)),
-      bulkCreate: async (items) => handler.bulkCreate(await Promise.all(items.map(stamp))),
-      bulkUpdate: async (items) => handler.bulkUpdate(await Promise.all(items.map(stamp))),
-    };
+    return new Proxy(handler, {
+      get(t, prop) {
+        if (prop === 'create') return async (data) => (await base44.functions.invoke('saveTool', { data })).data;
+        if (prop === 'update') return async (id, data) => (await base44.functions.invoke('saveTool', { id, data })).data;
+        const v = t[prop];
+        return typeof v === 'function' ? v.bind(t) : v;
+      },
+    });
   },
 });

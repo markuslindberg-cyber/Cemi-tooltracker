@@ -1,0 +1,54 @@
+{
+  "name": "ToolAuditState",
+  "type": "object",
+  "properties": {
+    "tool_id": {
+      "type": "string",
+      "description": "Referens till Tool"
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Senast loggade v\u00e4rden (server\u00e4gd)"
+    },
+    "writer_email": {
+      "type": "string",
+      "nullable": true,
+      "description": "Serververifierad anv\u00e4ndare f\u00f6r senaste skrivning"
+    },
+    "writer_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "written_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  },
+  "required": [
+    "tool_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "\u00e4gare"
+      }
+    }
+  }
+}
