@@ -52,31 +52,9 @@
   ],
   "rls": {
     "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "mekaniker"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "verktygsf\u00f6rvaltare"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "\u00e4gare"
-          }
-        },
-        {
-          "created_by_id": "{{user.id}}"
-        }
-      ]
+      "user_condition": {
+        "role": "__endast_server__"
+      }
     },
     "read": {
       "$or": [
@@ -103,23 +81,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "mekaniker"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "\u00e4gare"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "__endast_server__"
+      }
     },
     "delete": {
       "$or": [
