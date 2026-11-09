@@ -60,7 +60,7 @@ export default async function(req) {
       'satellite_location_name',
       'assigned_to_name',
       'main_machine_name', 'barcode', 'image_url', 'notes',
-      'depreciation_level', 'service_cost'
+      'depreciation_level', 'service_cost', 'sold_place', 'sold_date'
     ];
 
     const logsToCreate = [];

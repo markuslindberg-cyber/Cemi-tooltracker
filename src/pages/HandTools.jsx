@@ -25,6 +25,7 @@ const statusConfig = {
   i_bruk:   { label: 'I bruk',   className: 'bg-blue-100 text-blue-800' },
   saknas:   { label: 'Saknas',   className: 'bg-red-100 text-red-800' },
   kasserad: { label: 'Kasserad', className: 'bg-gray-100 text-gray-600' },
+  såld:     { label: 'Såld',     className: 'bg-blue-100 text-blue-800' },
 };
 
 

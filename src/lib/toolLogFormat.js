@@ -6,6 +6,7 @@ export const FIELD_LABELS = {
   purchase_price: 'Inköpspris', purchase_date: 'Inköpsdatum', purchase_location: 'Inköpsställe',
   invoice_number: 'Fakturanummer', main_machine_name: 'Huvudmaskin', unit_name: 'Enhet',
   depreciation_level: 'Avskrivningsnivå', service_cost: 'Servicekostnad', image_url: 'Bild',
+  sold_place: 'Försäljningsställe', sold_date: 'Försäljningsdatum',
 };
 
 export const HIDDEN_LOG_FIELDS = ['location_id', 'satellite_location_id', 'assigned_to_email', 'main_machine_id', 'image_url'];

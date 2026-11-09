@@ -148,6 +148,17 @@
     "barcode": {
       "type": "string"
     },
+    "sold_place": {
+      "type": "string",
+      "nullable": true,
+      "description": "F\u00f6rs\u00e4ljningsst\u00e4lle"
+    },
+    "sold_date": {
+      "type": "string",
+      "format": "date",
+      "nullable": true,
+      "description": "F\u00f6rs\u00e4ljningsdatum"
+    },
     "is_deleted": {
       "type": "boolean",
       "default": false,
