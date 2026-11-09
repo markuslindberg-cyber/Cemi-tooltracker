@@ -32,22 +32,22 @@
   "rls": {
     "create": {
       "user_condition": {
-        "role": "\u00e4gare"
+        "role": "__endast_server__"
       }
     },
     "read": {
       "user_condition": {
-        "role": "\u00e4gare"
+        "role": "__endast_server__"
       }
     },
     "update": {
       "user_condition": {
-        "role": "\u00e4gare"
+        "role": "__endast_server__"
       }
     },
     "delete": {
       "user_condition": {
-        "role": "\u00e4gare"
+        "role": "__endast_server__"
       }
     }
   }
