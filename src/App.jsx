@@ -54,6 +54,7 @@ import UnitsAdmin from './pages/UnitsAdmin';
 import Etiketter from './pages/Etiketter';
 import ITUtrustning from './pages/ITUtrustning';
 import MaskinHistorik from './pages/MaskinHistorik';
+import MassFlytt from './pages/MassFlytt';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { UnitProvider } from '@/hooks/useUnitContext';
@@ -173,6 +174,7 @@ const AuthenticatedApp = () => {
       <Route path="/Administration/Enheter" element={<LayoutWrapper currentPageName="UnitsAdmin"><UnitsAdmin /></LayoutWrapper>} />
       <Route path="/Administration/Etiketter" element={<LayoutWrapper currentPageName="Etiketter"><Etiketter /></LayoutWrapper>} />
       <Route path="/ITUtrustning" element={<LayoutWrapper currentPageName="ITUtrustning"><ITUtrustning /></LayoutWrapper>} />
+      <Route path="/Inventering/Massflytt" element={<LayoutWrapper currentPageName="MassFlytt"><MassFlytt /></LayoutWrapper>} />
       <Route path="/Inventory/Historik" element={<LayoutWrapper currentPageName="MaskinHistorik"><MaskinHistorik /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -113,6 +113,7 @@ const navigation = [
     children: [
       { name: 'Inventering', path: '/InventoryCheck' },
       { name: 'Inventeringsrapporter', path: '/InventoryReports' },
+      { name: 'Massflytt', path: '/Inventering/Massflytt' },
       { name: 'Manual', path: '/InventeringsManual' },
     ]
   },

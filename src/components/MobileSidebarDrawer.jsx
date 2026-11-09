@@ -71,6 +71,7 @@ const SECTIONS = [
     children: [
       { name: 'Inventering', path: '/InventoryCheck' },
       { name: 'Rapporter', path: '/InventoryReports' },
+      { name: 'Massflytt', path: '/Inventering/Massflytt' },
       { name: 'Manual', path: '/InventeringsManual' },
     ]
   },
